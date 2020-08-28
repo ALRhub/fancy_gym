@@ -10,4 +10,4 @@
     - Install: go to "../reacher_5_links"        
         ``` pip install -e reacher_5_links ```
     - Use (see example.py): 
-        ``` env = gym.make('reacher:ReacherALREnv-v0')```
+        ``` env = gym.make('reacher:ALRReacherEnv-v0')```

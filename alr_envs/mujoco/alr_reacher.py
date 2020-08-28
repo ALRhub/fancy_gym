@@ -1,14 +1,16 @@
 import numpy as np
+import os
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
-class ReacherALREnv(mujoco_env.MujocoEnv, utils.EzPickle):
+
+class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         utils.EzPickle.__init__(self)
-        mujoco_env.MujocoEnv.__init__(self, '/home/vien/git/reacher_test/reacher/envs/reacher_5links.xml', 2)
+        mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", 'reacher_5links.xml'), 2)
 
     def step(self, a):
-        vec = self.get_body_com("fingertip")-self.get_body_com("target")
+        vec = self.get_body_com("fingertip") - self.get_body_com("target")
         reward_dist = - np.linalg.norm(vec)
         reward_ctrl = - np.square(a).sum()
         reward = reward_dist + reward_ctrl
@@ -38,7 +40,7 @@ class ReacherALREnv(mujoco_env.MujocoEnv, utils.EzPickle):
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
-            self.sim.data.qpos.flat[5:], # this is goal position
-            self.sim.data.qvel.flat[:5], # this is angular velocity
+            self.sim.data.qpos.flat[5:],  # this is goal position
+            self.sim.data.qvel.flat[:5],  # this is angular velocity
             self.get_body_com("fingertip") - self.get_body_com("target")
         ])

@@ -1,13 +1,15 @@
 import gym
 
+if __name__ == '__main__':
 
-if __name__ == "__main__":
-    env = gym.make('reacher:ReacherALREnv-v0')
-    #env = gym.make('Hopper-v2')
-    env.reset()
+    # env = gym.make('alr_envs:ALRReacher-v0')
+    env = gym.make('alr_envs:SimpleReacher-v0')
+    state = env.reset()
 
     for i in range(10000):
-        action = env.action_space.sample()
-        obs = env.step(action)
-        print("step",i)
-        env.render()
+        state, reward, done, info = env.step(env.action_space.sample())
+        if i % 5 == 0:
+            env.render()
+
+        if done:
+            state = env.reset()
