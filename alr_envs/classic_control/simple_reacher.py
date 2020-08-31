@@ -33,7 +33,7 @@ class SimpleReacherEnv(gym.Env, utils.EzPickle):
         self._angle_velocity = None
 
         self.max_torque = 1  # 10
-        self.steps_before_reward = 0
+        self.steps_before_reward = 50
 
         action_bound = np.ones((self.n_links,))
         state_bound = np.hstack([
