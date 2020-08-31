@@ -1,3 +1,5 @@
+import os
+
 import gym
 import numpy as np
 from gym import spaces, utils
@@ -6,7 +8,8 @@ from gym.utils import seeding
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-mpl.use('Qt5Agg')  # or can use 'TkAgg', whatever you have/prefer
+if not os.environ.get("DISPLAY", None):
+    mpl.use('Qt5Agg')
 
 
 class SimpleReacherEnv(gym.Env, utils.EzPickle):
@@ -80,7 +83,7 @@ class SimpleReacherEnv(gym.Env, utils.EzPickle):
         return np.clip(action, lb, ub)
 
     def _get_obs(self):
-        return [self._joint_angle, self._angle_velocity, self.end_effector - self._goal_pos, self._steps]
+        return np.hstack([self._joint_angle, self._angle_velocity, self.end_effector - self._goal_pos, self._steps])
 
     def _update_joints(self):
         """
