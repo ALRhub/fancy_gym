@@ -1,13 +1,49 @@
-## GENERAL
+## ALR Custom Environments
     
-    - This is a modification (5 links) of Mujoco Gym's Reacher (2 links)
+This repository collects custom RL envs not included in Suits like OpenAI gym, rllab, etc. 
+Creating a custom (Mujoco) gym environement can be done according to this guide: https://github.com/openai/gym/blob/master/docs/creating-environments.md
 
-    - Creating a custom Mujoco Gym according to this guides: https://github.com/openai/gym/blob/master/docs/creating-environments.md
+## Environments
+Currently we have the following environements: 
+
+### Mujoco
+
+|Name| Description|
+|---|---|
+|`ALRReacher-v0`|modification (5 links) of Mujoco Gym's Reacher (2 links)|
+    
+### Classic Control
+
+|Name| Description|
+|---|---|
+|`SimpleReacher-v0`| Simple Reaching Task without any physics simulation. Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions towards the end of the trajectory.|
 
 ## INSTALL
-    - NOTE: you should look into envs/reacher_env.py and change the link to the correct path of .xml file on your computer.  
-    
-    - Install: go to "../reacher_5_links"        
-        ``` pip install -e reacher_5_links ```
-    - Use (see example.py): 
-        ``` env = gym.make('reacher:ALRReacherEnv-v0')```
+1. Clone the repository 
+```bash 
+git clone git@github.com:ALRhub/alr_envs.git
+```
+2. Go to the folder 
+```bash 
+cd alr_envs
+```
+3. Install with 
+```bash 
+pip install -e . 
+```
+4. Use (see [example.py](./example.py)): 
+```python
+import gym
+
+env = gym.make('alr_envs:SimpleReacher-v0')
+state = env.reset()
+
+for i in range(10000):
+    state, reward, done, info = env.step(env.action_space.sample())
+    if i % 5 == 0:
+        env.render()
+
+    if done:
+        state = env.reset()
+
+``` 
