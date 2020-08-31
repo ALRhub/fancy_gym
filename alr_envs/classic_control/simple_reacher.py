@@ -61,12 +61,12 @@ class SimpleReacherEnv(gym.Env, utils.EzPickle):
         self._update_joints()
         self._steps += 1
 
-        reward = self._get_reward(action)
+        reward, info = self._get_reward(action)
 
         # done = np.abs(self.end_effector - self._goal_pos) < 0.1
         done = False
 
-        return self._get_obs().copy(), reward, done, {}
+        return self._get_obs().copy(), reward, done, info
 
     def _scale_action(self, action):
         """
@@ -107,15 +107,17 @@ class SimpleReacherEnv(gym.Env, utils.EzPickle):
 
     def _get_reward(self, action):
         diff = self.end_effector - self._goal_pos
-        distance = 0
+        reward_dist = 0
 
         # TODO: Is this the best option
         if self._steps >= self.steps_before_reward:
-            distance = np.exp(-0.1 * diff ** 2).mean()
-            # distance -= (diff ** 2).mean()
+            reward_dist = - np.linalg.norm(diff)
+            # reward_dist = np.exp(-0.1 * diff ** 2).mean()
+            # reward_dist = - (diff ** 2).mean()
 
-        # distance -= action ** 2
-        return distance
+        reward_ctrl = (action ** 2).sum()
+        reward = reward_dist - reward_ctrl
+        return reward, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
 
     def reset(self):
 

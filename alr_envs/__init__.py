@@ -11,6 +11,6 @@ register(
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
     kwargs={
-        "n_links": 5,
+        "n_links": 3,
     }
 )
