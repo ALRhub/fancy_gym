@@ -1,19 +1,17 @@
 import os
-import time
 
 import gym
-import numpy as np
-from gym import spaces, utils
-from gym.utils import seeding
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+from gym import spaces
+from gym.utils import seeding
 
 if os.environ.get("DISPLAY", None):
     mpl.use('Qt5Agg')
 
 
-class SimpleReacherEnv(gym.Env, utils.EzPickle):
+class SimpleReacherEnv(gym.Env):
     """
     Simple Reaching Task without any physics simulation.
     Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions
@@ -168,7 +166,7 @@ class SimpleReacherEnv(gym.Env, utils.EzPickle):
         plt.xlim([-lim, lim])
         plt.ylim([-lim, lim])
         # plt.draw()
-        # plt.pause(1e-4) pushed window to foreground, which is annoying.
+        # plt.pause(1e-4) pushes window to foreground, which is annoying.
         self.fig.canvas.flush_events()
 
     def close(self):
