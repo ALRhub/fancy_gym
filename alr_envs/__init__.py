@@ -11,6 +11,15 @@ register(
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
     kwargs={
-        "n_links": 3,
+        "n_links": 2,
+    }
+)
+
+register(
+    id='SimpleReacher5-v0',
+    entry_point='alr_envs.classic_control:SimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
     }
 )
