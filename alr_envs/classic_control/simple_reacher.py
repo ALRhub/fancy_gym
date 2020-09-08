@@ -31,7 +31,7 @@ class SimpleReacherEnv(gym.Env):
         self._angle_velocity = None
 
         self.max_torque = 1  # 10
-        self.steps_before_reward = 50
+        self.steps_before_reward = 100
 
         action_bound = np.ones((self.n_links,))
         state_bound = np.hstack([
@@ -50,9 +50,10 @@ class SimpleReacherEnv(gym.Env):
         self._steps = 0
         self.seed()
 
-    def step(self, action):
+    def step(self, action: np.ndarray):
 
-        action = self._scale_action(action)
+        # action = self._add_action_noise(action)
+        action = np.clip(action, -self.max_torque, self.max_torque)
 
         self._angle_velocity = self._angle_velocity + self.dt * action
         self._joint_angle = angle_normalize(self._joint_angle + self.dt * self._angle_velocity)
@@ -66,22 +67,16 @@ class SimpleReacherEnv(gym.Env):
 
         return self._get_obs().copy(), reward, done, info
 
-    def _scale_action(self, action):
+    def _add_action_noise(self, action: np.ndarray):
         """
-        scale actions back in order to provide normalized actions \in [0,1]
-
+        add unobserved Gaussian Noise N(0,0.5) to the actions
         Args:
-            action: action to scale
+            action:
 
-        Returns: action according to self.max_torque
+        Returns: actions with noise
 
         """
-
-        ub = self.max_torque
-        lb = -self.max_torque
-
-        action = lb + (action + 1.) * 0.5 * (ub - lb)
-        return np.clip(action, lb, ub)
+        return self.np_random.normal(0, 0.1, *action.shape) + action
 
     def _get_obs(self):
         theta = self._joint_angle
@@ -103,7 +98,7 @@ class SimpleReacherEnv(gym.Env):
         x = self.link_lengths * np.vstack([np.cos(angles), np.sin(angles)])
         self._joints[1:] = self._joints[0] + np.cumsum(x.T, axis=0)
 
-    def _get_reward(self, action):
+    def _get_reward(self, action: np.ndarray):
         diff = self.end_effector - self._goal_pos
         reward_dist = 0
 
@@ -152,6 +147,7 @@ class SimpleReacherEnv(gym.Env):
             plt.figure(self.fig.number)
 
         plt.cla()
+        plt.title(f"Iteration: {self._steps}, distance: {self.end_effector - self._goal_pos}")
 
         # Arm
         plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
