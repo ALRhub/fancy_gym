@@ -3,7 +3,58 @@ from gym.envs.registration import register
 register(
     id='ALRReacher-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=1000,
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 0,
+    }
+)
+
+register(
+    id='ALRReacher100-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 100,
+    }
+)
+
+register(
+    id='ALRReacher180-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 180,
+    }
+)
+
+register(
+    id='ALRReacher7-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 0,
+        "n_links": 7,
+    }
+)
+
+register(
+    id='ALRReacher100_7-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 100,
+        "n_links": 7,
+    }
+)
+
+register(
+    id='ALRReacher180_7-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 180,
+        "n_links": 7,
+    }
 )
 
 register(

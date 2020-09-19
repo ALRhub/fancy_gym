@@ -31,7 +31,7 @@ class SimpleReacherEnv(gym.Env):
         self._angle_velocity = None
 
         self.max_torque = 1  # 10
-        self.steps_before_reward = 100
+        self.steps_before_reward = 180
 
         action_bound = np.ones((self.n_links,))
         state_bound = np.hstack([
@@ -69,7 +69,7 @@ class SimpleReacherEnv(gym.Env):
 
     def _add_action_noise(self, action: np.ndarray):
         """
-        add unobserved Gaussian Noise N(0,0.5) to the actions
+        add unobserved Gaussian Noise N(0,0.01) to the actions
         Args:
             action:
 
