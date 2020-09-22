@@ -6,6 +6,27 @@ register(
     max_episode_steps=200,
     kwargs={
         "steps_before_reward": 0,
+        "n_links": 5,
+    }
+)
+
+register(
+    id='ALRReacherShort-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=50,
+    kwargs={
+        "steps_before_reward": 50,
+        "n_links": 5,
+    }
+)
+
+register(
+    id='ALRReacherSparse-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 200,
+        "n_links": 5,
     }
 )
 
@@ -15,6 +36,7 @@ register(
     max_episode_steps=200,
     kwargs={
         "steps_before_reward": 100,
+        "n_links": 5,
     }
 )
 
@@ -24,6 +46,7 @@ register(
     max_episode_steps=200,
     kwargs={
         "steps_before_reward": 180,
+        "n_links": 5,
     }
 )
 
