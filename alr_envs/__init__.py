@@ -11,11 +11,21 @@ register(
 )
 
 register(
-    id='ALRReacherShort-v0',
+    id='ALRReacherShortSparse-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
     max_episode_steps=50,
     kwargs={
         "steps_before_reward": 50,
+        "n_links": 5,
+    }
+)
+
+register(
+    id='ALRReacherShort-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=50,
+    kwargs={
+        "steps_before_reward": 40,
         "n_links": 5,
     }
 )

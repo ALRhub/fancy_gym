@@ -10,7 +10,11 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.steps_before_reward = steps_before_reward
         self.n_links = n_links
 
-        self.reward_weight = 1 if self.steps_before_reward != 200 and self.steps_before_reward != 50 else 200
+        self.reward_weight = 1
+        if steps_before_reward == 200:
+            self.reward_weight = 200
+        elif steps_before_reward == 50:
+            self.reward_weight = 50
 
         if n_links == 5:
             file_name = 'reacher_5links.xml'
