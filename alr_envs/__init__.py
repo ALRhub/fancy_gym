@@ -1,5 +1,7 @@
 from gym.envs.registration import register
 
+from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
+
 register(
     id='ALRReacher-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
@@ -107,3 +109,24 @@ register(
         "n_links": 5,
     }
 )
+
+
+register(
+    id='SimpleReacher5-v0',
+    entry_point='alr_envs.classic_control:SimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+    }
+)
+
+for dim in [5, 10, 25, 50, 100]:
+
+    register(
+        id=f'Rosenbrock{dim}-v0',
+        entry_point='alr_envs.stochastic_search:StochasticSearchEnv',
+        max_episode_steps=1,
+        kwargs={
+            "cost_f": Rosenbrock,
+        }
+    )
