@@ -11,6 +11,7 @@ Currently we have the following environements:
 |Name| Description|
 |---|---|
 |`ALRReacher-v0`|modification (5 links) of Mujoco Gym's Reacher (2 links)|
+|`ALRReacherSparse-v0`|Same as `ALRReacher-v0`, but the distance penalty is only provided in the last time step.|
     
 ### Classic Control
 
