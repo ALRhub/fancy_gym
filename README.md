@@ -31,7 +31,7 @@ Currently we have the following environements:
 |`Rosenbrock{dim}-v0`| Gym interface for Rosenbrock function. `{dim}` is one of 5, 10, 25, 50 or 100. | 
 
 
-## INSTALL
+## Install
 1. Clone the repository 
 ```bash 
 git clone git@github.com:ALRhub/alr_envs.git
