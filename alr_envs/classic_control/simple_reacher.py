@@ -171,7 +171,3 @@ class SimpleReacherEnv(gym.Env):
     @property
     def end_effector(self):
         return self._joints[self.n_links].T
-
-
-def angle_normalize(x):
-    return ((x + np.pi) % (2 * np.pi)) - np.pi

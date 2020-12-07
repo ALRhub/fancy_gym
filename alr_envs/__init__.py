@@ -13,26 +13,6 @@ register(
 )
 
 register(
-    id='ALRReacherShortSparse-v0',
-    entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=50,
-    kwargs={
-        "steps_before_reward": 50,
-        "n_links": 5,
-    }
-)
-
-register(
-    id='ALRReacherShort-v0',
-    entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=50,
-    kwargs={
-        "steps_before_reward": 40,
-        "n_links": 5,
-    }
-)
-
-register(
     id='ALRReacherSparse-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
     max_episode_steps=200,
@@ -43,21 +23,32 @@ register(
 )
 
 register(
-    id='ALRReacher100-v0',
+    id='ALRReacherSparseBalanced-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
     max_episode_steps=200,
     kwargs={
-        "steps_before_reward": 100,
+        "steps_before_reward": 200,
+        "n_links": 5,
+        "balance": True,
+    }
+)
+
+register(
+    id='ALRReacherShort-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=50,
+    kwargs={
+        "steps_before_reward": 0,
         "n_links": 5,
     }
 )
 
 register(
-    id='ALRReacher180-v0',
+    id='ALRReacherShortSparse-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
+    max_episode_steps=50,
     kwargs={
-        "steps_before_reward": 180,
+        "steps_before_reward": 50,
         "n_links": 5,
     }
 )
@@ -73,21 +64,31 @@ register(
 )
 
 register(
-    id='ALRReacher100_7-v0',
+    id='ALRReacherSparse-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
     max_episode_steps=200,
     kwargs={
-        "steps_before_reward": 100,
+        "steps_before_reward": 200,
         "n_links": 7,
     }
 )
 
 register(
-    id='ALRReacher180_7-v0',
+    id='ALRReacher7Short-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
+    max_episode_steps=50,
     kwargs={
-        "steps_before_reward": 180,
+        "steps_before_reward": 0,
+        "n_links": 7,
+    }
+)
+
+register(
+    id='ALRReacher7ShortSparse-v0',
+    entry_point='alr_envs.mujoco:ALRReacherEnv',
+    max_episode_steps=50,
+    kwargs={
+        "steps_before_reward": 50,
         "n_links": 7,
     }
 )
@@ -110,18 +111,7 @@ register(
     }
 )
 
-
-register(
-    id='SimpleReacher5-v0',
-    entry_point='alr_envs.classic_control:SimpleReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "n_links": 5,
-    }
-)
-
 for dim in [5, 10, 25, 50, 100]:
-
     register(
         id=f'Rosenbrock{dim}-v0',
         entry_point='alr_envs.stochastic_search:StochasticSearchEnv',

@@ -1,14 +1,20 @@
-import numpy as np
 import os
+
+import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
+from alr_envs.utils.utils import angle_normalize
+
 
 class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self, steps_before_reward=200, n_links=5):
+    def __init__(self, steps_before_reward=200, n_links=5, balance=False):
         self._steps = 0
         self.steps_before_reward = steps_before_reward
         self.n_links = n_links
+
+        self.balance = balance
+        self.balance_weight = 1.0
 
         self.reward_weight = 1
         if steps_before_reward == 200:
@@ -29,20 +35,22 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def step(self, a):
         self._steps += 1
 
-        reward_dist = 0
-        angular_vel = 0
+        reward_dist = 0.0
+        angular_vel = 0.0
         if self._steps >= self.steps_before_reward:
             vec = self.get_body_com("fingertip") - self.get_body_com("target")
             reward_dist -= self.reward_weight * np.linalg.norm(vec)
             angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
         reward_ctrl = - np.square(a).sum()
+        reward_balance = - self.balance_weight * np.abs(
+            angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
 
-        reward = reward_dist + reward_ctrl + angular_vel
+        reward = reward_dist + reward_ctrl + angular_vel + reward_balance
         self.do_simulation(a, self.frame_skip)
         ob = self._get_obs()
         done = False
         return ob, reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl,
-                                      velocity=angular_vel,
+                                      velocity=angular_vel, reward_balance=reward_balance,
                                       end_effector=self.get_body_com("fingertip").copy(),
                                       goal=self.goal if hasattr(self, "goal") else None)
 
