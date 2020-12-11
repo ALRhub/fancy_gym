@@ -37,13 +37,16 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         reward_dist = 0.0
         angular_vel = 0.0
+        reward_balance = 0.0
         if self._steps >= self.steps_before_reward:
             vec = self.get_body_com("fingertip") - self.get_body_com("target")
             reward_dist -= self.reward_weight * np.linalg.norm(vec)
             angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
         reward_ctrl = - np.square(a).sum()
-        reward_balance = - self.balance_weight * np.abs(
-            angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
+
+        if self.balance:
+            reward_balance = - self.balance_weight * np.abs(
+                angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
 
         reward = reward_dist + reward_ctrl + angular_vel + reward_balance
         self.do_simulation(a, self.frame_skip)

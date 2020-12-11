@@ -64,7 +64,7 @@ register(
 )
 
 register(
-    id='ALRReacherSparse-v0',
+    id='ALRReacher7Sparse-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
     max_episode_steps=200,
     kwargs={
