@@ -14,7 +14,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.n_links = n_links
 
         self.balance = balance
-        self.balance_weight = 1.0
+        self.balance_weight = 0.01
 
         self.reward_weight = 1
         if steps_before_reward == 200:
