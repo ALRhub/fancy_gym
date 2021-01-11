@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
+from alr_envs.utils.utils import angle_normalize
+
 
 if os.environ.get("DISPLAY", None):
     mpl.use('Qt5Agg')

@@ -4,8 +4,8 @@ import gym
 
 if __name__ == '__main__':
 
-    env = gym.make('alr_envs:ALRReacher-v0')
-    # env = gym.make('alr_envs:SimpleReacher-v0')
+    # env = gym.make('alr_envs:ALRReacher-v0')
+    env = gym.make('alr_envs:SimpleReacher-v0')
     # env = gym.make('alr_envs:ALRReacher7-v0')
     state = env.reset()
 

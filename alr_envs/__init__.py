@@ -63,15 +63,15 @@ register(
     }
 )
 
-register(
-    id='ALRReacherSparse-v0',
-    entry_point='alr_envs.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 200,
-        "n_links": 7,
-    }
-)
+# register(
+#     id='ALRReacherSparse-v0',
+#     entry_point='alr_envs.mujoco:ALRReacherEnv',
+#     max_episode_steps=200,
+#     kwargs={
+#         "steps_before_reward": 200,
+#         "n_links": 7,
+#     }
+# )
 
 register(
     id='ALRReacher7Short-v0',
