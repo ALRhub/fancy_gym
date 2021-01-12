@@ -14,7 +14,7 @@ class DmpEnvWrapperBase(gym.Wrapper):
         if learn_goal:
             self.dim += num_dof
         self.learn_goal = True
-        duration = duration   # seconds
+        self.duration = duration   # seconds
         time_steps = int(duration / dt)
         self.t = np.linspace(0, duration, time_steps)
 
@@ -35,6 +35,21 @@ class DmpEnvWrapperBase(gym.Wrapper):
 
         self.dmp.set_weights(dmp_weights, dmp_goal_pos)
 
+    def __call__(self, params):
+        params = np.atleast_2d(params)
+        observations = []
+        rewards = []
+        dones = []
+        infos = []
+        for p in params:
+            observation, reward, done, info = self.rollout(p)
+            observations.append(observation)
+            rewards.append(reward)
+            dones.append(done)
+            infos.append(info)
+
+        return np.array(rewards)
+
     def goal_and_weights(self, params):
         if len(params.shape) > 1:
             assert params.shape[1] == self.dim
@@ -51,18 +66,25 @@ class DmpEnvWrapperBase(gym.Wrapper):
 
         return goal_pos, weight_matrix
 
-    def step(self, action, render=False):
-        """ overwrite step function where action now is the weights and possible goal position"""
+    def rollout(self, params, render=False):
+        """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
         raise NotImplementedError
 
 
 class DmpEnvWrapperAngle(DmpEnvWrapperBase):
-    def step(self, action, render=False):
+    """
+    Wrapper for gym environments which creates a trajectory in joint angle space
+    """
+    def rollout(self, action, render=False):
         goal_pos, weight_matrix = self.goal_and_weights(action)
+        if hasattr(self.env, "weight_matrix_scale"):
+            weight_matrix = weight_matrix * self.env.weight_matrix_scale
         self.dmp.set_weights(weight_matrix, goal_pos)
         trajectory, velocities = self.dmp.reference_trajectory(self.t)
 
         rews = []
+
+        self.env.reset()
 
         for t, traj in enumerate(trajectory):
             obs, rew, done, info = self.env.step(traj)
@@ -73,20 +95,26 @@ class DmpEnvWrapperAngle(DmpEnvWrapperBase):
                 break
 
         reward = np.sum(rews)
-        done = True
+        # done = True
         info = {}
 
         return obs, reward, done, info
 
 
 class DmpEnvWrapperVel(DmpEnvWrapperBase):
-    def step(self, action, render=False):
+    """
+    Wrapper for gym environments which creates a trajectory in joint velocity space
+    """
+    def rollout(self, action, render=False):
         goal_pos, weight_matrix = self.goal_and_weights(action)
-        weight_matrix *= 50
+        if hasattr(self.env, "weight_matrix_scale"):
+            weight_matrix = weight_matrix * self.env.weight_matrix_scale
         self.dmp.set_weights(weight_matrix, goal_pos)
         trajectory, velocities = self.dmp.reference_trajectory(self.t)
 
         rews = []
+
+        self.env.reset()
 
         for t, vel in enumerate(velocities):
             obs, rew, done, info = self.env.step(vel)

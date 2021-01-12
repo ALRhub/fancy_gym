@@ -1,5 +1,7 @@
 import gym
 import numpy as np
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
@@ -35,6 +37,7 @@ class HoleReacher(gym.Env):
         self._angle_velocity = None
         self.start_pos = np.hstack([[np.pi/2], np.zeros(self.num_links - 1)])
         self.start_vel = np.zeros(self.num_links)
+        self.weight_matrix_scale = 50  # for the holereacher, the dmp weights become quite large compared to the values of the goal attractor. this scaling is to ensure they are on similar scale for the optimizer
 
         self._dt = 0.01
 
@@ -66,37 +69,6 @@ class HoleReacher(gym.Env):
     def end_effector(self):
         return self._joints[self.num_links].T
 
-    def step(self, action):
-        # vel = (action - self._joint_angles) / self._dt
-        # acc = (vel - self._angle_velocity) / self._dt
-        # self._angle_velocity = vel
-        # self._joint_angles = action
-
-        vel = action
-        acc = (vel - self._angle_velocity) / self._dt
-        self._angle_velocity = vel
-        self._joint_angles = self._joint_angles + self._dt * self._angle_velocity
-
-        self._update_joints()
-
-        rew = self._reward()
-
-        rew -= 1e-6 * np.sum(acc**2)
-
-        if self._steps == 180:
-            rew -= (0.1 * np.sum(vel**2) ** 2
-                    + 1e-3 * np.sum(action**2)
-                    )
-
-        if self._is_collided:
-            rew -= self.collision_penalty
-
-        info = {}
-
-        self._steps += 1
-
-        return self._get_obs().copy(), rew, self._is_collided, info
-
     def reset(self):
         self._joint_angles = self.start_pos
         self._angle_velocity = self.start_vel
@@ -105,6 +77,46 @@ class HoleReacher(gym.Env):
         self._steps = 0
 
         return self._get_obs().copy()
+
+    def step(self, action):
+        """
+        a single step with an action in joint velocity space
+        """
+        vel = action
+        acc = (vel - self._angle_velocity) / self._dt
+        self._angle_velocity = vel
+        self._joint_angles = self._joint_angles + self._dt * self._angle_velocity
+
+        self._update_joints()
+
+        # rew = self._reward()
+
+        # compute reward directly in step function
+
+        dist_reward = 0
+        if not self._is_collided:
+            if self._steps == 180:
+                dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+        else:
+            dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+
+        reward = - dist_reward ** 2
+
+        reward -= 1e-6 * np.sum(acc**2)
+
+        if self._steps == 180:
+            reward -= (0.1 * np.sum(vel**2) ** 2
+                       + 1e-3 * np.sum(action**2)
+                       )
+
+        if self._is_collided:
+            reward -= self.collision_penalty
+
+        info = {}
+
+        self._steps += 1
+
+        return self._get_obs().copy(), reward, self._is_collided, info
 
     def _update_joints(self):
         """
@@ -140,18 +152,17 @@ class HoleReacher(gym.Env):
             self._steps
         ])
 
-    def _reward(self):
-        dist_reward = 0
-        if not self._is_collided:
-            if self._steps == 180:
-                dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-        else:
-            dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-
-        # TODO: make negative
-        out = - dist_reward ** 2
-
-        return out
+    # def _reward(self):
+    #     dist_reward = 0
+    #     if not self._is_collided:
+    #         if self._steps == 180:
+    #             dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+    #     else:
+    #         dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+    #
+    #     out = - dist_reward ** 2
+    #
+    #     return out
 
     def get_forward_kinematics(self, num_points_per_link=1):
         theta = self._joint_angles[:, None]
@@ -220,8 +231,8 @@ class HoleReacher(gym.Env):
     def render(self, mode='human'):
         if self.fig is None:
             self.fig = plt.figure()
-            plt.ion()
-            plt.pause(0.01)
+            # plt.ion()
+            # plt.pause(0.01)
         else:
             plt.figure(self.fig.number)
 
@@ -242,25 +253,29 @@ class HoleReacher(gym.Env):
             plt.pause(1e-4) #  pushes window to foreground, which is annoying.
             # self.fig.canvas.flush_events()
 
-        elif render_partial:
-            if t == 0:
-                fig, ax = plt.subplots()
+        elif mode == "partial":
+            if self._steps == 1:
+                # fig, ax = plt.subplots()
                 # Add the patch to the Axes
                 [plt.gca().add_patch(rect) for rect in self.patches]
+                # plt.pause(0.01)
 
-                plt.xlim(-self.num_links, self.num_links), plt.ylim(-1, self.num_links)
+            if self._steps % 20 == 0 or self._steps in [1, 199] or self._is_collided:
+                # Arm
+                plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k', alpha=self._steps / 200)
+                # ax.plot(line_points_in_taskspace[:, 0, 0],
+                #         line_points_in_taskspace[:, 0, 1],
+                #         line_points_in_taskspace[:, -1, 0],
+                #         line_points_in_taskspace[:, -1, 1], marker='o', color='k', alpha=t / 200)
 
-            if t % 20 == 0 or t == 199 or is_collided:
-                ax.plot(line_points_in_taskspace[:, 0, 0],
-                        line_points_in_taskspace[:, 0, 1],
-                        line_points_in_taskspace[:, -1, 0],
-                        line_points_in_taskspace[:, -1, 1], marker='o', color='k', alpha=t / 200)
-
+                lim = np.sum(self.link_lengths) + 0.5
+                plt.xlim([-lim, lim])
+                plt.ylim([-1.1, lim])
                 plt.pause(0.01)
 
-        elif render_final:
-            if self._steps == 0 or self._is_collided:
-                fig, ax = plt.subplots()
+        elif mode == "final":
+            if self._steps == 199 or self._is_collided:
+                # fig, ax = plt.subplots()
 
                 # Add the patch to the Axes
                 [plt.gca().add_patch(rect) for rect in self.patches]
@@ -274,16 +289,18 @@ class HoleReacher(gym.Env):
 
 if __name__ == '__main__':
     nl = 5
+    render_mode = "human"  # "human" or "partial" or "final"
     env = HoleReacher(num_links=nl, allow_self_collision=False, allow_wall_collision=False, hole_width=0.15, hole_depth=1, hole_x=1)
     env.reset()
+    # env.render(mode=render_mode)
 
     for i in range(200):
         # objective.load_result("/tmp/cma")
-        # explore = np.random.multivariate_normal(mean=np.zeros(30), cov=1 * np.eye(30))
-        ac = 11 * env.action_space.sample()
+        # test with random actions
+        ac = 2 * env.action_space.sample()
         # ac[0] += np.pi/2
         obs, rew, done, info = env.step(ac)
-        env.render(mode="render_full")
+        env.render(mode=render_mode)
 
         print(rew)
 

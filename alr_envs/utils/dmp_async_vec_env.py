@@ -4,7 +4,6 @@ from gym.vector.utils import concatenate, create_empty_array
 from gym.vector.async_vector_env import AsyncState
 import numpy as np
 import multiprocessing as mp
-from copy import deepcopy
 import sys
 
 
@@ -41,7 +40,6 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
                                           'for a pending call to `{0}` to complete.'.format(
                 self._state.value), self._state.value)
 
-        # split_actions = np.array_split(actions, self.num_envs)
         actions = np.atleast_2d(actions)
         split_actions = np.array_split(actions, np.minimum(len(actions), self.num_envs))
         for pipe, action in zip(self.parent_pipes, split_actions):
@@ -89,6 +87,8 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
 
         observations_list, rewards, dones, infos = [_flatten_list(r) for r in zip(*results)]
 
+        # for now, we ignore the observations and only return the rewards
+
         # if not self.shared_memory:
         #     self.observations = concatenate(observations_list, self.observations,
         #                                     self.single_observation_space)
@@ -124,8 +124,7 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
                 dones = []
                 infos = []
                 for d in data:
-                    env.reset()
-                    observation, reward, done, info = env.step(d)
+                    observation, reward, done, info = env.rollout(d)
                     observations.append(observation)
                     rewards.append(reward)
                     dones.append(done)
