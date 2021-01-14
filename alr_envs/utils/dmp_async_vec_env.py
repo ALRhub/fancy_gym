@@ -96,7 +96,7 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
         # return (deepcopy(self.observations) if self.copy else self.observations,
         #         np.array(rewards), np.array(dones, dtype=np.bool_), infos)
 
-        return np.array(rewards)
+        return np.array(rewards), infos
 
     def rollout(self, actions):
         self.rollout_async(actions)
@@ -134,6 +134,7 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
                 env.seed(data)
                 pipe.send((None, True))
             elif command == 'close':
+                env.close()
                 pipe.send((None, True))
                 break
             elif command == 'idle':

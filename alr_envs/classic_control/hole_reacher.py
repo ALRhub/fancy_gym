@@ -1,7 +1,5 @@
 import gym
 import numpy as np
-import matplotlib
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib import patches
 
@@ -112,7 +110,7 @@ class HoleReacher(gym.Env):
         if self._is_collided:
             reward -= self.collision_penalty
 
-        info = {}
+        info = {"is_collided": self._is_collided}
 
         self._steps += 1
 
@@ -286,6 +284,10 @@ class HoleReacher(gym.Env):
 
                 plt.pause(0.01)
 
+    def close(self):
+        if self.fig is not None:
+            plt.close(self.fig)
+
 
 if __name__ == '__main__':
     nl = 5
@@ -306,3 +308,5 @@ if __name__ == '__main__':
 
         if done:
             break
+
+    env.close()

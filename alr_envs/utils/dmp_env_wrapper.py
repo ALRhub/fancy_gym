@@ -113,18 +113,19 @@ class DmpEnvWrapperVel(DmpEnvWrapperBase):
         trajectory, velocities = self.dmp.reference_trajectory(self.t)
 
         rews = []
+        infos = []
 
         self.env.reset()
 
         for t, vel in enumerate(velocities):
             obs, rew, done, info = self.env.step(vel)
             rews.append(rew)
+            infos.append(info)
             if render:
                 self.env.render(mode="human")
             if done:
                 break
 
         reward = np.sum(rews)
-        info = {}
 
         return obs, reward, done, info
