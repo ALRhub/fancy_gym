@@ -1,0 +1,38 @@
+<mujocoinclude>
+    <body name="table_tennis_table" pos="0 0 0">
+        <geom class="contact_geom" name="table_base_1" type="box" size="0.05 0.05 .375" rgba="1 1 1 1"
+              pos="1 0.7 0.375"/>
+        <geom class="contact_geom" name="table_base_2" type="box" size="0.05 0.05 .375" rgba="1 1 1 1"
+              pos="1 -0.7 0.375"/>
+        <geom class="contact_geom" name="table_base_3" type="box" size="0.05 0.05 .375" rgba="1 1 1 1"
+              pos="-1 -0.7 0.375"/>
+        <geom class="contact_geom" name="table_base_4" type="box" size="0.05 0.05 .375" rgba="1 1 1 1"
+              pos="-1 0.7 0.375"/>
+        <body name="table_top" pos="0 0 0.76">
+            <geom class="contact_geom" name="table_tennis_table" type="box" size="1.37 .7625 .01" rgba="0 0 0.5 1"
+                  pos="0 0 0"/>
+<!--            <geom class="contact_geom" name="table_tennis_table_right_side" type="box" size="0.685 .7625 .01"-->
+<!--                  rgba="0.5 0 0 1" pos="0.685 0 0"/>-->
+<!--            <geom class="contact_geom" name="table_tennis_table_left_side" type="box" size="0.685 .7625 .01"-->
+<!--                  rgba="0 0.5 0 1" pos="-0.685 0 0"/>-->
+            <site name="left_up_corner" pos="-1.37 .7625 0.01" rgba="1 1 1 1" size="0.00001"/>
+            <site name="middle_up_corner" pos="0 .7625 0.01" rgba="1 1 1 1" size="0.00001"/>
+            <site name="left_down_corner" pos="-1.37 -0.7625 0.01" rgba="1 1 1 1" size="0.00001"/>
+            <site name="middle_down_corner" pos="0 -.7625 0.01" rgba="1 1 1 1" size="0.00001"/>
+            <geom class="contact_geom" name="table_tennis_net" type="box" size="0.01 0.915 0.07625"
+                  material="floor_plane"
+                  rgba="0 0 1 0.5"
+                  pos="0 0 0.08625"/>
+            <geom class="contact_geom" name="left_while_line" type="box" size="1.37 .02 .001" rgba="1 1 1 1"
+                  pos="0 -0.7425 0.01"/>
+            <geom class="contact_geom" name="center_while_line" type="box" size="1.37 .01 .001" rgba="1 1 1 1"
+                  pos="0 0 0.01"/>
+            <geom class="contact_geom" name="right_while_line" type="box" size="1.37 .02 .001" rgba="1 1 1 1"
+                  pos="0 0.7425 0.01"/>
+            <geom class="contact_geom" name="right_side_line" type="box" size="0.02 .7625 .001" rgba="1 1 1 1"
+                  pos="1.35 0 0.01"/>
+            <geom class="contact_geom" name="left_side_line" type="box" size="0.02 .7625 .001" rgba="1 1 1 1"
+                  pos="-1.35 0 0.01"/>
+        </body>
+    </body>
+</mujocoinclude>
