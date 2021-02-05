@@ -3,7 +3,7 @@ from gym import spaces
 from gym.envs.robotics import robot_env, utils
 # import xml.etree.ElementTree as ET
 from alr_envs.mujoco.gym_table_tennis.utils.rewards.hierarchical_reward import HierarchicalRewardTableTennis
-# import glfw
+import glfw
 from alr_envs.mujoco.gym_table_tennis.utils.experiment import ball_initialize
 from pathlib import Path
 import os
@@ -34,18 +34,26 @@ class TableTennisEnv(robot_env.RobotEnv):
             path_cws = Path.cwd()
             print(path_cws)
             current_dir = Path(os.path.split(os.path.realpath(__file__))[0])
-            table_tennis_env_xml_path = current_dir / "robotics"/"assets"/"table_tennis"/"table_tennis_env.xml"
+            table_tennis_env_xml_path = current_dir / "assets"/"table_tennis_env.xml"
             model_path = str(table_tennis_env_xml_path)
         self.config = config
-        action_space = self.config['trajectory']['args']['action_space']
-        time_step = self.config['mujoco_sim_env']['args']["time_step"]
+        action_space = True  # self.config['trajectory']['args']['action_space']
+        time_step = 0.002  # self.config['mujoco_sim_env']['args']["time_step"]
         if initial_qpos is None:
-            initial_qpos = self.config['robot_config']['args']['initial_qpos']
+            initial_qpos = {"wam/base_yaw_joint_right": 1.5,
+                            "wam/shoulder_pitch_joint_right": 1,
+                            "wam/shoulder_yaw_joint_right": 0,
+                            "wam/elbow_pitch_joint_right": 1,
+                            "wam/wrist_yaw_joint_right": 1,
+                            "wam/wrist_pitch_joint_right": 0,
+                            "wam/palm_yaw_joint_right": 0}
+            # initial_qpos = [1.5, 1, 0, 1, 1, 0, 0]  # self.config['robot_config']['args']['initial_qpos']
 
         # TODO should read all configuration in config
         assert initial_qpos is not None, "Must initialize the initial q position of robot arm"
         n_actions = 7
         self.initial_qpos_value = np.array(list(initial_qpos.values())).copy()
+        # self.initial_qpos_value = np.array(initial_qpos)
         # # change time step in .xml file
         # tree = ET.parse(model_path)
         # root = tree.getroot()
@@ -71,6 +79,7 @@ class TableTennisEnv(robot_env.RobotEnv):
         self.n_actions = n_actions
         self.action = None
         self.time_step = time_step
+        self._dt = time_step
         self.paddle_center_pos = self.sim.data.get_site_xpos('wam/paddle_center')
         if reward_obj is None:
             self.reward_obj = HierarchicalRewardTableTennis()
@@ -104,7 +113,8 @@ class TableTennisEnv(robot_env.RobotEnv):
         self.reward_obj.hitting(self)
         # if not hitted, return the highest reward
         if not self.reward_obj.goal_achievement:
-            return self.reward_obj.highest_reward
+            # return self.reward_obj.highest_reward
+            return self.reward_obj.total_reward
         # # Stage 2 Right Table Contact
         # self.reward_obj.right_table_contact(self)
         # if not self.reward_obj.goal_achievement:
@@ -119,7 +129,8 @@ class TableTennisEnv(robot_env.RobotEnv):
         # print("self.reward_obj.highest_reward: ", self.reward_obj.highest_reward)
         # TODO
         self.reward_obj.target_achievement(self)
-        return self.reward_obj.highest_reward
+        # return self.reward_obj.highest_reward
+        return self.reward_obj.total_reward
 
     def _reset_sim(self):
         self.sim.set_state(self.initial_state)
@@ -217,10 +228,10 @@ if __name__ == '__main__':
     env.reset()
     # env.render(mode=render_mode)
 
-    for i in range(200):
+    for i in range(500):
         # objective.load_result("/tmp/cma")
         # test with random actions
-        ac = 2 * env.action_space.sample()
+        ac = env.action_space.sample()
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)
         env.render(mode=render_mode)

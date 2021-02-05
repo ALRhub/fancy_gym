@@ -6,19 +6,31 @@ import gym
 
 
 class DmpEnvWrapperBase(gym.Wrapper):
-    def __init__(self, env, num_dof, num_basis, duration=1, dt=0.01, learn_goal=False):
+    def __init__(self,
+                 env,
+                 num_dof,
+                 num_basis,
+                 start_pos=None,
+                 final_pos=None,
+                 duration=1,
+                 alpha_phase=2,
+                 dt=0.01,
+                 learn_goal=False,
+                 post_traj_time=0.,
+                 policy=None):
         super(DmpEnvWrapperBase, self).__init__(env)
         self.num_dof = num_dof
         self.num_basis = num_basis
         self.dim = num_dof * num_basis
         if learn_goal:
             self.dim += num_dof
-        self.learn_goal = True
+        self.learn_goal = learn_goal
         self.duration = duration   # seconds
         time_steps = int(duration / dt)
         self.t = np.linspace(0, duration, time_steps)
+        self.post_traj_steps = int(post_traj_time / dt)
 
-        phase_generator = ExpDecayPhaseGenerator(alpha_phase=5, duration=duration)
+        phase_generator = ExpDecayPhaseGenerator(alpha_phase=alpha_phase, duration=duration)
         basis_generator = DMPBasisGenerator(phase_generator, duration=duration, num_basis=self.num_basis)
 
         self.dmp = dmps.DMP(num_dof=num_dof,
@@ -28,12 +40,17 @@ class DmpEnvWrapperBase(gym.Wrapper):
                             dt=dt
                             )
 
-        self.dmp.dmp_start_pos = env.start_pos.reshape((1, num_dof))
+        self.dmp.dmp_start_pos = start_pos.reshape((1, num_dof))
 
         dmp_weights = np.zeros((num_basis, num_dof))
-        dmp_goal_pos = np.zeros(num_dof)
+        if learn_goal:
+            dmp_goal_pos = np.zeros(num_dof)
+        else:
+            dmp_goal_pos = final_pos
 
         self.dmp.set_weights(dmp_weights, dmp_goal_pos)
+
+        self.policy = policy
 
     def __call__(self, params):
         params = np.atleast_2d(params)
@@ -48,7 +65,7 @@ class DmpEnvWrapperBase(gym.Wrapper):
             dones.append(done)
             infos.append(info)
 
-        return np.array(rewards)
+        return np.array(rewards), infos
 
     def goal_and_weights(self, params):
         if len(params.shape) > 1:
@@ -71,7 +88,7 @@ class DmpEnvWrapperBase(gym.Wrapper):
         raise NotImplementedError
 
 
-class DmpEnvWrapperAngle(DmpEnvWrapperBase):
+class DmpEnvWrapperPos(DmpEnvWrapperBase):
     """
     Wrapper for gym environments which creates a trajectory in joint angle space
     """
@@ -80,7 +97,12 @@ class DmpEnvWrapperAngle(DmpEnvWrapperBase):
         if hasattr(self.env, "weight_matrix_scale"):
             weight_matrix = weight_matrix * self.env.weight_matrix_scale
         self.dmp.set_weights(weight_matrix, goal_pos)
-        trajectory, velocities = self.dmp.reference_trajectory(self.t)
+        trajectory, _ = self.dmp.reference_trajectory(self.t)
+
+        if self.post_traj_steps > 0:
+            trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
+
+        self._trajectory = trajectory
 
         rews = []
 
@@ -95,8 +117,6 @@ class DmpEnvWrapperAngle(DmpEnvWrapperBase):
                 break
 
         reward = np.sum(rews)
-        # done = True
-        info = {}
 
         return obs, reward, done, info
 
@@ -110,7 +130,7 @@ class DmpEnvWrapperVel(DmpEnvWrapperBase):
         if hasattr(self.env, "weight_matrix_scale"):
             weight_matrix = weight_matrix * self.env.weight_matrix_scale
         self.dmp.set_weights(weight_matrix, goal_pos)
-        trajectory, velocities = self.dmp.reference_trajectory(self.t)
+        _, velocities = self.dmp.reference_trajectory(self.t)
 
         rews = []
         infos = []
@@ -119,6 +139,44 @@ class DmpEnvWrapperVel(DmpEnvWrapperBase):
 
         for t, vel in enumerate(velocities):
             obs, rew, done, info = self.env.step(vel)
+            rews.append(rew)
+            infos.append(info)
+            if render:
+                self.env.render(mode="human")
+            if done:
+                break
+
+        reward = np.sum(rews)
+
+        return obs, reward, done, info
+
+
+class DmpEnvWrapperPD(DmpEnvWrapperBase):
+    """
+    Wrapper for gym environments which creates a trajectory in joint velocity space
+    """
+    def rollout(self, action, render=False):
+        goal_pos, weight_matrix = self.goal_and_weights(action)
+        if hasattr(self.env, "weight_matrix_scale"):
+            weight_matrix = weight_matrix * self.env.weight_matrix_scale
+        self.dmp.set_weights(weight_matrix, goal_pos)
+        trajectory, velocity = self.dmp.reference_trajectory(self.t)
+
+        if self.post_traj_steps > 0:
+            trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
+            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.num_dof))])
+
+        self._trajectory = trajectory
+        self._velocity = velocity
+
+        rews = []
+        infos = []
+
+        self.env.reset()
+
+        for t, pos_vel in enumerate(zip(trajectory, velocity)):
+            ac = self.policy.get_action(self.env, pos_vel[0], pos_vel[1])
+            obs, rew, done, info = self.env.step(ac)
             rews.append(rew)
             infos.append(info)
             if render:
