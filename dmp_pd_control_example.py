@@ -1,7 +1,7 @@
-from alr_envs.utils.dmp_env_wrapper import DmpEnvWrapperPD
-from alr_envs.utils.policies import PDController
+from alr_envs.utils.dmp_env_wrapper import DmpEnvWrapper
 from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv, _worker
-from alr_envs.mujoco.reacher.alr_reacher import ALRReacherEnv
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_simple import ALRBallInACupEnv
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
 import numpy as np
 
 
@@ -17,32 +17,42 @@ if __name__ == "__main__":
         :param rank: (int) index of the subprocess
         """
         def _init():
-            p_gains = np.array([100, 100, 100, 100, 100])
-            d_gains = np.array([1, 1, 1, 1, 1])
-            policy = PDController(p_gains, d_gains)
+            _env = ALRBallInACupEnv(BallInACupReward)
 
-            env = ALRReacherEnv()
-
-            env = DmpEnvWrapperPD(env,
-                                  num_dof=5,
-                                  num_basis=5,
-                                  duration=4,
-                                  dt=env.dt,
-                                  learn_goal=False,
-                                  start_pos=env.init_qpos[:5],
-                                  final_pos=env.init_qpos[:5],
-                                  alpha_phase=2,
-                                  policy=policy
-                                  )
-            env.seed(seed + rank)
-            return env
+            _env = DmpEnvWrapper(_env,
+                                 num_dof=3,
+                                 num_basis=8,
+                                 duration=3.5,
+                                 alpha_phase=3,
+                                 dt=_env.dt,
+                                 learn_goal=False,
+                                 start_pos=_env.start_pos[1::2],
+                                 final_pos=_env.start_pos[1::2],
+                                 policy_type="motor"
+                                 # contextual=True
+                                 )
+            _env.seed(seed + rank)
+            return _env
         return _init
 
-    dim = 25
-    env = make_env(0, 0)()
+    dim = 24
+
+    n_samples = 10
+
+    vec_env = DmpAsyncVectorEnv([make_env(i) for i in range(4)],
+                                n_samples=n_samples,
+                                context="spawn",
+                                shared_memory=False,
+                                worker=_worker)
+
+    params = 10 * np.random.randn(n_samples, dim)
+
+    out = vec_env(params)
+
+    non_vec_env = make_env(0, 0)()
 
     params = 10 * np.random.randn(dim)
 
-    out = env.rollout(params, render=True)
+    out2 = non_vec_env.rollout(params, render=True)
 
-    print(out)
+    print(out2)

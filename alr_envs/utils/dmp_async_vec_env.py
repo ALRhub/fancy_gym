@@ -24,14 +24,14 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
                                                n=n_samples,
                                                fn=np.zeros)
 
-    def __call__(self, params):
-        return self.rollout(params)
+    def __call__(self, params, contexts=None):
+        return self.rollout(params, contexts)
 
-    def rollout_async(self, actions):
+    def rollout_async(self, params, contexts):
         """
         Parameters
         ----------
-        actions : iterable of samples from `action_space`
+        params : iterable of samples from `action_space`
             List of actions.
         """
         self._assert_is_running()
@@ -40,11 +40,17 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
                                           'for a pending call to `{0}` to complete.'.format(
                 self._state.value), self._state.value)
 
-        actions = np.atleast_2d(actions)
-        split_actions = np.array_split(actions, np.minimum(len(actions), self.num_envs))
-        for pipe, action in zip(self.parent_pipes, split_actions):
-            pipe.send(('rollout', action))
-        for pipe in self.parent_pipes[len(split_actions):]:
+        params = np.atleast_2d(params)
+        split_params = np.array_split(params, np.minimum(len(params), self.num_envs))
+        if contexts is None:
+            split_contexts = np.array_split([None, ] * len(params), np.minimum(len(params), self.num_envs))
+        else:
+            split_contexts = np.array_split(contexts, np.minimum(len(contexts), self.num_envs))
+
+        assert np.all([len(p) == len(c) for p, c in zip(split_params, split_contexts)])
+        for pipe, param, context in zip(self.parent_pipes, split_params, split_contexts):
+            pipe.send(('rollout', (param, context)))
+        for pipe in self.parent_pipes[len(split_params):]:
             pipe.send(('idle', None))
         self._state = AsyncState.WAITING_ROLLOUT
 
@@ -98,8 +104,8 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
 
         return np.array(rewards), infos
 
-    def rollout(self, actions):
-        self.rollout_async(actions)
+    def rollout(self, actions, contexts):
+        self.rollout_async(actions, contexts)
         return self.rollout_wait()
 
 
@@ -123,8 +129,8 @@ def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
                 rewards = []
                 dones = []
                 infos = []
-                for d in data:
-                    observation, reward, done, info = env.rollout(d)
+                for p, c in zip(*data):
+                    observation, reward, done, info = env.rollout(p, c)
                     observations.append(observation)
                     rewards.append(reward)
                     dones.append(done)

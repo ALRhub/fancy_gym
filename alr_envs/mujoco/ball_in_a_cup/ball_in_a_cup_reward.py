@@ -1,7 +1,8 @@
 import numpy as np
+from alr_envs.mujoco import alr_reward_fct
 
 
-class BallInACupReward:
+class BallInACupReward(alr_reward_fct.AlrReward):
     def __init__(self, sim_time):
         self.sim_time = sim_time
 
@@ -14,7 +15,6 @@ class BallInACupReward:
                                   "forearm_link_convex_decomposition_p1_geom",
                                   "forearm_link_convex_decomposition_p2_geom"]
 
-        self.ctxt_id = None
         self.ball_id = None
         self.ball_collision_id = None
         self.goal_id = None
@@ -34,8 +34,7 @@ class BallInACupReward:
         self.dists_final = []
         self.costs = []
 
-    def compute_reward(self, action, sim, step):
-        self.ctxt_id = sim.model._site_name2id['context_point']
+    def compute_reward(self, action, sim, step, context=None):
         self.ball_id = sim.model._body_name2id["ball"]
         self.ball_collision_id = sim.model._geom_name2id["ball_geom"]
         self.goal_id = sim.model._site_name2id["cup_goal"]
@@ -50,58 +49,25 @@ class BallInACupReward:
         goal_final_pos = sim.data.site_xpos[self.goal_final_id]
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
-        # dists_ctxt.append(np.linalg.norm(ball_pos - ctxt))
         self.ball_traj[step, :] = ball_pos
 
         if self.check_collision(sim):
             return -1000, False, True
 
-        # self._get_cost(ball_pos, goal_pos, goal_final_pos, action,
-        #                sim.data.get_site_xpos('context_point').copy(), step)
-
-        # min_dist = np.min(self.dists)
-        # dist_final = self.dists_final[-1]
         action_cost = np.sum(np.square(action))
 
-        # cost = self.get_stage_wise_cost(ball_in_cup, min_dist, self.dists_final[-1])  # , self.dists_ctxt[-1])
         if step == self.sim_time - 1:
             min_dist = np.min(self.dists)
             dist_final = self.dists_final[-1]
 
             cost = 0.5 * min_dist + 0.5 * dist_final
-            # cost = 3 + 2 * (0.5 * min_dist ** 2 + 0.5 * dist_final ** 2)
-            reward = np.exp(-2 * min_dist) - 1e-5 * action_cost
-            success = dist_final < 0.05 and min_dist < 0.05
+            reward = np.exp(-2 * cost) - 1e-5 * action_cost
+            success = dist_final < 0.05 and ball_in_cup
         else:
-            cost = 0
             reward = - 1e-5 * action_cost
             success = False
-        # action_cost = np.mean(np.sum(np.square(torques), axis=1), axis=0)
 
         return reward, success, False
-
-    def get_stage_wise_cost(self, ball_in_cup, min_dist, dist_final):  #, dist_to_ctxt):
-        # stop_sim = False
-        cost = 3 + 2 * (0.5 * min_dist ** 2 + 0.5 * dist_final ** 2)
-        # if not ball_in_cup:
-        #     # cost = 3 + 2*(0.5 * min_dist + 0.5 * dist_final)
-        #     cost = 3 + 2*(0.5 * min_dist**2 + 0.5 * dist_final**2)
-        # else:
-        #     # cost = 2*dist_to_ctxt
-        #     cost = 2*dist_to_ctxt**2
-        #     stop_sim = True
-        #     # print(dist_to_ctxt-0.02)
-        #     print('Context Distance:', dist_to_ctxt)
-        return cost
-
-    def _get_cost(self, ball_pos, goal_pos, goal_pos_final, u, ctxt, t):
-
-        cost = 0
-        if t == self.sim_time*0.8:
-            dist = 0.5*np.linalg.norm(goal_pos-ball_pos)**2 + 0.5*np.linalg.norm(goal_pos_final-ball_pos)**2
-            # dist_ctxt = np.linalg.norm(ctxt-goal_pos)**2
-            cost = dist  # +dist_ctxt
-        return cost
 
     def check_ball_in_cup(self, sim, ball_collision_id):
         cup_base_collision_id = sim.model._geom_name2id["cup_base_contact"]
