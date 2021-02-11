@@ -2,27 +2,44 @@ from gym import utils
 import os
 import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
 import mujoco_py
 
 
 class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
-    def __init__(self, ):
+    def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
-                                     "ball-in-a-cup_base" + ".xml")
-
-        self.sim_time = 8  # seconds
-        self.sim_steps = int(self.sim_time / (0.0005 * 4))  # circular dependency.. sim.dt <-> mujocoenv init <-> reward fct
-        self.reward_function = BallInACupReward(self.sim_steps)
+                                     "biac_base" + ".xml")
 
         self.start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
+        self.start_vel = np.zeros(7)
+
         self._q_pos = []
+        self._q_vel = []
+        # self.weight_matrix_scale = 50
+        self.max_ctrl = np.array([150., 125., 40., 60., 5., 5., 2.])
+        self.p_gains = 1 / self.max_ctrl * np.array([200, 300, 100, 100, 10, 10, 2.5])
+        self.d_gains = 1 / self.max_ctrl * np.array([7, 15, 5, 2.5, 0.3, 0.3, 0.05])
+
+        self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
+        self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
+
+        self.context = None
 
         utils.EzPickle.__init__(self)
-        alr_mujoco_env.AlrMujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", "ball-in-a-cup_base.xml"),
-                                      n_substeps=4)
+        alr_mujoco_env.AlrMujocoEnv.__init__(self,
+                                             self.xml_path,
+                                             apply_gravity_comp=apply_gravity_comp,
+                                             n_substeps=n_substeps)
+
+        self.sim_time = 8  # seconds
+        self.sim_steps = int(self.sim_time / self.dt)
+        if reward_function is None:
+            from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
+            reward_function = BallInACupReward
+        self.reward_function = reward_function(self.sim_steps)
 
     def configure(self, context):
         self.context = context

@@ -93,7 +93,8 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
                                       velocity=angular_vel, # reward_balance=reward_balance,
                                       # end_effector=self.get_body_com("fingertip").copy(),
                                       goal=self.goal if hasattr(self, "goal") else None,
-                                      traj=self._q_pos)
+                                      traj=self._q_pos,
+                                      is_collided=crash or joint_cons_viol)
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
