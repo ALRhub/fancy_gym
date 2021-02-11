@@ -1,20 +1,15 @@
 from alr_envs.mujoco import alr_mujoco_env
-from gym import utils, spaces
+from gym import utils
 import os
 import numpy as np
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
 
 
 class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
-    def __init__(self, reward_function=None):
+    def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "biac_base" + ".xml")
-
-        self.sim_time = 8  # seconds
-        self.sim_steps = int(self.sim_time / (0.0005 * 4))  # circular dependency.. sim.dt <-> mujocoenv init <-> reward fct
-        self.reward_function = reward_function(self.sim_steps)
 
         self.start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
         self.start_vel = np.zeros(7)
@@ -34,8 +29,15 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
         alr_mujoco_env.AlrMujocoEnv.__init__(self,
                                              self.xml_path,
-                                             apply_gravity_comp=True,
-                                             n_substeps=4)
+                                             apply_gravity_comp=apply_gravity_comp,
+                                             n_substeps=n_substeps)
+
+        self.sim_time = 8  # seconds
+        self.sim_steps = int(self.sim_time / self.dt)
+        if reward_function is None:
+            from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
+            reward_function = BallInACupReward
+        self.reward_function = reward_function(self.sim_steps)
 
     @property
     def current_pos(self):
@@ -47,6 +49,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     def configure(self, context):
         self.context = context
+        self.reward_function.reset(context)
 
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
@@ -56,7 +59,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         goal_final_id = self.sim.model._site_name2id["cup_goal_final"]
 
         self._steps = 0
-        self.reward_function.reset()
         self._q_pos = []
         self._q_vel = []
 
@@ -64,38 +66,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         start_pos[0:7] = init_pos_robot
 
         self.set_state(start_pos, init_vel)
-
-        # Reset the system
-        # self.sim.data.qpos[:] = init_pos_all
-        # self.sim.data.qvel[:] = init_vel
-        # self.sim.data.qpos[0:7] = init_pos_robot
-        #
-        # self.sim.step()
-        #
-        # self.sim.data.qpos[:] = init_pos_all
-        # self.sim.data.qvel[:] = init_vel
-        # self.sim.data.qpos[0:7] = init_pos_robot
-        # self.sim.data.body_xpos[ball_id, :] = np.copy(self.sim.data.site_xpos[goal_final_id, :]) - np.array([0., 0., 0.329])
-        #
-        # # Stabilize the system around the initial position
-        # for i in range(0, 500):
-        #     self.sim.data.qpos[7:] = 0.
-        #     self.sim.data.qvel[7:] = 0.
-        #     # self.sim.data.qpos[7] = -0.2
-        #     cur_pos = self.sim.data.qpos[0:7].copy()
-        #     cur_vel = self.sim.data.qvel[0:7].copy()
-        #     trq = self.p_gains * (init_pos_robot - cur_pos) + self.d_gains * (np.zeros_like(init_pos_robot) - cur_vel)
-        #     self.sim.data.qfrc_applied[0:7] = trq + self.sim.data.qfrc_bias[:7].copy()
-        #     self.sim.step()
-        #     self.render()
-        #
-        # for i in range(0, 500):
-        #     cur_pos = self.sim.data.qpos[0:7].copy()
-        #     cur_vel = self.sim.data.qvel[0:7].copy()
-        #     trq = self.p_gains * (init_pos_robot - cur_pos) + self.d_gains * (np.zeros_like(init_pos_robot) - cur_vel)
-        #     self.sim.data.qfrc_applied[0:7] = trq + self.sim.data.qfrc_bias[:7].copy()
-        #     self.sim.step()
-        #     self.render()
 
         return self._get_obs()
 
@@ -154,7 +124,10 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
+    from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
+
     env = ALRBallInACupEnv(reward_function=BallInACupReward)
+    env.configure(None)
     env.reset()
     env.render()
     for i in range(4000):

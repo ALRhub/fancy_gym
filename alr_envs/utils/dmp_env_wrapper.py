@@ -69,15 +69,11 @@ class DmpEnvWrapper(gym.Wrapper):
 
     def __call__(self, params, contexts=None):
         params = np.atleast_2d(params)
-        observations = []
         rewards = []
-        dones = []
         infos = []
         for p, c in zip(params, contexts):
-            observation, reward, done, info = self.rollout(p, c)
-            observations.append(observation)
+            reward, info = self.rollout(p, c)
             rewards.append(reward)
-            dones.append(done)
             infos.append(info)
 
         return np.array(rewards), infos
@@ -116,9 +112,8 @@ class DmpEnvWrapper(gym.Wrapper):
         rews = []
         infos = []
 
+        self.env.configure(context)
         self.env.reset()
-        if context is not None:
-            self.env.configure(context)
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
             ac = self.policy.get_action(pos_vel[0], pos_vel[1])
@@ -132,4 +127,4 @@ class DmpEnvWrapper(gym.Wrapper):
 
         reward = np.sum(rews)
 
-        return obs, reward, done, info
+        return reward, info

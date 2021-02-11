@@ -1,7 +1,6 @@
 from alr_envs.utils.dmp_env_wrapper import DmpEnvWrapper
 from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv, _worker
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_simple import ALRBallInACupEnv
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
 import numpy as np
 
 
@@ -17,7 +16,7 @@ if __name__ == "__main__":
         :param rank: (int) index of the subprocess
         """
         def _init():
-            _env = ALRBallInACupEnv(BallInACupReward)
+            _env = ALRBallInACupEnv()
 
             _env = DmpEnvWrapper(_env,
                                  num_dof=3,
@@ -29,7 +28,6 @@ if __name__ == "__main__":
                                  start_pos=_env.start_pos[1::2],
                                  final_pos=_env.start_pos[1::2],
                                  policy_type="motor"
-                                 # contextual=True
                                  )
             _env.seed(seed + rank)
             return _env

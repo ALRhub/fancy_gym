@@ -73,7 +73,7 @@ class AlrMujocoEnv(gym.Env):
         # observation, _reward, done, _info = self.step(action)
         # assert not done
 
-        observation = self.reset()
+        observation = self._get_obs()  # TODO: is calling get_obs enough? should we call reset, or even step?
 
         self._set_observation_space(observation)
 
@@ -82,14 +82,14 @@ class AlrMujocoEnv(gym.Env):
     @property
     def current_pos(self):
         """
-        By default returns the joint positions of all simulated objects. May be overriden in subclass.
+        By default returns the joint positions of all simulated objects. May be overridden in subclass.
         """
         return self.sim.data.qpos
 
     @property
     def current_vel(self):
         """
-        By default returns the joint velocities of all simulated objects. May be overriden in subclass.
+        By default returns the joint velocities of all simulated objects. May be overridden in subclass.
         """
         return self.sim.data.qvel
 
@@ -125,10 +125,15 @@ class AlrMujocoEnv(gym.Env):
     # methods to override:
     # ----------------------------
 
+    def _get_obs(self):
+        """Returns the observation.
+        """
+        raise NotImplementedError()
+
     def configure(self, *args, **kwargs):
         """
         Helper method to set certain environment properties such as contexts in contextual environments since reset()
-        doesn't take arguments. Should be called before/after reset(). TODO: before or after?
+        doesn't take arguments. Should be called before reset().
         """
         pass
 

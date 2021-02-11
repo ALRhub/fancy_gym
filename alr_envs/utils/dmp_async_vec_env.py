@@ -7,9 +7,54 @@ import multiprocessing as mp
 import sys
 
 
+def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
+    assert shared_memory is None
+    env = env_fn()
+    parent_pipe.close()
+    try:
+        while True:
+            command, data = pipe.recv()
+            if command == 'reset':
+                observation = env.reset()
+                pipe.send((observation, True))
+            elif command == 'step':
+                observation, reward, done, info = env.step(data)
+                if done:
+                    observation = env.reset()
+                pipe.send(((observation, reward, done, info), True))
+            elif command == 'rollout':
+                rewards = []
+                infos = []
+                for p, c in zip(*data):
+                    reward, info = env.rollout(p, c)
+                    rewards.append(reward)
+                    infos.append(info)
+                pipe.send(((rewards, infos), (True, ) * len(rewards)))
+            elif command == 'seed':
+                env.seed(data)
+                pipe.send((None, True))
+            elif command == 'close':
+                env.close()
+                pipe.send((None, True))
+                break
+            elif command == 'idle':
+                pipe.send((None, True))
+            elif command == '_check_observation_space':
+                pipe.send((data == env.observation_space, True))
+            else:
+                raise RuntimeError('Received unknown command `{0}`. Must '
+                    'be one of {`reset`, `step`, `seed`, `close`, '
+                    '`_check_observation_space`}.'.format(command))
+    except (KeyboardInterrupt, Exception):
+        error_queue.put((index,) + sys.exc_info()[:2])
+        pipe.send((None, False))
+    finally:
+        env.close()
+
+
 class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
     def __init__(self, env_fns, n_samples, observation_space=None, action_space=None,
-                 shared_memory=True, copy=True, context=None, daemon=True, worker=None):
+                 shared_memory=False, copy=True, context="spawn", daemon=True, worker=_worker):
         super(DmpAsyncVectorEnv, self).__init__(env_fns,
                                                 observation_space=observation_space,
                                                 action_space=action_space,
@@ -91,7 +136,7 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
         self._raise_if_errors(successes)
         self._state = AsyncState.DEFAULT
 
-        observations_list, rewards, dones, infos = [_flatten_list(r) for r in zip(*results)]
+        rewards, infos = [_flatten_list(r) for r in zip(*results)]
 
         # for now, we ignore the observations and only return the rewards
 
@@ -107,55 +152,6 @@ class DmpAsyncVectorEnv(gym.vector.AsyncVectorEnv):
     def rollout(self, actions, contexts):
         self.rollout_async(actions, contexts)
         return self.rollout_wait()
-
-
-def _worker(index, env_fn, pipe, parent_pipe, shared_memory, error_queue):
-    assert shared_memory is None
-    env = env_fn()
-    parent_pipe.close()
-    try:
-        while True:
-            command, data = pipe.recv()
-            if command == 'reset':
-                observation = env.reset()
-                pipe.send((observation, True))
-            elif command == 'step':
-                observation, reward, done, info = env.step(data)
-                if done:
-                    observation = env.reset()
-                pipe.send(((observation, reward, done, info), True))
-            elif command == 'rollout':
-                observations = []
-                rewards = []
-                dones = []
-                infos = []
-                for p, c in zip(*data):
-                    observation, reward, done, info = env.rollout(p, c)
-                    observations.append(observation)
-                    rewards.append(reward)
-                    dones.append(done)
-                    infos.append(info)
-                pipe.send(((observations, rewards, dones, infos), (True, ) * len(rewards)))
-            elif command == 'seed':
-                env.seed(data)
-                pipe.send((None, True))
-            elif command == 'close':
-                env.close()
-                pipe.send((None, True))
-                break
-            elif command == 'idle':
-                pipe.send((None, True))
-            elif command == '_check_observation_space':
-                pipe.send((data == env.observation_space, True))
-            else:
-                raise RuntimeError('Received unknown command `{0}`. Must '
-                    'be one of {`reset`, `step`, `seed`, `close`, '
-                    '`_check_observation_space`}.'.format(command))
-    except (KeyboardInterrupt, Exception):
-        error_queue.put((index,) + sys.exc_info()[:2])
-        pipe.send((None, False))
-    finally:
-        env.close()
 
 
 def _flatten_obs(obs):

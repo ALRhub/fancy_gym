@@ -26,9 +26,9 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final = None
         self.costs = None
 
-        self.reset()
+        self.reset(None)
 
-    def reset(self):
+    def reset(self, context):
         self.ball_traj = np.zeros(shape=(self.sim_time, 3))
         self.dists = []
         self.dists_final = []
@@ -51,10 +51,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.ball_traj[step, :] = ball_pos
 
-        if self.check_collision(sim):
-            return -1000, False, True
-
         action_cost = np.sum(np.square(action))
+
+        if self.check_collision(sim):
+            reward = - 1e-5 * action_cost - 1000
+            return reward, False, True
 
         if step == self.sim_time - 1:
             min_dist = np.min(self.dists)

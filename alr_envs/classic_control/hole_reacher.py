@@ -37,7 +37,7 @@ class HoleReacher(gym.Env):
         self.start_vel = np.zeros(self.num_links)
         self.weight_matrix_scale = 50  # for the holereacher, the dmp weights become quite large compared to the values of the goal attractor. this scaling is to ensure they are on similar scale for the optimizer
 
-        self._dt = 0.01
+        self.dt = 0.01
         self.time_limit = 2
 
         action_bound = np.pi * np.ones((self.num_links,))
@@ -82,9 +82,9 @@ class HoleReacher(gym.Env):
         a single step with an action in joint velocity space
         """
         vel = action
-        acc = (vel - self._angle_velocity) / self._dt
+        acc = (vel - self._angle_velocity) / self.dt
         self._angle_velocity = vel
-        self._joint_angles = self._joint_angles + self._dt * self._angle_velocity
+        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
 
         self._update_joints()
 
@@ -113,7 +113,7 @@ class HoleReacher(gym.Env):
 
         self._steps += 1
 
-        done = self._steps * self._dt > self.time_limit or self._is_collided
+        done = self._steps * self.dt > self.time_limit or self._is_collided
 
         return self._get_obs().copy(), reward, done, info
 

@@ -26,7 +26,7 @@ def make_env(rank, seed=0):
                                num_dof=5,
                                num_basis=5,
                                duration=2,
-                               dt=env._dt,
+                               dt=env.dt,
                                learn_goal=True)
         env.seed(seed + rank)
         return env

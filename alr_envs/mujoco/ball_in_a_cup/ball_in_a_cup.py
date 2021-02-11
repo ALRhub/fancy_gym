@@ -1,12 +1,12 @@
-from gym.envs.mujoco import mujoco_env
 from gym import utils
 import os
 import numpy as np
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
+from alr_envs.mujoco import alr_mujoco_env
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
 import mujoco_py
 
 
-class ALRBallInACupEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def __init__(self, ):
         self._steps = 0
 
@@ -21,8 +21,12 @@ class ALRBallInACupEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self._q_pos = []
 
         utils.EzPickle.__init__(self)
-        mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", "ball-in-a-cup_base.xml"),
-                                      frame_skip=4)
+        alr_mujoco_env.AlrMujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", "ball-in-a-cup_base.xml"),
+                                      n_substeps=4)
+
+    def configure(self, context):
+        self.context = context
+        self.reward_function.reset(context)
 
     def reset_model(self):
         start_pos = self.init_qpos.copy()
@@ -30,23 +34,7 @@ class ALRBallInACupEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         start_vel = np.zeros_like(start_pos)
         self.set_state(start_pos, start_vel)
         self._steps = 0
-        self.reward_function.reset()
         self._q_pos = []
-
-    def do_simulation(self, ctrl, n_frames):
-        self.sim.data.ctrl[:] = ctrl
-        for _ in range(n_frames):
-            try:
-                self.sim.step()
-            except mujoco_py.builder.MujocoException as e:
-                # print("Error in simulation: " + str(e))
-                # error = True
-                # Copy the current torque as if it would have been applied until the end of the trajectory
-                # for i in range(k + 1, sim_time):
-                #     torques.append(trq)
-                return True
-
-        return False
 
     def step(self, a):
         # Apply gravity compensation
@@ -98,6 +86,7 @@ class ALRBallInACupEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
 if __name__ == "__main__":
     env = ALRBallInACupEnv()
+    env.configure(None)
     env.reset()
     for i in range(2000):
         # objective.load_result("/tmp/cma")
