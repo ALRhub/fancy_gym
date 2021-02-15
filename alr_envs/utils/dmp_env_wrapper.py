@@ -1,20 +1,9 @@
+from alr_envs.utils.policies import get_policy_class
 from mp_lib.phase import ExpDecayPhaseGenerator
 from mp_lib.basis import DMPBasisGenerator
 from mp_lib import dmps
 import numpy as np
 import gym
-
-
-def get_policy_class(policy_type):
-    if policy_type == "motor":
-        from alr_envs.utils.policies import PDController
-        return PDController
-    elif policy_type == "velocity":
-        from alr_envs.utils.policies import VelController
-        return VelController
-    elif policy_type == "position":
-        from alr_envs.utils.policies import PosController
-        return PosController
 
 
 class DmpEnvWrapper(gym.Wrapper):

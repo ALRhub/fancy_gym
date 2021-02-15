@@ -1,4 +1,4 @@
-from alr_envs.utils.dmp_env_wrapper import DmpEnvWrapper
+from alr_envs.utils.detpmp_env_wrapper import DetPMPEnvWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_simple import ALRBallInACupEnv as ALRBallInACupEnvSimple
 
@@ -20,18 +20,18 @@ def make_simple_env(rank, seed=0):
     def _init():
         env = ALRBallInACupEnvSimple()
 
-        env = DmpEnvWrapper(env,
-                            policy_type="motor",
-                            start_pos=env.start_pos[1::2],
-                            final_pos=env.start_pos[1::2],
-                            num_dof=3,
-                            num_basis=8,
-                            duration=3.5,
-                            alpha_phase=3,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            learn_goal=False,
-                            weights_scale=50)
+        env = DetPMPEnvWrapper(env,
+                               num_dof=3,
+                               num_basis=5,
+                               width=0.005,
+                               policy_type="motor",
+                               start_pos=env.start_pos[1::2],
+                               duration=3.5,
+                               post_traj_time=4.5,
+                               dt=env.dt,
+                               weights_scale=0.1,
+                               zero_centered=True
+                               )
 
         env.seed(seed + rank)
         return env

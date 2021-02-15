@@ -35,3 +35,12 @@ class PDController(BaseController):
             des_vel = self.env.extend_des_vel(des_vel)
         trq = self.p_gains * (des_pos - cur_pos) + self.d_gains * (des_vel - cur_vel)
         return trq
+
+
+def get_policy_class(policy_type):
+    if policy_type == "motor":
+        return PDController
+    elif policy_type == "velocity":
+        return VelController
+    elif policy_type == "position":
+        return PosController
