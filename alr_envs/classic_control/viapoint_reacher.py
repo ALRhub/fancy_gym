@@ -13,29 +13,24 @@ def intersect(A, B, C, D):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
 
 
-class HoleReacher(gym.Env):
+class ViaPointReacher(gym.Env):
 
-    def __init__(self, num_links, hole_x, hole_width, hole_depth, allow_self_collision=False,
-                 allow_wall_collision=False, collision_penalty=1000):
-        self.hole_x = hole_x  # x-position of center of hole
-        self.hole_width = hole_width  # width of hole
-        self.hole_depth = hole_depth  # depth of hole
+    def __init__(self, num_links, allow_self_collision=False,
+                 collision_penalty=1000):
         self.num_links = num_links
         self.link_lengths = np.ones((num_links, 1))
-        self.bottom_center_of_hole = np.hstack([hole_x, -hole_depth])
-        self.top_center_of_hole = np.hstack([hole_x, 0])
-        self.left_wall_edge = np.hstack([hole_x - self.hole_width/2, 0])
-        self.right_wall_edge = np.hstack([hole_x + self.hole_width / 2, 0])
         self.allow_self_collision = allow_self_collision
-        self.allow_wall_collision = allow_wall_collision
         self.collision_penalty = collision_penalty
+
+        self.via_point = np.ones(2)
+        self.goal_point = np.array((num_links, 0))
 
         self._joints = None
         self._joint_angles = None
         self._angle_velocity = None
         self.start_pos = np.hstack([[np.pi/2], np.zeros(self.num_links - 1)])
         self.start_vel = np.zeros(self.num_links)
-        self.weight_matrix_scale = 50  # for the holereacher, the dmp weights become quite large compared to the values of the goal attractor. this scaling is to ensure they are on similar scale for the optimizer
+        self.weight_matrix_scale = 1
 
         self.dt = 0.01
         self.time_limit = 2
@@ -52,21 +47,13 @@ class HoleReacher(gym.Env):
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
         self.fig = None
-        rect_1 = patches.Rectangle((-self.num_links, -1),
-                                   self.num_links + self.hole_x - self.hole_width / 2, 1,
-                                   fill=True, edgecolor='k', facecolor='k')
-        rect_2 = patches.Rectangle((self.hole_x + self.hole_width / 2, -1),
-                                   self.num_links - self.hole_x + self.hole_width / 2, 1,
-                                   fill=True, edgecolor='k', facecolor='k')
-        rect_3 = patches.Rectangle((self.hole_x - self.hole_width / 2, -1), self.hole_width,
-                                   1 - self.hole_depth,
-                                   fill=True, edgecolor='k', facecolor='k')
-
-        self.patches = [rect_1, rect_2, rect_3]
 
     @property
     def end_effector(self):
         return self._joints[self.num_links].T
+
+    def configure(self, context):
+        pass
 
     def reset(self):
         self._joint_angles = self.start_pos
@@ -94,16 +81,16 @@ class HoleReacher(gym.Env):
 
         dist_reward = 0
         if not self._is_collided:
-            if self._steps == 180:
-                dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-        else:
-            dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+            if self._steps == 100:
+                dist_reward = np.linalg.norm(self.end_effector - self.via_point)
+            if self._steps == 200:
+                dist_reward = np.linalg.norm(self.end_effector - self.goal_point)
 
         reward = - dist_reward ** 2
 
         reward -= 1e-6 * np.sum(acc**2)
 
-        if self._steps == 180:
+        if self._steps == 200:
             reward -= 0.1 * np.sum(vel**2) ** 2
 
         if self._is_collided:
@@ -129,17 +116,13 @@ class HoleReacher(gym.Env):
         self._joints[1:, 1] = self._joints[0, 1] + line_points_in_taskspace[:, -1, 1]
 
         self_collision = False
-        wall_collision = False
 
         if not self.allow_self_collision:
             self_collision = self.check_self_collision(line_points_in_taskspace)
             if np.any(np.abs(self._joint_angles) > np.pi) and not self.allow_self_collision:
                 self_collision = True
 
-        if not self.allow_wall_collision:
-            wall_collision = self.check_wall_collision(line_points_in_taskspace)
-
-        self._is_collided = self_collision or wall_collision
+        self._is_collided = self_collision
 
     def _get_obs(self):
         theta = self._joint_angles
@@ -147,7 +130,8 @@ class HoleReacher(gym.Env):
             np.cos(theta),
             np.sin(theta),
             self._angle_velocity,
-            self.end_effector - self.bottom_center_of_hole,
+            self.end_effector - self.via_point,
+            self.end_effector - self.goal_point,
             self._steps
         ])
 
@@ -237,17 +221,14 @@ class HoleReacher(gym.Env):
 
         if mode == "human":
             plt.cla()
-            plt.title(f"Iteration: {self._steps}, distance: {self.end_effector - self.bottom_center_of_hole}")
+            plt.title(f"Iteration: {self._steps}")
 
             # Arm
             plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
 
-            # Add the patch to the Axes
-            [plt.gca().add_patch(rect) for rect in self.patches]
-
             lim = np.sum(self.link_lengths) + 0.5
             plt.xlim([-lim, lim])
-            plt.ylim([-1.1, lim])
+            plt.ylim([-lim, lim])
             # plt.draw()
             plt.pause(1e-4) #  pushes window to foreground, which is annoying.
             # self.fig.canvas.flush_events()
@@ -293,14 +274,14 @@ class HoleReacher(gym.Env):
 if __name__ == '__main__':
     nl = 5
     render_mode = "human"  # "human" or "partial" or "final"
-    env = HoleReacher(num_links=nl, allow_self_collision=False, allow_wall_collision=False, hole_width=0.15, hole_depth=1, hole_x=1)
+    env = ViaPointReacher(num_links=nl, allow_self_collision=False)
     env.reset()
-    # env.render(mode=render_mode)
+    env.render(mode=render_mode)
 
-    for i in range(200):
+    for i in range(300):
         # objective.load_result("/tmp/cma")
         # test with random actions
-        ac = 2 * env.action_space.sample()
+        ac = env.action_space.sample()
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)
         env.render(mode=render_mode)

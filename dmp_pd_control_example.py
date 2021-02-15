@@ -1,55 +1,32 @@
-from alr_envs.utils.dmp_env_wrapper import DmpEnvWrapper
-from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv, _worker
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_simple import ALRBallInACupEnv
+from alr_envs.mujoco.ball_in_a_cup.utils import make_simple_env
+from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv
 import numpy as np
 
 
 if __name__ == "__main__":
 
-    def make_env(rank, seed=0):
-        """
-        Utility function for multiprocessed env.
-
-        :param env_id: (str) the environment ID
-        :param num_env: (int) the number of environments you wish to have in subprocesses
-        :param seed: (int) the inital seed for RNG
-        :param rank: (int) index of the subprocess
-        """
-        def _init():
-            _env = ALRBallInACupEnv()
-
-            _env = DmpEnvWrapper(_env,
-                                 num_dof=3,
-                                 num_basis=8,
-                                 duration=3.5,
-                                 alpha_phase=3,
-                                 dt=_env.dt,
-                                 learn_goal=False,
-                                 start_pos=_env.start_pos[1::2],
-                                 final_pos=_env.start_pos[1::2],
-                                 policy_type="motor"
-                                 )
-            _env.seed(seed + rank)
-            return _env
-        return _init
-
     dim = 24
+    n_cpus = 4
 
     n_samples = 10
 
-    vec_env = DmpAsyncVectorEnv([make_env(i) for i in range(4)],
-                                n_samples=n_samples,
-                                context="spawn",
-                                shared_memory=False,
-                                worker=_worker)
+    vec_env = DmpAsyncVectorEnv([make_simple_env(i) for i in range(n_cpus)],
+                                n_samples=n_samples)
 
-    params = 10 * np.random.randn(n_samples, dim)
+    # params = 10 * np.random.randn(n_samples, dim)
+    params = np.array([[ -4.51280364,  24.43701373,  15.73282129, -12.13020392,
+         -8.57305795,   2.79806606,  -6.38613201,   5.99309385,
+         -2.05631886,  24.71684748,  14.05989949, -14.60456967,
+         10.51933419,  -2.43715355,  -6.0767578 ,  13.06498129,
+          6.18038374,  11.4153859 ,   1.40753639,   5.57082387,
+          9.81989309,   3.60558787,  -9.66996754,  14.28519904]])
 
     out = vec_env(params)
-
-    non_vec_env = make_env(0, 0)()
-
-    params = 10 * np.random.randn(dim)
+    print(out)
+    #
+    non_vec_env = make_simple_env(0, 0)()
+    #
+    # params = 10 * np.random.randn(dim)
 
     out2 = non_vec_env.rollout(params, render=True)
 
