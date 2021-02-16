@@ -41,54 +41,63 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             reward_function = BallInACupReward
         self.reward_function = reward_function(self.sim_steps)
 
+    @property
+    def current_pos(self):
+        return self.sim.data.qpos[0:7].copy()
+
+    @property
+    def current_vel(self):
+        return self.sim.data.qvel[0:7].copy()
+
     def configure(self, context):
         self.context = context
         self.reward_function.reset(context)
 
     def reset_model(self):
-        start_pos = self.init_qpos.copy()
-        start_pos[0:7] = self.start_pos
-        start_vel = np.zeros_like(start_pos)
-        self.set_state(start_pos, start_vel)
+        init_pos_all = self.init_qpos.copy()
+        init_pos_robot = self.start_pos
+        init_vel = np.zeros_like(init_pos_all)
+
         self._steps = 0
         self._q_pos = []
+        self._q_vel = []
+
+        start_pos = init_pos_all
+        start_pos[0:7] = init_pos_robot
+
+        self.set_state(start_pos, init_vel)
+
+        return self._get_obs()
 
     def step(self, a):
-        # Apply gravity compensation
-        if not np.all(self.sim.data.qfrc_applied[:7] == self.sim.data.qfrc_bias[:7]):
-            self.sim.data.qfrc_applied[:7] = self.sim.data.qfrc_bias[:7]
-
         reward_dist = 0.0
         angular_vel = 0.0
-        # if self._steps >= self.steps_before_reward:
-        #     vec = self.get_body_com("fingertip") - self.get_body_com("target")
-        #     reward_dist -= self.reward_weight * np.linalg.norm(vec)
-        #     angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
         reward_ctrl = - np.square(a).sum()
-        # reward_balance = - self.balance_weight * np.abs(
-        #     angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
-        #
-        # reward = reward_dist + reward_ctrl + angular_vel + reward_balance
-        # self.do_simulation(a, self.frame_skip)
 
-        crash = self.do_simulation(a, self.frame_skip)
+        crash = self.do_simulation(a)
+        joint_cons_viol = self.check_traj_in_joint_limits()
 
         self._q_pos.append(self.sim.data.qpos[0:7].ravel().copy())
+        self._q_vel.append(self.sim.data.qvel[0:7].ravel().copy())
 
         ob = self._get_obs()
 
-        if not crash:
-            reward, success, collision = self.reward_function.compute_reward(a, self.sim, self._steps)
-            done = success or self._steps == self.sim_steps - 1 or collision
+        if not crash and not joint_cons_viol:
+            reward, success, stop_sim = self.reward_function.compute_reward(a, self.sim, self._steps)
+            done = success or self._steps == self.sim_steps - 1 or stop_sim
             self._steps += 1
         else:
             reward = -1000
+            success = False
             done = True
-        return ob, reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl,
-                                      velocity=angular_vel, # reward_balance=reward_balance,
-                                      # end_effector=self.get_body_com("fingertip").copy(),
-                                      goal=self.goal if hasattr(self, "goal") else None,
-                                      traj=self._q_pos)
+        return ob, reward, done, dict(reward_dist=reward_dist,
+                                      reward_ctrl=reward_ctrl,
+                                      velocity=angular_vel,
+                                      traj=self._q_pos, is_success=success,
+                                      is_collided=crash or joint_cons_viol)
+
+    def check_traj_in_joint_limits(self):
+        return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
@@ -103,13 +112,15 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
 if __name__ == "__main__":
     env = ALRBallInACupEnv()
-    env.configure(None)
+    ctxt = np.array([-0.20869846, -0.66376693, 1.18088501])
+
+    env.configure(ctxt)
     env.reset()
+    env.render()
     for i in range(2000):
-        # objective.load_result("/tmp/cma")
         # test with random actions
-        # ac = 0.0 * env.action_space.sample()
-        ac = env.start_pos
+        ac = 0.01 * env.action_space.sample()[0:7]
+        # ac = env.start_pos
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)
         env.render()

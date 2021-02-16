@@ -16,13 +16,15 @@ class DetPMPEnvWrapper(gym.Wrapper):
                  post_traj_time=0.,
                  policy_type=None,
                  weights_scale=1,
-                 zero_centered=False):
+                 zero_start=False,
+                 zero_goal=False,
+                 ):
         super(DetPMPEnvWrapper, self).__init__(env)
         self.num_dof = num_dof
         self.num_basis = num_basis
         self.dim = num_dof * num_basis
         self.pmp = det_promp.DeterministicProMP(n_basis=num_basis, n_dof=num_dof, width=width, off=0.01,
-                                                zero_centered=zero_centered)
+                                                zero_start=zero_start, zero_goal=zero_goal)
         weights = np.zeros(shape=(num_basis, num_dof))
         self.pmp.set_weights(duration, weights)
         self.weights_scale = weights_scale
@@ -32,7 +34,7 @@ class DetPMPEnvWrapper(gym.Wrapper):
         self.post_traj_steps = int(post_traj_time / dt)
 
         self.start_pos = start_pos
-        self.zero_centered = zero_centered
+        self.zero_centered = zero_start
 
         policy_class = get_policy_class(policy_type)
         self.policy = policy_class(env)

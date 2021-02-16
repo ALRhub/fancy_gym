@@ -88,12 +88,12 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             self._steps += 1
         else:
             reward = -1000
+            success = False
             done = True
-        return ob, reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl,
-                                      velocity=angular_vel, # reward_balance=reward_balance,
-                                      # end_effector=self.get_body_com("fingertip").copy(),
-                                      goal=self.goal if hasattr(self, "goal") else None,
-                                      traj=self._q_pos,
+        return ob, reward, done, dict(reward_dist=reward_dist,
+                                      reward_ctrl=reward_ctrl,
+                                      velocity=angular_vel,
+                                      traj=self._q_pos, is_success=success,
                                       is_collided=crash or joint_cons_viol)
 
     def check_traj_in_joint_limits(self):
