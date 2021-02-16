@@ -61,7 +61,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         success = False
 
         if self.check_collision(sim):
-            reward = - 1e-5 * action_cost - 1000
+            reward = - 1e-4 * action_cost - 1000
             stop_sim = True
             return reward, success, stop_sim
 
@@ -70,12 +70,13 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             dist_final = self.dists_final[-1]
             dist_ctxt = self.dists_ctxt[-1]
 
-            cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
-            reward = np.exp(-1 * cost) - 1e-5 * action_cost
+            # cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
+            cost = 2 * (0.33 * min_dist + 0.33 * dist_final + 0.33 * dist_ctxt)
+            reward = np.exp(-1 * cost) - 1e-4 * action_cost
             stop_sim = True
             success = dist_final < 0.05 and ball_in_cup
         else:
-            reward = - 1e-5 * action_cost
+            reward = - 1e-4 * action_cost
             success = False
 
         return reward, success, stop_sim
