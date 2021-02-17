@@ -73,7 +73,6 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             # cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
             cost = 2 * (0.5 * min_dist + 0.5 * dist_final + 0.1 * dist_ctxt)
             reward = np.exp(-1 * cost) - 1e-4 * action_cost
-            stop_sim = True
             success = dist_final < 0.05 and dist_ctxt < 0.05
         else:
             reward = - 1e-4 * action_cost

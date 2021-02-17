@@ -28,14 +28,13 @@ def make_env(rank, seed=0):
                                dt=env.dt,
                                weights_scale=0.1,
                                zero_start=True,
-                               zero_goal=False
+                               zero_goal=True
                                )
 
         env.seed(seed + rank)
         return env
 
     return _init
-
 
 
 def make_simple_env(rank, seed=0):
