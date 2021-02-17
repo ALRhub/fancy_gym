@@ -62,7 +62,8 @@ def make_holereacher_env(rank, seed=0):
                              learn_goal=True,
                              alpha_phase=2,
                              start_pos=_env.start_pos,
-                             policy_type="velocity"
+                             policy_type="velocity",
+                             weights_scale=100,
                              )
         _env.seed(seed + rank)
         return _env

@@ -35,7 +35,6 @@ class HoleReacher(gym.Env):
         self._angle_velocity = None
         self.start_pos = np.hstack([[np.pi/2], np.zeros(self.num_links - 1)])
         self.start_vel = np.zeros(self.num_links)
-        self.weight_matrix_scale = 50  # for the holereacher, the dmp weights become quite large compared to the values of the goal attractor. this scaling is to ensure they are on similar scale for the optimizer
 
         self.dt = 0.01
         self.time_limit = 2
@@ -67,6 +66,9 @@ class HoleReacher(gym.Env):
     @property
     def end_effector(self):
         return self._joints[self.num_links].T
+
+    def configure(self, context):
+        pass
 
     def reset(self):
         self._joint_angles = self.start_pos

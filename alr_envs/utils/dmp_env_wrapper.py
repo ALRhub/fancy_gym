@@ -86,8 +86,6 @@ class DmpEnvWrapper(gym.Wrapper):
     def rollout(self, params, context=None, render=False):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
         goal_pos, weight_matrix = self.goal_and_weights(params)
-        if hasattr(self.env, "weight_matrix_scale"):
-            weight_matrix = weight_matrix * self.env.weight_matrix_scale
         self.dmp.set_weights(weight_matrix, goal_pos)
         trajectory, velocity = self.dmp.reference_trajectory(self.t)
 
