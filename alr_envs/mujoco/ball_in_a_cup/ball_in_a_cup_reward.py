@@ -36,44 +36,52 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final = []
         self.costs = []
         self.context = context
+        self.ball_in_cup = False
+        self.dist_ctxt = 5
 
     def compute_reward(self, action, sim, step):
+        action_cost = np.sum(np.square(action))
+
+        stop_sim = False
+        success = False
+
         self.ball_id = sim.model._body_name2id["ball"]
         self.ball_collision_id = sim.model._geom_name2id["ball_geom"]
         self.goal_id = sim.model._site_name2id["cup_goal"]
         self.goal_final_id = sim.model._site_name2id["cup_goal_final"]
         self.collision_ids = [sim.model._geom_name2id[name] for name in self.collision_objects]
 
-        ball_in_cup = self.check_ball_in_cup(sim, self.ball_collision_id)
+        if self.check_collision(sim):
+            reward = - 1e-4 * action_cost - 1000
+            stop_sim = True
+            return reward, success, stop_sim
 
         # Compute the current distance from the ball to the inner part of the cup
         goal_pos = sim.data.site_xpos[self.goal_id]
         ball_pos = sim.data.body_xpos[self.ball_id]
         goal_final_pos = sim.data.site_xpos[self.goal_final_id]
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
-        self.dists_ctxt.append(np.linalg.norm(ball_pos - self.context))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
+        self.dists_ctxt.append(np.linalg.norm(ball_pos - self.context))
         self.ball_traj[step, :] = ball_pos
 
-        action_cost = np.sum(np.square(action))
+        # Determine the first time when ball is in cup
+        if not self.ball_in_cup:
+            ball_in_cup = self.check_ball_in_cup(sim, self.ball_collision_id)
+            self.ball_in_cup = ball_in_cup
+            if ball_in_cup:
+                dist_to_ctxt = np.linalg.norm(ball_pos - self.context)
+                self.dist_ctxt = dist_to_ctxt
 
-        stop_sim = False
-        success = False
-
-        if self.check_collision(sim):
-            reward = - 1e-4 * action_cost - 1000
-            stop_sim = True
-            return reward, success, stop_sim
-
-        if ball_in_cup or step == self.sim_time - 1:
+        if step == self.sim_time - 1:
             min_dist = np.min(self.dists)
             dist_final = self.dists_final[-1]
-            dist_ctxt = self.dists_ctxt[-1]
+            # dist_ctxt = self.dists_ctxt[-1]
 
             # cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
-            cost = 2 * (0.5 * min_dist + 0.5 * dist_final + 0.1 * dist_ctxt)
+            cost = 2 * (0.5 * min_dist + 0.5 * dist_final + 0.1 * self.dist_ctxt)
             reward = np.exp(-1 * cost) - 1e-4 * action_cost
-            success = dist_final < 0.05 and dist_ctxt < 0.05
+            success = dist_final < 0.05 and self.dist_ctxt < 0.05
         else:
             reward = - 1e-4 * action_cost
             success = False
