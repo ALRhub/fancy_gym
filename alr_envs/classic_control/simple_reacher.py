@@ -9,8 +9,8 @@ from gym.utils import seeding
 from alr_envs.utils.utils import angle_normalize
 
 
-if os.environ.get("DISPLAY", None):
-    mpl.use('Qt5Agg')
+# if os.environ.get("DISPLAY", None):
+#     mpl.use('Qt5Agg')
 
 
 class SimpleReacherEnv(gym.Env):
