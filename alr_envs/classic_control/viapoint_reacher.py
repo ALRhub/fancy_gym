@@ -83,7 +83,7 @@ class ViaPointReacher(gym.Env):
         if not self._is_collided:
             if self._steps == 100:
                 dist_reward = np.linalg.norm(self.end_effector - self.via_point)
-            if self._steps == 200:
+            if self._steps == 199:
                 dist_reward = np.linalg.norm(self.end_effector - self.goal_point)
 
         reward = - dist_reward ** 2

@@ -23,11 +23,12 @@ def make_viapointreacher_env(rank, seed=0):
                              num_dof=5,
                              num_basis=5,
                              duration=2,
-                             alpha_phase=2,
+                             alpha_phase=2.5,
                              dt=_env.dt,
                              start_pos=_env.start_pos,
                              learn_goal=False,
-                             policy_type="velocity")
+                             policy_type="velocity",
+                             weights_scale=50)
         _env.seed(seed + rank)
         return _env
 
