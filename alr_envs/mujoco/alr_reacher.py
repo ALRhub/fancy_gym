@@ -29,7 +29,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         else:
             raise ValueError(f"Invalid number of links {n_links}, only 5 or 7 allowed.")
 
-        utils.EzPickle.__init__(**locals())
+        utils.EzPickle.__init__(steps_before_reward=steps_before_reward, n_links=n_links, balance=balance)
         mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
 
     def step(self, a):
