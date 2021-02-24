@@ -4,14 +4,14 @@ import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
 
 
-class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
+class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
-                                     "biac_base" + ".xml")
+                                     "beerpong" + ".xml")
 
-        self.start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
+        self.start_pos = np.array([0.0, 1.35, 0.0, 1.18, 0.0, -0.786, -1.59])
         self.start_vel = np.zeros(7)
 
         self._q_pos = []
@@ -35,9 +35,10 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.sim_time = 8  # seconds
         self.sim_steps = int(self.sim_time / self.dt)
         if reward_function is None:
-            from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
-            reward_function = BallInACupReward
-        self.reward_function = reward_function(self.sim_steps)
+            from alr_envs.mujoco.beerpong.beerpong_reward import BeerpongReward
+            reward_function = BeerpongReward
+        self.reward_function = reward_function(self.sim, self.sim_steps)
+        self.cup_robot_id = self.sim.model._site_name2id["cup_robot_final"]
 
     @property
     def current_pos(self):
@@ -62,8 +63,18 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
         start_pos = init_pos_all
         start_pos[0:7] = init_pos_robot
+        # start_pos[7:] = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
 
         self.set_state(start_pos, init_vel)
+
+        start_pos = init_pos_all
+        start_pos[0:7] = init_pos_robot
+        start_pos[7:] = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
+
+        self.set_state(start_pos, init_vel)
+
+        # ball_pos = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
+        # self.sim.model.body_pos[self.ball_id] = ball_pos.copy()
 
         return self._get_obs()
 
@@ -109,19 +120,19 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = ALRBallInACupEnv()
+    env = ALRBeerpongEnv()
     ctxt = np.array([-0.20869846, -0.66376693, 1.18088501])
 
     env.configure(ctxt)
     env.reset()
-    # env.render()
+    env.render()
     for i in range(16000):
         # test with random actions
-        ac = 0.001 * env.action_space.sample()[0:7]
+        ac = 0.01 * env.action_space.sample()[0:7]
         # ac = env.start_pos
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)
-        # env.render()
+        env.render()
 
         print(rew)
 

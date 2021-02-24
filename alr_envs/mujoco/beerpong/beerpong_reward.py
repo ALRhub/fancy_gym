@@ -2,8 +2,10 @@ import numpy as np
 from alr_envs.mujoco import alr_reward_fct
 
 
-class BallInACupReward(alr_reward_fct.AlrReward):
-    def __init__(self, sim_time):
+class BeerpongReward(alr_reward_fct.AlrReward):
+    def __init__(self, sim, sim_time):
+
+        self.sim = sim
         self.sim_time = sim_time
 
         self.collision_objects = ["cup_geom1", "cup_geom2", "wrist_palm_link_convex_geom",
@@ -31,27 +33,27 @@ class BallInACupReward(alr_reward_fct.AlrReward):
 
     def reset(self, context):
         self.ball_traj = np.zeros(shape=(self.sim_time, 3))
-        self.cup_traj = np.zeros(shape=(self.sim_time, 3))
         self.dists = []
         self.dists_ctxt = []
         self.dists_final = []
         self.costs = []
         self.context = context
         self.ball_in_cup = False
-        self.ball_above_threshold = False
-        self.dist_ctxt = 3
+        self.dist_ctxt = 5
+
+        self.ball_id = self.sim.model._body_name2id["ball"]
+        self.ball_collision_id = self.sim.model._geom_name2id["ball_geom"]
+        self.cup_robot_id = self.sim.model._site_name2id["cup_robot_final"]
+        self.goal_id = self.sim.model._site_name2id["cup_goal_table"]
+        self.goal_final_id = self.sim.model._site_name2id["cup_goal_final_table"]
+        self.collision_ids = [self.sim.model._geom_name2id[name] for name in self.collision_objects]
+        self.cup_table_id = self.sim.model._body_name2id["cup_table"]
 
     def compute_reward(self, action, sim, step):
         action_cost = np.sum(np.square(action))
 
         stop_sim = False
         success = False
-
-        self.ball_id = sim.model._body_name2id["ball"]
-        self.ball_collision_id = sim.model._geom_name2id["ball_geom"]
-        self.goal_id = sim.model._site_name2id["cup_goal"]
-        self.goal_final_id = sim.model._site_name2id["cup_goal_final"]
-        self.collision_ids = [sim.model._geom_name2id[name] for name in self.collision_objects]
 
         if self.check_collision(sim):
             reward = - 1e-4 * action_cost - 1000
@@ -66,7 +68,6 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.dists_ctxt.append(np.linalg.norm(ball_pos - self.context))
         self.ball_traj[step, :] = ball_pos
-        self.cup_traj[step, :] = goal_pos
 
         # Determine the first time when ball is in cup
         if not self.ball_in_cup:
@@ -81,18 +82,9 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             dist_final = self.dists_final[-1]
             # dist_ctxt = self.dists_ctxt[-1]
 
-             # max distance between ball and cup and cup height at that time
-            ball_to_cup_diff = self.ball_traj[:, 2] - self.cup_traj[:, 2]
-            t_max_diff = np.argmax(ball_to_cup_diff)
-            t_max_ball_height = np.argmax(self.ball_traj[:, 2])
-            max_ball_height = np.max(self.ball_traj[:, 2])
-
             # cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
-            cost = 0.3 * min_dist + 0.3 * dist_final + 0.3 * np.minimum(self.dist_ctxt, 3)
+            cost = 2 * (0.5 * min_dist + 0.5 * dist_final + 0.1 * self.dist_ctxt)
             reward = np.exp(-1 * cost) - 1e-4 * action_cost
-            if max_ball_height < self.context[2] or ball_to_cup_diff[t_max_ball_height] < 0:
-                reward -= 1
-
             success = dist_final < 0.05 and self.dist_ctxt < 0.05
         else:
             reward = - 1e-4 * action_cost
