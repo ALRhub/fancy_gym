@@ -34,7 +34,7 @@ class DetPMPEnvWrapper(gym.Wrapper):
         self.post_traj_steps = int(post_traj_time / dt)
 
         self.start_pos = start_pos
-        self.zero_centered = zero_start
+        self.zero_start = zero_start
 
         policy_class = get_policy_class(policy_type)
         self.policy = policy_class(env)
@@ -55,7 +55,7 @@ class DetPMPEnvWrapper(gym.Wrapper):
         params = np.reshape(params, newshape=(self.num_basis, self.num_dof)) * self.weights_scale
         self.pmp.set_weights(self.duration, params)
         t, des_pos, des_vel, des_acc = self.pmp.compute_trajectory(1 / self.dt, 1.)
-        if self.zero_centered:
+        if self.zero_start:
             des_pos += self.start_pos[None, :]
 
         if self.post_traj_steps > 0:
