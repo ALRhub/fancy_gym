@@ -1,4 +1,5 @@
 from alr_envs.classic_control.utils import make_viapointreacher_env
+from alr_envs.classic_control.utils import make_holereacher_env, make_holereacher_fix_goal_env
 from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv
 import numpy as np
 
@@ -7,21 +8,20 @@ if __name__ == "__main__":
 
     n_samples = 1
     n_cpus = 4
-    dim = 25
+    dim = 30
 
     # env = DmpAsyncVectorEnv([make_viapointreacher_env(i) for i in range(n_cpus)],
     #                         n_samples=n_samples)
 
-    test_env = make_viapointreacher_env(0)()
+    test_env = make_holereacher_env(0)()
 
     # params = np.random.randn(n_samples, dim)
-    params = np.array([ 217.54494933,   -1.85169983,   24.08414447,   42.23816868,
-         23.32071702,    7.60780651,  -31.74777741,  265.50634253,
-        463.43822562,  245.93948374, -272.64003621,  -45.24999553,
-        503.21185823,  809.17742517,  393.12387021, -196.54196471,
-          6.79327307,  374.82429078,  552.4119579 ,  197.3963343 ,
-        243.87357056,  -39.56041541, -616.93957463, -710.0772516 ,
-       -414.21769789])
+    params = np.array([[ 1.386102  , -3.29980525,  4.70402733,  1.3966668 ,  0.73774902,
+         3.14676681, -4.98644416,  6.20303193,  1.30502127, -0.09330522,
+         7.62656797, -5.76893033,  3.4706711 , -0.6944142 , -3.33442788,
+        12.31421548, -0.72760271, -6.9090723 ,  7.02903814, -8.7236836 ,
+         1.4805914 ,  0.53185824, -5.46626893,  0.69692163, 13.58472666,
+         0.77199316,  2.02906724, -3.0203244 , -1.00533159, -0.57417351]])
 
     # params = np.hstack([50 * np.random.randn(n_samples, 25), np.tile(np.array([np.pi/2, -np.pi/4, -np.pi/4, -np.pi/4, -np.pi/4]), [n_samples, 1])])
 

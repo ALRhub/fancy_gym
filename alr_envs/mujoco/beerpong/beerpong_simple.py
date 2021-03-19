@@ -35,12 +35,13 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.sim_time = 8  # seconds
         self.sim_steps = int(self.sim_time / self.dt)
         if reward_function is None:
-            from alr_envs.mujoco.beerpong.beerpong_reward import BeerpongReward
+            from alr_envs.mujoco.beerpong.beerpong_reward_simple import BeerpongReward
             reward_function = BeerpongReward
         self.reward_function = reward_function(self.sim, self.sim_steps)
         self.cup_robot_id = self.sim.model._site_name2id["cup_robot_final"]
         self.ball_id = self.sim.model._body_name2id["ball"]
         self.cup_table_id = self.sim.model._body_name2id["cup_table"]
+        # self.bounce_table_id = self.sim.model._body_name2id["bounce_table"]
 
     @property
     def current_pos(self):
@@ -51,6 +52,8 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         return self.sim.data.qvel[0:7].copy()
 
     def configure(self, context):
+        if context is None:
+            context = np.array([0, -2, 0.840])
         self.context = context
         self.reward_function.reset(context)
 
@@ -72,6 +75,9 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         ball_pos = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
         self.sim.model.body_pos[self.ball_id] = ball_pos.copy()
         self.sim.model.body_pos[self.cup_table_id] = self.context.copy()
+        # self.sim.model.body_pos[self.bounce_table_id] = self.context.copy()
+
+        self.sim.forward()
 
         return self._get_obs()
 
@@ -79,6 +85,7 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         reward_dist = 0.0
         angular_vel = 0.0
         reward_ctrl = - np.square(a).sum()
+        action_cost = np.sum(np.square(a))
 
         crash = self.do_simulation(a)
         joint_cons_viol = self.check_traj_in_joint_limits()
@@ -93,7 +100,7 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             done = success or self._steps == self.sim_steps - 1 or stop_sim
             self._steps += 1
         else:
-            reward = -1000
+            reward = -10 - 1e-2 * action_cost
             success = False
             done = True
         return ob, reward, done, dict(reward_dist=reward_dist,
@@ -104,6 +111,20 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
+
+    def extend_des_pos(self, des_pos):
+        des_pos_full = self.start_pos.copy()
+        des_pos_full[1] = des_pos[0]
+        des_pos_full[3] = des_pos[1]
+        des_pos_full[5] = des_pos[2]
+        return des_pos_full
+
+    def extend_des_vel(self, des_vel):
+        des_vel_full = self.start_vel.copy()
+        des_vel_full[1] = des_vel[0]
+        des_vel_full[3] = des_vel[1]
+        des_vel_full[5] = des_vel[2]
+        return des_vel_full
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
@@ -126,9 +147,9 @@ if __name__ == "__main__":
     for i in range(16000):
         # test with random actions
         ac = 0.0 * env.action_space.sample()[0:7]
-        ac[1] = -0.8
-        ac[3] = - 0.3
-        ac[5] = -0.2
+        ac[1] = -0.01
+        ac[3] = - 0.01
+        ac[5] = -0.01
         # ac = env.start_pos
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)

@@ -1,6 +1,6 @@
 <mujoco model="wam(v1.31)">
     <compiler angle="radian" meshdir="../../meshes/wam/" />
-    <option timestep="0.005" integrator="Euler" />
+    <option timestep="0.0005" integrator="Euler" />
     <size njmax="500" nconmax="100" />
     <default class="main">
         <joint limited="true" frictionloss="0.001" damping="0.07"/>
@@ -135,12 +135,8 @@
                                             <geom priority="1" name="cup_geom8" pos="0 0.015 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup8" />
                                             <geom priority="1" name="cup_geom9" pos="0 0.015 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup9" />
                                             <geom priority="1" name="cup_geom10" pos="0 0.015 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup10" />
-                                            <geom name="cup_base" pos="0 -0.035 0.1165" euler="-1.57 0 0" type="cylinder" size="0.038 0.0375" solref="-10000 -100"/>
-                                            <geom name="cup_base_contact" pos="0 0.00215 0.1165" euler="-1.57 0 0" type="cylinder" size="0.03 0.0005" solref="-10000 -100" rgba="0 0 255 1"/>
-<!--                                            <geom name="cup_geom11" pos="0 0.05 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup11" />-->
-<!--                                            <geom name="cup_geom12" pos="0 0.05 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup12" />-->
-<!--                                            <geom name="cup_geom13" pos="0 0.05 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup13" />-->
-<!--                                            <geom name="cup_geom14" pos="0 0.05 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup14" />-->
+                                            <geom name="cup_base" pos="0 -0.05 0.1165" euler="-1.57 0 0" type="cylinder" size="0.038 0.025" solref="-10000 -100"/>
+                                            <geom name="cup_base_contact" pos="0 -0.005 0.1165" euler="-1.57 0 0" type="cylinder" size="0.03 0.0005" solref="-10000 -100" rgba="0 0 255 1"/>
 
                                             <geom priority="1" name="cup_geom15" pos="0 0.015 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup15" />
                                             <geom priority="1" name="cup_geom16" pos="0 0.015 0.055" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup16" />
@@ -157,37 +153,44 @@
                 </body>
             </body>
         </body>
-<!--        <geom name="table" type="box" size="0.4 0.6 0.3" pos="0 -1.75 0.3025" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"-->
-        <geom name="table" type="box" size="0.4 0.6 0.4" pos="0 -1.85 0.4025" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+        <body name="table_body" pos="0 -1.85 0.4025">
+            <geom name="table" type="box" size="0.4 0.6 0.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
+            <geom name="table_contact_geom" type="box" size="0.4 0.6 0.01" pos="0 0 0.41" rgba="1.4 0.8 0.45 1" solimp="0.999 0.999 0.001"
+                  solref="-10000 -100"/>
+        </body>
         <geom name="table_robot" type="box" size="0.1 0.1 0.3" pos="0 0.00 0.3025" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
         <geom name="wall" type="box" quat="1 0 0 0" size="0.4 0.04 1.1" pos="0. -2.45 1.1" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
-        <!--initial-->
-<!--        <body name="cup_table" pos="0 -2 0.840" quat="0.7071068 0.7071068 0 0">-->
-        <!--first diff-->
-<!--        <body name="cup_table" pos="0.1 -1.5 0.840" quat="0.7071068 0.7071068 0 0">-->
-<!--        second diff-->
-<!--        <body name="cup_table" pos="-0.3 -2.1 0.840" quat="0.7071068 0.7071068 0 0">-->
-        <body name="cup_table" pos="0.32 -1.2 0.84" quat="0.7071068 0.7071068 0 0">
-            <inertial pos="-3.75236e-10 8.27811e-05 0.0947015" quat="0.999945 -0.0104888 0 0" mass="0.132" diaginertia="0.000285643 0.000270485 9.65696e-05" />
-            <geom priority= "1" name="cup_geom_table3" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup3_table" />
-            <geom priority= "1" name="cup_geom_table4" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup4_table" />
-            <geom priority= "1" name="cup_geom_table5" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup5_table" />
-            <geom priority= "1" name="cup_geom_table6" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup6_table" />
-            <geom priority= "1" name="cup_geom_table7" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup7_table" />
-            <geom priority= "1" name="cup_geom_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup8_table" />
-            <geom priority= "1" name="cup_geom_table9" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup9_table" />
-            <geom priority= "1" name="cup_geom_table10" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup10_table" />
-            <geom priority= "1" name="cup_base_table" pos="0 -0.035 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.08 0.045" solref="-10000 -100"/>
-            <geom priority= "1" name="cup_base_table_contact" pos="0 0.015 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.06 0.0005" solref="-10000 -100" rgba="0 0 255 1"/>
-            <geom priority= "1" name="cup_geom_table15" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup15_table" />
-            <geom priority= "1" name="cup_geom_table16" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup16_table" />
-            <geom priority= "1" name="cup_geom_table17" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup17_table" />
-            <geom priority= "1" name="cup_geom1_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup18_table" />
+<!--        <geom name="side_wall_left" type="box" quat="1 0 0 0" size="0.04 0.4 0.5" pos="0.45 -2.05 1.1" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"-->
+<!--                  solref="-10000 -100"/>-->
+<!--        <geom name="side_wall_right" type="box" quat="1 0 0 0" size="0.04 0.4 0.5" pos="-0.45 -2.05 1.1" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"-->
+<!--                  solref="-10000 -100"/>-->
+
+<!--        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">-->
+<!--            <geom priority= "1" type="box" size ="0.1 0.1 0.1" name="cup_base_table" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -10" mass="10"/>-->
+<!--        </body>-->
+
+        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">
+            <inertial pos="-3.75236e-10 8.27811e-05 0.0947015" quat="0.999945 -0.0104888 0 0" mass="10.132" diaginertia="0.000285643 0.000270485 9.65696e-05" />
+            <geom priority= "1" name="cup_geom_table3" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup3_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table4" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup4_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table5" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup5_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table6" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup6_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table7" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup7_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup8_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table9" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup9_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table10" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -010" type="mesh" mesh="cup10_table" mass="10"/>
+            <geom priority= "1" name="cup_base_table" pos="0 -0.035 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.08 0.045" solref="-10000 -100" mass="10"/>
+            <geom priority= "1" name="cup_base_table_contact" pos="0 0.015 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.06 0.0005" solref="-10000 -100" rgba="0 0 255 1" mass="10"/>
+            <geom priority= "1" name="cup_geom_table15" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup15_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table16" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup16_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table17" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup17_table" mass="10"/>
+            <geom priority= "1" name="cup_geom1_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup18_table" mass="10"/>
             <site name="cup_goal_table" pos="0 0.11 0.1337249" rgba="255 0 0 1"/>
             <site name="cup_goal_final_table" pos="0.0 0.025 0.1337249" rgba="0 255 0 1"/>
+            <site name="bounce_table" pos="0.0 -0.015 -0.2 " rgba="255 255 0 1"/>
 
 <!--            <site name="cup_goal_final_table" pos="0.0 -0.025 0.1337249" rgba="0 255 0 1"/>-->
         </body>
@@ -214,13 +217,22 @@
 <!--        <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint" kp="2000"/>-->
 <!--        <position ctrlrange="-2.7 2.7" joint="wam/palm_yaw_joint" kp="100"/>-->
 <!--    </actuator>-->
+<!--    <actuator>-->
+<!--        <motor ctrlrange="-150 150" joint="wam/base_yaw_joint"/>-->
+<!--        <motor ctrlrange="-125 125" joint="wam/shoulder_pitch_joint"/>-->
+<!--        <motor ctrlrange="-40 40" joint="wam/shoulder_yaw_joint"/>-->
+<!--        <motor ctrlrange="-60 60" joint="wam/elbow_pitch_joint"/>-->
+<!--        <motor ctrlrange="-5 5" joint="wam/wrist_yaw_joint"/>-->
+<!--        <motor ctrlrange="-5 5" joint="wam/wrist_pitch_joint"/>-->
+<!--        <motor ctrlrange="-2 2" joint="wam/palm_yaw_joint"/>-->
+<!--    </actuator>-->
     <actuator>
-        <motor ctrlrange="-150 150" joint="wam/base_yaw_joint"/>
-        <motor ctrlrange="-125 125" joint="wam/shoulder_pitch_joint"/>
-        <motor ctrlrange="-40 40" joint="wam/shoulder_yaw_joint"/>
-        <motor ctrlrange="-60 60" joint="wam/elbow_pitch_joint"/>
-        <motor ctrlrange="-5 5" joint="wam/wrist_yaw_joint"/>
-        <motor ctrlrange="-5 5" joint="wam/wrist_pitch_joint"/>
-        <motor ctrlrange="-2 2" joint="wam/palm_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="150.0" joint="wam/base_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="125.0" joint="wam/shoulder_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="40.0" joint="wam/shoulder_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="60.0" joint="wam/elbow_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0" joint="wam/wrist_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0" joint="wam/wrist_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="2.0" joint="wam/palm_yaw_joint"/>
     </actuator>
 </mujoco>

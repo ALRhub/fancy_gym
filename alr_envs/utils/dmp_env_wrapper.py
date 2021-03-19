@@ -19,7 +19,9 @@ class DmpEnvWrapper(gym.Wrapper):
                  learn_goal=False,
                  post_traj_time=0.,
                  policy_type=None,
-                 weights_scale=1.):
+                 weights_scale=1.,
+                 goal_scale=1.,
+                 ):
         super(DmpEnvWrapper, self).__init__(env)
         self.num_dof = num_dof
         self.num_basis = num_basis
@@ -52,6 +54,7 @@ class DmpEnvWrapper(gym.Wrapper):
 
         self.dmp.set_weights(dmp_weights, dmp_goal_pos)
         self.weights_scale = weights_scale
+        self.goal_scale = goal_scale
 
         policy_class = get_policy_class(policy_type)
         self.policy = policy_class(env)
@@ -78,10 +81,11 @@ class DmpEnvWrapper(gym.Wrapper):
             goal_pos = params[0, -self.num_dof:]
             weight_matrix = np.reshape(params[:, :-self.num_dof], [self.num_basis, self.num_dof])
         else:
-            goal_pos = None
+            goal_pos = self.dmp.dmp_goal_pos.flatten()
+            assert goal_pos is not None
             weight_matrix = np.reshape(params, [self.num_basis, self.num_dof])
 
-        return goal_pos, weight_matrix * self.weights_scale
+        return goal_pos * self.goal_scale, weight_matrix * self.weights_scale
 
     def rollout(self, params, context=None, render=False):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""

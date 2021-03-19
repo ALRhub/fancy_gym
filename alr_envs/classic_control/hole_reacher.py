@@ -83,7 +83,7 @@ class HoleReacher(gym.Env):
         """
         a single step with an action in joint velocity space
         """
-        vel = action
+        vel = action  # + 0.01 * np.random.randn(self.num_links)
         acc = (vel - self._angle_velocity) / self.dt
         self._angle_velocity = vel
         self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
@@ -96,20 +96,20 @@ class HoleReacher(gym.Env):
 
         dist_reward = 0
         if not self._is_collided:
-            if self._steps == 180:
+            if self._steps == 199:
                 dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
         else:
             dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
 
         reward = - dist_reward ** 2
 
-        reward -= 1e-6 * np.sum(acc**2)
+        reward -= 5e-8 * np.sum(acc**2)
 
-        if self._steps == 180:
-            reward -= 0.1 * np.sum(vel**2) ** 2
+        # if self._steps == 180:
+        #     reward -= 0.1 * np.sum(vel**2) ** 2
 
         if self._is_collided:
-            reward -= self.collision_penalty
+            reward = -self.collision_penalty
 
         info = {"is_collided": self._is_collided}
 
