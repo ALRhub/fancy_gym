@@ -8,7 +8,9 @@ from alr_envs.utils.utils import angle_normalize
 
 
 class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self, steps_before_reward=200, n_links=5, balance=True):
+    def __init__(self, steps_before_reward=200, n_links=5, balance=True, file_name=None):
+        utils.EzPickle.__init__(**locals())
+
         self._steps = 0
         self.steps_before_reward = steps_before_reward
         self.n_links = n_links
@@ -29,7 +31,6 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         else:
             raise ValueError(f"Invalid number of links {n_links}, only 5 or 7 allowed.")
 
-        utils.EzPickle.__init__(steps_before_reward=steps_before_reward, n_links=n_links, balance=balance)
         mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
 
     def step(self, a):

@@ -11,10 +11,11 @@ def angle_normalize(x, type="deg"):
     Returns:
 
     """
+
+    if type not in ["deg", "rad"]: raise ValueError(f"Invalid type {type}. Choose one of 'deg' or 'rad'.")
+
     if type == "deg":
-        return ((x + np.pi) % (2 * np.pi)) - np.pi
-    elif type == "rad":
-        two_pi = 2 * np.pi
-        return x - two_pi * np.floor((x + np.pi) / two_pi)
-    else:
-        raise ValueError(f"Invalid type {type}. Choose on of 'deg' or 'rad'.")
+        x = np.deg2rad(x) # x * pi / 180
+
+    two_pi = 2 * np.pi
+    return x - two_pi * np.floor((x + np.pi) / two_pi)
