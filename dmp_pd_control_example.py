@@ -8,7 +8,7 @@ if __name__ == "__main__":
     dim = 15
     n_cpus = 4
 
-    n_samples = 1
+    n_samples = 10
 
     vec_env = DmpAsyncVectorEnv([make_simple_env(i) for i in range(n_cpus)],
                                 n_samples=n_samples)

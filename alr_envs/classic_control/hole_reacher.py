@@ -94,22 +94,14 @@ class HoleReacher(gym.Env):
 
         # compute reward directly in step function
 
-        dist_reward = 0
+        reward = 0
         if not self._is_collided:
             if self._steps == 199:
-                dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
+                reward = - np.linalg.norm(self.end_effector - self.bottom_center_of_hole) ** 2
         else:
-            dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-
-        reward = - dist_reward ** 2
-
-        reward -= 5e-8 * np.sum(acc**2)
-
-        # if self._steps == 180:
-        #     reward -= 0.1 * np.sum(vel**2) ** 2
-
-        if self._is_collided:
             reward = -self.collision_penalty
+
+        reward -= 5e-8 * np.sum(acc ** 2)
 
         info = {"is_collided": self._is_collided}
 
