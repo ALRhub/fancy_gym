@@ -94,6 +94,15 @@ register(
 )
 
 register(
+    id='Balancing-v0',
+    entry_point='alr_envs.mujoco:BalancingEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+    }
+)
+
+register(
     id='SimpleReacher-v0',
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
