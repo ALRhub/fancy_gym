@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 import gym
 import numpy as np
@@ -49,24 +50,26 @@ class MPWrapper(gym.Wrapper, ABC):
         # self._velocity = velocity
 
         rewards = 0
-        infos = []
+        # infos = defaultdict(list)
 
         # TODO: @Max Why do we need this configure, states should be part of the model
         # self.env.configure(context)
         obs = self.env.reset()
+        info = {}
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
             ac = self.policy.get_action(pos_vel[0], pos_vel[1])
             obs, rew, done, info = self.env.step(ac)
             rewards += rew
-            infos.append(info)
+            # TODO return all dicts?
+            # [infos[k].append(v) for k, v in info.items()]
             if self.render_mode:
                 self.env.render(mode=self.render_mode, **self.render_kwargs)
             if done:
                 break
 
         done = True
-        return obs, rewards, done, infos
+        return obs, rewards, done, info
 
     def render(self, mode='human', **kwargs):
         """Only set render options here, such that they can be used during the rollout.
