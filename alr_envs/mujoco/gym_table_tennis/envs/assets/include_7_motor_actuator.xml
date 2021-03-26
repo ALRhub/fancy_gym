@@ -1,0 +1,12 @@
+<mujocoinclude>
+    <actuator boastype="none">
+        <motor name="wam/shoulder_yaw_link_right_motor" joint="wam/base_yaw_joint_right"/>
+        <motor name="wam/shoulder_pitch_joint_right_motor" joint='wam/shoulder_pitch_joint_right'/>
+        <motor name="wam/shoulder_yaw_joint_right_motor" joint='wam/shoulder_yaw_joint_right'/>
+        <motor name="wam/elbow_pitch_joint_right_motor" joint='wam/elbow_pitch_joint_right'/>
+        <motor name="wam/wrist_yaw_joint_right_motor" joint='wam/wrist_yaw_joint_right'/>
+        <motor name="wam/wrist_pitch_joint_right_motor" joint='wam/wrist_pitch_joint_right'/>
+        <motor name="wam/palm_yaw_joint_right_motor" joint='wam/palm_yaw_joint_right'/>
+    </actuator>
+</mujocoinclude>
+
