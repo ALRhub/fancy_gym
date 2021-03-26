@@ -8,20 +8,20 @@ if __name__ == "__main__":
     dim = 15
     n_cpus = 4
 
-    n_samples = 10
-
-    vec_env = DmpAsyncVectorEnv([make_simple_env(i) for i in range(n_cpus)],
-                                n_samples=n_samples)
-
-    params = np.tile(1 * np.random.randn(n_samples, dim), (10, 1))
-
-    rewards, infos = vec_env(params)
-    print(rewards)
+    # n_samples = 10
     #
-    # non_vec_env = make_simple_env(0, 0)()
+    # vec_env = DmpAsyncVectorEnv([make_simple_env(i) for i in range(n_cpus)],
+    #                             n_samples=n_samples)
     #
-    # params = 10 * np.random.randn(dim)
+    # params = np.tile(1 * np.random.randn(n_samples, dim), (10, 1))
+    #
+    # rewards, infos = vec_env(params)
+    # print(rewards)
+    #
+    non_vec_env = make_simple_env(0, 0)()
 
-    # out2 = non_vec_env.rollout(params, render=True)
+    params = 0.1 * np.random.randn(dim)
 
-    # print(out2)
+    out2 = non_vec_env.rollout(params, render=True)
+
+    print(out2)
