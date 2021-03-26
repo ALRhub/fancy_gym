@@ -1,8 +1,10 @@
+from gym import Env
+
 from alr_envs.mujoco.alr_mujoco_env import AlrMujocoEnv
 
 
 class BaseController:
-    def __init__(self, env: AlrMujocoEnv):
+    def __init__(self, env: Env):
         self.env = env
 
     def get_action(self, des_pos, des_vel):
@@ -20,7 +22,7 @@ class VelController(BaseController):
 
 
 class PDController(BaseController):
-    def __init__(self, env):
+    def __init__(self, env: AlrMujocoEnv):
         self.p_gains = env.p_gains
         self.d_gains = env.d_gains
         super(PDController, self).__init__(env)

@@ -1,39 +1,43 @@
 import gym
-import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import patches
+import numpy as np
+
+from alr_envs import DmpWrapper
+from alr_envs.utils.utils import check_self_collision
 
 
-def ccw(A, B, C):
-    return (C[1]-A[1]) * (B[0]-A[0]) - (B[1]-A[1]) * (C[0]-A[0]) > 1e-12
-
-
-# Return true if line segments AB and CD intersect
-def intersect(A, B, C, D):
-    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+def viapoint_dmp(**kwargs):
+    _env = gym.make("alr_envs:ViaPointReacher-v0")
+    # _env = ViaPointReacher(**kwargs)
+    return DmpWrapper(_env, num_dof=5, num_basis=5, duration=2, alpha_phase=2.5, dt=_env.dt,
+                      start_pos=_env.start_pos, learn_goal=False, policy_type="velocity", weights_scale=50)
 
 
 class ViaPointReacher(gym.Env):
 
-    def __init__(self, num_links, allow_self_collision=False,
-                 collision_penalty=1000):
-        self.num_links = num_links
-        self.link_lengths = np.ones((num_links, 1))
+    def __init__(self, n_links, allow_self_collision=False, collision_penalty=1000):
+        self.num_links = n_links
+        self.link_lengths = np.ones((n_links, 1))
+
+        # task
+        self.via_point = np.ones(2)
+        self.goal_point = np.array((n_links, 0))
+
+        # collision
         self.allow_self_collision = allow_self_collision
         self.collision_penalty = collision_penalty
 
-        self.via_point = np.ones(2)
-        self.goal_point = np.array((num_links, 0))
-
+        # state
         self._joints = None
         self._joint_angles = None
         self._angle_velocity = None
-        self.start_pos = np.hstack([[np.pi/2], np.zeros(self.num_links - 1)])
+        self.start_pos = np.hstack([[np.pi / 2], np.zeros(self.num_links - 1)])
         self.start_vel = np.zeros(self.num_links)
         self.weight_matrix_scale = 1
 
+        self._steps = 0
         self.dt = 0.01
-        self.time_limit = 2
+        # self.time_limit = 2
 
         action_bound = np.pi * np.ones((self.num_links,))
         state_bound = np.hstack([
@@ -64,7 +68,7 @@ class ViaPointReacher(gym.Env):
 
         return self._get_obs().copy()
 
-    def step(self, action):
+    def step(self, action: np.ndarray):
         """
         a single step with an action in joint velocity space
         """
@@ -75,23 +79,20 @@ class ViaPointReacher(gym.Env):
 
         self._update_joints()
 
-        # rew = self._reward()
-
-        # compute reward directly in step function
-
         dist_reward = 0
         if not self._is_collided:
             if self._steps == 100:
                 dist_reward = np.linalg.norm(self.end_effector - self.via_point)
-            if self._steps == 199:
+            elif self._steps == 199:
                 dist_reward = np.linalg.norm(self.end_effector - self.goal_point)
 
+        # TODO: Do we need that?
         reward = - dist_reward ** 2
 
-        reward -= 1e-6 * np.sum(acc**2)
+        reward -= 1e-6 * np.sum(acc ** 2)
 
         if self._steps == 200:
-            reward -= 0.1 * np.sum(vel**2) ** 2
+            reward -= 0.1 * np.sum(vel ** 2) ** 2
 
         if self._is_collided:
             reward -= self.collision_penalty
@@ -100,7 +101,8 @@ class ViaPointReacher(gym.Env):
 
         self._steps += 1
 
-        done = self._steps * self.dt > self.time_limit or self._is_collided
+        # done = self._steps * self.dt > self.time_limit or self._is_collided
+        done = self._is_collided
 
         return self._get_obs().copy(), reward, done, info
 
@@ -118,8 +120,8 @@ class ViaPointReacher(gym.Env):
         self_collision = False
 
         if not self.allow_self_collision:
-            self_collision = self.check_self_collision(line_points_in_taskspace)
-            if np.any(np.abs(self._joint_angles) > np.pi) and not self.allow_self_collision:
+            self_collision = check_self_collision(line_points_in_taskspace)
+            if np.any(np.abs(self._joint_angles) > np.pi):
                 self_collision = True
 
         self._is_collided = self_collision
@@ -135,25 +137,10 @@ class ViaPointReacher(gym.Env):
             self._steps
         ])
 
-    # def _reward(self):
-    #     dist_reward = 0
-    #     if not self._is_collided:
-    #         if self._steps == 180:
-    #             dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-    #     else:
-    #         dist_reward = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-    #
-    #     out = - dist_reward ** 2
-    #
-    #     return out
-
     def get_forward_kinematics(self, num_points_per_link=1):
         theta = self._joint_angles[:, None]
 
-        if num_points_per_link > 1:
-            intermediate_points = np.linspace(0, 1, num_points_per_link)
-        else:
-            intermediate_points = 1
+        intermediate_points = np.linspace(0, 1, num_points_per_link) if num_points_per_link > 1 else 1
 
         accumulated_theta = np.cumsum(theta, axis=0)
 
@@ -170,46 +157,6 @@ class ViaPointReacher(gym.Env):
             endeffector[i, :, 1] = y[i, :] + endeffector[i - 1, -1, 1]
 
         return np.squeeze(endeffector + self._joints[0, :])
-
-    def check_self_collision(self, line_points):
-        for i, line1 in enumerate(line_points):
-            for line2 in line_points[i+2:, :, :]:
-                # if line1 != line2:
-                if intersect(line1[0], line1[-1], line2[0], line2[-1]):
-                    return True
-        return False
-
-    def check_wall_collision(self, line_points):
-
-        # all points that are before the hole in x
-        r, c = np.where(line_points[:, :, 0] < (self.hole_x - self.hole_width / 2))
-
-        # check if any of those points are below surface
-        nr_line_points_below_surface_before_hole = np.sum(line_points[r, c, 1] < 0)
-
-        if nr_line_points_below_surface_before_hole > 0:
-            return True
-
-        # all points that are after the hole in x
-        r, c = np.where(line_points[:, :, 0] > (self.hole_x + self.hole_width / 2))
-
-        # check if any of those points are below surface
-        nr_line_points_below_surface_after_hole = np.sum(line_points[r, c, 1] < 0)
-
-        if nr_line_points_below_surface_after_hole > 0:
-            return True
-
-        # all points that are above the hole
-        r, c = np.where((line_points[:, :, 0] > (self.hole_x - self.hole_width / 2)) & (
-                           line_points[:, :, 0] < (self.hole_x + self.hole_width / 2)))
-
-        # check if any of those points are below surface
-        nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self.hole_depth)
-
-        if nr_line_points_below_surface_in_hole > 0:
-            return True
-
-        return False
 
     def render(self, mode='human'):
         if self.fig is None:
@@ -230,7 +177,7 @@ class ViaPointReacher(gym.Env):
             plt.xlim([-lim, lim])
             plt.ylim([-lim, lim])
             # plt.draw()
-            plt.pause(1e-4) #  pushes window to foreground, which is annoying.
+            plt.pause(1e-4)  # pushes window to foreground, which is annoying.
             # self.fig.canvas.flush_events()
 
         elif mode == "partial":
@@ -274,7 +221,7 @@ class ViaPointReacher(gym.Env):
 if __name__ == '__main__':
     nl = 5
     render_mode = "human"  # "human" or "partial" or "final"
-    env = ViaPointReacher(num_links=nl, allow_self_collision=False)
+    env = ViaPointReacher(n_links=nl, allow_self_collision=False)
     env.reset()
     env.render(mode=render_mode)
 

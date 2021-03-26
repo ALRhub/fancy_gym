@@ -1,11 +1,9 @@
-import os
-
 import gym
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
+
 from alr_envs.utils.utils import angle_normalize
 
 
@@ -33,7 +31,7 @@ class SimpleReacherEnv(gym.Env):
         self._angle_velocity = None
 
         self.max_torque = 1  # 10
-        self.steps_before_reward = 180
+        self.steps_before_reward = 199
 
         action_bound = np.ones((self.n_links,))
         state_bound = np.hstack([
@@ -92,7 +90,7 @@ class SimpleReacherEnv(gym.Env):
 
     def _update_joints(self):
         """
-        update _joints to get new end effector position. The other links are only required for rendering.
+        update joints to get new end-effector position. The other links are only required for rendering.
         Returns:
 
         """
@@ -106,7 +104,7 @@ class SimpleReacherEnv(gym.Env):
 
         # TODO: Is this the best option
         if self._steps >= self.steps_before_reward:
-            reward_dist = - np.linalg.norm(diff)
+            reward_dist -= np.linalg.norm(diff)
             # reward_dist = np.exp(-0.1 * diff ** 2).mean()
             # reward_dist = - (diff ** 2).mean()
 
