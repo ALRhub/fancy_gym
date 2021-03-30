@@ -88,7 +88,7 @@ class ViaPointReacher(gym.Env):
 
         reward = - dist_reward ** 2
 
-        reward -= 1e-6 * np.sum(acc**2)
+        reward -= 5e-8 * np.sum(acc**2)
 
         if self._steps == 200:
             reward -= 0.1 * np.sum(vel**2) ** 2
