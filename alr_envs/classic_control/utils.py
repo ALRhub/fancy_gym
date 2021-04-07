@@ -134,18 +134,18 @@ def make_holereacher_env_pmp(rank, seed=0):
                            hole_width=0.15,
                            hole_depth=1,
                            hole_x=1,
-                           collision_penalty=1000)
+                           collision_penalty=100)
 
         _env = DetPMPEnvWrapper(_env,
                                 num_dof=5,
                                 num_basis=5,
-                                width=0.005,
+                                width=0.025,
                                 policy_type="velocity",
                                 start_pos=_env.start_pos,
                                 duration=2,
                                 post_traj_time=0,
                                 dt=_env.dt,
-                                weights_scale=0.25,
+                                weights_scale=0.2,
                                 zero_start=True,
                                 zero_goal=False
                                 )
