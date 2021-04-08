@@ -33,6 +33,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists = []
         self.dists_final = []
         self.costs = []
+        self.action_costs = []
 
     def compute_reward(self, action, sim, step, context=None):
         self.ball_id = sim.model._body_name2id["ball"]
@@ -52,9 +53,10 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.ball_traj[step, :] = ball_pos
 
         action_cost = np.sum(np.square(action))
+        self.action_costs.append(action_cost)
 
         if self.check_collision(sim):
-            reward = - 1e-4 * action_cost - 1000
+            reward = - 1000
             return reward, False, True
 
         if step == self.sim_time - 1:
@@ -62,10 +64,10 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             dist_final = self.dists_final[-1]
 
             cost = 0.5 * min_dist + 0.5 * dist_final
-            reward = np.exp(-2 * cost) - 1e-4 * action_cost
+            reward = np.exp(-2 * cost) - 1e-3 * action_cost
             success = dist_final < 0.05 and ball_in_cup
         else:
-            reward = - 1e-4 * action_cost
+            reward = - 1e-3 * action_cost
             success = False
 
         return reward, success, False
