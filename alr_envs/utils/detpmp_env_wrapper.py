@@ -10,6 +10,7 @@ class DetPMPEnvWrapper(gym.Wrapper):
                  num_dof,
                  num_basis,
                  width,
+                 off=0.01,
                  start_pos=None,
                  duration=1,
                  dt=0.01,
@@ -23,7 +24,7 @@ class DetPMPEnvWrapper(gym.Wrapper):
         self.num_dof = num_dof
         self.num_basis = num_basis
         self.dim = num_dof * num_basis
-        self.pmp = det_promp.DeterministicProMP(n_basis=num_basis, n_dof=num_dof, width=width, off=0.01,
+        self.pmp = det_promp.DeterministicProMP(n_basis=num_basis, n_dof=num_dof, width=width, off=off,
                                                 zero_start=zero_start, zero_goal=zero_goal)
         weights = np.zeros(shape=(num_basis, num_dof))
         self.pmp.set_weights(duration, weights)

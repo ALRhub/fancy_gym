@@ -88,13 +88,14 @@ def make_simple_env(rank, seed=0):
         env = DetPMPEnvWrapper(env,
                                num_dof=3,
                                num_basis=5,
-                               width=0.01,
+                               width=0.005,
+                               off=-0.1,
                                policy_type="motor",
                                start_pos=env.start_pos[1::2],
                                duration=3.5,
                                post_traj_time=4.5,
                                dt=env.dt,
-                               weights_scale=0.5,
+                               weights_scale=0.25,
                                zero_start=True,
                                zero_goal=True
                                )
