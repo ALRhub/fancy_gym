@@ -94,7 +94,7 @@ def make_simple_env(rank, seed=0):
                                duration=3.5,
                                post_traj_time=4.5,
                                dt=env.dt,
-                               weights_scale=0.2,
+                               weights_scale=0.5,
                                zero_start=True,
                                zero_goal=True
                                )
