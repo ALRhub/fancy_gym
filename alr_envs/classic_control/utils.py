@@ -52,21 +52,22 @@ def make_holereacher_env(rank, seed=0):
         _env = HoleReacher(num_links=5,
                            allow_self_collision=False,
                            allow_wall_collision=False,
-                           hole_width=0.15,
+                           hole_width=0.25,
                            hole_depth=1,
-                           hole_x=1,
+                           hole_x=2,
                            collision_penalty=100)
 
         _env = DmpEnvWrapper(_env,
                              num_dof=5,
                              num_basis=5,
                              duration=2,
+                             bandwidth_factor=2,
                              dt=_env.dt,
                              learn_goal=True,
-                             alpha_phase=3.5,
+                             alpha_phase=2,
                              start_pos=_env.start_pos,
                              policy_type="velocity",
-                             weights_scale=100,
+                             weights_scale=50,
                              goal_scale=0.1
                              )
 
@@ -103,7 +104,7 @@ def make_holereacher_fix_goal_env(rank, seed=0):
                              dt=_env.dt,
                              learn_goal=False,
                              final_pos=np.array([2.02669572, -1.25966385, -1.51618198, -0.80946476,  0.02012344]),
-                             alpha_phase=3.5,
+                             alpha_phase=3,
                              start_pos=_env.start_pos,
                              policy_type="velocity",
                              weights_scale=50,
@@ -139,14 +140,15 @@ def make_holereacher_env_pmp(rank, seed=0):
         _env = DetPMPEnvWrapper(_env,
                                 num_dof=5,
                                 num_basis=5,
-                                width=0.025,
+                                width=0.02,
+                                off=0.,
                                 policy_type="velocity",
                                 start_pos=_env.start_pos,
                                 duration=2,
                                 post_traj_time=0,
                                 dt=_env.dt,
                                 weights_scale=0.2,
-                                zero_start=True,
+                                zero_start=False,
                                 zero_goal=False
                                 )
         _env.seed(seed + rank)

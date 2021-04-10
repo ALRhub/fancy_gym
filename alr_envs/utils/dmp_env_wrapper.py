@@ -14,8 +14,9 @@ class DmpEnvWrapper(gym.Wrapper):
                  start_pos=None,
                  final_pos=None,
                  duration=1,
-                 alpha_phase=2,
                  dt=0.01,
+                 alpha_phase=2,
+                 bandwidth_factor=3,
                  learn_goal=False,
                  post_traj_time=0.,
                  policy_type=None,
@@ -35,7 +36,10 @@ class DmpEnvWrapper(gym.Wrapper):
         self.post_traj_steps = int(post_traj_time / dt)
 
         phase_generator = ExpDecayPhaseGenerator(alpha_phase=alpha_phase, duration=duration)
-        basis_generator = DMPBasisGenerator(phase_generator, duration=duration, num_basis=self.num_basis)
+        basis_generator = DMPBasisGenerator(phase_generator,
+                                            duration=duration,
+                                            num_basis=self.num_basis,
+                                            basis_bandwidth_factor=bandwidth_factor)
 
         self.dmp = dmps.DMP(num_dof=num_dof,
                             basis_generator=basis_generator,
