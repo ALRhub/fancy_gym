@@ -1,4 +1,4 @@
-from alr_envs.mujoco.ball_in_a_cup.utils import make_env, make_simple_env
+from alr_envs.mujoco.ball_in_a_cup.utils import make_env, make_simple_env, make_simple_dmp_env
 from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv
 import numpy as np
 
@@ -18,13 +18,13 @@ if __name__ == "__main__":
     # rewards, infos = vec_env(params)
     # print(rewards)
     #
-    non_vec_env = make_simple_env(0, 0)()
+    non_vec_env = make_simple_dmp_env(0, 0)()
 
     # params = 0.5 * np.random.randn(dim)
-    params = np.array([[11.90777345,  4.47656072, -2.49030537,  2.29386444, -3.5645336 ,
-         2.97729181,  4.65224072,  3.72020235,  4.3658366 , -5.8489886 ,
-         9.8045112 ,  2.95405854,  4.56178261,  4.70669295,  4.55522522]])
+    params = np.array([[-2.04114375, -2.62248565,  1.35999138,  4.29883804,  0.09143854,
+         8.1752235 , -1.47063842,  0.60865483, -3.1697385 , 10.95458786,
+         2.81887935,  3.6400505 ,  1.43011501, -4.36044191, -3.66816722]])
 
-    out2 = non_vec_env.rollout(params, render=True)
+    out2 = non_vec_env.rollout(params, render=False)
 
     print(out2)

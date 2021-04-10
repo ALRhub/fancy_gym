@@ -34,6 +34,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final = []
         self.costs = []
         self.action_costs = []
+        self.cup_angles = []
 
     def compute_reward(self, action, sim, step, context=None):
         self.ball_id = sim.model._body_name2id["ball"]
@@ -51,6 +52,9 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.ball_traj[step, :] = ball_pos
+        cup_quat = np.copy(sim.data.body_xquat[sim.model._body_name2id["cup"]])
+        self.cup_angles.append(np.arctan2(2 * (cup_quat[0] * cup_quat[1] + cup_quat[2] * cup_quat[3]),
+                                          1 - 2 * (cup_quat[1]**2 + cup_quat[2]**2)))
 
         action_cost = np.sum(np.square(action))
         self.action_costs.append(action_cost)
@@ -60,10 +64,14 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             return reward, False, True
 
         if step == self.sim_time - 1:
-            min_dist = np.min(self.dists)
+            t_min_dist = np.argmin(self.dists)
+            angle_min_dist = self.cup_angles[t_min_dist]
+            cost_angle = (angle_min_dist - np.pi / 2)**2
+
+            min_dist = self.dists[t_min_dist]
             dist_final = self.dists_final[-1]
 
-            cost = 0.5 * min_dist + 0.5 * dist_final
+            cost = 0.5 * min_dist + 0.5 * dist_final + 0.01 * cost_angle
             reward = np.exp(-2 * cost) - 1e-3 * action_cost
             success = dist_final < 0.05 and ball_in_cup
         else:
