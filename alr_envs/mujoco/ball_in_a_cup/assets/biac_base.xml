@@ -327,16 +327,16 @@
                 </body>
             </body>
         </body>
-        <site name="context_point" pos="-0.20869846 -0.66376693 1.18088501" euler="-1.57 0 0" size="0.015" rgba="1 0 0 0.6" type="sphere"/>
-        <site name="context_point1" pos="-0.5 -0.85 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point2" pos="-0.5 -0.85 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point3" pos="-0.5 -0.35 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point4" pos="-0.5 -0.35 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point5" pos="0.5 -0.85 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point6" pos="0.5 -0.85 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point7" pos="0.5 -0.35 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_point8" pos="0.5 -0.35 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>
-        <site name="context_space" pos="0 -0.6 1.1165" euler="0 0 0" size="0.5 0.25 0.3" rgba="0 0 1 0.15" type="box"/>
+<!--        <site name="context_point" pos="-0.20869846 -0.66376693 1.18088501" euler="-1.57 0 0" size="0.015" rgba="1 0 0 0.6" type="sphere"/>-->
+<!--        <site name="context_point1" pos="-0.5 -0.85 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point2" pos="-0.5 -0.85 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point3" pos="-0.5 -0.35 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point4" pos="-0.5 -0.35 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point5" pos="0.5 -0.85 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point6" pos="0.5 -0.85 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point7" pos="0.5 -0.35 0.8165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_point8" pos="0.5 -0.35 1.4165" euler="-1.57 0 0" size="0.015" rgba="0 1 0 0.3" type="sphere"/>-->
+<!--        <site name="context_space" pos="0 -0.6 1.1165" euler="0 0 0" size="0.5 0.25 0.3" rgba="0 0 1 0.15" type="box"/>-->
         <camera name="visualization" mode="targetbody" target="wam/wrist_yaw_link" pos="1.5 -0.4 2.2"/>
         <camera name="experiment" mode="fixed" quat="0.44418059 0.41778323 0.54301123 0.57732103" pos="1.5 -0.3 1.33" />
     </worldbody>

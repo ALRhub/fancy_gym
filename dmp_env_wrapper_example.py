@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     # params = np.hstack([50 * np.random.randn(n_samples, 25), np.tile(np.array([np.pi/2, -np.pi/4, -np.pi/4, -np.pi/4, -np.pi/4]), [n_samples, 1])])
 
-    rew, info = test_env.rollout(params, render=False)
+    rew, info = test_env.rollout(params, render=True)
     print(rew)
 
     # out = env(params)
