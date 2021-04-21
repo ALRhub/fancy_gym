@@ -2,40 +2,7 @@ import gym
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import patches
-
-from alr_envs import DmpWrapper
-from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
-
-
-def ccw(A, B, C):
-    return (C[1] - A[1]) * (B[0] - A[0]) - (B[1] - A[1]) * (C[0] - A[0]) > 1e-12
-
-
-# Return true if line segments AB and CD intersect
-def intersect(A, B, C, D):
-    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
-
-
-def holereacher_dmp(**kwargs):
-    _env = gym.make("alr_envs:HoleReacher-v0")
-    # _env = HoleReacher(**kwargs)
-    return DmpWrapper(_env, num_dof=5, num_basis=5, duration=2, dt=_env.dt, learn_goal=True, alpha_phase=3.5,
-                      start_pos=_env.start_pos, policy_type="velocity", weights_scale=100, goal_scale=0.1)
-
-
-def holereacher_fix_goal_dmp(**kwargs):
-    _env = gym.make("alr_envs:HoleReacher-v0")
-    # _env = HoleReacher(**kwargs)
-    return DmpWrapper(_env, num_dof=5, num_basis=5, duration=2, dt=_env.dt, learn_goal=False, alpha_phase=3.5,
-                      start_pos=_env.start_pos, policy_type="velocity", weights_scale=50, goal_scale=1,
-                      final_pos=np.array([2.02669572, -1.25966385, -1.51618198, -0.80946476, 0.02012344]))
-
-
-def holereacher_detpmp(**kwargs):
-    _env = gym.make("alr_envs:HoleReacher-v0")
-    # _env = HoleReacher(**kwargs)
-    return DetPMPWrapper(_env, num_dof=5, num_basis=5, width=0.005, policy_type="velocity", start_pos=_env.start_pos,
-                         duration=2, post_traj_time=0, dt=_env.dt, weights_scale=0.25, zero_start=True, zero_goal=False)
+from alr_envs.classic_control.utils import check_self_collision
 
 
 class HoleReacher(gym.Env):
@@ -166,7 +133,7 @@ class HoleReacher(gym.Env):
         wall_collision = False
 
         if not self.allow_self_collision:
-            self_collision = self.check_self_collision(line_points_in_taskspace)
+            self_collision = check_self_collision(line_points_in_taskspace)
             if np.any(np.abs(self._joint_angles) > np.pi) and not self.allow_self_collision:
                 self_collision = True
 
@@ -208,14 +175,6 @@ class HoleReacher(gym.Env):
             endeffector[i, :, 1] = y[i, :] + endeffector[i - 1, -1, 1]
 
         return np.squeeze(endeffector + self._joints[0, :])
-
-    def check_self_collision(self, line_points):
-        for i, line1 in enumerate(line_points):
-            for line2 in line_points[i + 2:, :, :]:
-                # if line1 != line2:
-                if intersect(line1[0], line1[-1], line2[0], line2[-1]):
-                    return True
-        return False
 
     def check_wall_collision(self, line_points):
 

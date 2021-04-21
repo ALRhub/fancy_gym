@@ -1,6 +1,4 @@
-from alr_envs.classic_control.utils import make_viapointreacher_env
-from alr_envs.classic_control.utils import make_holereacher_env, make_holereacher_fix_goal_env
-from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv
+from alr_envs.utils.legacy.utils import make_holereacher_env
 import numpy as np
 
 if __name__ == "__main__":

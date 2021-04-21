@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
-from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
+# from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
 
 # Mujoco
 
@@ -119,37 +119,89 @@ register(
         "n_links": 5,
         "allow_self_collision": False,
         "allow_wall_collision": False,
-        "hole_width": 0.15,
+        "hole_width": 0.25,
         "hole_depth": 1,
-        "hole_x": 1,
+        "hole_x": 2,
         "collision_penalty": 100,
     }
 )
 
-# DMP environments
+# MP environments
 
 register(
     id='ViaPointReacherDMP-v0',
-    entry_point='alr_envs.classic_control.viapoint_reacher:viapoint_dmp',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:ViaPointReacher-v0",
+        "num_dof": 5,
+        "num_basis": 5,
+        "duration": 2,
+        "alpha_phase": 2,
+        "learn_goal": False,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+    }
 )
 
 register(
     id='HoleReacherDMP-v0',
-    entry_point='alr_envs.classic_control.hole_reacher:holereacher_dmp',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:HoleReacher-v0",
+        "num_dof": 5,
+        "num_basis": 5,
+        "duration": 2,
+        "learn_goal": True,
+        "alpha_phase": 2,
+        "bandwidth_factor": 2,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+        "goal_scale": 0.1
+    }
 )
 
+# TODO: properly add final_pos
 register(
     id='HoleReacherFixedGoalDMP-v0',
-    entry_point='alr_envs.classic_control.hole_reacher:holereacher_fix_goal_dmp',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:HoleReacher-v0",
+        "num_dof": 5,
+        "num_basis": 5,
+        "duration": 2,
+        "learn_goal": False,
+        "alpha_phase": 2,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+        "goal_scale": 0.1
+    }
 )
 
 register(
     id='HoleReacherDetPMP-v0',
     entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
     # max_episode_steps=1,
+    # TODO: add mp kwargs
+)
+
+register(
+    id='BiacSimpleDMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    kwargs={
+        "name": "alr_envs:HoleReacher-v0",
+        "num_dof": 5,
+        "num_basis": 5,
+        "duration": 2,
+        "learn_goal": True,
+        "alpha_phase": 2,
+        "bandwidth_factor": 2,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+        "goal_scale": 0.1
+    }
 )
 
 # BBO functions

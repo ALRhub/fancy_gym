@@ -2,15 +2,7 @@ import gym
 import matplotlib.pyplot as plt
 import numpy as np
 
-from alr_envs import DmpWrapper
-from alr_envs.utils.utils import check_self_collision
-
-
-def viapoint_dmp(**kwargs):
-    _env = gym.make("alr_envs:ViaPointReacher-v0")
-    # _env = ViaPointReacher(**kwargs)
-    return DmpWrapper(_env, num_dof=5, num_basis=5, duration=2, alpha_phase=2.5, dt=_env.dt,
-                      start_pos=_env.start_pos, learn_goal=False, policy_type="velocity", weights_scale=50)
+from alr_envs.classic_control.utils import check_self_collision
 
 
 class ViaPointReacher(gym.Env):

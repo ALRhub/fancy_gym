@@ -1,8 +1,5 @@
-from alr_envs.mujoco.ball_in_a_cup.utils import make_env, make_simple_env, make_simple_dmp_env
-from alr_envs.utils.dmp_async_vec_env import DmpAsyncVectorEnv
+from alr_envs.mujoco.ball_in_a_cup.utils import make_simple_dmp_env
 import numpy as np
-from gym import wrappers
-
 
 if __name__ == "__main__":
 

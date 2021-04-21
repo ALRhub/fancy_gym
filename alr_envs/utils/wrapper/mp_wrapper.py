@@ -13,19 +13,20 @@ class MPWrapper(gym.Wrapper, ABC):
                  env: gym.Env,
                  num_dof: int,
                  duration: int = 1,
-                 dt: float = 0.01,
-                 # learn_goal: bool = False,
+                 dt: float = None,
                  post_traj_time: float = 0.,
                  policy_type: str = None,
                  weights_scale: float = 1.,
                  **mp_kwargs
-
                  ):
         super().__init__(env)
 
         # self.num_dof = num_dof
         # self.num_basis = num_basis
         # self.duration = duration  # seconds
+
+        # dt = env.dt if hasattr(env, "dt") else dt
+        assert dt is not None  # this should never happen as MPWrapper is a base class
         self.post_traj_steps = int(post_traj_time / dt)
 
         self.mp = self.initialize_mp(num_dof, duration, dt, **mp_kwargs)
@@ -37,6 +38,26 @@ class MPWrapper(gym.Wrapper, ABC):
         # rendering
         self.render_mode = None
         self.render_kwargs = None
+
+    # TODO: not yet final
+    def __call__(self, params, contexts=None):
+        params = np.atleast_2d(params)
+        obs = []
+        rewards = []
+        dones = []
+        infos = []
+        for p, c in zip(params, contexts):
+            self.configure(c)
+            ob, reward, done, info = self.step(p)
+            obs.append(ob)
+            rewards.append(reward)
+            dones.append(done)
+            infos.append(info)
+
+        return obs, np.array(rewards), dones, infos
+
+    def configure(self, context):
+        self.env.configure(context)
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
@@ -53,6 +74,7 @@ class MPWrapper(gym.Wrapper, ABC):
         # infos = defaultdict(list)
 
         # TODO: @Max Why do we need this configure, states should be part of the model
+        # TODO: Ask Onur if the context distribution needs to be outside the environment
         # self.env.configure(context)
         obs = self.env.reset()
         info = {}
@@ -77,8 +99,8 @@ class MPWrapper(gym.Wrapper, ABC):
         self.render_mode = mode
         self.render_kwargs = kwargs
 
-    def __call__(self, actions):
-        return self.step(actions)
+    # def __call__(self, actions):
+    #     return self.step(actions)
         # params = np.atleast_2d(params)
         # rewards = []
         # infos = []

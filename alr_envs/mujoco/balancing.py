@@ -4,7 +4,7 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
-from alr_envs.utils.utils import angle_normalize
+import alr_envs.utils.utils as alr_utils
 
 
 class BalancingEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -23,7 +23,7 @@ class BalancingEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
 
     def step(self, a):
-        angle = angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad")
+        angle = alr_utils.angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad")
         reward = - np.abs(angle)
 
         self.do_simulation(a, self.frame_skip)

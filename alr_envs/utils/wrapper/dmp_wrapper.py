@@ -1,4 +1,3 @@
-from alr_envs.utils.policies import get_policy_class
 from mp_lib.phase import ExpDecayPhaseGenerator
 from mp_lib.basis import DMPBasisGenerator
 from mp_lib import dmps
@@ -11,9 +10,9 @@ from alr_envs.utils.wrapper.mp_wrapper import MPWrapper
 class DmpWrapper(MPWrapper):
 
     def __init__(self, env: gym.Env, num_dof: int, num_basis: int, start_pos: np.ndarray = None,
-                 final_pos: np.ndarray = None, duration: int = 1, alpha_phase: float = 2., dt: float = 0.01,
+                 final_pos: np.ndarray = None, duration: int = 1, alpha_phase: float = 2., dt: float = None,
                  learn_goal: bool = False, post_traj_time: float = 0., policy_type: str = None,
-                 weights_scale: float = 1., goal_scale: float = 1.):
+                 weights_scale: float = 1., goal_scale: float = 1., bandwidth_factor: float = 3.):
 
         """
         This Wrapper generates a trajectory based on a DMP and will only return episodic performances.
@@ -33,20 +32,26 @@ class DmpWrapper(MPWrapper):
             goal_scale:
         """
         self.learn_goal = learn_goal
+        dt = env.dt if hasattr(env, "dt") else dt
+        assert dt is not None
+        start_pos = env.start_pos if hasattr(env, "start_pos") else start_pos
+        assert start_pos is not None
         self.t = np.linspace(0, duration, int(duration / dt))
         self.goal_scale = goal_scale
 
         super().__init__(env, num_dof, duration, dt, post_traj_time, policy_type, weights_scale,
-                         num_basis=num_basis, start_pos=start_pos, final_pos=final_pos, alpha_phase=alpha_phase)
+                         num_basis=num_basis, start_pos=start_pos, final_pos=final_pos, alpha_phase=alpha_phase,
+                         bandwidth_factor=bandwidth_factor)
 
         action_bounds = np.inf * np.ones((np.prod(self.mp.dmp_weights.shape) + (num_dof if learn_goal else 0)))
         self.action_space = gym.spaces.Box(low=-action_bounds, high=action_bounds, dtype=np.float32)
 
     def initialize_mp(self, num_dof: int, duration: int, dt: float, num_basis: int = 5, start_pos: np.ndarray = None,
-                      final_pos: np.ndarray = None, alpha_phase: float = 2.):
+                      final_pos: np.ndarray = None, alpha_phase: float = 2., bandwidth_factor: float = 3.):
 
         phase_generator = ExpDecayPhaseGenerator(alpha_phase=alpha_phase, duration=duration)
-        basis_generator = DMPBasisGenerator(phase_generator, duration=duration, num_basis=num_basis)
+        basis_generator = DMPBasisGenerator(phase_generator, duration=duration, num_basis=num_basis,
+                                            basis_bandwidth_factor=bandwidth_factor)
 
         dmp = dmps.DMP(num_dof=num_dof, basis_generator=basis_generator, phase_generator=phase_generator,
                        num_time_steps=int(duration / dt), dt=dt)

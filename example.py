@@ -1,5 +1,4 @@
 from collections import defaultdict
-
 import gym
 import numpy as np
 
@@ -83,4 +82,6 @@ def example_async(n_cpu=4, seed=int('533D', 16)):
 if __name__ == '__main__':
     # example_mujoco()
     # example_dmp()
-    example_async()
+    # example_async()
+    env = gym.make("alr_envs:HoleReacherDMP-v0", context=0.1)
+    print()
