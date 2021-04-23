@@ -72,7 +72,7 @@ register(
 )
 
 register(
-    id='ALRBallInACupSimple-v0',
+    id='ALRBallInACup-v0',
     entry_point='alr_envs.mujoco:ALRBallInACupEnv',
     max_episode_steps=4000,
     kwargs={
@@ -209,8 +209,26 @@ register(
     id='ALRBallInACupSimpleDMP-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     kwargs={
-        "name": "alr_envs:ALRBallInACupSimple-v0",
+        "name": "alr_envs:ALRBallInACup-v0",
         "num_dof": 3,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "learn_goal": False,
+        "alpha_phase": 3,
+        "bandwidth_factor": 2.5,
+        "policy_type": "motor",
+        "weights_scale": 100,
+        "return_to_start": True
+    }
+)
+
+register(
+    id='ALRBallInACupDMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    kwargs={
+        "name": "alr_envs:ALRBallInACup-v0",
+        "num_dof": 7,
         "num_basis": 5,
         "duration": 3.5,
         "post_traj_time": 4.5,
@@ -228,13 +246,14 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     kwargs={
         "name": "alr_envs:ALRBallInACupGoal-v0",
-        "num_dof": 5,
+        "num_dof": 7,
         "num_basis": 5,
-        "duration": 2,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
         "learn_goal": True,
-        "alpha_phase": 2,
-        "bandwidth_factor": 2,
-        "policy_type": "velocity",
+        "alpha_phase": 3,
+        "bandwidth_factor": 2.5,
+        "policy_type": "motor",
         "weights_scale": 50,
         "goal_scale": 0.1
     }
