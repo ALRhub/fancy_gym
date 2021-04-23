@@ -71,6 +71,24 @@ register(
     }
 )
 
+register(
+    id='ALRBallInACupSimple-v0',
+    entry_point='alr_envs.mujoco:ALRBallInACupEnv',
+    max_episode_steps=4000,
+    kwargs={
+        "reward_type": "simple"
+    }
+)
+
+register(
+    id='ALRBallInACupGoal-v0',
+    entry_point='alr_envs.mujoco:ALRBallInACupEnv',
+    max_episode_steps=4000,
+    kwargs={
+        "reward_type": "contextual_goal"
+    }
+)
+
 # Classic control
 
 register(
@@ -180,18 +198,36 @@ register(
     }
 )
 
+# register(
+#     id='HoleReacherDetPMP-v0',
+#     entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
+#     # max_episode_steps=1,
+#     # TODO: add mp kwargs
+# )
+
 register(
-    id='HoleReacherDetPMP-v0',
-    entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
-    # max_episode_steps=1,
-    # TODO: add mp kwargs
+    id='ALRBallInACupSimpleDMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    kwargs={
+        "name": "alr_envs:ALRBallInACupSimple-v0",
+        "num_dof": 3,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "learn_goal": False,
+        "alpha_phase": 3,
+        "bandwidth_factor": 2.5,
+        "policy_type": "motor",
+        "weights_scale": 100,
+        "return_to_start": True
+    }
 )
 
 register(
-    id='BiacSimpleDMP-v0',
+    id='ALRBallInACupGoalDMP-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     kwargs={
-        "name": "alr_envs:HoleReacher-v0",
+        "name": "alr_envs:ALRBallInACupGoal-v0",
         "num_dof": 5,
         "num_basis": 5,
         "duration": 2,

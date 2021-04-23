@@ -11,8 +11,9 @@ class DmpWrapper(MPWrapper):
 
     def __init__(self, env: gym.Env, num_dof: int, num_basis: int, start_pos: np.ndarray = None,
                  final_pos: np.ndarray = None, duration: int = 1, alpha_phase: float = 2., dt: float = None,
-                 learn_goal: bool = False, post_traj_time: float = 0., policy_type: str = None,
-                 weights_scale: float = 1., goal_scale: float = 1., bandwidth_factor: float = 3.):
+                 learn_goal: bool = False, return_to_start: bool = False, post_traj_time: float = 0.,
+                 weights_scale: float = 1., goal_scale: float = 1., bandwidth_factor: float = 3.,
+                 policy_type: str = None):
 
         """
         This Wrapper generates a trajectory based on a DMP and will only return episodic performances.
@@ -34,8 +35,13 @@ class DmpWrapper(MPWrapper):
         self.learn_goal = learn_goal
         dt = env.dt if hasattr(env, "dt") else dt
         assert dt is not None
-        start_pos = env.start_pos if hasattr(env, "start_pos") else start_pos
+        start_pos = start_pos if start_pos is not None else env.start_pos if hasattr(env, "start_pos") else None
         assert start_pos is not None
+        if learn_goal:
+            final_pos = np.zeros_like(start_pos)  # arbitrary, will be learned
+        else:
+            final_pos = final_pos if final_pos is not None else start_pos if return_to_start else None
+        assert final_pos is not None
         self.t = np.linspace(0, duration, int(duration / dt))
         self.goal_scale = goal_scale
 

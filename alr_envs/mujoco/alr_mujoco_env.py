@@ -67,6 +67,9 @@ class AlrMujocoEnv(gym.Env):
         self.init_qpos = self.sim.data.qpos.ravel().copy()
         self.init_qvel = self.sim.data.qvel.ravel().copy()
 
+        self._start_pos = None
+        self._start_vel = None
+
         self._set_action_space()
 
         # action = self.action_space.sample()
@@ -92,6 +95,20 @@ class AlrMujocoEnv(gym.Env):
         By default returns the joint velocities of all simulated objects. May be overridden in subclass.
         """
         return self.sim.data.qvel
+
+    @property
+    def start_pos(self):
+        """
+        Start position of the agent, for example joint angles of a Panda robot. Necessary for MP wrapped envs.
+        """
+        return self._start_pos
+
+    @property
+    def start_vel(self):
+        """
+        Start velocity of the agent. Necessary for MP wrapped envs.
+        """
+        return self._start_vel
 
     def extend_des_pos(self, des_pos):
         """

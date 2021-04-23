@@ -5,14 +5,11 @@ from alr_envs.mujoco import alr_mujoco_env
 
 
 class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
-    def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
+    def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_type: str = None, context: np.ndarray = None):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "biac_base" + ".xml")
-
-        self.start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
-        self.start_vel = np.zeros(7)
 
         self._q_pos = []
         self._q_vel = []
@@ -31,13 +28,21 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
                                              self.xml_path,
                                              apply_gravity_comp=apply_gravity_comp,
                                              n_substeps=n_substeps)
+        self._start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
+        self._start_vel = np.zeros(7)
 
         self.sim_time = 8  # seconds
         self.sim_steps = int(self.sim_time / self.dt)
-        if reward_function is None:
+        if reward_type == "simple":
+            from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
+            reward_function = BallInACupReward
+        elif reward_type == "contextual_goal":
             from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
             reward_function = BallInACupReward
+        else:
+            raise ValueError("Unknown reward type")
         self.reward_function = reward_function(self.sim_steps)
+        self.configure(context)
 
     @property
     def current_pos(self):
@@ -97,6 +102,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
+    # TODO: extend observation space
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         return np.concatenate([
@@ -106,6 +112,20 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             [self._steps],
         ])
 
+    # These functions are for the task with 3 joint actuations
+    def extend_des_pos(self, des_pos):
+        des_pos_full = self.start_pos.copy()
+        des_pos_full[1] = des_pos[0]
+        des_pos_full[3] = des_pos[1]
+        des_pos_full[5] = des_pos[2]
+        return des_pos_full
+
+    def extend_des_vel(self, des_vel):
+        des_vel_full = self.start_vel.copy()
+        des_vel_full[1] = des_vel[0]
+        des_vel_full[3] = des_vel[1]
+        des_vel_full[5] = des_vel[2]
+        return des_vel_full
 
 
 if __name__ == "__main__":

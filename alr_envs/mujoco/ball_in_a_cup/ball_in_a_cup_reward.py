@@ -40,9 +40,12 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.ball_in_cup = False
         self.ball_above_threshold = False
         self.dist_ctxt = 3
+        self.action_costs = []
+        self.cup_angles = []
 
     def compute_reward(self, action, sim, step):
         action_cost = np.sum(np.square(action))
+        self.action_costs.append(action_cost)
 
         stop_sim = False
         success = False
@@ -54,7 +57,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.collision_ids = [sim.model._geom_name2id[name] for name in self.collision_objects]
 
         if self.check_collision(sim):
-            reward = - 1e-4 * action_cost - 1000
+            reward = - 1e-3 * action_cost - 1000
             stop_sim = True
             return reward, success, stop_sim
 
@@ -65,8 +68,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.dists_ctxt.append(np.linalg.norm(ball_pos - self.context))
-        self.ball_traj[step, :] = ball_pos
-        self.cup_traj[step, :] = goal_pos
+        self.ball_traj[step, :] = np.copy(ball_pos)
+        self.cup_traj[step, :] = np.copy(goal_pos)  # ?
+        cup_quat = np.copy(sim.data.body_xquat[sim.model._body_name2id["cup"]])
+        self.cup_angles.append(np.arctan2(2 * (cup_quat[0] * cup_quat[1] + cup_quat[2] * cup_quat[3]),
+                                          1 - 2 * (cup_quat[1] ** 2 + cup_quat[2] ** 2)))
 
         # Determine the first time when ball is in cup
         if not self.ball_in_cup:
@@ -77,25 +83,29 @@ class BallInACupReward(alr_reward_fct.AlrReward):
                 self.dist_ctxt = dist_to_ctxt
 
         if step == self.sim_time - 1:
+            t_min_dist = np.argmin(self.dists)
+            angle_min_dist = self.cup_angles[t_min_dist]
+            cost_angle = (angle_min_dist - np.pi / 2) ** 2
+
             min_dist = np.min(self.dists)
             dist_final = self.dists_final[-1]
             # dist_ctxt = self.dists_ctxt[-1]
 
-             # max distance between ball and cup and cup height at that time
-            ball_to_cup_diff = self.ball_traj[:, 2] - self.cup_traj[:, 2]
-            t_max_diff = np.argmax(ball_to_cup_diff)
-            t_max_ball_height = np.argmax(self.ball_traj[:, 2])
-            max_ball_height = np.max(self.ball_traj[:, 2])
+            #  # max distance between ball and cup and cup height at that time
+            # ball_to_cup_diff = self.ball_traj[:, 2] - self.cup_traj[:, 2]
+            # t_max_diff = np.argmax(ball_to_cup_diff)
+            # t_max_ball_height = np.argmax(self.ball_traj[:, 2])
+            # max_ball_height = np.max(self.ball_traj[:, 2])
 
             # cost = self._get_stage_wise_cost(ball_in_cup, min_dist, dist_final, dist_ctxt)
-            cost = 0.3 * min_dist + 0.3 * dist_final + 0.3 * np.minimum(self.dist_ctxt, 3)
-            reward = np.exp(-1 * cost) - 1e-4 * action_cost
-            if max_ball_height < self.context[2] or ball_to_cup_diff[t_max_ball_height] < 0:
-                reward -= 1
+            cost = 0.5 * min_dist + 0.5 * dist_final + 0.3 * np.minimum(self.dist_ctxt, 3) + 0.01 * cost_angle
+            reward = np.exp(-2 * cost) - 1e-3 * action_cost
+            # if max_ball_height < self.context[2] or ball_to_cup_diff[t_max_ball_height] < 0:
+            #     reward -= 1
 
             success = dist_final < 0.05 and self.dist_ctxt < 0.05
         else:
-            reward = - 1e-4 * action_cost
+            reward = - 1e-3 * action_cost
             success = False
 
         return reward, success, stop_sim

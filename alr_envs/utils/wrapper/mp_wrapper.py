@@ -46,8 +46,9 @@ class MPWrapper(gym.Wrapper, ABC):
         rewards = []
         dones = []
         infos = []
-        for p, c in zip(params, contexts):
-            self.configure(c)
+        # for p, c in zip(params, contexts):
+        for p in params:
+            # self.configure(c)
             ob, reward, done, info = self.step(p)
             obs.append(ob)
             rewards.append(reward)

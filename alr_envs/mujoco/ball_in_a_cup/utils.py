@@ -1,7 +1,6 @@
 from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
 from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_simple import ALRBallInACupEnv as ALRBallInACupEnvSimple
 
 
 def make_contextual_env(rank, seed=0):
@@ -16,7 +15,7 @@ def make_contextual_env(rank, seed=0):
     """
 
     def _init():
-        env = ALRBallInACupEnv()
+        env = ALRBallInACupEnv(reward_type="contextual_goal")
 
         env = DetPMPWrapper(env,
                             num_dof=7,
@@ -50,7 +49,7 @@ def make_env(rank, seed=0):
     """
 
     def _init():
-        env = ALRBallInACupEnvSimple()
+        env = ALRBallInACupEnv(reward_type="simple")
 
         env = DetPMPWrapper(env,
                             num_dof=7,
@@ -84,7 +83,7 @@ def make_simple_env(rank, seed=0):
     """
 
     def _init():
-        env = ALRBallInACupEnvSimple()
+        env = ALRBallInACupEnv(reward_type="simple")
 
         env = DetPMPWrapper(env,
                             num_dof=3,
@@ -119,7 +118,7 @@ def make_simple_dmp_env(rank, seed=0):
     """
 
     def _init():
-        _env = ALRBallInACupEnvSimple()
+        _env = ALRBallInACupEnv(reward_type="simple")
 
         _env = DmpWrapper(_env,
                           num_dof=3,
