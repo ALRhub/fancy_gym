@@ -4,11 +4,11 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
-from alr_envs.utils.utils import angle_normalize
+import alr_envs.utils.utils as alr_utils
 
 
 class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
-    def __init__(self, steps_before_reward=200, n_links=5, balance=True, file_name=None):
+    def __init__(self, steps_before_reward=200, n_links=5, balance=False):
         utils.EzPickle.__init__(**locals())
 
         self._steps = 0
@@ -16,7 +16,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.n_links = n_links
 
         self.balance = balance
-        self.balance_weight = 0.5
+        self.balance_weight = 1.0
 
         self.reward_weight = 1
         if steps_before_reward == 200:
@@ -47,7 +47,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
         if self.balance:
             reward_balance -= self.balance_weight * np.abs(
-                angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
+                alr_utils.angle_normalize(np.sum(self.sim.data.qpos.flat[:self.n_links]), type="rad"))
 
         reward = reward_dist + reward_ctrl + angular_vel + reward_balance
         self.do_simulation(a, self.frame_skip)
@@ -59,7 +59,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                                       goal=self.goal if hasattr(self, "goal") else None)
 
     def viewer_setup(self):
-        self.viewer.cam.trackbodyid = 1
+        self.viewer.cam.trackbodyid = 0
 
     def reset_model(self):
         qpos = self.np_random.uniform(low=-0.1, high=0.1, size=self.model.nq) + self.init_qpos

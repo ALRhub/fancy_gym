@@ -1,0 +1,80 @@
+<mujocoinclude>
+    <body name="test_ball_table" pos="1 0 4">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_table" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_table" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_table" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_table" rgba="0 1 0 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_table" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+    <body name="test_ball_net" pos="0 0 4">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_net" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_net" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_net" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_net" rgba="1 1 0 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_net" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+    <body name="test_ball_racket_0" pos="2.54919187 0.81642672 4">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_racket_0" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_racket_0" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_racket_0" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_racket_0" rgba="1 0 1 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_racket_0" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+        <body name="test_ball_racket_1" pos="2.54919187 0.81642672 4.5">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_racket_1" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_racket_1" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_racket_1" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_racket_1" rgba="1 0 1 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_racket_1" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+        <body name="test_ball_racket_2" pos="2.54919187 0.81642672 3">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_racket_2" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_racket_2" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_racket_2" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_racket_2" rgba="1 0 1 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_racket" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+        <body name="test_ball_racket_3" pos="2.54919187 0.81642672 10">
+        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_racket_3" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_racket_3" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_racket_3" pos="0 0 0" stiffness="0" type="slide"
+               frictionloss="0"/>
+        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_racket_3" rgba="1 0 1 1" mass="0.1"
+              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>
+        <site name="test_ball_racket_3" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>
+    </body>
+<!--            <body name="test_ball_racket_4" pos="2.54919187 0.81642672 4">-->
+<!--        <joint axis="1 0 0" damping="0.0" name="tar:x_test_ball_racket_4" pos="0 0 0" stiffness="0" type="slide"-->
+<!--               frictionloss="0"/>-->
+<!--        <joint axis="0 1 0" damping="0.0" name="tar:y_test_ball_racket_4" pos="0 0 0" stiffness="0" type="slide"-->
+<!--               frictionloss="0"/>-->
+<!--        <joint axis="0 0 1" damping="0.0" name="tar:z_test_ball_racket_4" pos="0 0 0" stiffness="0" type="slide"-->
+<!--               frictionloss="0"/>-->
+<!--        <geom size="0.025 0.025 0.025" type="sphere" condim="4" name="test_ball_racket_4" rgba="1 0 0 1" mass="0.1"-->
+<!--              friction="0.1 0.1 0.1" solimp="1 1 0" solref="0.1 0.03"/>-->
+<!--        <site name="test_ball_racket_4" pos="0 0 0" size="0.02 0.02 0.02" rgba="0 1 0 1" type="sphere"/>-->
+<!--    </body>-->
+
+</mujocoinclude>
