@@ -5,7 +5,8 @@ from alr_envs.mujoco import alr_mujoco_env
 
 
 class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
-    def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_type: str = None, context: np.ndarray = None):
+    def __init__(self, n_substeps=4, apply_gravity_comp=True, simplified: bool = False,
+                 reward_type: str = None, context: np.ndarray = None):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
@@ -31,9 +32,11 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self._start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
         self._start_vel = np.zeros(7)
 
+        self.simplified = simplified
+
         self.sim_time = 8  # seconds
         self.sim_steps = int(self.sim_time / self.dt)
-        if reward_type == "simple":
+        if reward_type == "no_context":
             from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward_simple import BallInACupReward
             reward_function = BallInACupReward
         elif reward_type == "contextual_goal":
@@ -43,6 +46,20 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             raise ValueError("Unknown reward type")
         self.reward_function = reward_function(self.sim_steps)
         self.configure(context)
+
+    @property
+    def start_pos(self):
+        if self.simplified:
+            return self._start_pos[1::2]
+        else:
+            return self._start_pos
+
+    @property
+    def start_vel(self):
+        if self.simplified:
+            return self._start_vel[1::2]
+        else:
+            return self._start_vel
 
     @property
     def current_pos(self):
@@ -58,7 +75,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
-        init_pos_robot = self.start_pos
+        init_pos_robot = self._start_pos
         init_vel = np.zeros_like(init_pos_all)
 
         self._steps = 0
@@ -114,14 +131,14 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     # These functions are for the task with 3 joint actuations
     def extend_des_pos(self, des_pos):
-        des_pos_full = self.start_pos.copy()
+        des_pos_full = self._start_pos.copy()
         des_pos_full[1] = des_pos[0]
         des_pos_full[3] = des_pos[1]
         des_pos_full[5] = des_pos[2]
         return des_pos_full
 
     def extend_des_vel(self, des_vel):
-        des_vel_full = self.start_vel.copy()
+        des_vel_full = self._start_vel.copy()
         des_vel_full[1] = des_vel[0]
         des_vel_full[3] = des_vel[1]
         des_vel_full[5] = des_vel[2]

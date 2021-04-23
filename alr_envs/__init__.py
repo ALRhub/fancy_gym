@@ -72,11 +72,21 @@ register(
 )
 
 register(
+    id='ALRBallInACupSimple-v0',
+    entry_point='alr_envs.mujoco:ALRBallInACupEnv',
+    max_episode_steps=4000,
+    kwargs={
+        "simplified": True,
+        "reward_type": "no_context"
+    }
+)
+
+register(
     id='ALRBallInACup-v0',
     entry_point='alr_envs.mujoco:ALRBallInACupEnv',
     max_episode_steps=4000,
     kwargs={
-        "reward_type": "simple"
+        "reward_type": "no_context"
     }
 )
 
@@ -209,7 +219,7 @@ register(
     id='ALRBallInACupSimpleDMP-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     kwargs={
-        "name": "alr_envs:ALRBallInACup-v0",
+        "name": "alr_envs:ALRBallInACupSimple-v0",
         "num_dof": 3,
         "num_basis": 5,
         "duration": 3.5,
@@ -243,7 +253,7 @@ register(
 
 register(
     id='ALRBallInACupGoalDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_contextual_env',
     kwargs={
         "name": "alr_envs:ALRBallInACupGoal-v0",
         "num_dof": 7,

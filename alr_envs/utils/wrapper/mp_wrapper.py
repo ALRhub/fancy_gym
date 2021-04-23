@@ -66,7 +66,7 @@ class MPWrapper(gym.Wrapper, ABC):
 
         if self.post_traj_steps > 0:
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
-            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.dmp.num_dimensions))])
+            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dimensions))])
 
         # self._trajectory = trajectory
         # self._velocity = velocity
@@ -76,6 +76,7 @@ class MPWrapper(gym.Wrapper, ABC):
 
         # TODO: @Max Why do we need this configure, states should be part of the model
         # TODO: Ask Onur if the context distribution needs to be outside the environment
+        # TODO: For now create a new env with each context
         # self.env.configure(context)
         obs = self.env.reset()
         info = {}

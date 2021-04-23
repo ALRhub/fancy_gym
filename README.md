@@ -19,6 +19,7 @@ Currently we have the following environments:
 |`ALRLongReacher-v0`|Modified (7 links) Mujoco gym's `Reacher-v2` (2 links)| 200 | 7 | 27
 |`ALRLongReacherSparse-v0`|Same as `ALRLongReacher-v0`, but the distance penalty is only provided in the last time step.| 200 | 7 | 27
 |`ALRLongReacherSparseBalanced-v0`|Same as `ALRLongReacherSparse-v0`, but the end-effector has to remain upright.| 200 | 7 | 27
+|`ALRBallInACupSimple-v0`| Ball-in-a-cup task where a robot needs to catch a ball attached to a cup at its end-effector. | 4000 | 3 | wip
 |`ALRBallInACup-v0`| Ball-in-a-cup task where a robot needs to catch a ball attached to a cup at its end-effector | 4000 | 7 | wip
 |`ALRBallInACupGoal-v0`| Similiar to `ALRBallInACupSimple-v0` but the ball needs to be caught at a specified goal position | 4000 | 7 | wip
     
@@ -41,7 +42,7 @@ All environments provide the full episode reward and additional information abou
 |`ViaPointReacherDMP-v0`| A DMP provides a trajectory for the `ViaPointReacher-v0` task. | 200 | 25
 |`HoleReacherFixedGoalDMP-v0`| A DMP provides a trajectory for the `HoleReacher-v0` task with a fixed goal attractor. | 200 | 25
 |`HoleReacherDMP-v0`| A DMP provides a trajectory for the `HoleReacher-v0` task. The goal attractor needs to be learned. | 200 | 30 
-|`ALRBallInACupSimpleDMP-v0`| A DMP provides a trajectory for a simplified `ALRBallInACup-v0` task where only 3 joints are actuated. | 4000 | 15
+|`ALRBallInACupSimpleDMP-v0`| A DMP provides a trajectory for the `ALRBallInACupSimple-v0` task where only 3 joints are actuated. | 4000 | 15
 |`ALRBallInACupDMP-v0`| A DMP provides a trajectory for the `ALRBallInACup-v0` task. | 4000 | 35
 |`ALRBallInACupGoalDMP-v0`| A DMP provides a trajectory for the `ALRBallInACupGoal-v0` task. | 4000 | 35 | 3 
 

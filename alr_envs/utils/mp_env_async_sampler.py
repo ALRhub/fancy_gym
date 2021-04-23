@@ -23,7 +23,7 @@ def split_array(ary, size):
         split = [k * size for k in range(1, repeat)]
         sub_arys = np.split(ary, split)
 
-        if n_samples % repeat != 0:
+        if n_samples % size != 0:
             tmp = np.zeros_like(sub_arys[0])
             last = sub_arys[-1]
             tmp[0: len(last)] = last
@@ -42,8 +42,8 @@ def _flatten_list(l):
 
 class AlrMpEnvSampler:
     """
-    An asynchronous sampler for MPWrapper environments. A sampler object can be called with a set of parameters and
-    returns the corresponding final obs, rewards, dones and info dicts.
+    An asynchronous sampler for non contextual MPWrapper environments. A sampler object can be called with a set of
+    parameters and returns the corresponding final obs, rewards, dones and info dicts.
     """
     def __init__(self, env_id, num_envs, seed=0):
         self.num_envs = num_envs
@@ -68,10 +68,10 @@ class AlrMpEnvSampler:
 
 
 if __name__ == "__main__":
-    env_name = "alr_envs:HoleReacherDMP-v0"
+    env_name = "alr_envs:ALRBallInACupSimpleDMP-v0"
     n_cpu = 8
-    dim = 30
-    n_samples = 20
+    dim = 15
+    n_samples = 10
 
     sampler = AlrMpEnvSampler(env_name, num_envs=n_cpu)
 
