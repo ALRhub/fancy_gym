@@ -38,7 +38,7 @@ class MPWrapper(gym.Wrapper, ABC):
 
         # rendering
         self.render_mode = render_mode
-        self.render_kwargs = None
+        self.render_kwargs = {}
 
     # TODO: not yet final
     def __call__(self, params, contexts=None):
