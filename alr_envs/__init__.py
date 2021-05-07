@@ -120,6 +120,16 @@ register(
 )
 
 register(
+    id='SimpleReacher-v1',
+    entry_point='alr_envs.classic_control:SimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 2,
+        "random_start": False
+    }
+)
+
+register(
     id='LongSimpleReacher-v0',
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
@@ -154,7 +164,54 @@ register(
     }
 )
 
+register(
+    id='HoleReacher-v2',
+    entry_point='alr_envs.classic_control.hole_reacher_v2:HoleReacher',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "allow_self_collision": False,
+        "allow_wall_collision": False,
+        "hole_width": 0.25,
+        "hole_depth": 1,
+        "hole_x": 2,
+        "collision_penalty": 100,
+    }
+)
+
 # MP environments
+
+register(
+    id='SimpleReacherDMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:SimpleReacher-v0",
+        "num_dof": 2,
+        "num_basis": 5,
+        "duration": 2,
+        "alpha_phase": 2,
+        "learn_goal": True,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+    }
+)
+
+register(
+    id='SimpleReacherDMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:SimpleReacher-v1",
+        "num_dof": 2,
+        "num_basis": 5,
+        "duration": 2,
+        "alpha_phase": 2,
+        "learn_goal": True,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+    }
+)
 
 register(
     id='ViaPointReacherDMP-v0',
@@ -178,6 +235,24 @@ register(
     # max_episode_steps=1,
     kwargs={
         "name": "alr_envs:HoleReacher-v0",
+        "num_dof": 5,
+        "num_basis": 5,
+        "duration": 2,
+        "learn_goal": True,
+        "alpha_phase": 2,
+        "bandwidth_factor": 2,
+        "policy_type": "velocity",
+        "weights_scale": 50,
+        "goal_scale": 0.1
+    }
+)
+
+register(
+    id='HoleReacherDMP-v2',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:HoleReacher-v2",
         "num_dof": 5,
         "num_basis": 5,
         "duration": 2,

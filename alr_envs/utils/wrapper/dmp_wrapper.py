@@ -36,9 +36,10 @@ class DmpWrapper(MPWrapper):
         dt = env.dt if hasattr(env, "dt") else dt
         assert dt is not None
         start_pos = start_pos if start_pos is not None else env.start_pos if hasattr(env, "start_pos") else None
-        assert start_pos is not None
+        # TODO: assert start_pos is not None  # start_pos will be set in initialize, do we need this here?
         if learn_goal:
-            final_pos = np.zeros_like(start_pos)  # arbitrary, will be learned
+            # final_pos = np.zeros_like(start_pos)  # arbitrary, will be learned
+            final_pos = np.zeros((1, num_dof))  # arbitrary, will be learned
         else:
             final_pos = final_pos if final_pos is not None else start_pos if return_to_start else None
         assert final_pos is not None
@@ -62,7 +63,10 @@ class DmpWrapper(MPWrapper):
         dmp = dmps.DMP(num_dof=num_dof, basis_generator=basis_generator, phase_generator=phase_generator,
                        num_time_steps=int(duration / dt), dt=dt)
 
-        dmp.dmp_start_pos = start_pos.reshape((1, num_dof))
+        # dmp.dmp_start_pos = start_pos.reshape((1, num_dof))
+        # in a contextual environment, the start_pos may be not fixed, set in mp_rollout?
+        # TODO: Should we set start_pos in init at all? It's only used after calling rollout anyway...
+        dmp.dmp_start_pos = start_pos.reshape((1, num_dof)) if start_pos is not None else np.zeros((1, num_dof))
 
         weights = np.zeros((num_basis, num_dof))
         goal_pos = np.zeros(num_dof) if self.learn_goal else final_pos
@@ -87,6 +91,8 @@ class DmpWrapper(MPWrapper):
         return goal_pos * self.goal_scale, weight_matrix * self.weights_scale
 
     def mp_rollout(self, action):
+        if self.mp.start_pos is None:
+            self.mp.start_pos = self.env.start_pos
         goal_pos, weight_matrix = self.goal_and_weights(action)
         self.mp.set_weights(weight_matrix, goal_pos)
         return self.mp.reference_trajectory(self.t)

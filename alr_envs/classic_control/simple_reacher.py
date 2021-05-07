@@ -18,17 +18,20 @@ class SimpleReacherEnv(gym.Env):
     towards the end of the trajectory.
     """
 
-    def __init__(self, n_links):
+    def __init__(self, n_links, random_start=True):
         super().__init__()
         self.link_lengths = np.ones(n_links)
         self.n_links = n_links
         self.dt = 0.1
+
+        self.random_start = random_start
 
         self._goal_pos = None
 
         self._joints = None
         self._joint_angle = None
         self._angle_velocity = None
+        self._start_pos = None
 
         self.max_torque = 1  # 10
         self.steps_before_reward = 199
@@ -49,6 +52,10 @@ class SimpleReacherEnv(gym.Env):
 
         self._steps = 0
         self.seed()
+
+    @property
+    def start_pos(self):
+        return self._start_pos
 
     def step(self, action: np.ndarray):
 
@@ -85,6 +92,7 @@ class SimpleReacherEnv(gym.Env):
             np.sin(theta),
             self._angle_velocity,
             self.end_effector - self._goal_pos,
+            self._goal_pos,
             self._steps
         ])
 
@@ -116,7 +124,12 @@ class SimpleReacherEnv(gym.Env):
 
         # TODO: maybe do initialisation more random?
         # Sample only orientation of first link, i.e. the arm is always straight.
-        self._joint_angle = np.hstack([[self.np_random.uniform(-np.pi, np.pi)], np.zeros(self.n_links - 1)])
+        if self.random_start:
+            self._joint_angle = np.hstack([[self.np_random.uniform(-np.pi, np.pi)], np.zeros(self.n_links - 1)])
+        else:
+            self._joint_angle = np.zeros(self.n_links)
+
+        self._start_pos = self._joint_angle
         self._angle_velocity = np.zeros(self.n_links)
         self._joints = np.zeros((self.n_links + 1, 2))
         self._update_joints()

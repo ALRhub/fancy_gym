@@ -61,6 +61,9 @@ class MPWrapper(gym.Wrapper, ABC):
     def configure(self, context):
         self.env.configure(context)
 
+    def reset(self):
+        return self.env.reset()
+
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
         trajectory, velocity = self.mp_rollout(action)
@@ -78,8 +81,9 @@ class MPWrapper(gym.Wrapper, ABC):
         # TODO: @Max Why do we need this configure, states should be part of the model
         # TODO: Ask Onur if the context distribution needs to be outside the environment
         # TODO: For now create a new env with each context
+        # TODO: Explicitly call reset before step to obtain context from obs?
         # self.env.configure(context)
-        obs = self.env.reset()
+        # obs = self.env.reset()
         info = {}
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
