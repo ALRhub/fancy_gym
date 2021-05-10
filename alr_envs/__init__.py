@@ -130,6 +130,25 @@ register(
 )
 
 register(
+    id='EpisodicSimpleReacher-v0',
+    entry_point='alr_envs.classic_control:EpisodicSimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 2,
+    }
+)
+
+register(
+    id='EpisodicSimpleReacher-v1',
+    entry_point='alr_envs.classic_control:EpisodicSimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 2,
+        "random_start": False
+    }
+)
+
+register(
     id='LongSimpleReacher-v0',
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
@@ -186,7 +205,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     # max_episode_steps=1,
     kwargs={
-        "name": "alr_envs:SimpleReacher-v0",
+        "name": "alr_envs:EpisodicSimpleReacher-v0",
         "num_dof": 2,
         "num_basis": 5,
         "duration": 2,
@@ -202,7 +221,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     # max_episode_steps=1,
     kwargs={
-        "name": "alr_envs:SimpleReacher-v1",
+        "name": "alr_envs:EpisodicSimpleReacher-v1",
         "num_dof": 2,
         "num_basis": 5,
         "duration": 2,

@@ -81,12 +81,11 @@ class AlrContextualMpEnvSampler:
         repeat = int(np.ceil(n_samples / self.env.num_envs))
         vals = defaultdict(list)
         for i in range(repeat):
-            obs = self.env.reset()
+            new_contexts = self.env.reset()
 
-            new_contexts = obs[-2]
             new_samples = dist.sample(new_contexts)
 
-            obs, reward, done, info = self.env.step(p)
+            obs, reward, done, info = self.env.step(new_samples)
             vals['obs'].append(obs)
             vals['reward'].append(reward)
             vals['done'].append(done)

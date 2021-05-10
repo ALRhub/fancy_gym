@@ -26,7 +26,7 @@ class SimpleReacherEnv(gym.Env):
 
         self.random_start = random_start
 
-        self._goal_pos = None
+        self._goal = None
 
         self._joints = None
         self._joint_angle = None
@@ -52,10 +52,6 @@ class SimpleReacherEnv(gym.Env):
 
         self._steps = 0
         self.seed()
-
-    @property
-    def start_pos(self):
-        return self._start_pos
 
     def step(self, action: np.ndarray):
 
@@ -91,8 +87,7 @@ class SimpleReacherEnv(gym.Env):
             np.cos(theta),
             np.sin(theta),
             self._angle_velocity,
-            self.end_effector - self._goal_pos,
-            self._goal_pos,
+            self.end_effector - self._goal,
             self._steps
         ])
 
@@ -107,7 +102,7 @@ class SimpleReacherEnv(gym.Env):
         self._joints[1:] = self._joints[0] + np.cumsum(x.T, axis=0)
 
     def _get_reward(self, action: np.ndarray):
-        diff = self.end_effector - self._goal_pos
+        diff = self.end_effector - self._goal
         reward_dist = 0
 
         # TODO: Is this the best option
@@ -135,7 +130,7 @@ class SimpleReacherEnv(gym.Env):
         self._update_joints()
         self._steps = 0
 
-        self._goal_pos = self._get_random_goal()
+        self._goal = self._get_random_goal()
         return self._get_obs().copy()
 
     def _get_random_goal(self):
@@ -160,13 +155,13 @@ class SimpleReacherEnv(gym.Env):
             plt.figure(self.fig.number)
 
         plt.cla()
-        plt.title(f"Iteration: {self._steps}, distance: {self.end_effector - self._goal_pos}")
+        plt.title(f"Iteration: {self._steps}, distance: {self.end_effector - self._goal}")
 
         # Arm
         plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
 
         # goal
-        goal_pos = self._goal_pos.T
+        goal_pos = self._goal.T
         plt.plot(goal_pos[0], goal_pos[1], 'gx')
         # distance between end effector and goal
         plt.plot([self.end_effector[0], goal_pos[0]], [self.end_effector[1], goal_pos[1]], 'g--')

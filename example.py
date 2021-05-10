@@ -83,5 +83,6 @@ if __name__ == '__main__':
     # example_mujoco()
     # example_dmp()
     # example_async()
-    env = gym.make("alr_envs:HoleReacherDMP-v0", context=0.1)
+    # env = gym.make("alr_envs:HoleReacherDMP-v0", context=0.1)
+    env = gym.make("alr_envs:SimpleReacherDMP-v1")
     print()

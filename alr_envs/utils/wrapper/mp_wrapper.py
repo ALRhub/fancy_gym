@@ -62,7 +62,8 @@ class MPWrapper(gym.Wrapper, ABC):
         self.env.configure(context)
 
     def reset(self):
-        return self.env.reset()
+        obs = self.env.reset()
+        return obs
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
