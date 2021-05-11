@@ -1,16 +1,36 @@
 from abc import ABC, abstractmethod
+from typing import Union
 
 import gym
 import numpy as np
 
-from alr_envs.utils.mps.mp_environments import AlrEnv
-from alr_envs.utils.policies import get_policy_class
+from alr_envs.utils.mps.alr_env import AlrEnv
+from alr_envs.utils.policies import get_policy_class, BaseController
 
 
 class MPWrapper(gym.Wrapper, ABC):
+    """
+    Base class for movement primitive based gym.Wrapper implementations.
 
-    def __init__(self, env: AlrEnv, num_dof: int, dt: float, duration: float = 1, post_traj_time: float = 0.,
-                 policy_type: str = None, weights_scale: float = 1., render_mode: str = None, **mp_kwargs):
+    :param env: The (wrapped) environment this wrapper is applied on
+    :param num_dof: Dimension of the action space of the wrapped env
+    :param duration: Number of timesteps in the trajectory of the movement primitive
+    :param post_traj_time: Time for which the last position of the trajectory is fed to the environment to continue
+    simulation
+    :param policy_type: Type or object defining the policy that is used to generate action based on the trajectory
+    :param weight_scale: Scaling parameter for the actions given to this wrapper
+    :param render_mode: Equivalent to gym render mode
+    """
+    def __init__(self,
+                 env: AlrEnv,
+                 num_dof: int,
+                 duration: int = 1,
+                 post_traj_time: float = 0.,
+                 policy_type: Union[str, BaseController] = None,
+                 weights_scale: float = 1.,
+                 render_mode: str = None,
+                 **mp_kwargs
+                 ):
         super().__init__(env)
 
         # adjust observation space to reduce version
@@ -19,14 +39,15 @@ class MPWrapper(gym.Wrapper, ABC):
                                                 high=obs_sp.high[self.env.active_obs],
                                                 dtype=obs_sp.dtype)
 
-        assert dt is not None  # this should never happen as MPWrapper is a base class
-        self.post_traj_steps = int(post_traj_time / dt)
+        self.post_traj_steps = int(post_traj_time / env.dt)
 
-        self.mp = self.initialize_mp(num_dof, duration, dt, **mp_kwargs)
+        self.mp = self.initialize_mp(num_dof=num_dof, duration=duration, **mp_kwargs)
         self.weights_scale = weights_scale
 
-        policy_class = get_policy_class(policy_type)
-        self.policy = policy_class(env)
+        if type(policy_type) is str:
+            self.policy = get_policy_class(policy_type, env, mp_kwargs)
+        else:
+            self.policy = policy_type
 
         # rendering
         self.render_mode = render_mode
@@ -62,29 +83,30 @@ class MPWrapper(gym.Wrapper, ABC):
 
         if self.post_traj_steps > 0:
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
-            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.n_dof))])
+            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dimensions))])
 
-        # self._trajectory = trajectory
-        # self._velocity = velocity
-
-        rewards = 0
-        info = {}
-        # create random obs as the reset function is called externally
-        obs = self.env.observation_space.sample()
-
+        trajectory_length = len(trajectory)
+        actions = np.zeros(shape=(trajectory_length, self.mp.num_dimensions))
+        observations= np.zeros(shape=(trajectory_length,) + self.env.observation_space.shape)
+        rewards = np.zeros(shape=(trajectory_length,))
+        trajectory_return = 0
+        infos = dict(step_infos =[])
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
-            ac = self.policy.get_action(pos_vel[0], pos_vel[1])
-            obs, rew, done, info = self.env.step(ac)
-            rewards += rew
-            # TODO return all dicts?
-            # [infos[k].append(v) for k, v in info.items()]
+            actions[t,:] = self.policy.get_action(pos_vel[0], pos_vel[1])
+            observations[t,:], rewards[t], done, info = self.env.step(actions[t,:])
+            trajectory_return += rewards[t]
+            infos['step_infos'].append(info)
             if self.render_mode:
                 self.env.render(mode=self.render_mode, **self.render_kwargs)
             if done:
                 break
 
+        infos['step_actions'] = actions[:t+1]
+        infos['step_observations'] = observations[:t+1]
+        infos['step_rewards'] = rewards[:t+1]
+        infos['trajectory_length'] = t+1
         done = True
-        return obs[self.env.active_obs], rewards, done, info
+        return observations[t][self.env.active_obs], trajectory_return, done, infos
 
     def render(self, mode='human', **kwargs):
         """Only set render options here, such that they can be used during the rollout.
@@ -102,7 +124,7 @@ class MPWrapper(gym.Wrapper, ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def initialize_mp(self, num_dof: int, duration: float, dt: float, **kwargs):
+    def initialize_mp(self, num_dof: int, duration: float, **kwargs):
         """
         Create respective instance of MP
         Returns:
