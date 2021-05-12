@@ -1,27 +1,34 @@
+from typing import Union
+
 import gym
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from gym.utils import seeding
 from matplotlib import patches
+
 from alr_envs.classic_control.utils import check_self_collision
+from alr_envs.utils.mps.mp_environments import MPEnv
 
 
-class HoleReacher(gym.Env):
+class HoleReacher(MPEnv):
 
-    def __init__(self, n_links, hole_x, hole_width, hole_depth, allow_self_collision=False,
-                 allow_wall_collision=False, collision_penalty=1000):
-
+    def __init__(self, n_links, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
+                 hole_width: float = 1., random_start: bool = True, allow_self_collision: bool = False,
+                 allow_wall_collision: bool = False, collision_penalty: bool = 1000):
         self.n_links = n_links
         self.link_lengths = np.ones((n_links, 1))
 
-        # task
-        self.hole_x = hole_x  # x-position of center of hole
-        self.hole_width = hole_width  # width of hole
-        self.hole_depth = hole_depth  # depth of hole
+        self.random_start = random_start
 
-        self.bottom_center_of_hole = np.hstack([hole_x, -hole_depth])
-        self.top_center_of_hole = np.hstack([hole_x, 0])
-        self.left_wall_edge = np.hstack([hole_x - self.hole_width / 2, 0])
-        self.right_wall_edge = np.hstack([hole_x + self.hole_width / 2, 0])
+        # provided initial parameters
+        self._hole_x = hole_x  # x-position of center of hole
+        self._hole_width = hole_width  # width of hole
+        self._hole_depth = hole_depth  # depth of hole
+
+        # temp containers to store current setting
+        self._tmp_hole_x = None
+        self._tmp_hole_width = None
+        self._tmp_hole_depth = None
 
         # collision
         self.allow_self_collision = allow_self_collision
@@ -29,11 +36,11 @@ class HoleReacher(gym.Env):
         self.collision_penalty = collision_penalty
 
         # state
-        self._joints = None
         self._joint_angles = None
         self._angle_velocity = None
-        self.start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
-        self.start_vel = np.zeros(self.n_links)
+        self._joints = None
+        self._start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
+        self._start_vel = np.zeros(self.n_links)
 
         self.dt = 0.01
         # self.time_limit = 2
@@ -43,35 +50,64 @@ class HoleReacher(gym.Env):
             [np.pi] * self.n_links,  # cos
             [np.pi] * self.n_links,  # sin
             [np.inf] * self.n_links,  # velocity
+            [np.inf],  # hole width
+            [np.inf],  # hole depth
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps TODO: Maybe
         ])
         self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
+        plt.ion()
         self.fig = None
-        rect_1 = patches.Rectangle((-self.n_links, -1),
-                                   self.n_links + self.hole_x - self.hole_width / 2, 1,
-                                   fill=True, edgecolor='k', facecolor='k')
-        rect_2 = patches.Rectangle((self.hole_x + self.hole_width / 2, -1),
-                                   self.n_links - self.hole_x + self.hole_width / 2, 1,
-                                   fill=True, edgecolor='k', facecolor='k')
-        rect_3 = patches.Rectangle((self.hole_x - self.hole_width / 2, -1), self.hole_width,
-                                   1 - self.hole_depth,
-                                   fill=True, edgecolor='k', facecolor='k')
 
-        self.patches = [rect_1, rect_2, rect_3]
+        self.seed()
+
+    @property
+    def corrected_obs_index(self):
+        return np.hstack([
+            [self.random_start] * self.n_links,  # cos
+            [self.random_start] * self.n_links,  # sin
+            [self.random_start] * self.n_links,  # velocity
+            [self._hole_width is None],  # hole width
+            [self._hole_depth is None],  # hole width
+            [True] * 2,  # x-y coordinates of target distance
+            [False]  # env steps
+        ])
+
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
     @property
     def end_effector(self):
         return self._joints[self.n_links].T
 
-    def configure(self, context):
-        pass
+    def _generate_hole(self):
+        hole_x = self.np_random.uniform(0.5, 3.5, 1) if self._hole_x is None else np.copy(self._hole_x)
+        hole_width = self.np_random.uniform(0.5, 0.1, 1) if self._hole_width is None else np.copy(self._hole_width)
+        # TODO we do not want this right now.
+        hole_depth = self.np_random.uniform(1, 1, 1) if self._hole_depth is None else np.copy(self._hole_depth)
+
+        self.bottom_center_of_hole = np.hstack([hole_x, -hole_depth])
+        self.top_center_of_hole = np.hstack([hole_x, 0])
+        self.left_wall_edge = np.hstack([hole_x - hole_width / 2, 0])
+        self.right_wall_edge = np.hstack([hole_x + hole_width / 2, 0])
+
+        return hole_x, hole_width, hole_depth
 
     def reset(self):
-        self._joint_angles = self.start_pos
-        self._angle_velocity = self.start_vel
+        if self.random_start:
+            # MAybe change more than dirst seed
+            first_joint = self.np_random.uniform(np.pi / 4, 3 * np.pi / 4)
+            self._joint_angles = np.hstack([[first_joint], np.zeros(self.n_links - 1)])
+        else:
+            self._joint_angles = self._start_pos
+
+        self._tmp_hole_x, self._tmp_hole_width, self._tmp_hole_depth = self._generate_hole()
+        self.set_patches()
+
+        self._angle_velocity = self._start_vel
         self._joints = np.zeros((self.n_links + 1, 2))
         self._update_joints()
         self._steps = 0
@@ -96,15 +132,14 @@ class HoleReacher(gym.Env):
         success = False
         reward = 0
         if not self._is_collided:
+            # return reward only in last time step
             if self._steps == 199:
                 dist = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
                 reward = - dist ** 2
                 success = dist < 0.005
         else:
+            # Episode terminates when colliding, hence return reward
             dist = np.linalg.norm(self.end_effector - self.bottom_center_of_hole)
-            # if self.collision_penalty != 0:
-            #     reward = -self.collision_penalty
-            # else:
             reward = - dist ** 2 - self.collision_penalty
 
         reward -= 5e-8 * np.sum(acc ** 2)
@@ -112,8 +147,6 @@ class HoleReacher(gym.Env):
         info = {"is_collided": self._is_collided, "is_success": success}
 
         self._steps += 1
-
-        # done = self._steps * self.dt > self.time_limit or self._is_collided
         done = self._is_collided
 
         return self._get_obs().copy(), reward, done, info
@@ -148,6 +181,8 @@ class HoleReacher(gym.Env):
             np.cos(theta),
             np.sin(theta),
             self._angle_velocity,
+            self._hole_width,
+            self._hole_depth,
             self.end_effector - self.bottom_center_of_hole,
             self._steps
         ])
@@ -155,31 +190,26 @@ class HoleReacher(gym.Env):
     def get_forward_kinematics(self, num_points_per_link=1):
         theta = self._joint_angles[:, None]
 
-        if num_points_per_link > 1:
-            intermediate_points = np.linspace(0, 1, num_points_per_link)
-        else:
-            intermediate_points = 1
-
+        intermediate_points = np.linspace(0, 1, num_points_per_link) if num_points_per_link > 1 else 1
         accumulated_theta = np.cumsum(theta, axis=0)
-
-        endeffector = np.zeros(shape=(self.n_links, num_points_per_link, 2))
+        end_effector = np.zeros(shape=(self.n_links, num_points_per_link, 2))
 
         x = np.cos(accumulated_theta) * self.link_lengths * intermediate_points
         y = np.sin(accumulated_theta) * self.link_lengths * intermediate_points
 
-        endeffector[0, :, 0] = x[0, :]
-        endeffector[0, :, 1] = y[0, :]
+        end_effector[0, :, 0] = x[0, :]
+        end_effector[0, :, 1] = y[0, :]
 
         for i in range(1, self.n_links):
-            endeffector[i, :, 0] = x[i, :] + endeffector[i - 1, -1, 0]
-            endeffector[i, :, 1] = y[i, :] + endeffector[i - 1, -1, 1]
+            end_effector[i, :, 0] = x[i, :] + end_effector[i - 1, -1, 0]
+            end_effector[i, :, 1] = y[i, :] + end_effector[i - 1, -1, 1]
 
-        return np.squeeze(endeffector + self._joints[0, :])
+        return np.squeeze(end_effector + self._joints[0, :])
 
     def check_wall_collision(self, line_points):
 
         # all points that are before the hole in x
-        r, c = np.where(line_points[:, :, 0] < (self.hole_x - self.hole_width / 2))
+        r, c = np.where(line_points[:, :, 0] < (self._tmp_hole_x - self._tmp_hole_width / 2))
 
         # check if any of those points are below surface
         nr_line_points_below_surface_before_hole = np.sum(line_points[r, c, 1] < 0)
@@ -188,7 +218,7 @@ class HoleReacher(gym.Env):
             return True
 
         # all points that are after the hole in x
-        r, c = np.where(line_points[:, :, 0] > (self.hole_x + self.hole_width / 2))
+        r, c = np.where(line_points[:, :, 0] > (self._tmp_hole_x + self._tmp_hole_width / 2))
 
         # check if any of those points are below surface
         nr_line_points_below_surface_after_hole = np.sum(line_points[r, c, 1] < 0)
@@ -197,11 +227,11 @@ class HoleReacher(gym.Env):
             return True
 
         # all points that are above the hole
-        r, c = np.where((line_points[:, :, 0] > (self.hole_x - self.hole_width / 2)) & (
-                line_points[:, :, 0] < (self.hole_x + self.hole_width / 2)))
+        r, c = np.where((line_points[:, :, 0] > (self._tmp_hole_x - self._tmp_hole_width / 2)) & (
+                line_points[:, :, 0] < (self._tmp_hole_x + self._tmp_hole_width / 2)))
 
         # check if any of those points are below surface
-        nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self.hole_depth)
+        nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self._tmp_hole_depth)
 
         if nr_line_points_below_surface_in_hole > 0:
             return True
@@ -210,28 +240,33 @@ class HoleReacher(gym.Env):
 
     def render(self, mode='human'):
         if self.fig is None:
+            plt.ion()
             self.fig = plt.figure()
-            # plt.ion()
-            # plt.pause(0.01)
-        else:
-            plt.figure(self.fig.number)
+            ax = self.fig.add_subplot(1, 1, 1)
+
+            # limits
+            lim = np.sum(self.link_lengths) + 0.5
+            ax.set_xlim([-lim, lim])
+            ax.set_ylim([-1.1, lim])
+
+            self.line, = ax.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
+            self.set_patches()
+            self.fig.show()
 
         if mode == "human":
-            plt.cla()
-            plt.title(f"Iteration: {self._steps}, distance: {self.end_effector - self.bottom_center_of_hole}")
+            self.fig.gca().set_title(
+                f"Iteration: {self._steps}, distance: {self.end_effector - self.bottom_center_of_hole}")
 
             # Arm
             plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
 
-            # Add the patch to the Axes
-            [plt.gca().add_patch(rect) for rect in self.patches]
+            # Arm
+            self.line.set_xdata(self._joints[:, 0])
+            self.line.set_ydata(self._joints[:, 1])
 
-            lim = np.sum(self.link_lengths) + 0.5
-            plt.xlim([-lim, lim])
-            plt.ylim([-1.1, lim])
-            # plt.draw()
-            plt.pause(1e-4)  # pushes window to foreground, which is annoying.
-            # self.fig.canvas.flush_events()
+            self.fig.canvas.draw()
+            self.fig.canvas.flush_events()
+            # self.fig.show()
 
         elif mode == "partial":
             if self._steps == 1:
@@ -266,6 +301,24 @@ class HoleReacher(gym.Env):
 
                 plt.pause(0.01)
 
+    def set_patches(self):
+        if self.fig is not None:
+            self.fig.gca().patches = []
+            rect_1 = patches.Rectangle((-self.n_links, -1), self.n_links + self._tmp_hole_x - self._tmp_hole_width / 2,
+                                       1,
+                                       fill=True, edgecolor='k', facecolor='k')
+            rect_2 = patches.Rectangle((self._tmp_hole_x + self._tmp_hole_width / 2, -1),
+                                       self.n_links - self._tmp_hole_x + self._tmp_hole_width / 2, 1,
+                                       fill=True, edgecolor='k', facecolor='k')
+            rect_3 = patches.Rectangle((self._tmp_hole_x - self._tmp_hole_width / 2, -1), self._tmp_hole_width,
+                                       1 - self._tmp_hole_depth,
+                                       fill=True, edgecolor='k', facecolor='k')
+
+            # Add the patch to the Axes
+            self.fig.gca().add_patch(rect_1)
+            self.fig.gca().add_patch(rect_2)
+            self.fig.gca().add_patch(rect_3)
+
     def close(self):
         if self.fig is not None:
             plt.close(self.fig)
@@ -274,8 +327,8 @@ class HoleReacher(gym.Env):
 if __name__ == '__main__':
     nl = 5
     render_mode = "human"  # "human" or "partial" or "final"
-    env = HoleReacher(n_links=nl, allow_self_collision=False, allow_wall_collision=False, hole_width=0.15,
-                      hole_depth=1, hole_x=1)
+    env = HoleReacher(n_links=nl, allow_self_collision=False, allow_wall_collision=False, hole_width=None,
+                      hole_depth=1, hole_x=None)
     env.reset()
     # env.render(mode=render_mode)
 
@@ -285,11 +338,13 @@ if __name__ == '__main__':
         ac = 2 * env.action_space.sample()
         # ac[0] += np.pi/2
         obs, rew, d, info = env.step(ac)
-        env.render(mode=render_mode)
+        # if i % 1 == 0:
+        if i == 0:
+            env.render(mode=render_mode)
 
         print(rew)
 
         if d:
-            break
+            env.reset()
 
     env.close()

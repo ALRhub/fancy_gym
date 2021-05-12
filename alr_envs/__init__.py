@@ -1,7 +1,7 @@
 from gym.envs.registration import register
 
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
-# from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
+# from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
 
 # Mujoco
 

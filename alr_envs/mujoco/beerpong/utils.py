@@ -1,4 +1,4 @@
-from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
+from alr_envs.utils.mps.detpmp_wrapper import DetPMPWrapper
 from alr_envs.mujoco.beerpong.beerpong import ALRBeerpongEnv
 from alr_envs.mujoco.beerpong.beerpong_simple import ALRBeerpongEnv as ALRBeerpongEnvSimple
 

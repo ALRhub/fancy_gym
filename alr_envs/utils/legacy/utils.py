@@ -1,7 +1,7 @@
 import alr_envs.classic_control.hole_reacher as hr
 import alr_envs.classic_control.viapoint_reacher as vpr
-from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
-from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
+from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
+from alr_envs.utils.mps.detpmp_wrapper import DetPMPWrapper
 import numpy as np
 
 
@@ -65,7 +65,7 @@ def make_holereacher_env(rank, seed=0):
                           dt=_env.dt,
                           learn_goal=True,
                           alpha_phase=2,
-                          start_pos=_env.start_pos,
+                          start_pos=_env._start_pos,
                           policy_type="velocity",
                           weights_scale=50,
                           goal_scale=0.1
@@ -105,7 +105,7 @@ def make_holereacher_fix_goal_env(rank, seed=0):
                           learn_goal=False,
                           final_pos=np.array([2.02669572, -1.25966385, -1.51618198, -0.80946476,  0.02012344]),
                           alpha_phase=2,
-                          start_pos=_env.start_pos,
+                          start_pos=_env._start_pos,
                           policy_type="velocity",
                           weights_scale=50,
                           goal_scale=1
@@ -142,7 +142,7 @@ def make_holereacher_env_pmp(rank, seed=0):
                              num_basis=5,
                              width=0.02,
                              policy_type="velocity",
-                             start_pos=_env.start_pos,
+                             start_pos=_env._start_pos,
                              duration=2,
                              post_traj_time=0,
                              dt=_env.dt,
