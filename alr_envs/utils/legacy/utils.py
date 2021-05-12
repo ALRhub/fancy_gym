@@ -49,13 +49,13 @@ def make_holereacher_env(rank, seed=0):
     """
 
     def _init():
-        _env = hr.HoleReacher(n_links=5,
-                           allow_self_collision=False,
-                           allow_wall_collision=False,
-                           hole_width=0.25,
-                           hole_depth=1,
-                           hole_x=2,
-                           collision_penalty=100)
+        _env = hr.HoleReacherEnv(n_links=5,
+                                 allow_self_collision=False,
+                                 allow_wall_collision=False,
+                                 hole_width=0.25,
+                                 hole_depth=1,
+                                 hole_x=2,
+                                 collision_penalty=100)
 
         _env = DmpWrapper(_env,
                           num_dof=5,
@@ -89,13 +89,13 @@ def make_holereacher_fix_goal_env(rank, seed=0):
     """
 
     def _init():
-        _env = hr.HoleReacher(n_links=5,
-                           allow_self_collision=False,
-                           allow_wall_collision=False,
-                           hole_width=0.15,
-                           hole_depth=1,
-                           hole_x=1,
-                           collision_penalty=100)
+        _env = hr.HoleReacherEnv(n_links=5,
+                                 allow_self_collision=False,
+                                 allow_wall_collision=False,
+                                 hole_width=0.15,
+                                 hole_depth=1,
+                                 hole_x=1,
+                                 collision_penalty=100)
 
         _env = DmpWrapper(_env,
                           num_dof=5,
@@ -129,27 +129,16 @@ def make_holereacher_env_pmp(rank, seed=0):
     """
 
     def _init():
-        _env = hr.HoleReacher(n_links=5,
-                           allow_self_collision=False,
-                           allow_wall_collision=False,
-                           hole_width=0.15,
-                           hole_depth=1,
-                           hole_x=1,
-                           collision_penalty=1000)
+        _env = hr.HoleReacherEnv(n_links=5,
+                                 allow_self_collision=False,
+                                 allow_wall_collision=False,
+                                 hole_width=0.15,
+                                 hole_depth=1,
+                                 hole_x=1,
+                                 collision_penalty=1000)
 
-        _env = DetPMPWrapper(_env,
-                             num_dof=5,
-                             num_basis=5,
-                             width=0.02,
-                             policy_type="velocity",
-                             start_pos=_env._start_pos,
-                             duration=2,
-                             post_traj_time=0,
-                             dt=_env.dt,
-                             weights_scale=0.2,
-                             zero_start=True,
-                             zero_goal=False
-                             )
+        _env = DetPMPWrapper(_env, num_dof=5, num_basis=5, width=0.02, duration=2, dt=_env.dt, post_traj_time=0,
+                             policy_type="velocity", weights_scale=0.2, zero_start=True, zero_goal=False)
         _env.seed(seed + rank)
         return _env
 

@@ -17,19 +17,8 @@ def make_contextual_env(rank, seed=0):
     def _init():
         env = ALRBeerpongEnv()
 
-        env = DetPMPWrapper(env,
-                            num_dof=7,
-                            num_basis=5,
-                            width=0.005,
-                            policy_type="motor",
-                            start_pos=env.start_pos,
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.5,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=7, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.5, zero_start=True, zero_goal=True)
 
         env.seed(seed + rank)
         return env
@@ -51,19 +40,8 @@ def make_env(rank, seed=0):
     def _init():
         env = ALRBeerpongEnvSimple()
 
-        env = DetPMPWrapper(env,
-                            num_dof=7,
-                            num_basis=5,
-                            width=0.005,
-                            policy_type="motor",
-                            start_pos=env.start_pos,
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.25,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=7, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.25, zero_start=True, zero_goal=True)
 
         env.seed(seed + rank)
         return env
@@ -85,19 +63,8 @@ def make_simple_env(rank, seed=0):
     def _init():
         env = ALRBeerpongEnvSimple()
 
-        env = DetPMPWrapper(env,
-                            num_dof=3,
-                            num_basis=5,
-                            width=0.005,
-                            policy_type="motor",
-                            start_pos=env.start_pos[1::2],
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.5,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=3, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.5, zero_start=True, zero_goal=True)
 
         env.seed(seed + rank)
         return env

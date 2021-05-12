@@ -9,7 +9,7 @@ class MPEnv(gym.Env):
 
     @property
     @abstractmethod
-    def corrected_obs_index(self):
+    def active_obs(self):
         """Returns boolean value for each observation entry
         whether the observation is returned by the DMP for the contextual case or not.
         This effectively allows to filter unwanted or unnecessary observations from the full step-based case.

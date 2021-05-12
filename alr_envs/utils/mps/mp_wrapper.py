@@ -13,6 +13,12 @@ class MPWrapper(gym.Wrapper, ABC):
                  policy_type: str = None, weights_scale: float = 1., render_mode: str = None, **mp_kwargs):
         super().__init__(env)
 
+        # adjust observation space to reduce version
+        obs_sp = self.env.observation_space
+        self.observation_space = gym.spaces.Box(low=obs_sp.low[self.env.active_obs],
+                                                high=obs_sp.high[self.env.active_obs],
+                                                dtype=obs_sp.dtype)
+
         assert dt is not None  # this should never happen as MPWrapper is a base class
         self.post_traj_steps = int(post_traj_time / dt)
 
@@ -51,8 +57,7 @@ class MPWrapper(gym.Wrapper, ABC):
         self.env.configure(context)
 
     def reset(self):
-        obs = self.env.reset()
-        return obs[self.env]
+        return self.env.reset()[self.env.active_obs]
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
@@ -82,7 +87,7 @@ class MPWrapper(gym.Wrapper, ABC):
                 break
 
         done = True
-        return obs, rewards, done, info
+        return obs[self.env.active_obs], rewards, done, info
 
     def render(self, mode='human', **kwargs):
         """Only set render options here, such that they can be used during the rollout.

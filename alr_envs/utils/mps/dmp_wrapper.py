@@ -63,7 +63,7 @@ class DmpWrapper(MPWrapper):
             goal_pos = params[0, -self.mp.num_dimensions:]  # [num_dof]
             params = params[:, :-self.mp.num_dimensions]  # [1,num_dof]
         else:
-            goal_pos = self.env.goal_pos  # self.mp.dmp_goal_pos.flatten()
+            goal_pos = self.env.goal_pos
             assert goal_pos is not None
 
         weight_matrix = np.reshape(params, self.mp.dmp_weights.shape)  # [num_basis, num_dof]

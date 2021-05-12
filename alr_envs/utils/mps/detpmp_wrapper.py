@@ -7,22 +7,22 @@ from alr_envs.utils.mps.mp_wrapper import MPWrapper
 
 
 class DetPMPWrapper(MPWrapper):
-    def __init__(self, env: MPEnv, num_dof: int, num_basis: int, width: int, start_pos=None, duration: int = 1,
-                 dt: float = 0.01, post_traj_time: float = 0., policy_type: str = None, weights_scale: float = 1.,
+    def __init__(self, env: MPEnv, num_dof: int, num_basis: int, width: int, duration: int = 1, dt: float = 0.01,
+                 post_traj_time: float = 0., policy_type: str = None, weights_scale: float = 1.,
                  zero_start: bool = False, zero_goal: bool = False, **mp_kwargs):
-        # self.duration = duration  # seconds
+        self.duration = duration  # seconds
 
         super().__init__(env, num_dof, dt, duration, post_traj_time, policy_type, weights_scale, num_basis=num_basis,
-                         width=width, start_pos=start_pos, zero_start=zero_start, zero_goal=zero_goal, **mp_kwargs)
+                         width=width, zero_start=zero_start, zero_goal=zero_goal, **mp_kwargs)
+
+        self.dt = dt
 
         action_bounds = np.inf * np.ones((self.mp.n_basis * self.mp.n_dof))
         self.action_space = gym.spaces.Box(low=-action_bounds, high=action_bounds, dtype=np.float32)
 
-        self.start_pos = start_pos
-        self.dt = dt
 
     def initialize_mp(self, num_dof: int, duration: int, dt: float, num_basis: int = 5, width: float = None,
-                      start_pos: np.ndarray = None, zero_start: bool = False, zero_goal: bool = False):
+                      zero_start: bool = False, zero_goal: bool = False):
         pmp = det_promp.DeterministicProMP(n_basis=num_basis, n_dof=num_dof, width=width, off=0.01,
                                            zero_start=zero_start, zero_goal=zero_goal)
 
