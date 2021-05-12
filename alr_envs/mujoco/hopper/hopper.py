@@ -3,7 +3,8 @@ import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
 
 class hopper(alr_mujoco_env.AlrMujocoEnv):
-    __init__(self):
+    def __init__(self):
+        alr_mujoco_env.AlrMujocoEnv.__init__(self)
 
 
 if __name__ == "__main__":
@@ -27,3 +28,4 @@ if __name__ == "__main__":
     #         break
 
     # env.close()
+    print("test")
