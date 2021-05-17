@@ -46,7 +46,7 @@ def example_dmp():
             obs = env.reset()
 
 
-def example_async(n_cpu=4, seed=int('533D', 16)):
+def example_async(env_id="alr_envs:HoleReacherDMP-v0", n_cpu=4, seed=int('533D', 16)):
     def make_env(env_id, seed, rank):
         env = gym.make(env_id)
         env.seed(seed + rank)
@@ -73,7 +73,7 @@ def example_async(n_cpu=4, seed=int('533D', 16)):
         # do not return values above threshold
         return (*map(lambda v: np.stack(v)[:n_samples], vals.values()),)
 
-    envs = gym.vector.AsyncVectorEnv([make_env("alr_envs:HoleReacherDMP-v0", seed, i) for i in range(n_cpu)])
+    envs = gym.vector.AsyncVectorEnv([make_env(env_id, seed, i) for i in range(n_cpu)])
 
     obs = envs.reset()
     print(sample(envs, 16))
@@ -82,7 +82,6 @@ def example_async(n_cpu=4, seed=int('533D', 16)):
 if __name__ == '__main__':
     # example_mujoco()
     # example_dmp()
-    # example_async()
-    env = gym.make("alr_envs:HoleReacherDMP-v0")
-    # env = gym.make("alr_envs:SimpleReacherDMP-v1")
-    print()
+    example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
+    # env = gym.make("alr_envs:HoleReacherDMP-v0", context=0.1)
+    # env = gym.make("alr_envs:HoleReacherDMP-v1")

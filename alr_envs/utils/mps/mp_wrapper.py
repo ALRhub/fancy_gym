@@ -1,32 +1,24 @@
 from abc import ABC, abstractmethod
-from collections import defaultdict
 
 import gym
 import numpy as np
 
+from alr_envs.utils.mps.mp_environments import MPEnv
 from alr_envs.utils.policies import get_policy_class
 
 
 class MPWrapper(gym.Wrapper, ABC):
 
-    def __init__(self,
-                 env: gym.Env,
-                 num_dof: int,
-                 duration: int = 1,
-                 dt: float = None,
-                 post_traj_time: float = 0.,
-                 policy_type: str = None,
-                 weights_scale: float = 1.,
-                 render_mode: str = None,
-                 **mp_kwargs
-                 ):
+    def __init__(self, env: MPEnv, num_dof: int, dt: float, duration: int = 1, post_traj_time: float = 0.,
+                 policy_type: str = None, weights_scale: float = 1., render_mode: str = None, **mp_kwargs):
         super().__init__(env)
 
-        self.num_dof = num_dof
-        # self.num_basis = num_basis
-        # self.duration = duration  # seconds
+        # adjust observation space to reduce version
+        obs_sp = self.env.observation_space
+        self.observation_space = gym.spaces.Box(low=obs_sp.low[self.env.active_obs],
+                                                high=obs_sp.high[self.env.active_obs],
+                                                dtype=obs_sp.dtype)
 
-        # dt = env.dt if hasattr(env, "dt") else dt
         assert dt is not None  # this should never happen as MPWrapper is a base class
         self.post_traj_steps = int(post_traj_time / dt)
 
@@ -40,8 +32,11 @@ class MPWrapper(gym.Wrapper, ABC):
         self.render_mode = render_mode
         self.render_kwargs = {}
 
-    # TODO: not yet final
+    # TODO: @Max I think this should not be in this class, this functionality should be part of your sampler.
     def __call__(self, params, contexts=None):
+        """
+        Can be used to provide a batch of parameter sets
+        """
         params = np.atleast_2d(params)
         obs = []
         rewards = []
@@ -50,7 +45,6 @@ class MPWrapper(gym.Wrapper, ABC):
         # for p, c in zip(params, contexts):
         for p in params:
             # self.configure(c)
-            # context = self.reset()
             ob, reward, done, info = self.step(p)
             obs.append(ob)
             rewards.append(reward)
@@ -63,8 +57,7 @@ class MPWrapper(gym.Wrapper, ABC):
         self.env.configure(context)
 
     def reset(self):
-        obs = self.env.reset()
-        return obs
+        return self.env.reset()[self.env.active_obs]
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a DMP and then does the usual loop over reset and step"""
@@ -78,15 +71,9 @@ class MPWrapper(gym.Wrapper, ABC):
         # self._velocity = velocity
 
         rewards = 0
-        # infos = defaultdict(list)
-
-        # TODO: @Max Why do we need this configure, states should be part of the model
-        # TODO: Ask Onur if the context distribution needs to be outside the environment
-        # TODO: For now create a new env with each context
-        # TODO: Explicitly call reset before step to obtain context from obs?
-        # self.env.configure(context)
-        # obs = self.env.reset()
         info = {}
+        # create random obs as the reset function is called externally
+        obs = self.env.observation_space.sample()
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
             ac = self.policy.get_action(pos_vel[0], pos_vel[1])
@@ -100,25 +87,13 @@ class MPWrapper(gym.Wrapper, ABC):
                 break
 
         done = True
-        return obs, rewards, done, info
+        return obs[self.env.active_obs], rewards, done, info
 
     def render(self, mode='human', **kwargs):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""
         self.render_mode = mode
         self.render_kwargs = kwargs
-
-    # def __call__(self, actions):
-    #     return self.step(actions)
-        # params = np.atleast_2d(params)
-        # rewards = []
-        # infos = []
-        # for p, c in zip(params, contexts):
-        #     reward, info = self.rollout(p, c)
-        #     rewards.append(reward)
-        #     infos.append(info)
-        #
-        # return np.array(rewards), infos
 
     @abstractmethod
     def mp_rollout(self, action):

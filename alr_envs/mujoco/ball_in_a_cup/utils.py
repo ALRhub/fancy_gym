@@ -1,5 +1,5 @@
-from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
-from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
+from alr_envs.utils.mps.detpmp_wrapper import DetPMPWrapper
+from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
 
 
@@ -17,19 +17,8 @@ def make_contextual_env(rank, seed=0):
     def _init():
         env = ALRBallInACupEnv(reward_type="contextual_goal")
 
-        env = DetPMPWrapper(env,
-                            num_dof=7,
-                            num_basis=5,
-                            width=0.005,
-                            policy_type="motor",
-                            start_pos=env.start_pos,
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.5,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=7, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.5, zero_start=True, zero_goal=True)
 
         env.seed(seed + rank)
         return env
@@ -51,19 +40,8 @@ def make_env(rank, seed=0):
     def _init():
         env = ALRBallInACupEnv(reward_type="simple")
 
-        env = DetPMPWrapper(env,
-                            num_dof=7,
-                            num_basis=5,
-                            width=0.005,
-                            policy_type="motor",
-                            start_pos=env.start_pos,
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.2,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=7, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.2, zero_start=True, zero_goal=True)
 
         env.seed(seed + rank)
         return env
@@ -85,20 +63,8 @@ def make_simple_env(rank, seed=0):
     def _init():
         env = ALRBallInACupEnv(reward_type="simple")
 
-        env = DetPMPWrapper(env,
-                            num_dof=3,
-                            num_basis=5,
-                            width=0.005,
-                            off=-0.1,
-                            policy_type="motor",
-                            start_pos=env.start_pos[1::2],
-                            duration=3.5,
-                            post_traj_time=4.5,
-                            dt=env.dt,
-                            weights_scale=0.25,
-                            zero_start=True,
-                            zero_goal=True
-                            )
+        env = DetPMPWrapper(env, num_dof=3, num_basis=5, width=0.005, duration=3.5, dt=env.dt, post_traj_time=4.5,
+                            policy_type="motor", weights_scale=0.25, zero_start=True, zero_goal=True, off=-0.1)
 
         env.seed(seed + rank)
         return env

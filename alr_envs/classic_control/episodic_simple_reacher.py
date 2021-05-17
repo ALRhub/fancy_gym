@@ -35,7 +35,7 @@ class EpisodicSimpleReacherEnv(SimpleReacherEnv):
 
     def _get_obs(self):
         if self.random_start:
-            theta = self._joint_angle
+            theta = self._joint_angles
             return np.hstack([
                 np.cos(theta),
                 np.sin(theta),
