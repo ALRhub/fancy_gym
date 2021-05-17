@@ -22,7 +22,7 @@ class MPWrapper(gym.Wrapper, ABC):
                  ):
         super().__init__(env)
 
-        # self.num_dof = num_dof
+        self.num_dof = num_dof
         # self.num_basis = num_basis
         # self.duration = duration  # seconds
 
@@ -50,6 +50,7 @@ class MPWrapper(gym.Wrapper, ABC):
         # for p, c in zip(params, contexts):
         for p in params:
             # self.configure(c)
+            # context = self.reset()
             ob, reward, done, info = self.step(p)
             obs.append(ob)
             rewards.append(reward)

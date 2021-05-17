@@ -63,6 +63,10 @@ class HoleReacher(gym.Env):
         self.patches = [rect_1, rect_2, rect_3]
 
     @property
+    def init_qpos(self):
+        return self.start_pos
+
+    @property
     def end_effector(self):
         return self._joints[self.n_links].T
 
@@ -82,7 +86,7 @@ class HoleReacher(gym.Env):
         """
         a single step with an action in joint velocity space
         """
-        vel = action  # + 0.01 * np.random.randn(self.num_links)
+        vel = action  # + 0.05 * np.random.randn(self.n_links)
         acc = (vel - self._angle_velocity) / self.dt
         self._angle_velocity = vel
         self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
@@ -237,7 +241,10 @@ class HoleReacher(gym.Env):
             if self._steps == 1:
                 # fig, ax = plt.subplots()
                 # Add the patch to the Axes
-                [plt.gca().add_patch(rect) for rect in self.patches]
+                try:
+                    [plt.gca().add_patch(rect) for rect in self.patches]
+                except RuntimeError:
+                    pass
                 # plt.pause(0.01)
 
             if self._steps % 20 == 0 or self._steps in [1, 199] or self._is_collided:

@@ -26,7 +26,7 @@ class EpisodicSimpleReacherEnv(SimpleReacherEnv):
         self.observation_space = spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
     @property
-    def start_pos(self):
+    def init_qpos(self):
         return self._start_pos
 
     # @property

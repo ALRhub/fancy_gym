@@ -22,7 +22,7 @@ class SimpleReacherEnv(gym.Env):
         super().__init__()
         self.link_lengths = np.ones(n_links)
         self.n_links = n_links
-        self.dt = 0.1
+        self.dt = 0.01
 
         self.random_start = random_start
 
@@ -56,10 +56,13 @@ class SimpleReacherEnv(gym.Env):
     def step(self, action: np.ndarray):
 
         # action = self._add_action_noise(action)
-        action = np.clip(action, -self.max_torque, self.max_torque)
+        # action = np.clip(action, -self.max_torque, self.max_torque)
+        vel = action
 
-        self._angle_velocity = self._angle_velocity + self.dt * action
-        self._joint_angle = angle_normalize(self._joint_angle + self.dt * self._angle_velocity)
+        # self._angle_velocity = self._angle_velocity + self.dt * action
+        # self._joint_angle = angle_normalize(self._joint_angle + self.dt * self._angle_velocity)
+        self._angle_velocity = vel
+        self._joint_angle = self._joint_angle + self.dt * self._angle_velocity
         self._update_joints()
         self._steps += 1
 
@@ -111,7 +114,7 @@ class SimpleReacherEnv(gym.Env):
             # reward_dist = np.exp(-0.1 * diff ** 2).mean()
             # reward_dist = - (diff ** 2).mean()
 
-        reward_ctrl = (action ** 2).sum()
+        reward_ctrl = 1e-5 * (action ** 2).sum()
         reward = reward_dist - reward_ctrl
         return reward, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
 
@@ -139,7 +142,7 @@ class SimpleReacherEnv(gym.Env):
         # Sample uniformly in circle with radius R around center of reacher.
         R = np.sum(self.link_lengths)
         r = R * np.sqrt(self.np_random.uniform())
-        theta = self.np_random.uniform() * 2 * np.pi
+        theta = np.pi/2 + 0.001 * np.random.randn()  # self.np_random.uniform() * 2 * np.pi
         return center + r * np.stack([np.cos(theta), np.sin(theta)])
 
     def seed(self, seed=None):
@@ -170,8 +173,8 @@ class SimpleReacherEnv(gym.Env):
         plt.xlim([-lim, lim])
         plt.ylim([-lim, lim])
         # plt.draw()
-        # plt.pause(1e-4) pushes window to foreground, which is annoying.
-        self.fig.canvas.flush_events()
+        plt.pause(1e-4)  # pushes window to foreground, which is annoying.
+        # self.fig.canvas.flush_events()
 
     def close(self):
         del self.fig

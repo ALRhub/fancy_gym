@@ -98,7 +98,7 @@ class DmpWrapper(MPWrapper):
 
     def mp_rollout(self, action):
         # if self.mp.start_pos is None:
-        self.mp.dmp_start_pos = self.env.init_qpos  # start_pos
+        self.mp.dmp_start_pos = self.env.init_qpos.reshape((1, self.num_dof))  # start_pos
         goal_pos, weight_matrix = self.goal_and_weights(action)
         self.mp.set_weights(weight_matrix, goal_pos)
         return self.mp.reference_trajectory(self.t)
