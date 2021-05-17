@@ -70,7 +70,7 @@ class AlrMpEnvSampler:
 
 class AlrContextualMpEnvSampler:
     """
-    An asynchronous sampler for non contextual MPWrapper environments. A sampler object can be called with a set of
+    An asynchronous sampler for contextual MPWrapper environments. A sampler object can be called with a set of
     parameters and returns the corresponding final obs, rewards, dones and info dicts.
     """
     def __init__(self, env_id, num_envs, seed=0, **env_kwargs):

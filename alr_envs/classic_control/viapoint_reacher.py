@@ -99,9 +99,28 @@ class ViaPointReacher(MPEnv):
         return self._get_obs().copy()
 
     def _generate_goal(self):
-        self._via_point = self.np_random.uniform(0.5, 3.5, 2) if self._via_target is None else np.copy(self._via_target)
-        self._goal = self.np_random.uniform(0.5, 0.1, 2) if self._target is None else np.copy(self._target)
-        # raise NotImplementedError("How to properly sample points??")
+        # TODO: Maybe improve this later, this can yield quite a lot of invalid settings
+
+        total_length = np.sum(self.link_lengths)
+
+        # rejection sampled point in inner circle with 0.5*Radius
+        if self._via_target is None:
+            via_target = np.array([total_length, total_length])
+            while np.linalg.norm(via_target) >= 0.5 * total_length:
+                via_target = self.np_random.uniform(low=-0.5 * total_length, high=0.5 * total_length, size=2)
+        else:
+            via_target = np.copy(self._via_target)
+
+        # rejection sampled point in outer circle
+        if self._target is None:
+            goal = np.array([total_length, total_length])
+            while np.linalg.norm(goal) >= total_length or np.linalg.norm(goal) <= 0.5 * total_length:
+                goal = self.np_random.uniform(low=-total_length, high=total_length, size=2)
+        else:
+            goal = np.copy(self._target)
+
+        self._via_target = via_target
+        self._goal = goal
 
     def _update_joints(self):
         """

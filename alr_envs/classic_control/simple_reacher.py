@@ -127,12 +127,6 @@ class SimpleReacherEnv(MPEnv):
     def _generate_goal(self):
 
         if self._target is None:
-            # center = self._joints[0]
-            # # Sample uniformly in circle with radius R around center of reacher.
-            # R = np.sum(self.link_lengths)
-            # r = R * np.sqrt(self.np_random.uniform())
-            # theta = self.np_random.uniform() * 2 * np.pi
-            # goal = center + r * np.stack([np.cos(theta), np.sin(theta)])
 
             total_length = np.sum(self.link_lengths)
             goal = np.array([total_length, total_length])
