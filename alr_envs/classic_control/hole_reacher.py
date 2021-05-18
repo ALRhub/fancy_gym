@@ -14,7 +14,7 @@ class HoleReacherEnv(MPEnv):
 
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
-                 allow_wall_collision: bool = False, collision_penalty: bool = 1000):
+                 allow_wall_collision: bool = False, collision_penalty: float = 1000):
 
         self.n_links = n_links
         self.link_lengths = np.ones((n_links, 1))
@@ -52,7 +52,7 @@ class HoleReacherEnv(MPEnv):
             [np.pi] * self.n_links,  # sin
             [np.inf] * self.n_links,  # velocity
             [np.inf],  # hole width
-            [np.inf],  # hole depth
+            # [np.inf],  # hole depth
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps TODO: Maybe
         ])
@@ -138,24 +138,20 @@ class HoleReacherEnv(MPEnv):
         self._is_collided = self_collision or wall_collision
 
     def _get_reward(self, acc: np.ndarray):
-        success = False
-        reward = -np.inf
-        if not self._is_collided:
-            dist = 0
+        reward = 0
+        # success = False
+
+        if self._steps == 199 or self._is_collided:
             # return reward only in last time step
-            if self._steps == 199:
-                dist = np.linalg.norm(self.end_effector - self._goal)
-                success = dist < 0.005
-        else:
-            # Episode terminates when colliding, hence return reward
+            # Episode also terminates when colliding, hence return reward
             dist = np.linalg.norm(self.end_effector - self._goal)
-            reward = -self.collision_penalty
+            # success = dist < 0.005 and not self._is_collided
+            reward = - dist ** 2 - self.collision_penalty * self._is_collided
 
-        reward -= dist ** 2
         reward -= 5e-8 * np.sum(acc ** 2)
-        info = {"is_success": success}
+        # info = {"is_success": success}
 
-        return reward, info
+        return reward, {}  # info
 
     def _get_obs(self):
         theta = self._joint_angles
@@ -164,7 +160,7 @@ class HoleReacherEnv(MPEnv):
             np.sin(theta),
             self._angle_velocity,
             self._tmp_hole_width,
-            self._tmp_hole_depth,
+            # self._tmp_hole_depth,
             self.end_effector - self._goal,
             self._steps
         ])
@@ -281,7 +277,7 @@ class HoleReacherEnv(MPEnv):
             [self.random_start] * self.n_links,  # sin
             [self.random_start] * self.n_links,  # velocity
             [self._hole_width is None],  # hole width
-            [self._hole_depth is None],  # hole width
+            # [self._hole_depth is None],  # hole depth
             [True] * 2,  # x-y coordinates of target distance
             [False]  # env steps
         ])

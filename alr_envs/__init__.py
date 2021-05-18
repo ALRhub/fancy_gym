@@ -172,6 +172,7 @@ register(
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
+        "random_start": True,
         "allow_self_collision": False,
         "allow_wall_collision": False,
         "hole_width": None,
