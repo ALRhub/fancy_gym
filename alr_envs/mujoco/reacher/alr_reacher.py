@@ -2,12 +2,12 @@ import os
 
 import numpy as np
 from gym import utils
-from gym.envs.mujoco import mujoco_env
+from gym.envs.mujoco import MujocoEnv
 
 import alr_envs.utils.utils as alr_utils
 
 
-class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
+class ALRReacherEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, steps_before_reward=200, n_links=5, balance=False):
         utils.EzPickle.__init__(**locals())
 
@@ -31,7 +31,7 @@ class ALRReacherEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         else:
             raise ValueError(f"Invalid number of links {n_links}, only 5 or 7 allowed.")
 
-        mujoco_env.MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
+        MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
 
     def step(self, a):
         self._steps += 1
