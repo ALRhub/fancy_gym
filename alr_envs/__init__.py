@@ -269,6 +269,12 @@ register(
     }
 )
 
+# Hopper
+register(
+    id='ALRHopper-v0',
+    entry_point='alr_envs.mujoco:ALRHopperEnv',
+)
+
 # BBO functions
 
 for dim in [5, 10, 25, 50, 100]:
