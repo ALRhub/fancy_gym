@@ -10,17 +10,17 @@ class MPEnv(gym.Env):
     @property
     @abstractmethod
     def active_obs(self):
-        """Returns boolean value for each observation entry
-        whether the observation is returned by the DMP for the contextual case or not.
+        """Returns boolean mask for each observation entry
+        whether the observation is returned for the contextual case or not.
         This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
         """
-        raise NotImplementedError()
+        return np.ones(self.observation_space.shape, dtype=bool)
 
     @property
     @abstractmethod
     def start_pos(self) -> Union[float, int, np.ndarray]:
         """
-        Returns the current position of the joints
+        Returns the starting position of the joints
         """
         raise NotImplementedError()
 
