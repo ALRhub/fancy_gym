@@ -1,7 +1,8 @@
 from gym.envs.registration import register
 
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
-# from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
+
+# from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
 
 # Mujoco
 
@@ -71,6 +72,17 @@ register(
     }
 )
 
+## Balancing Reacher
+
+register(
+    id='Balancing-v0',
+    entry_point='alr_envs.mujoco:BalancingEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+    }
+)
+
 register(
     id='ALRBallInACupSimple-v0',
     entry_point='alr_envs.mujoco:ALRBallInACupEnv',
@@ -101,21 +113,23 @@ register(
 
 # Classic control
 
-register(
-    id='Balancing-v0',
-    entry_point='alr_envs.mujoco:BalancingEnv',
-    max_episode_steps=200,
-    kwargs={
-        "n_links": 5,
-    }
-)
-
+## Simple Reacher
 register(
     id='SimpleReacher-v0',
     entry_point='alr_envs.classic_control:SimpleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 2,
+    }
+)
+
+register(
+    id='SimpleReacher-v1',
+    entry_point='alr_envs.classic_control:SimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 2,
+        "random_start": False
     }
 )
 
@@ -129,6 +143,18 @@ register(
 )
 
 register(
+    id='LongSimpleReacher-v1',
+    entry_point='alr_envs.classic_control:SimpleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "random_start": False
+    }
+)
+
+## Viapoint Reacher
+
+register(
     id='ViaPointReacher-v0',
     entry_point='alr_envs.classic_control.viapoint_reacher:ViaPointReacher',
     max_episode_steps=200,
@@ -139,12 +165,45 @@ register(
     }
 )
 
+## Hole Reacher
 register(
     id='HoleReacher-v0',
-    entry_point='alr_envs.classic_control.hole_reacher:HoleReacher',
+    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
+        "allow_self_collision": False,
+        "allow_wall_collision": False,
+        "hole_width": None,
+        "hole_depth": 1,
+        "hole_x": None,
+        "collision_penalty": 100,
+    }
+)
+
+register(
+    id='HoleReacher-v1',
+    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "random_start": False,
+        "allow_self_collision": False,
+        "allow_wall_collision": False,
+        "hole_width": None,
+        "hole_depth": 1,
+        "hole_x": None,
+        "collision_penalty": 100,
+    }
+)
+
+register(
+    id='HoleReacher-v2',
+    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "random_start": False,
         "allow_self_collision": False,
         "allow_wall_collision": False,
         "hole_width": 0.25,
@@ -155,6 +214,25 @@ register(
 )
 
 # MP environments
+## Simple Reacher
+versions = ["SimpleReacher-v0", "SimpleReacher-v1", "LongSimpleReacher-v0", "LongSimpleReacher-v1"]
+for v in versions:
+    name = v.split("-")
+    register(
+        id=f'{name[0]}DMP-{name[1]}',
+        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+        # max_episode_steps=1,
+        kwargs={
+            "name": f"alr_envs:{v}",
+            "num_dof": 2 if "long" not in v.lower() else 5,
+            "num_basis": 5,
+            "duration": 2,
+            "alpha_phase": 2,
+            "learn_goal": True,
+            "policy_type": "velocity",
+            "weights_scale": 50,
+        }
+    )
 
 register(
     id='ViaPointReacherDMP-v0',
@@ -172,23 +250,33 @@ register(
     }
 )
 
-register(
-    id='HoleReacherDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
-    # max_episode_steps=1,
-    kwargs={
-        "name": "alr_envs:HoleReacher-v0",
-        "num_dof": 5,
-        "num_basis": 5,
-        "duration": 2,
-        "learn_goal": True,
-        "alpha_phase": 2,
-        "bandwidth_factor": 2,
-        "policy_type": "velocity",
-        "weights_scale": 50,
-        "goal_scale": 0.1
-    }
-)
+## Hole Reacher
+versions = ["v0", "v1", "v2"]
+for v in versions:
+    register(
+        id=f'HoleReacherDMP-{v}',
+        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+        # max_episode_steps=1,
+        kwargs={
+            "name": f"alr_envs:HoleReacher-{v}",
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "learn_goal": True,
+            "alpha_phase": 2,
+            "bandwidth_factor": 2,
+            "policy_type": "velocity",
+            "weights_scale": 50,
+            "goal_scale": 0.1
+        }
+    )
+
+# register(
+#     id='HoleReacherDetPMP-v0',
+#     entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
+#     # max_episode_steps=1,
+#     # TODO: add mp kwargs
+# )
 
 # TODO: properly add final_pos
 register(
@@ -208,12 +296,7 @@ register(
     }
 )
 
-# register(
-#     id='HoleReacherDetPMP-v0',
-#     entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
-#     # max_episode_steps=1,
-#     # TODO: add mp kwargs
-# )
+## Ball in Cup
 
 register(
     id='ALRBallInACupSimpleDMP-v0',

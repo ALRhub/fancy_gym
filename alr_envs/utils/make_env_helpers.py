@@ -1,5 +1,5 @@
-from alr_envs.utils.wrapper.dmp_wrapper import DmpWrapper
-from alr_envs.utils.wrapper.detpmp_wrapper import DetPMPWrapper
+from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
+from alr_envs.utils.mps.detpmp_wrapper import DetPMPWrapper
 import gym
 from gym.vector.utils import write_to_shared_memory
 import sys
