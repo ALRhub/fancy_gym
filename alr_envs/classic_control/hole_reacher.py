@@ -105,8 +105,8 @@ class HoleReacherEnv(MPEnv):
         return self._get_obs().copy()
 
     def _generate_hole(self):
-        self._tmp_hole_x = self.np_random.uniform(0.5, 3.5, 1) if self._hole_x is None else np.copy(self._hole_x)
-        self._tmp_hole_width = self.np_random.uniform(0.5, 0.1, 1) if self._hole_width is None else np.copy(
+        self._tmp_hole_x = self.np_random.uniform(1, 3.5, 1) if self._hole_x is None else np.copy(self._hole_x)
+        self._tmp_hole_width = self.np_random.uniform(0.15, 0.5, 1) if self._hole_width is None else np.copy(
             self._hole_width)
         # TODO we do not want this right now.
         self._tmp_hole_depth = self.np_random.uniform(1, 1, 1) if self._hole_depth is None else np.copy(
@@ -310,12 +310,13 @@ if __name__ == '__main__':
                          hole_depth=1, hole_x=None)
     obs = env.reset()
 
-    for i in range(200):
+    for i in range(2000):
         # objective.load_result("/tmp/cma")
         # test with random actions
         ac = 2 * env.action_space.sample()
         obs, rew, d, info = env.step(ac)
-        env.render(mode=render_mode)
+        if i % 10 == 0:
+            env.render(mode=render_mode)
 
         print(rew)
 
