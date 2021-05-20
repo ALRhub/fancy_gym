@@ -275,6 +275,25 @@ register(
     entry_point='alr_envs.mujoco:ALRHopperEnv',
 )
 
+# Hopper with DMP
+register(
+    id='ALRHopperEpisodic-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_contextual_env', # entry point??
+    kwargs={
+        "name": "alr_envs.mujoco:ALRHopperEpisodicEnv",
+        "num_dof": 3,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "learn_goal": True,
+        "alpha_phase": 3,
+        "bandwidth_factor": 2.5,
+        "policy_type": "motor",
+        "weights_scale": 50,
+        "goal_scale": 0.1
+    }
+)
+
 # BBO functions
 
 for dim in [5, 10, 25, 50, 100]:
