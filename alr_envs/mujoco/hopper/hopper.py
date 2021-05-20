@@ -1,3 +1,4 @@
+import cma
 from gym import utils
 import gym
 import numpy as np
@@ -26,28 +27,9 @@ class ALRHopperEnv(HopperEnv):
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
                     and (height > .7))
         # done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
-        #             (height > .7) and (abs(angle) < .2))
+        #              (height > .7) and (abs(angle) < .2))
         obs = self._get_obs()
         return obs, reward, done, {}
-
-
-def example_hopper():
-    env = gym.make('Hopper-v2')
-    rewards = 0
-    obs = env.reset()
-
-    # number of environment steps
-    for i in range(10000):
-        obs, reward, done, info = env.step(env.action_space.sample())
-        rewards += reward
-
-        if i % 1 == 0:
-            env.render()
-
-        if done:
-            print(rewards)
-            rewards = 0
-            obs = env.reset()
 
 
 def example_ppo(env):
@@ -65,15 +47,16 @@ def example_ppo(env):
     env.close()
 
 
-def train_sac(env):
+def train_sac(env, name):
     model = SAC("MlpPolicy", env, verbose=1)
     model.learn(total_timesteps=10000, log_interval=4)
-    model.save("sac_hopper")
+    model.save(name)
     # del model # remove to demonstrate saving and loading
 
 
-def load_sac(env):
-    model = SAC.load("sac_hopper")
+def load_sac(env, name):
+    # sac_hopper: Sprünge nach vorne
+    model = SAC.load(name)
 
     obs = env.reset()
     while True:
@@ -85,9 +68,12 @@ def load_sac(env):
 
 
 if __name__ == "__main__":
-    # example_hopper()
-    # env = gym.make("Hopper-v2")
+    #env = gym.make("Hopper-v2")
     env = gym.make("ALRHopper-v0")
-    train_sac(env)
-    load_sac(env)
+
+    savename = "sac_hopper3"
+    loadname = "sac_hopper2"
+    
+    #train_sac(env, savename)
+    load_sac(env, loadname)
     # example_sac(env)
