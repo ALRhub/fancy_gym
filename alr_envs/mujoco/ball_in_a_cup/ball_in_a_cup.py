@@ -22,7 +22,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
         self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
 
-        self.context = None
+        self.context = context
 
         utils.EzPickle.__init__(self)
         alr_mujoco_env.AlrMujocoEnv.__init__(self,
@@ -45,7 +45,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         else:
             raise ValueError("Unknown reward type")
         self.reward_function = reward_function(self.sim_steps)
-        self.configure(context)
 
     @property
     def start_pos(self):
@@ -68,10 +67,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     @property
     def current_vel(self):
         return self.sim.data.qvel[0:7].copy()
-
-    def configure(self, context):
-        self.context = context
-        self.reward_function.reset(context)
 
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
@@ -127,6 +122,16 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             np.sin(theta),
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
+        ])
+
+    # TODO
+    @property
+    def active_obs(self):
+        return np.hstack([
+            [False] * 7,  # cos
+            [False] * 7,  # sin
+            # [True] * 2,  # x-y coordinates of target distance
+            [False]  # env steps
         ])
 
     # These functions are for the task with 3 joint actuations

@@ -6,10 +6,10 @@ import numpy as np
 from gym.utils import seeding
 
 from alr_envs.classic_control.utils import check_self_collision
-from alr_envs.utils.mps.mp_environments import MPEnv
+from alr_envs.utils.mps.mp_environments import AlrEnv
 
 
-class ViaPointReacher(MPEnv):
+class ViaPointReacher(AlrEnv):
 
     def __init__(self, n_links, random_start: bool = True, via_target: Union[None, Iterable] = None,
                  target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):

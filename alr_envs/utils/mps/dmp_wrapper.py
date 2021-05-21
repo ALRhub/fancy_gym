@@ -4,13 +4,13 @@ from mp_lib import dmps
 from mp_lib.basis import DMPBasisGenerator
 from mp_lib.phase import ExpDecayPhaseGenerator
 
-from alr_envs.utils.mps.mp_environments import MPEnv
+from alr_envs.utils.mps.mp_environments import AlrEnv
 from alr_envs.utils.mps.mp_wrapper import MPWrapper
 
 
 class DmpWrapper(MPWrapper):
 
-    def __init__(self, env: MPEnv, num_dof: int, num_basis: int,
+    def __init__(self, env: AlrEnv, num_dof: int, num_basis: int,
                  duration: int = 1, alpha_phase: float = 2., dt: float = None,
                  learn_goal: bool = False, post_traj_time: float = 0.,
                  weights_scale: float = 1., goal_scale: float = 1., bandwidth_factor: float = 3.,
@@ -40,7 +40,7 @@ class DmpWrapper(MPWrapper):
         super().__init__(env, num_dof, dt, duration, post_traj_time, policy_type, weights_scale, render_mode,
                          num_basis=num_basis, alpha_phase=alpha_phase, bandwidth_factor=bandwidth_factor)
 
-        action_bounds = np.inf * np.ones((np.prod(self.mp.dmp_weights.shape) + (num_dof if learn_goal else 0)))
+        action_bounds = np.inf * np.ones((np.prod(self.mp.weights.shape) + (num_dof if learn_goal else 0)))
         self.action_space = gym.spaces.Box(low=-action_bounds, high=action_bounds, dtype=np.float32)
 
     def initialize_mp(self, num_dof: int, duration: int, dt: float, num_basis: int = 5, alpha_phase: float = 2.,
@@ -51,7 +51,7 @@ class DmpWrapper(MPWrapper):
                                             basis_bandwidth_factor=bandwidth_factor)
 
         dmp = dmps.DMP(num_dof=num_dof, basis_generator=basis_generator, phase_generator=phase_generator,
-                       num_time_steps=int(duration / dt), dt=dt)
+                       duration=duration, dt=dt)
 
         return dmp
 
@@ -66,7 +66,7 @@ class DmpWrapper(MPWrapper):
             goal_pos = self.env.goal_pos
             assert goal_pos is not None
 
-        weight_matrix = np.reshape(params, self.mp.dmp_weights.shape)  # [num_basis, num_dof]
+        weight_matrix = np.reshape(params, self.mp.weights.shape)  # [num_basis, num_dof]
         return goal_pos * self.goal_scale, weight_matrix * self.weights_scale
 
     def mp_rollout(self, action):

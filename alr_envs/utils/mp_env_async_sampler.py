@@ -40,6 +40,16 @@ def _flatten_list(l):
     return [l__ for l_ in l for l__ in l_]
 
 
+class DummyDist:
+    def __init__(self, dim):
+        self.dim = dim
+
+    def sample(self, contexts):
+        contexts = np.atleast_2d(contexts)
+        n_samples = contexts.shape[0]
+        return np.random.normal(size=(n_samples, self.dim)), contexts
+
+
 class AlrMpEnvSampler:
     """
     An asynchronous sampler for non contextual MPWrapper environments. A sampler object can be called with a set of
@@ -100,9 +110,9 @@ class AlrContextualMpEnvSampler:
 
 
 if __name__ == "__main__":
-    env_name = "alr_envs:ALRBallInACupSimpleDMP-v0"
+    env_name = "alr_envs:HoleReacherDetPMP-v1"
     n_cpu = 8
-    dim = 15
+    dim = 25
     n_samples = 10
 
     sampler = AlrMpEnvSampler(env_name, num_envs=n_cpu)
