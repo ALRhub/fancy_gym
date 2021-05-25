@@ -9,18 +9,19 @@ class ALRHopperEpisodicEnv(HopperEnv):
 
     def __init__(self):
         super().__init__()
+        curr_step = 0
+        episode_steps = 200
+        heights = []
 
     def step(self, a):
         heightbefore = self.sim.data.qpos[1]
-        foot_height_before = self.get_body_com("foot")[2]
         self.do_simulation(a, self.frame_skip)
         pos, height, angle = self.sim.data.qpos[0:3]
-        foot_height = self.get_body_com("foot")[2]
-        # print(foot_height)
-        alive_bonus = 1
-        reward = (foot_height - foot_height_before) / self.dt
-        reward += alive_bonus
-        reward -= 1e-3 * np.square(a).sum()
+        self.heights[self.curr_step] = height
+
+        reward = 0
+        if (self.curr_step == self.episode_steps): # at end of the episode get reward for heighest z-value
+            reward = np.max(self.heights)
         s = self.state_vector()
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
                     and (height > .7))
