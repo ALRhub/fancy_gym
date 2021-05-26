@@ -9,7 +9,6 @@ from itertools import count
 from alr_envs.mujoco import alr_mujoco_env
 from gym.envs.mujoco import HopperEnv
 
-from t5.algorithm import CMA
 from stable_baselines3 import PPO
 from stable_baselines3 import SAC
 
@@ -45,19 +44,37 @@ def load_sac(env, name):
         if done:
             obs = env.reset()
 
+def example_dmp():
+    env = gym.make("alr_envs:ALRHopperEpisodic-v0")
+    rewards = 0
+    # env.render(mode=None)
+    obs = env.reset()
+
+    # number of samples/full trajectories (multiple environment steps)
+    for i in range(10):
+        obs, reward, done, info = env.step(env.action_space.sample())
+        rewards += reward
+
+        if i % 1 == 0:
+            # render full DMP trajectory
+            # render can only be called once in the beginning as well. That would render every trajectory
+            # Calling it after every trajectory allows to modify the mode. mode=None, disables rendering.
+            env.render(mode="human")
+
+        if done:
+            print(rewards)
+            rewards = 0
+            obs = env.reset()
 
 if __name__ == "__main__":
-    #env = gym.make("Hopper-v2")
-    env = gym.make("ALRHopper-v0")
+    example_dmp()
 
-    # print(env.unwrapped.sim.model.get_joint_qpos_addr('<body name>'))
-    # print(env.unwrapped.sim.model.get_joint_qpos_addr('foot_joint'))
+    # env = gym.make("ALRHopper-v0")
+    # savename = "sac_hopper"
+    # loadname = "sac_hopper"
 
-    savename = "sac_hopper"
-    loadname = "sac_hopper"
-
-    train_sac(env, savename)
-    load_sac(env, loadname)
+    # train_sac(env, savename)
+    # load_sac(env, loadname)
 
 
 

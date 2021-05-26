@@ -4,7 +4,6 @@ import gym
 import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
 from gym.envs.mujoco import HopperEnv
-from t5.algorithm import CMA
 
 from stable_baselines3 import PPO
 from stable_baselines3 import SAC
