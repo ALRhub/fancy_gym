@@ -272,12 +272,20 @@ for v in versions:
         }
     )
 
-# register(
-#     id='HoleReacherDetPMP-v0',
-#     entry_point='alr_envs.classic_control.hole_reacher:holereacher_detpmp',
-#     # max_episode_steps=1,
-#     # TODO: add mp kwargs
-# )
+    register(
+        id=f'HoleReacherDetPMP-{v}',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+        kwargs={
+            "name": f"alr_envs:HoleReacher-{v}",
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "width": 0.025,
+            "policy_type": "velocity",
+            "weights_scale": 0.2,
+            "zero_start": True
+        }
+    )
 
 # TODO: properly add final_pos
 register(
@@ -332,6 +340,41 @@ register(
         "policy_type": "motor",
         "weights_scale": 100,
         "return_to_start": True
+    }
+)
+
+register(
+    id='ALRBallInACupSimpleDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+    kwargs={
+        "name": "alr_envs:ALRBallInACupSimple-v0",
+        "num_dof": 3,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "width": 0.0035,
+        # "off": -0.05,
+        "policy_type": "motor",
+        "weights_scale": 0.2,
+        "zero_start": True,
+        "zero_goal": True
+    }
+)
+
+register(
+    id='ALRBallInACupDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+    kwargs={
+        "name": "alr_envs:ALRBallInACupSimple-v0",
+        "num_dof": 7,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "width": 0.0035,
+        "policy_type": "motor",
+        "weights_scale": 0.2,
+        "zero_start": True,
+        "zero_goal": True
     }
 )
 

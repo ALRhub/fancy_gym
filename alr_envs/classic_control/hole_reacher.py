@@ -7,10 +7,10 @@ from gym.utils import seeding
 from matplotlib import patches
 
 from alr_envs.classic_control.utils import check_self_collision
-from alr_envs.utils.mps.mp_environments import MPEnv
+from alr_envs.utils.mps.mp_environments import AlrEnv
 
 
-class HoleReacherEnv(MPEnv):
+class HoleReacherEnv(AlrEnv):
 
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
@@ -71,14 +71,15 @@ class HoleReacherEnv(MPEnv):
         A single step with an action in joint velocity space
         """
 
+        acc = (action - self._angle_velocity) / self.dt
         self._angle_velocity = action
-        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
+        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity  # + 0.001 * np.random.randn(5)
         self._update_joints()
 
-        acc = (action - self._angle_velocity) / self.dt
         reward, info = self._get_reward(acc)
 
         info.update({"is_collided": self._is_collided})
+        self.end_effector_traj.append(np.copy(self.end_effector))
 
         self._steps += 1
         done = self._is_collided
@@ -101,6 +102,7 @@ class HoleReacherEnv(MPEnv):
         self._joints = np.zeros((self.n_links + 1, 2))
         self._update_joints()
         self._steps = 0
+        self.end_effector_traj = []
 
         return self._get_obs().copy()
 

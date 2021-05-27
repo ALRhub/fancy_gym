@@ -105,6 +105,7 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
+    # TODO
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         return np.concatenate([
@@ -113,6 +114,10 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
         ])
+
+    # TODO
+    def active_obs(self):
+        pass
 
 
 

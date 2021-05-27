@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import os
+from abc import abstractmethod
 
 
 from gym import error, spaces
@@ -142,17 +143,19 @@ class AlrMujocoEnv(gym.Env):
     # methods to override:
     # ----------------------------
 
+    @property
+    @abstractmethod
+    def active_obs(self):
+        """Returns boolean mask for each observation entry
+        whether the observation is returned for the contextual case or not.
+        This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
+        """
+        return np.ones(self.observation_space.shape, dtype=bool)
+
     def _get_obs(self):
         """Returns the observation.
         """
         raise NotImplementedError()
-
-    def configure(self, *args, **kwargs):
-        """
-        Helper method to set certain environment properties such as contexts in contextual environments since reset()
-        doesn't take arguments. Should be called before reset().
-        """
-        pass
 
     def reset_model(self):
         """

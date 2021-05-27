@@ -5,7 +5,7 @@ import gym
 import numpy as np
 
 
-class MPEnv(gym.Env):
+class AlrEnv(gym.Env):
 
     @property
     @abstractmethod

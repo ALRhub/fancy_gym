@@ -3,13 +3,13 @@ from abc import ABC, abstractmethod
 import gym
 import numpy as np
 
-from alr_envs.utils.mps.mp_environments import MPEnv
+from alr_envs.utils.mps.mp_environments import AlrEnv
 from alr_envs.utils.policies import get_policy_class
 
 
 class MPWrapper(gym.Wrapper, ABC):
 
-    def __init__(self, env: MPEnv, num_dof: int, dt: float, duration: int = 1, post_traj_time: float = 0.,
+    def __init__(self, env: AlrEnv, num_dof: int, dt: float, duration: float = 1, post_traj_time: float = 0.,
                  policy_type: str = None, weights_scale: float = 1., render_mode: str = None, **mp_kwargs):
         super().__init__(env)
 
@@ -53,9 +53,6 @@ class MPWrapper(gym.Wrapper, ABC):
 
         return obs, np.array(rewards), dones, infos
 
-    def configure(self, context):
-        self.env.configure(context)
-
     def reset(self):
         return self.env.reset()[self.env.active_obs]
 
@@ -65,7 +62,7 @@ class MPWrapper(gym.Wrapper, ABC):
 
         if self.post_traj_steps > 0:
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
-            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dimensions))])
+            velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.n_dof))])
 
         # self._trajectory = trajectory
         # self._velocity = velocity
@@ -105,7 +102,7 @@ class MPWrapper(gym.Wrapper, ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def initialize_mp(self, num_dof: int, duration: int, dt: float, **kwargs):
+    def initialize_mp(self, num_dof: int, duration: float, dt: float, **kwargs):
         """
         Create respective instance of MP
         Returns:

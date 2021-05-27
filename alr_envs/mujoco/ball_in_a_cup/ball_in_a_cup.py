@@ -22,7 +22,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
         self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
 
-        self.context = None
+        self.context = context
 
         utils.EzPickle.__init__(self)
         alr_mujoco_env.AlrMujocoEnv.__init__(self,
@@ -45,7 +45,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         else:
             raise ValueError("Unknown reward type")
         self.reward_function = reward_function(self.sim_steps)
-        self.configure(context)
 
     @property
     def start_pos(self):
@@ -69,10 +68,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def current_vel(self):
         return self.sim.data.qvel[0:7].copy()
 
-    def configure(self, context):
-        self.context = context
-        self.reward_function.reset(context)
-
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
         init_pos_robot = self._start_pos
@@ -95,26 +90,27 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         reward_ctrl = - np.square(a).sum()
 
         crash = self.do_simulation(a)
-        joint_cons_viol = self.check_traj_in_joint_limits()
+        # joint_cons_viol = self.check_traj_in_joint_limits()
 
         self._q_pos.append(self.sim.data.qpos[0:7].ravel().copy())
         self._q_vel.append(self.sim.data.qvel[0:7].ravel().copy())
 
         ob = self._get_obs()
 
-        if not crash and not joint_cons_viol:
-            reward, success, stop_sim = self.reward_function.compute_reward(a, self.sim, self._steps)
-            done = success or self._steps == self.sim_steps - 1 or stop_sim
+        if not crash:
+            reward, success, is_collided = self.reward_function.compute_reward(a, self)
+            done = success or self._steps == self.sim_steps - 1 or is_collided
             self._steps += 1
         else:
-            reward = -1000
+            reward = -2
             success = False
+            is_collided = False
             done = True
         return ob, reward, done, dict(reward_dist=reward_dist,
                                       reward_ctrl=reward_ctrl,
                                       velocity=angular_vel,
                                       traj=self._q_pos, is_success=success,
-                                      is_collided=crash or joint_cons_viol)
+                                      is_collided=is_collided, sim_crash=crash)
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
@@ -127,6 +123,16 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             np.sin(theta),
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
+        ])
+
+    # TODO
+    @property
+    def active_obs(self):
+        return np.hstack([
+            [False] * 7,  # cos
+            [False] * 7,  # sin
+            # [True] * 2,  # x-y coordinates of target distance
+            [False]  # env steps
         ])
 
     # These functions are for the task with 3 joint actuations

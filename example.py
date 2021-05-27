@@ -1,6 +1,7 @@
 from collections import defaultdict
 import gym
 import numpy as np
+from alr_envs.utils.mp_env_async_sampler import AlrMpEnvSampler, AlrContextualMpEnvSampler, DummyDist
 
 
 def example_mujoco():
@@ -22,9 +23,9 @@ def example_mujoco():
             obs = env.reset()
 
 
-def example_dmp():
+def example_mp(env_name="alr_envs:HoleReacherDMP-v0"):
     # env = gym.make("alr_envs:ViaPointReacherDMP-v0")
-    env = gym.make("alr_envs:HoleReacherDMP-v0")
+    env = gym.make(env_name)
     rewards = 0
     # env.render(mode=None)
     obs = env.reset()
@@ -79,9 +80,36 @@ def example_async(env_id="alr_envs:HoleReacherDMP-v0", n_cpu=4, seed=int('533D',
     print(sample(envs, 16))
 
 
+def example_async_sampler(env_name="alr_envs:HoleReacherDetPMP-v1", n_cpu=4):
+    n_samples = 10
+
+    sampler = AlrMpEnvSampler(env_name, num_envs=n_cpu)
+    dim = sampler.env.action_space.spaces[0].shape[0]
+
+    thetas = np.random.randn(n_samples, dim)  # usually form a search distribution
+
+    _, rewards, __, ___ = sampler(thetas)
+
+    print(rewards)
+
+
+def example_async_contextual_sampler(env_name="alr_envs:SimpleReacherDMP-v1", n_cpu=4):
+    sampler = AlrContextualMpEnvSampler(env_name, num_envs=n_cpu)
+    dim = sampler.env.action_space.spaces[0].shape[0]
+    dist = DummyDist(dim)  # needs a sample function
+
+    n_samples = 10
+    new_samples, new_contexts, obs, new_rewards, done, infos = sampler(dist, n_samples)
+
+    print(new_rewards)
+
+
 if __name__ == '__main__':
     # example_mujoco()
-    # example_dmp()
-    example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
-    # env = gym.make("alr_envs:HoleReacherDMP-v0", context=0.1)
-    # env = gym.make("alr_envs:HoleReacherDMP-v1")
+    # example_dmp("alr_envs:SimpleReacherDMP-v1")
+    # example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
+    # example_async_contextual_sampler()
+    # env = gym.make("alr_envs:HoleReacherDetPMP-v1")
+    env_name = "alr_envs:ALRBallInACupSimpleDetPMP-v0"
+    # example_async_sampler(env_name)
+    example_mp(env_name)
