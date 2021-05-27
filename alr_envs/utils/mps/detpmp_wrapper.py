@@ -12,15 +12,15 @@ class DetPMPWrapper(MPWrapper):
                  zero_start: bool = False, zero_goal: bool = False, **mp_kwargs):
         self.duration = duration  # seconds
 
+        dt = env.dt if hasattr(env, "dt") else dt
+        assert dt is not None
+        self.dt = dt
+
         super().__init__(env, num_dof, dt, duration, post_traj_time, policy_type, weights_scale, num_basis=num_basis,
                          width=width, zero_start=zero_start, zero_goal=zero_goal, **mp_kwargs)
 
-        self.dt = env.dt if hasattr(env, "dt") else dt
-        assert self.dt is not None
-
         action_bounds = np.inf * np.ones((self.mp.n_basis * self.mp.n_dof))
         self.action_space = gym.spaces.Box(low=-action_bounds, high=action_bounds, dtype=np.float32)
-
 
     def initialize_mp(self, num_dof: int, duration: int, dt: float, num_basis: int = 5, width: float = None,
                       off: float = 0.01, zero_start: bool = False, zero_goal: bool = False):

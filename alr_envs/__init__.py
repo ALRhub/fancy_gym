@@ -280,7 +280,7 @@ for v in versions:
             "num_dof": 5,
             "num_basis": 5,
             "duration": 2,
-            "width": 0.01,
+            "width": 0.025,
             "policy_type": "velocity",
             "weights_scale": 0.2,
             "zero_start": True
@@ -352,7 +352,8 @@ register(
         "num_basis": 5,
         "duration": 3.5,
         "post_traj_time": 4.5,
-        "width": 0.005,
+        "width": 0.0035,
+        # "off": -0.05,
         "policy_type": "motor",
         "weights_scale": 0.2,
         "zero_start": True,

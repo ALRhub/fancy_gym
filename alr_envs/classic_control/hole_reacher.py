@@ -73,12 +73,13 @@ class HoleReacherEnv(AlrEnv):
 
         acc = (action - self._angle_velocity) / self.dt
         self._angle_velocity = action
-        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
+        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity  # + 0.001 * np.random.randn(5)
         self._update_joints()
 
         reward, info = self._get_reward(acc)
 
         info.update({"is_collided": self._is_collided})
+        self.end_effector_traj.append(np.copy(self.end_effector))
 
         self._steps += 1
         done = self._is_collided
@@ -101,6 +102,7 @@ class HoleReacherEnv(AlrEnv):
         self._joints = np.zeros((self.n_links + 1, 2))
         self._update_joints()
         self._steps = 0
+        self.end_effector_traj = []
 
         return self._get_obs().copy()
 

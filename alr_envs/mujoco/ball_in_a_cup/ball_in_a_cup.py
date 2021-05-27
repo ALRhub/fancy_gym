@@ -90,26 +90,27 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         reward_ctrl = - np.square(a).sum()
 
         crash = self.do_simulation(a)
-        joint_cons_viol = self.check_traj_in_joint_limits()
+        # joint_cons_viol = self.check_traj_in_joint_limits()
 
         self._q_pos.append(self.sim.data.qpos[0:7].ravel().copy())
         self._q_vel.append(self.sim.data.qvel[0:7].ravel().copy())
 
         ob = self._get_obs()
 
-        if not crash and not joint_cons_viol:
-            reward, success, stop_sim = self.reward_function.compute_reward(a, self.sim, self._steps)
-            done = success or self._steps == self.sim_steps - 1 or stop_sim
+        if not crash:
+            reward, success, is_collided = self.reward_function.compute_reward(a, self)
+            done = success or self._steps == self.sim_steps - 1 or is_collided
             self._steps += 1
         else:
-            reward = -1000
+            reward = -2
             success = False
+            is_collided = False
             done = True
         return ob, reward, done, dict(reward_dist=reward_dist,
                                       reward_ctrl=reward_ctrl,
                                       velocity=angular_vel,
                                       traj=self._q_pos, is_success=success,
-                                      is_collided=crash or joint_cons_viol)
+                                      is_collided=is_collided, sim_crash=crash)
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
