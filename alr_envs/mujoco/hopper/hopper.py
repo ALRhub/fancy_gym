@@ -17,8 +17,10 @@ class ALRHopperEnv(HopperEnv):
 
     def step(self, a):
         height_before = self.sim.data.qpos[1]
+        # foot_height_before = self.get_body_com("foot")[2]
         self.do_simulation(a, self.frame_skip)
         pos, height, angle = self.sim.data.qpos[0:3]
+        # foot_height = self.get_body_com("foot")[2]
         alive_bonus = 0.1
         reward = (height - height_before) / self.dt
         reward += alive_bonus
