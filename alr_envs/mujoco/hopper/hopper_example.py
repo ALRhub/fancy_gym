@@ -30,14 +30,14 @@ def example_ppo(env):
 
 def train_sac(env, name):
     model = SAC("MlpPolicy", env, verbose=1)
-    model.learn(total_timesteps=5000, log_interval=4)
+    model.learn(total_timesteps=10000, log_interval=4)
     model.save(name)
     # del model # remove to demonstrate saving and loading
 
 def load_sac(env, name):
     model = SAC.load(name)
     obs = env.reset()
-    for i in range(10000):
+    while True:
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, done, info = env.step(action)
         env.render()
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     example_dmp()
 
     # env = gym.make("ALRHopper-v0")
-    # savename = "sac_hopper"
-    # loadname = "sac_hopper"
+    # savename = "sac_hopper_test"
+    # loadname = "sac_hopper_test"
 
     # train_sac(env, savename)
     # load_sac(env, loadname)
