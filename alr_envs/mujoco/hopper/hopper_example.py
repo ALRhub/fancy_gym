@@ -44,6 +44,13 @@ def load_sac(env, name):
         if done:
             obs = env.reset()
 
+
+def example_sac(modelname):
+    env = gym.make("ALRHopper-v0")
+
+    train_sac(env, modelname)
+    load_sac(env, modelname)
+
 def example_dmp():
     env = gym.make("alr_envs:ALRHopperEpisodicDMP-v0")
     rewards = 0
@@ -71,12 +78,7 @@ if __name__ == "__main__":
 
     #------------------------------
 
-    # env = gym.make("ALRHopper-v0")
-    # savename = "sac_hopper_test"
-    # loadname = "sac_hopper_test"
-
-    # train_sac(env, savename)
-    # load_sac(env, loadname)
+    #example_sac("sac_hopper_test")
 
     #-------------------------------
 

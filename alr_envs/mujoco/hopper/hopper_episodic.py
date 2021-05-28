@@ -24,7 +24,7 @@ class ALRHopperEpisodicEnv(HopperEnv):
         self.heights.append(height)
         # self._max_episode_steps von wrapper
         reward = 0
-        if (self.curr_step >= self. ssmax_episode_steps-1): # at end of episode get reward for heighest z-value
+        if (self.curr_step >= self.max_episode_steps-1): # at end of episode get reward for heighest z-value
             reward = np.max(self.heights)
             
         s = self.state_vector()
