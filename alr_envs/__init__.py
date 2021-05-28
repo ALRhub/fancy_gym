@@ -275,16 +275,22 @@ register(
     entry_point='alr_envs.mujoco:ALRHopperEnv',
 )
 
-# Hopper with DMP
 register(
     id='ALRHopperEpisodic-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_contextual_env', # entry point??
+    entry_point='alr_envs.mujoco:ALRHopperEpisodicEnv',
+    max_episode_steps=200,
+)
+
+# Hopper with DMP
+register(
+    id='ALRHopperEpisodicDMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
     kwargs={
-        "name": "alr_envs.mujoco:ALRHopperEpisodicEnv",
+        "name": "alr_envs.mujoco:ALRHopperEpisodic-v0",
         "num_dof": 3,
         "num_basis": 5,
         "duration": 3.5,
-        "post_traj_time": 4.5,
+        "post_traj_time": 3,
         "learn_goal": True,
         "alpha_phase": 3,
         "bandwidth_factor": 2.5,
