@@ -59,7 +59,10 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)      
         self.heights = [0]
         self.curr_step = 0
-        self.max_episode_steps = 200
+        # self.max_episode_steps = 200
+
+        self.current_step = 0
+        self.max_height = 0
 
         self._start_pos = np.array([0.0, 0.0, 0.0])
         self._start_vel = np.zeros(3)
@@ -73,22 +76,50 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
         self.context = None
 
+    # def step(self, a):
+    #     heightbefore = self.sim.data.qpos[1]
+    #     self.do_simulation(a)
+    #     pos, height, angle = self.sim.data.qpos[0:3]
+
+    #     self.heights.append(height)
+    #     # self._max_episode_steps von wrapper
+    #     reward = 0
+    #     if (self.curr_step >= self.max_episode_steps-1): # at end of episode get reward for heighest z-value
+    #         reward = np.max(self.heights)
+            
+    #     s = self.state_vector()
+    #     done = (not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() 
+    #                 and (height > .7)))
+    #     obs = self._get_obs()
+    #     return obs, reward, done, {}
+
     def step(self, a):
+        self.current_step += 1
         heightbefore = self.sim.data.qpos[1]
+        foot_height_before = self.get_body_com("foot")[2]
         self.do_simulation(a)
         pos, height, angle = self.sim.data.qpos[0:3]
-
-        self.heights.append(height)
-        # self._max_episode_steps von wrapper
+        foot_height = self.get_body_com("foot")[2]
+        # check max height of trajectory
+        if(height > self.max_height):
+            self.max_height = height
         reward = 0
-        if (self.curr_step >= self.max_episode_steps-1): # at end of episode get reward for heighest z-value
-            reward = np.max(self.heights)
-            
         s = self.state_vector()
-        done = (not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() 
-                    and (height > .7)))
-        # done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
-        #              (height > .7) and (abs(angle) < .2))
+        # calculate when its done
+        done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
+                    and (height > .7))
+
+        # give reward at the end of trajectory
+        if(done):
+            # calculate reward
+            reward = self.max_height
+            alive_bonus = 0.1 * self.current_step
+            reward += alive_bonus
+
+            # reset variables
+            self.max_height = 0
+            self.current_step = 0
+
         obs = self._get_obs()
         return obs, reward, done, {}
 
