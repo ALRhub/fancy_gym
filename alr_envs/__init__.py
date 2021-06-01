@@ -210,7 +210,7 @@ register(
         "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": 2,
-        "collision_penalty": 100,
+        "collision_penalty": 2,
     }
 )
 

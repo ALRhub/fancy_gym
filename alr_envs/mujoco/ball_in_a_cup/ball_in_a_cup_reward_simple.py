@@ -37,6 +37,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final = []
         self.costs = []
         self.action_costs = []
+        self.angle_costs = []
         self.cup_angles = []
 
     def compute_reward(self, action, env):
@@ -56,8 +57,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.ball_traj[env._steps, :] = ball_pos
         cup_quat = np.copy(env.sim.data.body_xquat[env.sim.model._body_name2id["cup"]])
-        self.cup_angles.append(np.arctan2(2 * (cup_quat[0] * cup_quat[1] + cup_quat[2] * cup_quat[3]),
-                                          1 - 2 * (cup_quat[1]**2 + cup_quat[2]**2)))
+        cup_angle = np.arctan2(2 * (cup_quat[0] * cup_quat[1] + cup_quat[2] * cup_quat[3]),
+                                          1 - 2 * (cup_quat[1]**2 + cup_quat[2]**2))
+        cost_angle = (cup_angle - np.pi / 2) ** 2
+        self.angle_costs.append(cost_angle)
+        self.cup_angles.append(cup_angle)
 
         action_cost = np.sum(np.square(action))
         self.action_costs.append(action_cost)
@@ -67,7 +71,8 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         if env._steps == env.sim_steps - 1 or self._is_collided:
             t_min_dist = np.argmin(self.dists)
             angle_min_dist = self.cup_angles[t_min_dist]
-            cost_angle = (angle_min_dist - np.pi / 2)**2
+            # cost_angle = (angle_min_dist - np.pi / 2)**2
+
 
             min_dist = self.dists[t_min_dist]
             dist_final = self.dists_final[-1]
@@ -76,11 +81,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             cost = 0.5 * dist_final + 0.05 * cost_angle  # TODO: Increase cost_angle weight  # 0.5 * min_dist +
             # reward = np.exp(-2 * cost) - 1e-2 * action_cost - self.collision_penalty * int(self._is_collided)
             # reward = - dist_final**2 - 1e-4 * cost_angle - 1e-5 * action_cost - self.collision_penalty * int(self._is_collided)
-            reward = - dist_final**2 - min_dist_final**2 - 1e-4 * cost_angle - 1e-5 * action_cost - self.collision_penalty * int(self._is_collided)
+            reward = - dist_final**2 - min_dist_final**2 - 1e-4 * cost_angle - 5e-4 * action_cost - self.collision_penalty * int(self._is_collided)
             success = dist_final < 0.05 and ball_in_cup and not self._is_collided
             crash = self._is_collided
         else:
-            reward = - 1e-5 * action_cost  # TODO: increase action_cost weight
+            reward = - 5e-4 * action_cost - 1e-4 * cost_angle  # TODO: increase action_cost weight
             success = False
             crash = False
 

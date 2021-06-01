@@ -68,6 +68,10 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def current_vel(self):
         return self.sim.data.qvel[0:7].copy()
 
+    def reset(self):
+        self.reward_function.reset(None)
+        return super().reset()
+
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
         init_pos_robot = self._start_pos

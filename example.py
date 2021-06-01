@@ -106,10 +106,10 @@ def example_async_contextual_sampler(env_name="alr_envs:SimpleReacherDMP-v1", n_
 
 if __name__ == '__main__':
     # example_mujoco()
-    # example_dmp("alr_envs:SimpleReacherDMP-v1")
+    example_mp("alr_envs:SimpleReacherDMP-v1")
     # example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
     # example_async_contextual_sampler()
     # env = gym.make("alr_envs:HoleReacherDetPMP-v1")
-    env_name = "alr_envs:ALRBallInACupSimpleDetPMP-v0"
+    # env_name = "alr_envs:ALRBallInACupSimpleDetPMP-v0"
     # example_async_sampler(env_name)
-    example_mp(env_name)
+    # example_mp(env_name)
