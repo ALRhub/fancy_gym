@@ -2,60 +2,14 @@ from gym import utils
 import os
 import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
-# from gym.envs.mujoco import HopperEnv
-
-# class ALRHopperEpisodicEnv(HopperEnv):
-#     metadata = {'render.modes': ['human']}
-
-
-#     def __init__(self):
-#         self.heights = [0]
-#         self.curr_step = 0
-#         self.max_episode_steps = 200
-#         super().__init__()
-        
-
-#     def step(self, a):
-#         self.current_step += 1
-#         heightbefore = self.sim.data.qpos[1]
-#         foot_height_before = self.get_body_com("foot")[2]
-#         self.do_simulation(a, self.frame_skip)
-#         pos, height, angle = self.sim.data.qpos[0:3]
-#         foot_height = self.get_body_com("foot")[2]
-#         # check max height of trajectory
-#         if(height > self.max_height):
-#             self.max_height = height
-#         reward = 0
-#         s = self.state_vector()
-#         # calculate when its done
-#         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
-#                     and (height > .7))
-#         # give reward at the end of trajectory
-#         if(done):
-#             # calculate reward
-#             #alive_bonus = 1
-#             reward = self.max_height
-#             self.max_height = 0
-#             self.current_step = 0
-#             #reward += alive_bonus
-#             # reward -= 1e-3 * np.square(a).sum()
-#         obs = self._get_obs()
-#         return obs, reward, done, {}
-
-#     def reset_model(self):
-#         qpos = self.init_qpos #+ self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
-#         qvel = self.init_qvel #+ self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
-#         self.set_state(qpos, qvel)
-#         return self._get_obs()
-
 
         
 class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     metadata = {'render.modes': ['human']}
 
     def __init__(self):
-        xml_path = '/home/schorn/miniconda3/lib/python3.8/site-packages/gym/envs/mujoco/assets/hopper.xml'
-        # xml_path = 'C:/ProgramData/Anaconda3/Lib/site-packages/gym/envs/mujoco/assets/hopper.xml'
+        # xml_path = '/home/schorn/miniconda3/lib/python3.8/site-packages/gym/envs/mujoco/assets/hopper.xml'
+        xml_path = 'C:/ProgramData/Anaconda3/Lib/site-packages/gym/envs/mujoco/assets/hopper.xml'
         alr_mujoco_env.AlrMujocoEnv.__init__(self, xml_path, 4)
         utils.EzPickle.__init__(self)      
         self.heights = [0]
