@@ -55,6 +55,7 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     def __init__(self):
         xml_path = '/home/schorn/miniconda3/lib/python3.8/site-packages/gym/envs/mujoco/assets/hopper.xml'
+        # xml_path = 'C:/ProgramData/Anaconda3/Lib/site-packages/gym/envs/mujoco/assets/hopper.xml'
         alr_mujoco_env.AlrMujocoEnv.__init__(self, xml_path, 4)
         utils.EzPickle.__init__(self)      
         self.heights = [0]
