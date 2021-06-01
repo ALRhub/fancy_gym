@@ -74,7 +74,7 @@ def example_dmp():
             obs = env.reset()
 
 if __name__ == "__main__":
-    # example_dmp()
+    example_dmp()
 
     #------------------------------
 
@@ -82,12 +82,12 @@ if __name__ == "__main__":
 
     #-------------------------------
 
-    env = gym.make("ALRHopperEpisodic-v0")
-    savename = "episodic_hopper_test"
-    loadname = "episodic_hopper_test"
+    # env = gym.make("ALRHopperEpisodic-v0")
+    # savename = "episodic_hopper_test"
+    # loadname = "episodic_hopper_test"
 
-    train_sac(env, savename)
-    load_sac(env, loadname)
+    # train_sac(env, savename)
+    # load_sac(env, loadname)
 
 
 
