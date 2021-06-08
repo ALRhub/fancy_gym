@@ -58,7 +58,7 @@ def example_dmp():
     obs = env.reset()
 
     # number of samples/full trajectories (multiple environment steps)
-    for i in range(200):
+    for i in range(10):
         obs, reward, done, info = env.step(env.action_space.sample())
         rewards += reward
 
@@ -69,7 +69,7 @@ def example_dmp():
             env.render(mode="human")
 
         if done:
-            print(rewards)
+            print(f"{i}: {rewards}")
             rewards = 0
             obs = env.reset()
 

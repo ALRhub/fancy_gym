@@ -3,6 +3,8 @@ import os
 import numpy as np
 from alr_envs.mujoco import alr_mujoco_env
 
+from alr_envs.mujoco.hopper.hopper_reward import HopperReward
+
         
 class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     metadata = {'render.modes': ['human']}
@@ -12,12 +14,8 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         xml_path = 'C:/ProgramData/Anaconda3/Lib/site-packages/gym/envs/mujoco/assets/hopper.xml'
         alr_mujoco_env.AlrMujocoEnv.__init__(self, xml_path, 4)
         utils.EzPickle.__init__(self)      
-        self.heights = [0]
-        self.curr_step = 0
-        # self.max_episode_steps = 200
 
         self.current_step = 0
-        self.max_height = 0
 
         self._start_pos = np.array([0.0, 0.0, 0.0])
         self._start_vel = np.zeros(3)
@@ -30,6 +28,12 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.j_max = np.array([2.6, 1.985, 2.8])
 
         self.context = None
+
+
+        self.sim_time = 3.5  # seconds
+        self.sim_steps = int(self.sim_time / self.dt)
+        self.reward_function = HopperReward(self.sim_steps)
+
 
     # def step(self, a):
     #     heightbefore = self.sim.data.qpos[1]
@@ -55,25 +59,21 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.do_simulation(a)
         pos, height, angle = self.sim.data.qpos[0:3]
         foot_height = self.get_body_com("foot")[2]
-        # check max height of trajectory
-        if(height > self.max_height):
-            self.max_height = height
-        reward = 0
+
+        # # check max height of trajectory
+        # if(height > self.max_height):
+        #     self.max_height = height
+
         s = self.state_vector()
-        # calculate when its done
-        done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
+        fall_over =  not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all()
                     and (height > .7))
+        reward = 0
+        reward = self.reward_function.compute_reward(fall_over, self.sim, self.current_step)
 
-        # give reward at the end of trajectory
-        if(done):
-            # calculate reward
-            reward = self.max_height
-            alive_bonus = 0.1 * self.current_step
-            reward += alive_bonus
 
-            # reset variables
-            self.max_height = 0
-            self.current_step = 0
+        done = fall_over or self.current_step == self.sim_steps - 1 
+        if (done):
+            self.current_step = 0   
 
         obs = self._get_obs()
         return obs, reward, done, {}
@@ -112,6 +112,8 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         ])
 
     def reset_model(self):
+        self.current_step = 0
+
         qpos = self.init_qpos
         qvel = self.init_qvel
         self.set_state(qpos, qvel)
