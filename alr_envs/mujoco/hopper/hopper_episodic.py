@@ -100,18 +100,10 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
     # These functions are for the task with 3 joint actuations
     def extend_des_pos(self, des_pos):
-        des_pos_full = self._start_pos.copy()
-        des_pos_full[0] = des_pos[0]
-        des_pos_full[1] = des_pos[1]
-        des_pos_full[2] = des_pos[2]
-        return des_pos_full
+        return self.current_pos
 
     def extend_des_vel(self, des_vel):
-        des_vel_full = self._start_vel.copy()
-        des_vel_full[0] = des_vel[0]
-        des_vel_full[1] = des_vel[1]
-        des_vel_full[2] = des_vel[2]
-        return des_vel_full
+        return self.current_vel
 
     def _get_obs(self):
         return np.concatenate([
