@@ -8,6 +8,7 @@ from itertools import count
 
 from alr_envs.mujoco import alr_mujoco_env
 from gym.envs.mujoco import HopperEnv
+from alr_envs.utils.mp_env_async_sampler import AlrMpEnvSampler
 
 from stable_baselines3 import PPO
 from stable_baselines3 import SAC
@@ -73,8 +74,56 @@ def example_dmp():
             rewards = 0
             obs = env.reset()
 
+def learn_and_start_dmp():
+    # env = gym.make("alr_envs:ALRHopperEpisodicDMP-v0")
+    # rewards = 0
+    # obs = env.reset()
+    
+    n = 21  # problem dim, here number of parameters of weight matrix for movement primitive
+    n_samples = 14  # how many samples per iteration
+    n_cpu = 4  # how many samples to generate in parallel
+
+    env = AlrMpEnvSampler("alr_envs:ALRHopperEpisodicDetPMP-v0", num_envs=n_cpu)
+
+    init_sigma = 1
+    x_start = 0.1 * np.random.randn(n, 1)
+
+    # create an instance of the CMA-ES algorithm
+    algo = cma.CMAEvolutionStrategy(x0=x_start, sigma0=init_sigma, inopts={"popsize": n_samples})
+
+    t = 0
+    max_iters = 100
+
+    opts = []
+    while t < max_iters:
+        print("----------iter {} -----------".format(t))
+
+        # sample parameters to test
+        solutions = algo.ask()
+        # collect rollouts with parameters
+        obs, new_rewards, done, infos = env(np.vstack(solutions))
+        # update search distributioon
+        algo.tell(solutions, -new_rewards)  # need to negate rewards as CMA-ES minimizes
+
+        _, opt, __, ___ = env(algo.mean)
+
+        opts.append(opt)
+
+        print(opt)
+
+        t += 1
+
+    print(algo.mean)
+
+    # run learned policy
+    test_env = gym.make("alr_envs:ALRHopperEpisodicDetPMP-v0")
+    test_env.render('human')
+    test_env.reset()
+    test_env.step(algo.mean)
+
 if __name__ == "__main__":
-    example_dmp()
+    # example_dmp()
+    learn_and_start_dmp()
 
     #------------------------------
 
