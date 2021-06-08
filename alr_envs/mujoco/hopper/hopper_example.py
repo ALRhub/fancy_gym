@@ -58,7 +58,7 @@ def example_dmp():
     obs = env.reset()
 
     # number of samples/full trajectories (multiple environment steps)
-    for i in range(10):
+    for i in range(200):
         obs, reward, done, info = env.step(env.action_space.sample())
         rewards += reward
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     #------------------------------
 
-    #example_sac("sac_hopper_test")
+    # example_sac("sac_hopper_test")
 
     #-------------------------------
 
