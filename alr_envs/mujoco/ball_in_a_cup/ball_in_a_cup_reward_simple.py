@@ -22,7 +22,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         self.goal_final_id = None
         self.collision_ids = None
         self._is_collided = False
-        self.collision_penalty = 1
+        self.collision_penalty = 1000
 
         self.ball_traj = None
         self.dists = None
@@ -74,11 +74,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             # cost_angle = (angle_min_dist - np.pi / 2)**2
 
 
-            min_dist = self.dists[t_min_dist]
+            # min_dist = self.dists[t_min_dist]
             dist_final = self.dists_final[-1]
             min_dist_final = np.min(self.dists_final)
 
-            cost = 0.5 * dist_final + 0.05 * cost_angle  # TODO: Increase cost_angle weight  # 0.5 * min_dist +
+            # cost = 0.5 * dist_final + 0.05 * cost_angle  # TODO: Increase cost_angle weight  # 0.5 * min_dist +
             # reward = np.exp(-2 * cost) - 1e-2 * action_cost - self.collision_penalty * int(self._is_collided)
             # reward = - dist_final**2 - 1e-4 * cost_angle - 1e-5 * action_cost - self.collision_penalty * int(self._is_collided)
             reward = - dist_final**2 - min_dist_final**2 - 1e-4 * cost_angle - 5e-4 * action_cost - self.collision_penalty * int(self._is_collided)

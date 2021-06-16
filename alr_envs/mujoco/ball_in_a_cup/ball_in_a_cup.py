@@ -43,7 +43,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_reward import BallInACupReward
             reward_function = BallInACupReward
         else:
-            raise ValueError("Unknown reward type")
+            raise ValueError("Unknown reward type: {}".format(reward_type))
         self.reward_function = reward_function(self.sim_steps)
 
     @property
@@ -106,7 +106,7 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
             done = success or self._steps == self.sim_steps - 1 or is_collided
             self._steps += 1
         else:
-            reward = -2
+            reward = -2000
             success = False
             is_collided = False
             done = True
@@ -153,6 +153,22 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         des_vel_full[3] = des_vel[1]
         des_vel_full[5] = des_vel[2]
         return des_vel_full
+
+    def render(self, render_mode, **render_kwargs):
+        if render_mode == "plot_trajectory":
+            if self._steps == 1:
+                import matplotlib.pyplot as plt
+                # plt.ion()
+                self.fig, self.axs = plt.subplots(3, 1)
+
+            if self._steps <= 1750:
+                for ax, cp in zip(self.axs, self.current_pos[1::2]):
+                    ax.scatter(self._steps, cp, s=2, marker=".")
+
+            # self.fig.show()
+
+        else:
+            super().render(render_mode, **render_kwargs)
 
 
 if __name__ == "__main__":
