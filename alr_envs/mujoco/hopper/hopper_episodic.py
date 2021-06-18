@@ -30,7 +30,7 @@ class ALRHopperEpisodicEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         self.context = None
 
 
-        self.sim_time = 3.5  # seconds
+        self.sim_time = 5  # seconds duration+post_traj
         self.sim_steps = int(self.sim_time / self.dt)
         self.reward_function = HopperReward(self.sim_steps)
 
