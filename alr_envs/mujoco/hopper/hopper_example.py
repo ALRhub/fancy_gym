@@ -119,7 +119,13 @@ def learn_and_start_dmp():
     test_env = gym.make("alr_envs:ALRHopperEpisodicDMP-v0")
     test_env.render('human')
     test_env.reset()
-    test_env.step(algo.mean)
+
+    for i in range(0, 1000):
+        obs, reward, done, _ = test_env.step(algo.mean)
+        if done:
+            test_env.reset()
+
+
 
 if __name__ == "__main__":
     # example_dmp()
