@@ -79,7 +79,7 @@ def learn_and_start_dmp():
     # rewards = 0
     # obs = env.reset()
     
-    n = 21  # problem dim, here number of parameters of weight matrix for movement primitive
+    n = 18  # problem dim, here number of parameters of weight matrix for movement primitive
     n_samples = 14  # how many samples per iteration
     n_cpu = 4  # how many samples to generate in parallel
 
