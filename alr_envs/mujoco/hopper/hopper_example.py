@@ -83,7 +83,7 @@ def learn_and_start_dmp():
     n_samples = 14  # how many samples per iteration
     n_cpu = 4  # how many samples to generate in parallel
 
-    env = AlrMpEnvSampler("alr_envs:ALRHopperEpisodicDetPMP-v0", num_envs=n_cpu)
+    env = AlrMpEnvSampler("alr_envs:ALRHopperEpisodicDMP-v0", num_envs=n_cpu)
 
     init_sigma = 1
     x_start = 0.1 * np.random.randn(n, 1)
@@ -116,7 +116,7 @@ def learn_and_start_dmp():
     print(algo.mean)
 
     # run learned policy
-    test_env = gym.make("alr_envs:ALRHopperEpisodicDetPMP-v0")
+    test_env = gym.make("alr_envs:ALRHopperEpisodicDMP-v0")
     test_env.render('human')
     test_env.reset()
     test_env.step(algo.mean)
