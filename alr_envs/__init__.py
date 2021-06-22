@@ -289,7 +289,7 @@ register(
         "name": "alr_envs.mujoco:ALRHopperEpisodic-v0",
         "num_dof": 3,
         "num_basis": 5,
-        "duration": 3.5,
+        "duration": 2,
         "post_traj_time": 3,
         "learn_goal": True,
         "alpha_phase": 3,
