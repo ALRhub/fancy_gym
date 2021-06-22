@@ -4,7 +4,7 @@ from mp_lib import dmps
 from mp_lib.basis import DMPBasisGenerator
 from mp_lib.phase import ExpDecayPhaseGenerator
 
-from alr_envs.utils.mps.mp_environments import AlrEnv
+from alr_envs.utils.mps.alr_env import AlrEnv
 from alr_envs.utils.mps.mp_wrapper import MPWrapper
 
 
@@ -32,26 +32,26 @@ class DmpWrapper(MPWrapper):
             goal_scale:
         """
         self.learn_goal = learn_goal
-        dt = env.dt if hasattr(env, "dt") else dt
-        assert dt is not None
+
         self.t = np.linspace(0, duration, int(duration / dt))
         self.goal_scale = goal_scale
 
-        super().__init__(env, num_dof, dt, duration, post_traj_time, policy_type, weights_scale, render_mode,
+        super().__init__(env=env, num_dof=num_dof, duration=duration, post_traj_time=post_traj_time,
+                         policy_type=policy_type, weights_scale=weights_scale, render_mode=render_mode,
                          num_basis=num_basis, alpha_phase=alpha_phase, bandwidth_factor=bandwidth_factor)
 
         action_bounds = np.inf * np.ones((np.prod(self.mp.weights.shape) + (num_dof if learn_goal else 0)))
         self.action_space = gym.spaces.Box(low=-action_bounds, high=action_bounds, dtype=np.float32)
 
-    def initialize_mp(self, num_dof: int, duration: int, dt: float, num_basis: int = 5, alpha_phase: float = 2.,
-                      bandwidth_factor: int = 3):
+    def initialize_mp(self, num_dof: int, duration: int, num_basis: int, alpha_phase: float = 2.,
+                      bandwidth_factor: int = 3, **kwargs):
 
         phase_generator = ExpDecayPhaseGenerator(alpha_phase=alpha_phase, duration=duration)
         basis_generator = DMPBasisGenerator(phase_generator, duration=duration, num_basis=num_basis,
                                             basis_bandwidth_factor=bandwidth_factor)
 
         dmp = dmps.DMP(num_dof=num_dof, basis_generator=basis_generator, phase_generator=phase_generator,
-                       duration=duration, dt=dt)
+                       dt=self.dt)
 
         return dmp
 

@@ -1,14 +1,13 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import Union
 
 import gym
 import numpy as np
 
 
-class AlrEnv(gym.Env):
+class AlrEnv(gym.Env, ABC):
 
     @property
-    @abstractmethod
     def active_obs(self):
         """Returns boolean mask for each observation entry
         whether the observation is returned for the contextual case or not.
@@ -31,3 +30,11 @@ class AlrEnv(gym.Env):
         By default this returns the starting position.
         """
         return self.start_pos
+
+    @property
+    @abstractmethod
+    def dt(self) -> Union[float, int]:
+        """
+        Returns the time between two simulated steps of the environment
+        """
+        raise NotImplementedError()

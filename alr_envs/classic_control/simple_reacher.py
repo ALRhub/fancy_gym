@@ -5,7 +5,7 @@ import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
-from alr_envs.utils.mps.mp_environments import AlrEnv
+from alr_envs.utils.mps.alr_env import AlrEnv
 
 
 class SimpleReacherEnv(AlrEnv):
