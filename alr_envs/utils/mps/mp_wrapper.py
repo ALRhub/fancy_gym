@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 import gym
 import numpy as np
@@ -64,11 +65,11 @@ class MPWrapper(gym.Wrapper, ABC):
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
             velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.n_dof))])
 
-        # self._trajectory = trajectory
+        self._trajectory = trajectory
         # self._velocity = velocity
 
         rewards = 0
-        info = {}
+        infos = defaultdict(list)
         # create random obs as the reset function is called externally
         obs = self.env.observation_space.sample()
 
@@ -77,14 +78,14 @@ class MPWrapper(gym.Wrapper, ABC):
             obs, rew, done, info = self.env.step(ac)
             rewards += rew
             # TODO return all dicts?
-            # [infos[k].append(v) for k, v in info.items()]
+            [infos[k].append(v) for k, v in info.items()]
             if self.render_mode:
                 self.env.render(mode=self.render_mode, **self.render_kwargs)
             if done:
                 break
 
         done = True
-        return obs[self.env.active_obs], rewards, done, info
+        return obs[self.env.active_obs], rewards, done, infos
 
     def render(self, mode='human', **kwargs):
         """Only set render options here, such that they can be used during the rollout.

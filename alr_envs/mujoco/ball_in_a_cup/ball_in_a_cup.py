@@ -113,7 +113,11 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
         return ob, reward, done, dict(reward_dist=reward_dist,
                                       reward_ctrl=reward_ctrl,
                                       velocity=angular_vel,
-                                      traj=self._q_pos, is_success=success,
+                                      # traj=self._q_pos,
+                                      action=a,
+                                      q_pos=self.sim.data.qpos[0:7].ravel().copy(),
+                                      q_vel=self.sim.data.qvel[0:7].ravel().copy(),
+                                      is_success=success,
                                       is_collided=is_collided, sim_crash=crash)
 
     def check_traj_in_joint_limits(self):

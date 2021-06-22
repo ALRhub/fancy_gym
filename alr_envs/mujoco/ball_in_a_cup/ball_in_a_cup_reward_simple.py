@@ -81,11 +81,11 @@ class BallInACupReward(alr_reward_fct.AlrReward):
             # cost = 0.5 * dist_final + 0.05 * cost_angle  # TODO: Increase cost_angle weight  # 0.5 * min_dist +
             # reward = np.exp(-2 * cost) - 1e-2 * action_cost - self.collision_penalty * int(self._is_collided)
             # reward = - dist_final**2 - 1e-4 * cost_angle - 1e-5 * action_cost - self.collision_penalty * int(self._is_collided)
-            reward = - dist_final**2 - min_dist_final**2 - 1e-4 * cost_angle - 5e-4 * action_cost - self.collision_penalty * int(self._is_collided)
+            reward = - dist_final**2 - min_dist_final**2 - 1e-4 * cost_angle - 1e-3 * action_cost - self.collision_penalty * int(self._is_collided)
             success = dist_final < 0.05 and ball_in_cup and not self._is_collided
             crash = self._is_collided
         else:
-            reward = - 5e-4 * action_cost - 1e-4 * cost_angle  # TODO: increase action_cost weight
+            reward = - 1e-3 * action_cost - 1e-4 * cost_angle  # TODO: increase action_cost weight
             success = False
             crash = False
 
