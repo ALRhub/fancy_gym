@@ -7,7 +7,9 @@ from gym import error, spaces
 from gym.utils import seeding
 import numpy as np
 from os import path
-import gym
+
+from alr_envs.utils.mps.alr_env import AlrEnv
+from alr_envs.utils.positional_env import PositionalEnv
 
 try:
     import mujoco_py
@@ -33,7 +35,7 @@ def convert_observation_to_space(observation):
     return space
 
 
-class AlrMujocoEnv(gym.Env):
+class AlrMujocoEnv(PositionalEnv, AlrEnv):
     """
     Superclass for all MuJoCo environments.
     """
@@ -44,7 +46,7 @@ class AlrMujocoEnv(gym.Env):
         Args:
             model_path: path to xml file
             n_substeps: how many steps mujoco does per call to env.step
-            use_servo: use actuator defined in xml, use False for direct torque control
+            apply_gravity_comp: Whether gravity compensation should be active
         """
         if model_path.startswith("/"):
             fullpath = model_path
@@ -72,10 +74,6 @@ class AlrMujocoEnv(gym.Env):
         self._start_vel = None
 
         self._set_action_space()
-
-        # action = self.action_space.sample()
-        # observation, _reward, done, _info = self.step(action)
-        # assert not done
 
         observation = self._get_obs()  # TODO: is calling get_obs enough? should we call reset, or even step?
 
@@ -204,7 +202,7 @@ class AlrMujocoEnv(gym.Env):
 
         try:
             self.sim.step()
-        except mujoco_py.builder.MujocoException as e:
+        except mujoco_py.builder.MujocoException:
             error_in_sim = True
 
         return error_in_sim

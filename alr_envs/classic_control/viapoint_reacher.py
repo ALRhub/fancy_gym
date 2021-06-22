@@ -6,7 +6,7 @@ import numpy as np
 from gym.utils import seeding
 
 from alr_envs.classic_control.utils import check_self_collision
-from alr_envs.utils.mps.mp_environments import AlrEnv
+from alr_envs.utils.mps.alr_env import AlrEnv
 
 
 class ViaPointReacher(AlrEnv):

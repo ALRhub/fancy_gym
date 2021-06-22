@@ -1,3 +1,4 @@
+import numpy as np
 from gym.envs.registration import register
 
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
@@ -321,7 +322,9 @@ register(
         "bandwidth_factor": 2.5,
         "policy_type": "motor",
         "weights_scale": 100,
-        "return_to_start": True
+        "return_to_start": True,
+        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
 
@@ -339,7 +342,9 @@ register(
         "bandwidth_factor": 2.5,
         "policy_type": "motor",
         "weights_scale": 100,
-        "return_to_start": True
+        "return_to_start": True,
+        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
 
@@ -357,7 +362,9 @@ register(
         "policy_type": "motor",
         "weights_scale": 0.2,
         "zero_start": True,
-        "zero_goal": True
+        "zero_goal": True,
+        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
 
@@ -374,7 +381,9 @@ register(
         "policy_type": "motor",
         "weights_scale": 0.2,
         "zero_start": True,
-        "zero_goal": True
+        "zero_goal": True,
+        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
 
@@ -392,7 +401,9 @@ register(
         "bandwidth_factor": 2.5,
         "policy_type": "motor",
         "weights_scale": 50,
-        "goal_scale": 0.1
+        "goal_scale": 0.1,
+        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
 

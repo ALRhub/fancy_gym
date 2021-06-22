@@ -7,7 +7,7 @@ from gym.utils import seeding
 from matplotlib import patches
 
 from alr_envs.classic_control.utils import check_self_collision
-from alr_envs.utils.mps.mp_environments import AlrEnv
+from alr_envs.utils.mps.alr_env import AlrEnv
 
 
 class HoleReacherEnv(AlrEnv):
