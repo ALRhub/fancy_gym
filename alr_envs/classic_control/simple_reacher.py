@@ -5,10 +5,10 @@ import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
-from alr_envs.utils.mps.alr_env import AlrEnv
+from mp_env_api.envs.mp_env import MpEnv
 
 
-class SimpleReacherEnv(AlrEnv):
+class SimpleReacherEnv(MpEnv):
     """
     Simple Reaching Task without any physics simulation.
     Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions

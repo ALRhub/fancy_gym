@@ -7,10 +7,10 @@ from gym.utils import seeding
 from matplotlib import patches
 
 from alr_envs.classic_control.utils import check_self_collision
-from alr_envs.utils.mps.alr_env import AlrEnv
+from mp_env_api.envs.mp_env import MpEnv
 
 
-class HoleReacherEnv(AlrEnv):
+class HoleReacherEnv(MpEnv):
 
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
@@ -44,7 +44,7 @@ class HoleReacherEnv(AlrEnv):
         self._start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
         self._start_vel = np.zeros(self.n_links)
 
-        self.dt = 0.01
+        self._dt = 0.01
 
         action_bound = np.pi * np.ones((self.n_links,))
         state_bound = np.hstack([
@@ -65,6 +65,10 @@ class HoleReacherEnv(AlrEnv):
 
         self._steps = 0
         self.seed()
+
+    @property
+    def dt(self) -> Union[float, int]:
+        return self._dt
 
     def step(self, action: np.ndarray):
         """

@@ -110,6 +110,6 @@ if __name__ == '__main__':
     # example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
     # example_async_contextual_sampler()
     # env = gym.make("alr_envs:HoleReacherDetPMP-v1")
-    env_name = "alr_envs:ALRBallInACupSimpleDetPMP-v0"
+    env_name = "alr_envs:ALRBallInACupPDSimpleDetPMP-v0"
     example_async_sampler(env_name)
     # example_mp(env_name)
