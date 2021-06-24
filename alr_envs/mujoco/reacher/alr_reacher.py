@@ -86,3 +86,21 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
         ])
+
+if __name__ == '__main__':
+    nl = 5
+    render_mode = "human"  # "human" or "partial" or "final"
+    env = ALRReacherEnv(n_links=nl)
+    obs = env.reset()
+
+    for i in range(2000):
+        # objective.load_result("/tmp/cma")
+        # test with random actions
+        ac = env.action_space.sample()
+        obs, rew, d, info = env.step(ac)
+        if i % 10 == 0:
+            env.render(mode=render_mode)
+        if d:
+            env.reset()
+
+    env.close()

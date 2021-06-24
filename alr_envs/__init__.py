@@ -2,8 +2,6 @@ from gym.envs.registration import register
 
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
 
-# from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
-
 # Mujoco
 
 register(
@@ -191,7 +189,7 @@ register(
         "random_start": False,
         "allow_self_collision": False,
         "allow_wall_collision": False,
-        "hole_width": None,
+        "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": None,
         "collision_penalty": 100,
