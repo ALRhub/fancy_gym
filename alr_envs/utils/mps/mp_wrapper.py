@@ -74,6 +74,7 @@ class MPWrapper(gym.Wrapper, ABC):
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
             ac = self.policy.get_action(pos_vel[0], pos_vel[1])
+            ac = np.clip(ac, self.env.action_space.low, self.env.action_space.high)
             obs, rew, done, info = self.env.step(ac)
             rewards += rew
             # TODO return all dicts?
