@@ -105,6 +105,16 @@ register(
 )
 
 register(
+    id='ALRBallInACupPD-v0',
+    entry_point='alr_envs.mujoco:ALRBallInACupPDEnv',
+    max_episode_steps=4000,
+    kwargs={
+        "simplified": False,
+        "reward_type": "no_context"
+    }
+)
+
+register(
     id='ALRBallInACup-v0',
     entry_point='alr_envs.mujoco:ALRBallInACupEnv',
     max_episode_steps=4000,
@@ -384,6 +394,26 @@ register(
     kwargs={
         "name": "alr_envs:ALRBallInACupPDSimple-v0",
         "num_dof": 3,
+        "num_basis": 5,
+        "duration": 3.5,
+        "post_traj_time": 4.5,
+        "width": 0.0035,
+        # "off": -0.05,
+        "policy_type": "motor",
+        "weights_scale": 0.2,
+        "zero_start": True,
+        "zero_goal": True,
+        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
+        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+    }
+)
+
+register(
+    id='ALRBallInACupPDDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+    kwargs={
+        "name": "alr_envs:ALRBallInACupPD-v0",
+        "num_dof": 7,
         "num_basis": 5,
         "duration": 3.5,
         "post_traj_time": 4.5,
