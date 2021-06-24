@@ -1,15 +1,15 @@
 from typing import Iterable, Union
 
+import gym
 import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
 
-from mp_env_api.envs.mp_env import MpEnv
 from mp_env_api.envs.mp_env_wrapper import MPEnvWrapper
 
 
-class SimpleReacherEnv(MpEnv):
+class SimpleReacherEnv(gym.Env):
     """
     Simple Reaching Task without any physics simulation.
     Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions
