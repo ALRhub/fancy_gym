@@ -6,8 +6,6 @@ import numpy as np
 from gym.utils import seeding
 
 from alr_envs.classic_control.utils import check_self_collision
-from mp_env_api.envs.mp_env import MpEnv
-from mp_env_api.envs.mp_env_wrapper import MPEnvWrapper
 
 
 class ViaPointReacher(gym.Env):
@@ -282,27 +280,3 @@ class ViaPointReacher(gym.Env):
     def close(self):
         if self.fig is not None:
             plt.close(self.fig)
-
-
-class ViaPointReacherMPWrapper(MPEnvWrapper):
-    @property
-    def active_obs(self):
-        return np.hstack([
-            [self.env.random_start] * self.env.n_links,  # cos
-            [self.env.random_start] * self.env.n_links,  # sin
-            [self.env.random_start] * self.env.n_links,  # velocity
-            [self.env.via_target is None] * 2,  # x-y coordinates of via point distance
-            [True] * 2,  # x-y coordinates of target distance
-            [False]  # env steps
-        ])
-
-    @property
-    def start_pos(self) -> Union[float, int, np.ndarray]:
-        return self._start_pos
-
-    @property
-    def goal_pos(self) -> Union[float, int, np.ndarray]:
-        raise ValueError("Goal position is not available and has to be learnt based on the environment.")
-
-    def dt(self) -> Union[float, int]:
-        return self.env.dt

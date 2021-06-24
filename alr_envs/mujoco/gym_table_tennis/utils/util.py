@@ -39,7 +39,7 @@ def config_save(dir_path, config):
 
 
 def change_kp_in_xml(kp_list,
-                     model_path="/home/zhou/slow/table_tennis_rl/simulation/gymTableTennis/gym_table_tennis/envs/robotics/assets/table_tennis/right_arm_actuator.xml"):
+                     model_path="/home/zhou/slow/table_tennis_rl/simulation/gymTableTennis/gym_table_tennis/simple_reacher/robotics/assets/table_tennis/right_arm_actuator.xml"):
     tree = ET.parse(model_path)
     root = tree.getroot()
     # for actuator in root.find("actuator"):

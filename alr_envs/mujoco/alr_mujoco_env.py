@@ -98,14 +98,14 @@ class AlrMujocoEnv(PositionalEnv, AlrEnv):
     @property
     def start_pos(self):
         """
-        Start position of the agent, for example joint angles of a Panda robot. Necessary for MP wrapped envs.
+        Start position of the agent, for example joint angles of a Panda robot. Necessary for MP wrapped simple_reacher.
         """
         return self._start_pos
 
     @property
     def start_vel(self):
         """
-        Start velocity of the agent. Necessary for MP wrapped envs.
+        Start velocity of the agent. Necessary for MP wrapped simple_reacher.
         """
         return self._start_vel
 
