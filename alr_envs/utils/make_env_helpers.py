@@ -20,10 +20,14 @@ def make_contextual_env(env_id, context, seed, rank):
 def make_dmp_env(**kwargs):
     name = kwargs.pop("name")
     _env = gym.make(name)
-    return DmpWrapper(_env, **kwargs)
+    for wrapper in kwargs.pop("wrappers"):
+        _env = wrapper(_env)
+    return DmpWrapper(_env, **kwargs.get("mp_kwargs"))
 
 
 def make_detpmp_env(**kwargs):
     name = kwargs.pop("name")
     _env = gym.make(name)
-    return DetPMPWrapper(_env, **kwargs)
+    for wrapper in kwargs.pop("wrappers"):
+        _env = wrapper(_env)
+    return DetPMPWrapper(_env, **kwargs.get("mp_kwargs"))
