@@ -7,10 +7,10 @@ from alr_envs.mujoco import alr_mujoco_env
 class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
     def __init__(self, n_substeps=4, apply_gravity_comp=True, simplified: bool = False,
                  reward_type: str = None, context: np.ndarray = None):
+        utils.EzPickle.__init__(**locals())
         self._steps = 0
 
-        self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
-                                     "biac_base" + ".xml")
+        self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "biac_base.xml")
 
         self._q_pos = []
         self._q_vel = []
@@ -22,7 +22,6 @@ class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
         self.context = context
 
-        utils.EzPickle.__init__(self)
         alr_mujoco_env.AlrMujocoEnv.__init__(self,
                                              self.xml_path,
                                              apply_gravity_comp=apply_gravity_comp,
@@ -194,4 +193,3 @@ if __name__ == "__main__":
             break
 
     env.close()
-
