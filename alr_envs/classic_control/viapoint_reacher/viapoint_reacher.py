@@ -10,7 +10,7 @@ from alr_envs.classic_control.utils import check_self_collision
 
 class ViaPointReacher(gym.Env):
 
-    def __init__(self, n_links, random_start: bool = True, via_target: Union[None, Iterable] = None,
+    def __init__(self, n_links, random_start: bool = False, via_target: Union[None, Iterable] = None,
                  target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):
 
         self.n_links = n_links
@@ -19,8 +19,8 @@ class ViaPointReacher(gym.Env):
         self.random_start = random_start
 
         # provided initial parameters
-        self.target = target  # provided target value
-        self.via_target = via_target  # provided via point target value
+        self.intitial_target = target  # provided target value
+        self.initial_via_target = via_target  # provided via point target value
 
         # temp container for current env state
         self._via_point = np.ones(2)
@@ -62,6 +62,10 @@ class ViaPointReacher(gym.Env):
     @property
     def dt(self):
         return self._dt
+
+    @property
+    def start_pos(self):
+        return self._start_pos
 
     def step(self, action: np.ndarray):
         """
@@ -107,22 +111,22 @@ class ViaPointReacher(gym.Env):
         total_length = np.sum(self.link_lengths)
 
         # rejection sampled point in inner circle with 0.5*Radius
-        if self.via_target is None:
+        if self.initial_via_target is None:
             via_target = np.array([total_length, total_length])
             while np.linalg.norm(via_target) >= 0.5 * total_length:
                 via_target = self.np_random.uniform(low=-0.5 * total_length, high=0.5 * total_length, size=2)
         else:
-            via_target = np.copy(self.via_target)
+            via_target = np.copy(self.initial_via_target)
 
         # rejection sampled point in outer circle
-        if self.target is None:
+        if self.intitial_target is None:
             goal = np.array([total_length, total_length])
             while np.linalg.norm(goal) >= total_length or np.linalg.norm(goal) <= 0.5 * total_length:
                 goal = self.np_random.uniform(low=-total_length, high=total_length, size=2)
         else:
-            goal = np.copy(self.target)
+            goal = np.copy(self.intitial_target)
 
-        self.via_target = via_target
+        self._via_point = via_target
         self._goal = goal
 
     def _update_joints(self):

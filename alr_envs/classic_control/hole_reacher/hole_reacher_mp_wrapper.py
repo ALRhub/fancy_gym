@@ -12,7 +12,7 @@ class HoleReacherMPWrapper(MPEnvWrapper):
             [self.env.random_start] * self.env.n_links,  # cos
             [self.env.random_start] * self.env.n_links,  # sin
             [self.env.random_start] * self.env.n_links,  # velocity
-            [self.env.hole_width is None],  # hole width
+            [self.env.initial_width is None],  # hole width
             # [self.env.hole_depth is None],  # hole depth
             [True] * 2,  # x-y coordinates of target distance
             [False]  # env steps
@@ -20,7 +20,7 @@ class HoleReacherMPWrapper(MPEnvWrapper):
 
     @property
     def start_pos(self) -> Union[float, int, np.ndarray]:
-        return self._start_pos
+        return self.env.start_pos
 
     @property
     def goal_pos(self) -> Union[float, int, np.ndarray]:

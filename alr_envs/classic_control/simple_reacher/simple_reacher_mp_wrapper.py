@@ -18,7 +18,7 @@ class SimpleReacherMPWrapper(MPEnvWrapper):
 
     @property
     def start_pos(self):
-        return self._start_pos
+        return self.env.start_pos
 
     @property
     def goal_pos(self):

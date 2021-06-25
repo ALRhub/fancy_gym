@@ -1,3 +1,3 @@
+from alr_envs.classic_control.hole_reacher.hole_reacher import HoleReacherEnv
 from alr_envs.classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacher
 from alr_envs.classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
-from alr_envs.classic_control.hole_reacher.hole_reacher import HoleReacherEnv

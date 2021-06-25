@@ -21,14 +21,14 @@ class HoleReacherEnv(gym.Env):
         self.random_start = random_start
 
         # provided initial parameters
-        self.hole_x = hole_x  # x-position of center of hole
-        self.hole_width = hole_width  # width of hole
-        self.hole_depth = hole_depth  # depth of hole
+        self.initial_x = hole_x  # x-position of center of hole
+        self.initial_width = hole_width  # width of hole
+        self.initial_depth = hole_depth  # depth of hole
 
         # temp container for current env state
-        self._tmp_hole_x = None
-        self._tmp_hole_width = None
-        self._tmp_hole_depth = None
+        self._tmp_x = None
+        self._tmp_width = None
+        self._tmp_depth = None
         self._goal = None  # x-y coordinates for reaching the center at the bottom of the hole
 
         # collision
@@ -68,6 +68,10 @@ class HoleReacherEnv(gym.Env):
     @property
     def dt(self) -> Union[float, int]:
         return self._dt
+
+    @property
+    def start_pos(self):
+        return self._start_pos
 
     def step(self, action: np.ndarray):
         """
@@ -110,13 +114,13 @@ class HoleReacherEnv(gym.Env):
         return self._get_obs().copy()
 
     def _generate_hole(self):
-        self._tmp_hole_x = self.np_random.uniform(1, 3.5, 1) if self.hole_x is None else np.copy(self.hole_x)
-        self._tmp_hole_width = self.np_random.uniform(0.15, 0.5, 1) if self.hole_width is None else np.copy(
-            self.hole_width)
+        self._tmp_x = self.np_random.uniform(1, 3.5, 1) if self.initial_x is None else np.copy(self.initial_x)
+        self._tmp_width = self.np_random.uniform(0.15, 0.5, 1) if self.initial_width is None else np.copy(
+            self.initial_width)
         # TODO we do not want this right now.
-        self._tmp_hole_depth = self.np_random.uniform(1, 1, 1) if self.hole_depth is None else np.copy(
-            self.hole_depth)
-        self._goal = np.hstack([self._tmp_hole_x, -self._tmp_hole_depth])
+        self._tmp_depth = self.np_random.uniform(1, 1, 1) if self.initial_depth is None else np.copy(
+            self.initial_depth)
+        self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
 
     def _update_joints(self):
         """
@@ -164,7 +168,7 @@ class HoleReacherEnv(gym.Env):
             np.cos(theta),
             np.sin(theta),
             self._angle_velocity,
-            self._tmp_hole_width,
+            self._tmp_width,
             # self._tmp_hole_depth,
             self.end_effector - self._goal,
             self._steps
@@ -192,7 +196,7 @@ class HoleReacherEnv(gym.Env):
     def _check_wall_collision(self, line_points):
 
         # all points that are before the hole in x
-        r, c = np.where(line_points[:, :, 0] < (self._tmp_hole_x - self._tmp_hole_width / 2))
+        r, c = np.where(line_points[:, :, 0] < (self._tmp_x - self._tmp_width / 2))
 
         # check if any of those points are below surface
         nr_line_points_below_surface_before_hole = np.sum(line_points[r, c, 1] < 0)
@@ -201,7 +205,7 @@ class HoleReacherEnv(gym.Env):
             return True
 
         # all points that are after the hole in x
-        r, c = np.where(line_points[:, :, 0] > (self._tmp_hole_x + self._tmp_hole_width / 2))
+        r, c = np.where(line_points[:, :, 0] > (self._tmp_x + self._tmp_width / 2))
 
         # check if any of those points are below surface
         nr_line_points_below_surface_after_hole = np.sum(line_points[r, c, 1] < 0)
@@ -210,11 +214,11 @@ class HoleReacherEnv(gym.Env):
             return True
 
         # all points that are above the hole
-        r, c = np.where((line_points[:, :, 0] > (self._tmp_hole_x - self._tmp_hole_width / 2)) & (
-                line_points[:, :, 0] < (self._tmp_hole_x + self._tmp_hole_width / 2)))
+        r, c = np.where((line_points[:, :, 0] > (self._tmp_x - self._tmp_width / 2)) & (
+                line_points[:, :, 0] < (self._tmp_x + self._tmp_width / 2)))
 
         # check if any of those points are below surface
-        nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self._tmp_hole_depth)
+        nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self._tmp_depth)
 
         if nr_line_points_below_surface_in_hole > 0:
             return True
@@ -257,17 +261,17 @@ class HoleReacherEnv(gym.Env):
     def _set_patches(self):
         if self.fig is not None:
             self.fig.gca().patches = []
-            left_block = patches.Rectangle((-self.n_links, -self._tmp_hole_depth),
-                                           self.n_links + self._tmp_hole_x - self._tmp_hole_width / 2,
-                                           self._tmp_hole_depth,
+            left_block = patches.Rectangle((-self.n_links, -self._tmp_depth),
+                                           self.n_links + self._tmp_x - self._tmp_width / 2,
+                                           self._tmp_depth,
                                            fill=True, edgecolor='k', facecolor='k')
-            right_block = patches.Rectangle((self._tmp_hole_x + self._tmp_hole_width / 2, -self._tmp_hole_depth),
-                                            self.n_links - self._tmp_hole_x + self._tmp_hole_width / 2,
-                                            self._tmp_hole_depth,
+            right_block = patches.Rectangle((self._tmp_x + self._tmp_width / 2, -self._tmp_depth),
+                                            self.n_links - self._tmp_x + self._tmp_width / 2,
+                                            self._tmp_depth,
                                             fill=True, edgecolor='k', facecolor='k')
-            hole_floor = patches.Rectangle((self._tmp_hole_x - self._tmp_hole_width / 2, -self._tmp_hole_depth),
-                                           self._tmp_hole_width,
-                                           1 - self._tmp_hole_depth,
+            hole_floor = patches.Rectangle((self._tmp_x - self._tmp_width / 2, -self._tmp_depth),
+                                           self._tmp_width,
+                                           1 - self._tmp_depth,
                                            fill=True, edgecolor='k', facecolor='k')
 
             # Add the patch to the Axes

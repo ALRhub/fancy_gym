@@ -1,12 +1,16 @@
 import numpy as np
 from gym.envs.registration import register
 
+from alr_envs.classic_control.hole_reacher.hole_reacher_mp_wrapper import HoleReacherMPWrapper
+from alr_envs.classic_control.simple_reacher.simple_reacher_mp_wrapper import SimpleReacherMPWrapper
+from alr_envs.classic_control.viapoint_reacher.viapoint_reacher_mp_wrapper import ViaPointReacherMPWrapper
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_mp_wrapper import BallInACupMPWrapper
+from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_positional_wrapper import BallInACupPositionalWrapper
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
-
-# from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
 
 # Mujoco
 
+## Reacher
 register(
     id='ALRReacher-v0',
     entry_point='alr_envs.mujoco:ALRReacherEnv',
@@ -177,7 +181,7 @@ register(
 
 register(
     id='ViaPointReacher-v0',
-    entry_point='alr_envs.classic_control.viapoint_reacher:ViaPointReacher',
+    entry_point='alr_envs.classic_control:ViaPointReacher',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -189,7 +193,7 @@ register(
 ## Hole Reacher
 register(
     id='HoleReacher-v0',
-    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
+    entry_point='alr_envs.classic_control:HoleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -205,7 +209,7 @@ register(
 
 register(
     id='HoleReacher-v1',
-    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
+    entry_point='alr_envs.classic_control:HoleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -221,7 +225,7 @@ register(
 
 register(
     id='HoleReacher-v2',
-    entry_point='alr_envs.classic_control.hole_reacher:HoleReacherEnv',
+    entry_point='alr_envs.classic_control:HoleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -236,39 +240,46 @@ register(
 )
 
 # MP environments
+
 ## Simple Reacher
 versions = ["SimpleReacher-v0", "SimpleReacher-v1", "LongSimpleReacher-v0", "LongSimpleReacher-v1"]
 for v in versions:
     name = v.split("-")
     register(
         id=f'{name[0]}DMP-{name[1]}',
-        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
         # max_episode_steps=1,
         kwargs={
             "name": f"alr_envs:{v}",
-            "num_dof": 2 if "long" not in v.lower() else 5,
-            "num_basis": 5,
-            "duration": 2,
-            "alpha_phase": 2,
-            "learn_goal": True,
-            "policy_type": "velocity",
-            "weights_scale": 50,
+            "wrappers": [SimpleReacherMPWrapper],
+            "mp_kwargs": {
+                "num_dof": 2 if "long" not in v.lower() else 5,
+                "num_basis": 5,
+                "duration": 2,
+                "alpha_phase": 2,
+                "learn_goal": True,
+                "policy_type": "velocity",
+                "weights_scale": 50,
+            }
         }
     )
 
 register(
     id='ViaPointReacherDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     # max_episode_steps=1,
     kwargs={
         "name": "alr_envs:ViaPointReacher-v0",
-        "num_dof": 5,
-        "num_basis": 5,
-        "duration": 2,
-        "alpha_phase": 2,
-        "learn_goal": False,
-        "policy_type": "velocity",
-        "weights_scale": 50,
+        "wrappers": [ViaPointReacherMPWrapper],
+        "mp_kwargs": {
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "learn_goal": True,
+            "alpha_phase": 2,
+            "policy_type": "velocity",
+            "weights_scale": 50,
+        }
     }
 )
 
@@ -277,52 +288,61 @@ versions = ["v0", "v1", "v2"]
 for v in versions:
     register(
         id=f'HoleReacherDMP-{v}',
-        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
         # max_episode_steps=1,
         kwargs={
             "name": f"alr_envs:HoleReacher-{v}",
-            "num_dof": 5,
-            "num_basis": 5,
-            "duration": 2,
-            "learn_goal": True,
-            "alpha_phase": 2,
-            "bandwidth_factor": 2,
-            "policy_type": "velocity",
-            "weights_scale": 50,
-            "goal_scale": 0.1
+            "wrappers": [HoleReacherMPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 5,
+                "duration": 2,
+                "learn_goal": True,
+                "alpha_phase": 2,
+                "bandwidth_factor": 2,
+                "policy_type": "velocity",
+                "weights_scale": 50,
+                "goal_scale": 0.1
+            }
         }
     )
 
     register(
         id=f'HoleReacherDetPMP-{v}',
-        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
         kwargs={
             "name": f"alr_envs:HoleReacher-{v}",
-            "num_dof": 5,
-            "num_basis": 5,
-            "duration": 2,
-            "width": 0.025,
-            "policy_type": "velocity",
-            "weights_scale": 0.2,
-            "zero_start": True
+            "wrappers": [HoleReacherMPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 5,
+                "duration": 2,
+                "width": 0.025,
+                "policy_type": "velocity",
+                "weights_scale": 0.2,
+                "zero_start": True
+            }
         }
     )
 
 # TODO: properly add final_pos
 register(
     id='HoleReacherFixedGoalDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     # max_episode_steps=1,
     kwargs={
         "name": "alr_envs:HoleReacher-v0",
-        "num_dof": 5,
-        "num_basis": 5,
-        "duration": 2,
-        "learn_goal": False,
-        "alpha_phase": 2,
-        "policy_type": "velocity",
-        "weights_scale": 50,
-        "goal_scale": 0.1
+        "wrappers": [HoleReacherMPWrapper],
+        "mp_kwargs": {
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "learn_goal": False,
+            "alpha_phase": 2,
+            "policy_type": "velocity",
+            "weights_scale": 50,
+            "goal_scale": 0.1
+        }
     }
 )
 
@@ -330,81 +350,101 @@ register(
 
 register(
     id='ALRBallInACupSimpleDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "num_dof": 3,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "learn_goal": False,
-        "alpha_phase": 3,
-        "bandwidth_factor": 2.5,
-        "policy_type": "motor",
-        "weights_scale": 100,
-        "return_to_start": True,
-        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "learn_goal": False,
+            "alpha_phase": 3,
+            "bandwidth_factor": 2.5,
+            "policy_type": "motor",
+            "weights_scale": 100,
+            "return_to_start": True,
+            "policy_kwargs": {
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 
 register(
     id='ALRBallInACupDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACup-v0",
-        "num_dof": 7,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "learn_goal": False,
-        "alpha_phase": 3,
-        "bandwidth_factor": 2.5,
-        "policy_type": "motor",
-        "weights_scale": 100,
-        "return_to_start": True,
-        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "learn_goal": False,
+            "alpha_phase": 3,
+            "bandwidth_factor": 2.5,
+            "policy_type": "motor",
+            "weights_scale": 100,
+            "return_to_start": True,
+            "policy_kwargs": {
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 
 register(
     id='ALRBallInACupSimpleDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "num_dof": 3,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "width": 0.0035,
-        # "off": -0.05,
-        "policy_type": "motor",
-        "weights_scale": 0.2,
-        "zero_start": True,
-        "zero_goal": True,
-        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "width": 0.0035,
+            # "off": -0.05,
+            "policy_type": "motor",
+            "weights_scale": 0.2,
+            "zero_start": True,
+            "zero_goal": True,
+            "policy_kwargs": {
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 
 register(
     id='ALRBallInACupPDSimpleDetPMP-v0',
-    entry_point='alr_envs.mujoco.ball_in_a_cup.biac_pd:make_detpmp_env',
+    entry_point='alr_envs.mujoco.ball_in_a_cup.biac_pd:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupPDSimple-v0",
-        "num_dof": 3,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "width": 0.0035,
-        # "off": -0.05,
-        "policy_type": "motor",
-        "weights_scale": 0.2,
-        "zero_start": True,
-        "zero_goal": True,
-        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "width": 0.0035,
+            # "off": -0.05,
+            "policy_type": "motor",
+            "weights_scale": 0.2,
+            "zero_start": True,
+            "zero_goal": True,
+            "policy_kwargs": {
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 
@@ -430,20 +470,26 @@ register(
 
 register(
     id='ALRBallInACupDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "num_dof": 7,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "width": 0.0035,
-        "policy_type": "motor",
-        "weights_scale": 0.2,
-        "zero_start": True,
-        "zero_goal": True,
-        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "width": 0.0035,
+            "policy_type": "motor",
+            "weights_scale": 0.2,
+            "zero_start": True,
+            "zero_goal": True,
+            "policy_kwargs": {
+
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 
@@ -452,18 +498,23 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_contextual_env',
     kwargs={
         "name": "alr_envs:ALRBallInACupGoal-v0",
-        "num_dof": 7,
-        "num_basis": 5,
-        "duration": 3.5,
-        "post_traj_time": 4.5,
-        "learn_goal": True,
-        "alpha_phase": 3,
-        "bandwidth_factor": 2.5,
-        "policy_type": "motor",
-        "weights_scale": 50,
-        "goal_scale": 0.1,
-        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
-        "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 5,
+            "duration": 3.5,
+            "post_traj_time": 4.5,
+            "learn_goal": True,
+            "alpha_phase": 3,
+            "bandwidth_factor": 2.5,
+            "policy_type": "motor",
+            "weights_scale": 50,
+            "goal_scale": 0.1,
+            "policy_kwargs": {
+                "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
+                "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
+            }
+        }
     }
 )
 

@@ -1,7 +1,9 @@
 from collections import defaultdict
+
 import gym
 import numpy as np
-from alr_envs.utils.mp_env_async_sampler import AlrMpEnvSampler, AlrContextualMpEnvSampler, DummyDist
+
+from alr_envs.utils.mp_env_async_sampler import AlrContextualMpEnvSampler, AlrMpEnvSampler, DummyDist
 
 
 def example_mujoco():
@@ -14,8 +16,8 @@ def example_mujoco():
         obs, reward, done, info = env.step(env.action_space.sample())
         rewards += reward
 
-        if i % 1 == 0:
-            env.render()
+        # if i % 1 == 0:
+        #     env.render()
 
         if done:
             print(rewards)
@@ -23,8 +25,7 @@ def example_mujoco():
             obs = env.reset()
 
 
-def example_mp(env_name="alr_envs:HoleReacherDMP-v0"):
-    # env = gym.make("alr_envs:ViaPointReacherDMP-v0")
+def example_mp(env_name="alr_envs:HoleReacherDMP-v1"):
     env = gym.make(env_name)
     rewards = 0
     # env.render(mode=None)
@@ -105,11 +106,12 @@ def example_async_contextual_sampler(env_name="alr_envs:SimpleReacherDMP-v1", n_
 
 
 if __name__ == '__main__':
+    example_mp("alr_envs:HoleReacherDetPMP-v0")
     # example_mujoco()
     # example_mp("alr_envs:SimpleReacherDMP-v1")
     # example_async("alr_envs:LongSimpleReacherDMP-v0", 4)
     # example_async_contextual_sampler()
     # env = gym.make("alr_envs:HoleReacherDetPMP-v1")
-    env_name = "alr_envs:ALRBallInACupPDSimpleDetPMP-v0"
-    example_async_sampler(env_name)
+    # env_name = "alr_envs:ALRBallInACupPDSimpleDetPMP-v0"
+    # example_async_sampler(env_name)
     # example_mp(env_name)

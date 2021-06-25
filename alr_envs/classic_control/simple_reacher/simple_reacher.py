@@ -22,14 +22,17 @@ class SimpleReacherEnv(gym.Env):
 
         self.random_start = random_start
 
+        # provided initial parameters
+        self.inital_target = target
+
+        # temp container for current env state
+        self._goal = None
+
         self._joints = None
         self._joint_angles = None
         self._angle_velocity = None
         self._start_pos = np.zeros(self.n_links)
         self._start_vel = np.zeros(self.n_links)
-
-        self._target = target  # provided target value
-        self._goal = None  # updated goal value, does not change when target != None
 
         self.max_torque = 1
         self.steps_before_reward = 199
@@ -55,6 +58,10 @@ class SimpleReacherEnv(gym.Env):
     @property
     def dt(self) -> Union[float, int]:
         return self._dt
+
+    @property
+    def start_pos(self):
+        return self._start_pos
 
     def step(self, action: np.ndarray):
         """
@@ -129,14 +136,14 @@ class SimpleReacherEnv(gym.Env):
 
     def _generate_goal(self):
 
-        if self._target is None:
+        if self.inital_target is None:
 
             total_length = np.sum(self.link_lengths)
             goal = np.array([total_length, total_length])
             while np.linalg.norm(goal) >= total_length:
                 goal = self.np_random.uniform(low=-total_length, high=total_length, size=2)
         else:
-            goal = np.copy(self._target)
+            goal = np.copy(self.inital_target)
 
         self._goal = goal
 
