@@ -67,7 +67,7 @@ cd alr_envs
 ```bash 
 pip install -e . 
 ```
-4. Use (see [example.py](./example.py)): 
+4. Use (see [example.py](alr_envs/examples/examples_general.py)): 
 ```python
 import gym
 

@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 
-from mp_env_api.envs.mp_env_wrapper import MPEnvWrapper
+from mp_env_api.env_wrappers.mp_env_wrapper import MPEnvWrapper
 
 
 class ViaPointReacherMPWrapper(MPEnvWrapper):

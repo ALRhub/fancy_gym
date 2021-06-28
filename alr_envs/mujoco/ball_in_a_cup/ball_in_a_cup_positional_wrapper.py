@@ -2,7 +2,7 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api.envs.positional_env_wrapper import PositionalEnvWrapper
+from mp_env_api.env_wrappers.positional_env_wrapper import PositionalEnvWrapper
 
 
 class BallInACupPositionalWrapper(PositionalEnvWrapper):

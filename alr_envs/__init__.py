@@ -463,7 +463,7 @@ register(
         "weights_scale": 0.2,
         "zero_start": True,
         "zero_goal": True,
-        "p_gains": np.array([4./3., 2.4, 2.5, 5./3., 2., 2., 1.25]),
+        "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
         "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
     }
 )
