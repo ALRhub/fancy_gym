@@ -15,6 +15,22 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1):
     # While in this case gym.make() is possible to use as well, we recommend our custom make env function.
     # First, it already takes care of seeding and second enables the use of DMC tasks within the gym interface.
     env = make_env(env_name, seed)
+
+    # Changing the mp_kwargs is possible by providing them to gym.
+    # E.g. here by providing way to many basis functions
+    # mp_kwargs = {
+    #     "num_dof": 5,
+    #     "num_basis": 1000,
+    #     "duration": 2,
+    #     "learn_goal": True,
+    #     "alpha_phase": 2,
+    #     "bandwidth_factor": 2,
+    #     "policy_type": "velocity",
+    #     "weights_scale": 50,
+    #     "goal_scale": 0.1
+    # }
+    # env = make_env(env_name, seed, mp_kwargs=mp_kwargs)
+
     rewards = 0
     # env.render(mode=None)
     obs = env.reset()
@@ -40,8 +56,9 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1):
 def example_custom_mp(seed=1):
     """
     Example for running a custom motion primitive based environments.
-    Our already registered environments follow the same structure, but do not directly allow for modifications.
-    Hence, this also allows to adjust hyperparameters of the motion primitives more easily.
+    Our already registered environments follow the same structure.
+    Hence, this also allows to adjust hyperparameters of the motion primitives.
+    Yet, we recommend the method above if you are just interested in chaining those parameters for existing tasks.
     We appreciate PRs for custom environments (especially MP wrappers of existing tasks) 
     for our repo: https://github.com/ALRhub/alr_envs/
     Args:

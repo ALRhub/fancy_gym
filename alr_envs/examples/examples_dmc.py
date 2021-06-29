@@ -1,14 +1,15 @@
-from alr_envs.dmc.Ball_in_the_cup_mp_wrapper import BallInCupMPWrapper
+from alr_envs.dmc.Ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
 
 
-def example_dmc(env_name="fish-swim", seed=1):
+def example_dmc(env_name="fish-swim", seed=1, iterations=1000):
     env = make_env(env_name, seed)
     rewards = 0
     obs = env.reset()
+    print(obs)
 
-    # number of samples/full trajectories (multiple environment steps)
-    for i in range(2000):
+    # number of samples(multiple environment steps)
+    for i in range(10):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         rewards += reward
@@ -37,7 +38,7 @@ def example_custom_dmc_and_mp(seed=1):
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
     # wrappers = [HoleReacherMPWrapper]
-    wrappers = [BallInCupMPWrapper]
+    wrappers = [DMCBallInCupMPWrapper]
     mp_kwargs = {
         "num_dof": 2,  # env.start_pos
         "num_basis": 5,
@@ -69,5 +70,14 @@ def example_custom_dmc_and_mp(seed=1):
 
 
 if __name__ == '__main__':
-    example_dmc()
+    # Disclaimer: DMC environments require the seed to be specified in the beginning.
+    # Adjusting it afterwards with env.seed() is not recommended as it does not affect the underlying physics.
+
+    # Standard DMC task
+    example_dmc("fish_swim", seed=10, iterations=1000)
+
+    # Gym + DMC hybrid task provided in the MP framework
+    example_dmc("dmc_ball_in_cup_dmp-v0", seed=10, iterations=10)
+
+    # Custom DMC task
     example_custom_dmc_and_mp()

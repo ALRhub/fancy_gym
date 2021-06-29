@@ -5,7 +5,7 @@ import numpy as np
 from mp_env_api.env_wrappers.mp_env_wrapper import MPEnvWrapper
 
 
-class BallInCupMPWrapper(MPEnvWrapper):
+class DMCBallInCupMPWrapper(MPEnvWrapper):
 
     @property
     def active_obs(self):

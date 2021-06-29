@@ -4,6 +4,7 @@ from gym.envs.registration import register
 from alr_envs.classic_control.hole_reacher.hole_reacher_mp_wrapper import HoleReacherMPWrapper
 from alr_envs.classic_control.simple_reacher.simple_reacher_mp_wrapper import SimpleReacherMPWrapper
 from alr_envs.classic_control.viapoint_reacher.viapoint_reacher_mp_wrapper import ViaPointReacherMPWrapper
+from alr_envs.dmc.Ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_mp_wrapper import BallInACupMPWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_positional_wrapper import BallInACupPositionalWrapper
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
@@ -517,6 +518,48 @@ register(
         }
     }
 )
+
+## DMC
+
+register(
+    id=f'dmc_ball_in_cup_dmp-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
+    # max_episode_steps=1,
+    kwargs={
+        "name": f"ball_in_cup-catch",
+        "wrappers": [DMCBallInCupMPWrapper],
+        "mp_kwargs": {
+            "num_dof": 2,
+            "num_basis": 5,
+            "duration": 2,
+            "learn_goal": True,
+            "alpha_phase": 2,
+            "bandwidth_factor": 2,
+            "policy_type": "velocity",
+            "weights_scale": 50,
+            "goal_scale": 0.1
+        }
+    }
+)
+
+register(
+    id=f'dmc_ball_in_cup_detpmp-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": f"ball_in_cup-catch",
+        "wrappers": [DMCBallInCupMPWrapper],
+        "mp_kwargs": {
+            "num_dof": 2,
+            "num_basis": 5,
+            "duration": 2,
+            "width": 0.025,
+            "policy_type": "velocity",
+            "weights_scale": 0.2,
+            "zero_start": True
+        }
+    }
+)
+
 
 # BBO functions
 

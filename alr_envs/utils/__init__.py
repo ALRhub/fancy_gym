@@ -35,8 +35,8 @@ def make(
 
     if env_id not in gym.envs.registry.env_specs:
         task_kwargs = {}
-        if seed is not None:
-            task_kwargs['random'] = seed
+        # if seed is not None:
+        task_kwargs['random'] = seed
         if time_limit is not None:
             task_kwargs['time_limit'] = time_limit
         register(

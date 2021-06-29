@@ -42,6 +42,10 @@ def make_env(env_id: str, seed, **kwargs):
 
     """
     try:
+        # Add seed to kwargs in case it is a predefined dmc environment.
+        if env_id.startswith("dmc"):
+            kwargs.update({"seed": seed})
+
         # Gym
         env = gym.make(env_id, **kwargs)
         env.seed(seed)
@@ -70,7 +74,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     # _env = gym.make(env_id)
     _env = make_env(env_id, seed, **kwargs)
 
-    assert any(issubclass(w, MPEnvWrapper) for w in wrappers),\
+    assert any(issubclass(w, MPEnvWrapper) for w in wrappers), \
         "At least an MPEnvWrapper is required in order to leverage motion primitive environments."
     for w in wrappers:
         _env = w(_env)
@@ -125,7 +129,9 @@ def make_dmp_env_helper(**kwargs):
     Returns: DMP wrapped gym env
 
     """
-    return make_dmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), **kwargs.get("mp_kwargs"))
+    seed = kwargs.get("seed", None)
+    return make_dmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
+                        **kwargs.get("mp_kwargs"))
 
 
 def make_detpmp_env_helper(**kwargs):
@@ -143,7 +149,9 @@ def make_detpmp_env_helper(**kwargs):
     Returns: DMP wrapped gym env
 
     """
-    return make_detpmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), **kwargs.get("mp_kwargs"))
+    seed = kwargs.get("seed", None)
+    return make_detpmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
+                           **kwargs.get("mp_kwargs"))
 
 
 def make_contextual_env(env_id, context, seed, rank):
