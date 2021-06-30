@@ -1,6 +1,6 @@
-from alr_envs.utils.mps.detpmp_wrapper import DetPMPWrapper
-from alr_envs.utils.mps.dmp_wrapper import DmpWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
+from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
+from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 
 
 def make_contextual_env(rank, seed=0):
