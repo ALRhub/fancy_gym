@@ -82,7 +82,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     return _env
 
 
-def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, **mp_kwargs):
+def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs):
     """
     This can also be used standalone for manually building a custom DMP environment.
     Args:
@@ -95,11 +95,11 @@ def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, **mp_kwargs):
 
     """
 
-    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed)
+    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
     return DmpWrapper(_env, **mp_kwargs)
 
 
-def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, **mp_kwargs):
+def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs):
     """
     This can also be used standalone for manually building a custom Det ProMP environment.
     Args:
@@ -111,7 +111,7 @@ def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, **mp_kwargs):
 
     """
 
-    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed)
+    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
     return DetPMPWrapper(_env, **mp_kwargs)
 
 
@@ -129,9 +129,9 @@ def make_dmp_env_helper(**kwargs):
     Returns: DMP wrapped gym env
 
     """
-    seed = kwargs.get("seed", None)
+    seed = kwargs.pop("seed", None)
     return make_dmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
-                        **kwargs.get("mp_kwargs"))
+                        mp_kwargs=kwargs.pop("mp_kwargs"), **kwargs)
 
 
 def make_detpmp_env_helper(**kwargs):
@@ -149,12 +149,13 @@ def make_detpmp_env_helper(**kwargs):
     Returns: DMP wrapped gym env
 
     """
-    seed = kwargs.get("seed", None)
+    seed = kwargs.pop("seed", None)
     return make_detpmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
-                           **kwargs.get("mp_kwargs"))
+                           mp_kwargs=kwargs.pop("mp_kwargs"), **kwargs)
 
 
 def make_contextual_env(env_id, context, seed, rank):
-    env = gym.make(env_id, context=context)
-    env.seed(seed + rank)
+    env = make_env(env_id, seed + rank, context=context)
+    # env = gym.make(env_id, context=context)
+    # env.seed(seed + rank)
     return lambda: env

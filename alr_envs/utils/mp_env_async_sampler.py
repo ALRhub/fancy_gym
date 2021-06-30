@@ -3,11 +3,7 @@ from gym.vector.async_vector_env import AsyncVectorEnv
 import numpy as np
 from _collections import defaultdict
 
-
-def make_env(env_id, rank, seed=0, **env_kwargs):
-    env = gym.make(env_id, **env_kwargs)
-    env.seed(seed + rank)
-    return lambda: env
+from alr_envs.utils.make_env_helpers import make_env_rank
 
 
 def split_array(ary, size):
@@ -55,9 +51,10 @@ class AlrMpEnvSampler:
     An asynchronous sampler for non contextual MPWrapper environments. A sampler object can be called with a set of
     parameters and returns the corresponding final obs, rewards, dones and info dicts.
     """
+
     def __init__(self, env_id, num_envs, seed=0, **env_kwargs):
         self.num_envs = num_envs
-        self.env = AsyncVectorEnv([make_env(env_id, seed, i, **env_kwargs) for i in range(num_envs)])
+        self.env = AsyncVectorEnv([make_env_rank(env_id, seed, i, **env_kwargs) for i in range(num_envs)])
 
     def __call__(self, params):
         params = np.atleast_2d(params)
@@ -74,8 +71,8 @@ class AlrMpEnvSampler:
             vals['info'].append(info)
 
         # do not return values above threshold
-        return np.vstack(vals['obs'])[:n_samples], np.hstack(vals['reward'])[:n_samples],\
-            _flatten_list(vals['done'])[:n_samples], _flatten_list(vals['info'])[:n_samples]
+        return np.vstack(vals['obs'])[:n_samples], np.hstack(vals['reward'])[:n_samples], \
+               _flatten_list(vals['done'])[:n_samples], _flatten_list(vals['info'])[:n_samples]
 
 
 class AlrContextualMpEnvSampler:
@@ -83,12 +80,12 @@ class AlrContextualMpEnvSampler:
     An asynchronous sampler for contextual MPWrapper environments. A sampler object can be called with a set of
     parameters and returns the corresponding final obs, rewards, dones and info dicts.
     """
+
     def __init__(self, env_id, num_envs, seed=0, **env_kwargs):
         self.num_envs = num_envs
         self.env = AsyncVectorEnv([make_env(env_id, seed, i, **env_kwargs) for i in range(num_envs)])
 
     def __call__(self, dist, n_samples):
-
         repeat = int(np.ceil(n_samples / self.env.num_envs))
         vals = defaultdict(list)
 
@@ -106,8 +103,8 @@ class AlrContextualMpEnvSampler:
 
         # do not return values above threshold
         return np.vstack(vals['new_samples'])[:n_samples], \
-            np.vstack(vals['obs'])[:n_samples], np.hstack(vals['reward'])[:n_samples], \
-            _flatten_list(vals['done'])[:n_samples], _flatten_list(vals['info'])[:n_samples]
+               np.vstack(vals['obs'])[:n_samples], np.hstack(vals['reward'])[:n_samples], \
+               _flatten_list(vals['done'])[:n_samples], _flatten_list(vals['info'])[:n_samples]
 
 
 if __name__ == "__main__":

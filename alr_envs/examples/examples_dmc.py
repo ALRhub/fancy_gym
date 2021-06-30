@@ -6,18 +6,23 @@ def example_dmc(env_name="fish-swim", seed=1, iterations=1000):
     env = make_env(env_name, seed)
     rewards = 0
     obs = env.reset()
-    print(obs)
+    print("observation shape:", env.observation_space.shape)
+    print("action shape:", env.action_space.shape)
 
     # number of samples(multiple environment steps)
-    for i in range(10):
+    for i in range(iterations):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         rewards += reward
 
+        env.render("human")
+
         if done:
-            print(rewards)
+            print(env_name, rewards)
             rewards = 0
             obs = env.reset()
+
+    env.close()
 
 
 def example_custom_dmc_and_mp(seed=1):
@@ -50,12 +55,13 @@ def example_custom_dmc_and_mp(seed=1):
         "weights_scale": 50,
         "goal_scale": 0.1
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, **mp_kwargs)
+    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
     # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, **mp_args)
 
     rewards = 0
     obs = env.reset()
+    env.render("human")
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(10):
@@ -64,17 +70,26 @@ def example_custom_dmc_and_mp(seed=1):
         rewards += reward
 
         if done:
-            print(rewards)
+            print(base_env, rewards)
             rewards = 0
             obs = env.reset()
+
+    env.close()
 
 
 if __name__ == '__main__':
     # Disclaimer: DMC environments require the seed to be specified in the beginning.
     # Adjusting it afterwards with env.seed() is not recommended as it does not affect the underlying physics.
 
-    # Standard DMC task
-    example_dmc("fish_swim", seed=10, iterations=1000)
+    # For rendering DMC
+    # export MUJOCO_GL="osmesa"
+
+    # Standard DMC Suite tasks
+    example_dmc("fish-swim", seed=10, iterations=100)
+
+    # Manipulation tasks
+    # The vision versions are currently not integrated
+    example_dmc("manipulation-reach_site_features", seed=10, iterations=100)
 
     # Gym + DMC hybrid task provided in the MP framework
     example_dmc("dmc_ball_in_cup_dmp-v0", seed=10, iterations=10)

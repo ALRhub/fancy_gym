@@ -8,7 +8,7 @@ from alr_envs.utils.make_env_helpers import make_env
 from alr_envs.utils.mp_env_async_sampler import AlrContextualMpEnvSampler, AlrMpEnvSampler, DummyDist
 
 
-def example_general(env_id='alr_envs:ALRReacher-v0', seed=1):
+def example_general(env_id: str, seed=1, iterations=1000):
     """
     Example for running any env in the step based setting.
     This also includes DMC environments when leveraging our custom make_env function.
@@ -17,16 +17,16 @@ def example_general(env_id='alr_envs:ALRReacher-v0', seed=1):
     env = make_env(env_id, seed)
     rewards = 0
     obs = env.reset()
-    print("Observation shape: ", obs.shape)
+    print("Observation shape: ", env.observation_space.shape)
     print("Action shape: ", env.action_space.shape)
 
     # number of environment steps
-    for i in range(10000):
+    for i in range(iterations):
         obs, reward, done, info = env.step(env.action_space.sample())
         rewards += reward
 
-        # if i % 1 == 0:
-        #     env.render()
+        if i % 1 == 0:
+            env.render()
 
         if done:
             print(rewards)
@@ -65,10 +65,5 @@ def example_async(env_id="alr_envs:HoleReacherDMP-v0", n_cpu=4, seed=int('533D',
 
 
 if __name__ == '__main__':
-    # DMC
-    # example_general("fish-swim")
-
-    # custom mujoco env
-    # example_general("alr_envs:ALRReacher-v0")
-
-    example_general("ball_in_cup-catch")
+    # Mujoco task from framework
+    example_general("alr_envs:ALRReacher-v0")

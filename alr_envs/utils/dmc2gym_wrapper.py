@@ -1,11 +1,12 @@
 # Adopted from: https://github.com/denisyarats/dmc2gym/blob/master/dmc2gym/wrappers.py
 # License: MIT
 # Copyright (c) 2020 Denis Yarats
-import matplotlib.pyplot as plt
-from gym import core, spaces
-from dm_control import suite, manipulation
-from dm_env import specs
+from typing import Any, Dict, Tuple
+
 import numpy as np
+from dm_control import manipulation, suite
+from dm_env import specs
+from gym import core, spaces
 
 
 def _spec_to_box(spec):
@@ -43,8 +44,8 @@ class DMCWrapper(core.Env):
             self,
             domain_name,
             task_name,
-            task_kwargs=None,
-            visualize_reward={},
+            task_kwargs={},
+            visualize_reward=True,
             from_pixels=False,
             height=84,
             width=84,
@@ -65,49 +66,23 @@ class DMCWrapper(core.Env):
         if domain_name == "manipulation":
             assert not from_pixels, \
                 "TODO: Vision interface for manipulation is different to suite and needs to be implemented"
-            self._env = manipulation.load(
-                environment_name=task_name,
-                seed=task_kwargs['random']
-            )
+            self._env = manipulation.load(environment_name=task_name, seed=task_kwargs['random'])
         else:
-            self._env = suite.load(
-                domain_name=domain_name,
-                task_name=task_name,
-                task_kwargs=task_kwargs,
-                visualize_reward=visualize_reward,
-                environment_kwargs=environment_kwargs
-            )
+            self._env = suite.load(domain_name=domain_name, task_name=task_name, task_kwargs=task_kwargs,
+                                   visualize_reward=visualize_reward, environment_kwargs=environment_kwargs)
 
-        # true and normalized action spaces
-        self._true_action_space = _spec_to_box([self._env.action_spec()])
-        self._norm_action_space = spaces.Box(
-            low=-1.0,
-            high=1.0,
-            shape=self._true_action_space.shape,
-            dtype=np.float32
-        )
+        # action and observation space
+        self._action_space = _spec_to_box([self._env.action_spec()])
+        self._observation_space = _spec_to_box(self._env.observation_spec().values())
 
-        # create observation space
-        if from_pixels:
-            shape = [3, height, width] if channels_first else [height, width, 3]
-            self._observation_space = spaces.Box(
-                low=0, high=255, shape=shape, dtype=np.uint8
-            )
-        else:
-            self._observation_space = _spec_to_box(
-                self._env.observation_spec().values()
-            )
-
-        self._state_space = _spec_to_box(
-            self._env.observation_spec().values()
-        )
-
-        self.current_state = None
+        self._last_observation = None
+        self.viewer = None
 
         # set seed
         self.seed(seed=task_kwargs.get('random', 1))
 
     def __getattr__(self, name):
+        """Delegate attribute access to underlying environment."""
         return getattr(self._env, name)
 
     def _get_obs(self, time_step):
@@ -124,59 +99,72 @@ class DMCWrapper(core.Env):
             obs = _flatten_obs(time_step.observation)
         return obs
 
-    def _convert_action(self, action):
-        action = action.astype(float)
-        true_delta = self._true_action_space.high - self._true_action_space.low
-        norm_delta = self._norm_action_space.high - self._norm_action_space.low
-        action = (action - self._norm_action_space.low) / norm_delta
-        action = action * true_delta + self._true_action_space.low
-        action = action.astype(np.float32)
-        return action
-
     @property
     def observation_space(self):
         return self._observation_space
 
     @property
-    def state_space(self):
-        return self._state_space
-
-    @property
     def action_space(self):
-        return self._norm_action_space
+        return self._action_space
 
-    def seed(self, seed):
-        self._true_action_space.seed(seed)
-        self._norm_action_space.seed(seed)
+    def seed(self, seed=None):
+        self._action_space.seed(seed)
         self._observation_space.seed(seed)
 
-    def step(self, action):
-        assert self._norm_action_space.contains(action)
-        action = self._convert_action(action)
-        assert self._true_action_space.contains(action)
+    def step(self, action) -> Tuple[np.ndarray, float, bool, Dict[str, Any]]:
+        assert self._action_space.contains(action)
         reward = 0
         extra = {'internal_state': self._env.physics.get_state().copy()}
 
         for _ in range(self._frame_skip):
             time_step = self._env.step(action)
-            reward += time_step.reward or 0
+            reward += time_step.reward or 0.
             done = time_step.last()
             if done:
                 break
+
+        self._last_observation = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
-        self.current_state = _flatten_obs(time_step.observation)
         extra['discount'] = time_step.discount
         return obs, reward, done, extra
 
-    def reset(self):
+    def reset(self) -> np.ndarray:
         time_step = self._env.reset()
-        self.current_state = _flatten_obs(time_step.observation)
+        self._last_observation = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
         return obs
 
     def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
-        assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
-        height = height or self._height
-        width = width or self._width
-        camera_id = camera_id or self._camera_id
-        return self._env.physics.render(height=height, width=width, camera_id=camera_id)
+        if self._last_observation is None:
+            raise ValueError('Environment not ready to render. Call reset() first.')
+
+        # assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
+        if mode == "rgb_array":
+            height = height or self._height
+            width = width or self._width
+            camera_id = camera_id or self._camera_id
+            return self._env.physics.render(height=height, width=width, camera_id=camera_id)
+
+        elif mode == 'human':
+            if self.viewer is None:
+                # pylint: disable=import-outside-toplevel
+                # pylint: disable=g-import-not-at-top
+                from gym.envs.classic_control import rendering
+                self.viewer = rendering.SimpleImageViewer()
+            # Render max available buffer size. Larger is only possible by altering the XML.
+            img = self._env.physics.render(height=self._env.physics.model.vis.global_.offheight,
+                                           width=self._env.physics.model.vis.global_.offwidth)
+            self.viewer.imshow(img)
+            return self.viewer.isopen
+
+    def close(self):
+        super().close()
+        if self.viewer is not None and self.viewer.isopen:
+            self.viewer.close()
+
+    @property
+    def reward_range(self) -> Tuple[float, float]:
+        reward_spec = self._env.reward_spec()
+        if isinstance(reward_spec, specs.BoundedArray):
+            return reward_spec.minimum, reward_spec.maximum
+        return -float('inf'), float('inf')

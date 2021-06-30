@@ -83,12 +83,17 @@ def example_custom_mp(seed=1):
         "weights_scale": 50,
         "goal_scale": 0.1
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, **mp_kwargs)
+    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
     # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed)
 
     rewards = 0
-    # env.render(mode=None)
+    # render full DMP trajectory
+    # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
+    # Resetting to no rendering, can be achieved by render(mode=None).
+    # It is also possible to change them mode multiple times when
+    # e.g. only every nth trajectory should be displayed.
+    env.render(mode="human")
     obs = env.reset()
 
     # number of samples/full trajectories (multiple environment steps)
@@ -96,12 +101,6 @@ def example_custom_mp(seed=1):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         rewards += reward
-
-        if i % 1 == 0:
-            # render full DMP trajectory
-            # render can only be called once in the beginning as well. That would render every trajectory
-            # Calling it after every trajectory allows to modify the mode. mode=None, disables rendering.
-            env.render(mode="human")
 
         if done:
             print(rewards)

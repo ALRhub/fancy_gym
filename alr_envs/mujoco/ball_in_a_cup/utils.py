@@ -26,7 +26,7 @@ def make_contextual_env(rank, seed=0):
     return _init
 
 
-def make_env(rank, seed=0):
+def _make_env(rank, seed=0):
     """
     Utility function for multiprocessed env.
 
