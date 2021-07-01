@@ -48,6 +48,17 @@ All environments provide the full episode reward and additional information abou
 
 [//]:  |`HoleReacherDetPMP-v0`|
 
+### OpenAi-gym Environments
+These environments are wrapped-versions of their OpenAi-gym counterparts.
+
+|Name| Description|Horizon|Action Dimension|Context Dimension
+|---|---|---|---|---|
+|`ContinuousMountainCarDetPMP-v0`| A DetPmP wrapped version of the ContinuousMountainCar-v0 environment. | 100 | 1
+|`ReacherDetPMP-v2`| A DetPmP wrapped version of the Reacher-v2 environment. | 50 | 2
+|`FetchSlideDenseDetPMP-v1`| A DetPmP wrapped version of the FetchSlideDense-v1 environment. | 50 | 4 
+|`FetchReachDenseDetPMP-v1`| A DetPmP wrapped version of the FetchReachDense-v1 environment. | 50 | 4
+
+
 ### Stochastic Search
 |Name| Description|Horizon|Action Dimension|Observation Dimension
 |---|---|---|---|---|
