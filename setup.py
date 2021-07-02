@@ -10,7 +10,8 @@ setup(
         'PyQt5',
         'matplotlib',
         'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
-        'mujoco_py'
+        'mujoco_py',
+        'dm_control'
     ],
 
     url='https://github.com/ALRhub/alr_envs/',
