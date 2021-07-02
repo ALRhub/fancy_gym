@@ -64,15 +64,19 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # You can also add other gym.Wrappers in case they are needed.
     wrappers = [DMCBallInCupMPWrapper]
     mp_kwargs = {
-        "num_dof": 2,  # env.start_pos
+        "num_dof": 2,
         "num_basis": 5,
         "duration": 20,
         "learn_goal": True,
         "alpha_phase": 2,
         "bandwidth_factor": 2,
-        "policy_type": "velocity",
+        "policy_type": "motor",
         "weights_scale": 50,
-        "goal_scale": 0.1
+        "goal_scale": 0.1,
+        "policy_kwargs": {
+            "p_gains": 0.2,
+            "d_gains": 0.05
+        }
     }
     env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:

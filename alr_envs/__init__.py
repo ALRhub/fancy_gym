@@ -537,8 +537,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 0.2,
-                "d_gains": 0.05
+                "p_gains": 50,
+                "d_gains": 1
             }
         }
     }
@@ -555,12 +555,12 @@ register(
             "num_basis": 5,
             "duration": 20,
             "width": 0.025,
-            "policy_type": "velocity",
+            "policy_type": "motor",
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 0.2,
-                "d_gains": 0.05
+                "p_gains": 50,
+                "d_gains": 1
             }
         }
     }
