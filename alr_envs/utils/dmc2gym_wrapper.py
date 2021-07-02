@@ -91,9 +91,13 @@ class DMCWrapper(core.Env):
         # set seed
         self.seed(seed=task_kwargs.get('random', 1))
 
-    def __getattr__(self, name):
-        """Delegate attribute access to underlying environment."""
-        return getattr(self._env, name)
+    def __getattr__(self, item):
+        """Propagate only non-existent properties to wrapped env."""
+        if item.startswith('_'):
+            raise AttributeError("attempted to get missing private attribute '{}'".format(item))
+        if item in self.__dict__:
+            return getattr(self, item)
+        return getattr(self._env, item)
 
     def _get_obs(self, time_step):
         if self._from_pixels:
