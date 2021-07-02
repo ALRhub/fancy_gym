@@ -1,6 +1,7 @@
 # Adopted from: https://github.com/denisyarats/dmc2gym/blob/master/dmc2gym/wrappers.py
 # License: MIT
 # Copyright (c) 2020 Denis Yarats
+import collections
 from typing import Any, Dict, Tuple
 
 import numpy as np
@@ -31,12 +32,21 @@ def _spec_to_box(spec):
     return spaces.Box(low, high, dtype=np.float32)
 
 
-def _flatten_obs(obs):
-    obs_pieces = []
-    for v in obs.values():
-        flat = np.array([v]) if np.isscalar(v) else v.ravel()
-        obs_pieces.append(flat)
-    return np.concatenate(obs_pieces, axis=0)
+def _flatten_obs(obs: collections.MutableMapping):
+    # obs_pieces = []
+    # for v in obs.values():
+    #     flat = np.array([v]) if np.isscalar(v) else v.ravel()
+    #     obs_pieces.append(flat)
+    # return np.concatenate(obs_pieces, axis=0)
+
+    if not isinstance(obs, collections.MutableMapping):
+        raise ValueError(f'Requires dict-like observations structure. {type(obs)} found.')
+
+    # Keep key order consistent for non OrderedDicts
+    keys = obs.keys() if isinstance(obs, collections.OrderedDict) else sorted(obs.keys())
+
+    obs_vals = [np.array([obs[key]]) if np.isscalar(obs[key]) else obs[key].ravel() for key in keys]
+    return np.concatenate(obs_vals)
 
 
 class DMCWrapper(core.Env):
@@ -75,7 +85,7 @@ class DMCWrapper(core.Env):
         self._action_space = _spec_to_box([self._env.action_spec()])
         self._observation_space = _spec_to_box(self._env.observation_spec().values())
 
-        self._last_observation = None
+        self._last_state = None
         self.viewer = None
 
         # set seed
@@ -107,6 +117,10 @@ class DMCWrapper(core.Env):
     def action_space(self):
         return self._action_space
 
+    @property
+    def dt(self):
+        return self._env.control_timestep() * self._frame_skip
+
     def seed(self, seed=None):
         self._action_space.seed(seed)
         self._observation_space.seed(seed)
@@ -123,19 +137,19 @@ class DMCWrapper(core.Env):
             if done:
                 break
 
-        self._last_observation = _flatten_obs(time_step.observation)
+        self._last_state = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
         extra['discount'] = time_step.discount
         return obs, reward, done, extra
 
     def reset(self) -> np.ndarray:
         time_step = self._env.reset()
-        self._last_observation = _flatten_obs(time_step.observation)
+        self._last_state = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
         return obs
 
     def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
-        if self._last_observation is None:
+        if self._last_state is None:
             raise ValueError('Environment not ready to render. Call reset() first.')
 
         # assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode

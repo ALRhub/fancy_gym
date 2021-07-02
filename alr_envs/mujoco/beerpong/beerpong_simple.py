@@ -1,11 +1,13 @@
 from gym import utils
 import os
 import numpy as np
-from alr_envs.mujoco import alr_mujoco_env
+from gym.envs.mujoco import MujocoEnv
 
 
-class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
+class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
+        utils.EzPickle.__init__(**locals())
+
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
@@ -26,11 +28,12 @@ class ALRBeerpongEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
 
         self.context = None
 
-        utils.EzPickle.__init__(self)
-        alr_mujoco_env.AlrMujocoEnv.__init__(self,
-                                             self.xml_path,
-                                             apply_gravity_comp=apply_gravity_comp,
-                                             n_substeps=n_substeps)
+        MujocoEnv.__init__(self, model_path=self.xml_path, frame_skip=n_substeps)
+
+        # alr_mujoco_env.AlrMujocoEnv.__init__(self,
+        #                                      self.xml_path,
+        #                                      apply_gravity_comp=apply_gravity_comp,
+        #                                      n_substeps=n_substeps)
 
         self.sim_time = 8  # seconds
         self.sim_steps = int(self.sim_time / self.dt)

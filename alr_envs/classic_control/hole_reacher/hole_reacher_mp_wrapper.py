@@ -1,8 +1,8 @@
-from typing import Union
+from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api.env_wrappers.mp_env_wrapper import MPEnvWrapper
+from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
 
 
 class HoleReacherMPWrapper(MPEnvWrapper):
@@ -19,11 +19,15 @@ class HoleReacherMPWrapper(MPEnvWrapper):
         ])
 
     @property
-    def start_pos(self) -> Union[float, int, np.ndarray]:
-        return self.env.start_pos
+    def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
+        return self.env.current_pos
 
     @property
-    def goal_pos(self) -> Union[float, int, np.ndarray]:
+    def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
+        return self.env.current_vel
+
+    @property
+    def goal_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         raise ValueError("Goal position is not available and has to be learnt based on the environment.")
 
     @property

@@ -59,9 +59,17 @@ class SimpleReacherEnv(gym.Env):
     def dt(self) -> Union[float, int]:
         return self._dt
 
+    # @property
+    # def start_pos(self):
+    #     return self._start_pos
+
     @property
-    def start_pos(self):
-        return self._start_pos
+    def current_pos(self):
+        return self._joint_angles
+
+    @property
+    def current_vel(self):
+        return self._angle_velocity
 
     def step(self, action: np.ndarray):
         """

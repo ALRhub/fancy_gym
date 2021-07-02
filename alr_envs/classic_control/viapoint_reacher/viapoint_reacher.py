@@ -63,9 +63,17 @@ class ViaPointReacher(gym.Env):
     def dt(self):
         return self._dt
 
+    # @property
+    # def start_pos(self):
+    #     return self._start_pos
+
     @property
-    def start_pos(self):
-        return self._start_pos
+    def current_pos(self):
+        return self._joint_angles.copy()
+
+    @property
+    def current_vel(self):
+        return self._angle_velocity.copy()
 
     def step(self, action: np.ndarray):
         """
