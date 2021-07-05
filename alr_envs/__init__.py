@@ -573,7 +573,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.classic_control:MountainCarContinuous-v0",
-        "wrappers": [continuous_mountain_car.PositionalWrapper, continuous_mountain_car.MPWrapper],
+        "wrappers": [continuous_mountain_car.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
@@ -594,7 +594,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.mujoco:Reacher-v2",
-        "wrappers": [reacher_v2.PositionalWrapper, reacher_v2.MPWrapper],
+        "wrappers": [reacher_v2.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 6,
@@ -615,7 +615,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.robotics:FetchSlideDense-v1",
-        "wrappers": [fetch.PositionalWrapper, fetch.MPWrapper],
+        "wrappers": [fetch.MPWrapper],
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
@@ -632,7 +632,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.robotics:FetchReachDense-v1",
-        "wrappers": [fetch.PositionalWrapper, fetch.MPWrapper],
+        "wrappers": [fetch.MPWrapper],
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
