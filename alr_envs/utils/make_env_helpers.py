@@ -3,7 +3,7 @@ from typing import Iterable, List, Type
 
 import gym
 
-from mp_env_api.env_wrappers.mp_env_wrapper import MPEnvWrapper
+from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
 from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 
@@ -32,7 +32,7 @@ def make_env_rank(env_id: str, seed: int, rank: int = 0):
 def make_env(env_id: str, seed, **kwargs):
     """
     Converts an env_id to an environment with the gym API.
-    This also works for DeepMind Control Suite env_wrappers
+    This also works for DeepMind Control Suite interface_wrappers
     for which domain name and task name are expected to be separated by "-".
     Args:
         env_id: gym name or env_id of the form "domain_name-task_name" for DMC tasks
@@ -42,7 +42,7 @@ def make_env(env_id: str, seed, **kwargs):
 
     """
     try:
-        # Add seed to kwargs in case it is a predefined dmc environment.
+        # Add seed to kwargs in case it is a predefined gym+dmc hybrid environment.
         if env_id.startswith("dmc"):
             kwargs.update({"seed": seed})
 

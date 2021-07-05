@@ -5,24 +5,25 @@ import numpy as np
 from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
 
 
-class SimpleReacherMPWrapper(MPEnvWrapper):
+class DMCBallInCupMPWrapper(MPEnvWrapper):
+
     @property
     def active_obs(self):
+        # Besides the ball position, the environment is always set to 0.
         return np.hstack([
-            [self.env.random_start] * self.env.n_links,  # cos
-            [self.env.random_start] * self.env.n_links,  # sin
-            [self.env.random_start] * self.env.n_links,  # velocity
-            [True] * 2,  # x-y coordinates of target distance
-            [False]  # env steps
+            [False] * 2,  # cup position
+            [True] * 2,  # ball position
+            [False] * 2,  # cup velocity
+            [False] * 2,  # ball velocity
         ])
 
     @property
-    def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.current_pos
+    def current_pos(self) -> Union[float, int, np.ndarray]:
+        return np.hstack([self.physics.named.data.qpos['cup_x'], self.physics.named.data.qpos['cup_z']])
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.current_vel
+        return np.hstack([self.physics.named.data.qvel['cup_x'], self.physics.named.data.qvel['cup_z']])
 
     @property
     def goal_pos(self) -> Union[float, int, np.ndarray, Tuple]:

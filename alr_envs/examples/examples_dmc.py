@@ -1,9 +1,23 @@
-from alr_envs.dmc.Ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
+from alr_envs.dmc.ball_in_cup.ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
 
 
-def example_dmc(env_name="fish-swim", seed=1, iterations=1000):
-    env = make_env(env_name, seed)
+def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
+    """
+    Example for running a DMC based env in the step based setting.
+    The env_id has to be specified as `domain_name-task_name` or
+    for manipulation tasks as `manipulation-environment_name`
+
+    Args:
+        env_id: Either `domain_name-task_name` or `manipulation-environment_name`
+        seed: seed for deterministic behaviour
+        iterations: Number of rollout steps to run
+        render: Render the episode
+
+    Returns:
+
+    """
+    env = make_env(env_id, seed)
     rewards = 0
     obs = env.reset()
     print("observation shape:", env.observation_space.shape)
@@ -15,56 +29,72 @@ def example_dmc(env_name="fish-swim", seed=1, iterations=1000):
         obs, reward, done, info = env.step(ac)
         rewards += reward
 
-        env.render("human")
+        if render:
+            env.render("human")
 
         if done:
-            print(env_name, rewards)
+            print(env_id, rewards)
             rewards = 0
             obs = env.reset()
 
     env.close()
 
 
-def example_custom_dmc_and_mp(seed=1):
+def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     """
-    Example for running a custom motion primitive based environments based off of a dmc task.
-    Our already registered environments follow the same structure, but do not directly allow for modifications.
-    Hence, this also allows to adjust hyperparameters of the motion primitives more easily.
+    Example for running a custom motion primitive based environments.
+    Our already registered environments follow the same structure.
+    Hence, this also allows to adjust hyperparameters of the motion primitives.
+    Yet, we recommend the method above if you are just interested in chaining those parameters for existing tasks.
     We appreciate PRs for custom environments (especially MP wrappers of existing tasks)
     for our repo: https://github.com/ALRhub/alr_envs/
     Args:
-        seed: seed
+        seed: seed for deterministic behaviour
+        iterations: Number of rollout steps to run
+        render: Render the episode
 
     Returns:
 
     """
 
+    # Base DMC name, according to structure of above example
     base_env = "ball_in_cup-catch"
+
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    # wrappers = [HoleReacherMPWrapper]
     wrappers = [DMCBallInCupMPWrapper]
     mp_kwargs = {
-        "num_dof": 2,  # env.start_pos
+        "num_dof": 2,
         "num_basis": 5,
-        "duration": 2,
+        "duration": 20,
         "learn_goal": True,
         "alpha_phase": 2,
         "bandwidth_factor": 2,
-        "policy_type": "velocity",
+        "policy_type": "motor",
         "weights_scale": 50,
-        "goal_scale": 0.1
+        "goal_scale": 0.1,
+        "policy_kwargs": {
+            "p_gains": 0.2,
+            "d_gains": 0.05
+        }
     }
     env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
-    # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, **mp_args)
+    # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+
+    # This renders the full MP trajectory
+    # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
+    # Resetting to no rendering, can be achieved by render(mode=None).
+    # It is also possible to change them mode multiple times when
+    # e.g. only every nth trajectory should be displayed.
+    if render:
+        env.render(mode="human")
 
     rewards = 0
     obs = env.reset()
-    env.render("human")
 
     # number of samples/full trajectories (multiple environment steps)
-    for i in range(10):
+    for i in range(iterations):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         rewards += reward
@@ -85,14 +115,14 @@ if __name__ == '__main__':
     # export MUJOCO_GL="osmesa"
 
     # Standard DMC Suite tasks
-    example_dmc("fish-swim", seed=10, iterations=100)
+    example_dmc("fish-swim", seed=10, iterations=1000, render=True)
 
     # Manipulation tasks
-    # The vision versions are currently not integrated
-    example_dmc("manipulation-reach_site_features", seed=10, iterations=100)
+    # Disclaimer: The vision versions are currently not integrated and yield an error
+    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=True)
 
     # Gym + DMC hybrid task provided in the MP framework
-    example_dmc("dmc_ball_in_cup_dmp-v0", seed=10, iterations=10)
+    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=True)
 
     # Custom DMC task
-    example_custom_dmc_and_mp()
+    example_custom_dmc_and_mp(seed=10, iterations=1, render=True)

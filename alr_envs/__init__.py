@@ -4,9 +4,8 @@ from gym.envs.registration import register
 from alr_envs.classic_control.hole_reacher.hole_reacher_mp_wrapper import HoleReacherMPWrapper
 from alr_envs.classic_control.simple_reacher.simple_reacher_mp_wrapper import SimpleReacherMPWrapper
 from alr_envs.classic_control.viapoint_reacher.viapoint_reacher_mp_wrapper import ViaPointReacherMPWrapper
-from alr_envs.dmc.Ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
+from alr_envs.dmc.ball_in_cup.ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_mp_wrapper import BallInACupMPWrapper
-from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_positional_wrapper import BallInACupPositionalWrapper
 from alr_envs.open_ai import reacher_v2, continuous_mountain_car, fetch
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
 
@@ -205,7 +204,7 @@ register(
         "hole_width": None,
         "hole_depth": 1,
         "hole_x": None,
-        "collision_penalty": 1000,
+        "collision_penalty": 100,
     }
 )
 
@@ -237,7 +236,7 @@ register(
         "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": 2,
-        "collision_penalty": 1000,
+        "collision_penalty": 100,
     }
 )
 
@@ -355,7 +354,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 3,
             "num_basis": 5,
@@ -380,7 +379,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACup-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 5,
@@ -405,7 +404,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 3,
             "num_basis": 5,
@@ -430,7 +429,7 @@ register(
     entry_point='alr_envs.mujoco.ball_in_a_cup.biac_pd:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupPDSimple-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 3,
             "num_basis": 5,
@@ -475,7 +474,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "alr_envs:ALRBallInACupSimple-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 5,
@@ -487,7 +486,6 @@ register(
             "zero_start": True,
             "zero_goal": True,
             "policy_kwargs": {
-
                 "p_gains": np.array([4. / 3., 2.4, 2.5, 5. / 3., 2., 2., 1.25]),
                 "d_gains": np.array([0.0466, 0.12, 0.125, 0.04166, 0.06, 0.06, 0.025])
             }
@@ -500,7 +498,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_contextual_env',
     kwargs={
         "name": "alr_envs:ALRBallInACupGoal-v0",
-        "wrappers": [BallInACupMPWrapper, BallInACupPositionalWrapper],
+        "wrappers": [BallInACupMPWrapper],
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 5,
@@ -523,7 +521,7 @@ register(
 ## DMC
 
 register(
-    id=f'dmc_ball_in_cup_dmp-v0',
+    id=f'dmc_ball_in_cup-catch_dmp-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     # max_episode_steps=1,
     kwargs={
@@ -532,19 +530,23 @@ register(
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 2,
+            "duration": 20,
             "learn_goal": True,
             "alpha_phase": 2,
             "bandwidth_factor": 2,
-            "policy_type": "velocity",
+            "policy_type": "motor",
             "weights_scale": 50,
-            "goal_scale": 0.1
+            "goal_scale": 0.1,
+            "policy_kwargs": {
+                "p_gains": 50,
+                "d_gains": 1
+            }
         }
     }
 )
 
 register(
-    id=f'dmc_ball_in_cup_detpmp-v0',
+    id=f'dmc_ball_in_cup-catch_detpmp-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": f"ball_in_cup-catch",
@@ -552,11 +554,15 @@ register(
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 2,
+            "duration": 20,
             "width": 0.025,
-            "policy_type": "velocity",
+            "policy_type": "motor",
             "weights_scale": 0.2,
-            "zero_start": True
+            "zero_start": True,
+            "policy_kwargs": {
+                "p_gains": 50,
+                "d_gains": 1
+            }
         }
     }
 )

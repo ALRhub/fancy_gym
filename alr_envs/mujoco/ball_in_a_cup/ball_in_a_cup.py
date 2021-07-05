@@ -1,10 +1,11 @@
 from gym import utils
 import os
 import numpy as np
-from alr_envs.mujoco import alr_mujoco_env
+from gym.envs.mujoco import MujocoEnv
 
 
-class ALRBallInACupEnv(alr_mujoco_env.AlrMujocoEnv, utils.EzPickle):
+
+class ALRBallInACupEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, n_substeps=4, apply_gravity_comp=True, simplified: bool = False,
                  reward_type: str = None, context: np.ndarray = None):
         utils.EzPickle.__init__(**locals())
