@@ -571,7 +571,7 @@ register(
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
-            "duration": 100,
+            "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
             "policy_type": "motor",
@@ -613,7 +613,7 @@ register(
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
-            "duration": 1,
+            "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
             "policy_type": "position"
@@ -630,7 +630,7 @@ register(
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
-            "duration": 1,
+            "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
             "policy_type": "position"

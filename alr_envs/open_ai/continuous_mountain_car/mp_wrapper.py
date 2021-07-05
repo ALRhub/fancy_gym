@@ -14,4 +14,4 @@ class MPWrapper(MPEnvWrapper):
 
     @property
     def dt(self) -> Union[float, int]:
-        return 1.
+        return 0.02
