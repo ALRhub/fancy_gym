@@ -3,7 +3,8 @@
 This repository collects custom Robotics environments not included in benchmark suites like OpenAI gym, rllab, etc. 
 Creating a custom (Mujoco) gym environment can be done according to [this guide](https://github.com/openai/gym/blob/master/docs/creating-environments.md).
 For stochastic search problems with gym interface use the `Rosenbrock-v0` reference implementation.
-We also support to solve environments with DMPs. When adding new DMP tasks check the `ViaPointReacherDMP-v0` reference implementation.
+We also support to solve environments with Dynamic Movement Primitives (DMPs) and Probabilistic Movement Primitives (DetPMP, we only consider the mean usually). 
+When adding new DMP tasks check the `ViaPointReacherDMP-v0` reference implementation.
 When simply using the tasks, you can also leverage the wrapper class `DmpWrapper` to turn normal gym environments in to DMP tasks.
 
 ## Environments
