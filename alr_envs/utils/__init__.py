@@ -1,4 +1,3 @@
-import collections
 import re
 from typing import Union
 

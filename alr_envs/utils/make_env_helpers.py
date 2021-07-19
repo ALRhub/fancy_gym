@@ -1,5 +1,5 @@
 import logging
-from typing import Iterable, List, Type
+from typing import Iterable, List, Type, Union
 
 import gym
 
@@ -8,7 +8,7 @@ from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 
 
-def make_env_rank(env_id: str, seed: int, rank: int = 0):
+def make_env_rank(env_id: str, seed: int, rank: int = 0, **kwargs):
     """
     TODO: Do we need this?
     Generate a callable to create a new gym environment with a given seed.
@@ -26,7 +26,7 @@ def make_env_rank(env_id: str, seed: int, rank: int = 0):
     Returns:
 
     """
-    return lambda: make_env(env_id, seed + rank)
+    return lambda: make_env(env_id, seed + rank, **kwargs)
 
 
 def make_env(env_id: str, seed, **kwargs):
@@ -53,6 +53,10 @@ def make_env(env_id: str, seed, **kwargs):
         # DMC
         from alr_envs.utils import make
         env = make(env_id, seed=seed, **kwargs)
+
+        assert env.base_step_limit == env.spec.max_episode_steps, \
+            f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym is different from " \
+            f"the DMC environment specification of {env.base_step_limit} steps."
 
     return env
 
@@ -94,6 +98,7 @@ def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs
     Returns: DMP wrapped gym env
 
     """
+    verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
     return DmpWrapper(_env, **mp_kwargs)
@@ -110,6 +115,7 @@ def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwa
     Returns: DMP wrapped gym env
 
     """
+    verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
     return DetPMPWrapper(_env, **mp_kwargs)
@@ -159,3 +165,23 @@ def make_contextual_env(env_id, context, seed, rank):
     # env = gym.make(env_id, context=context)
     # env.seed(seed + rank)
     return lambda: env
+
+
+def verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):
+    """
+    When using DMC check if a manually specified time limit matches the trajectory duration the MP receives.
+    Mostly, the time_limit for DMC is not specified and the default values from DMC are taken.
+    This check, however, can only been done after instantiating the environment.
+    It can be found in the BaseMP class.
+
+    Args:
+        mp_time_limit: max trajectory length of mp in seconds
+        env_time_limit: max trajectory length of DMC environment in seconds
+
+    Returns:
+
+    """
+    if mp_time_limit is not None and env_time_limit is not None:
+        assert mp_time_limit == env_time_limit, \
+            f"The manually specified 'time_limit' of {env_time_limit}s does not match " \
+            f"the duration of {mp_time_limit}s for the MP."

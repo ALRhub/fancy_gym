@@ -216,7 +216,7 @@ register(
         "random_start": False,
         "allow_self_collision": False,
         "allow_wall_collision": False,
-        "hole_width": None,
+        "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": None,
         "collision_penalty": 100,
@@ -525,11 +525,13 @@ register(
     # max_episode_steps=1,
     kwargs={
         "name": f"ball_in_cup-catch",
+        "time_limit": 1,
+        "episode_length": 50,
         "wrappers": [DMCBallInCupMPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 20,
+            "duration": 1,
             "learn_goal": True,
             "alpha_phase": 2,
             "bandwidth_factor": 2,
@@ -549,11 +551,13 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": f"ball_in_cup-catch",
+        "time_limit": 1,
+        "episode_length": 50,
         "wrappers": [DMCBallInCupMPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 20,
+            "duration": 1,
             "width": 0.025,
             "policy_type": "motor",
             "weights_scale": 0.2,

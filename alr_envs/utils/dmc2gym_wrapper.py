@@ -125,6 +125,19 @@ class DMCWrapper(core.Env):
     def dt(self):
         return self._env.control_timestep() * self._frame_skip
 
+    @property
+    def base_step_limit(self):
+        """
+        Returns: max_episode_steps of the underlying DMC env
+
+        """
+        # Accessing private attribute because DMC does not expose time_limit or step_limit.
+        # Only the current time_step/time as well as the control_timestep can be accessed.
+        try:
+            return (self._env._step_limit + self._frame_skip - 1) // self._frame_skip
+        except AttributeError as e:
+            return self._env._time_limit / self.dt
+
     def seed(self, seed=None):
         self._action_space.seed(seed)
         self._observation_space.seed(seed)

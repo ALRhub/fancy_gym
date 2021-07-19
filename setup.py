@@ -9,7 +9,7 @@ setup(
         'gym',
         'PyQt5',
         'matplotlib',
-        'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
+        # 'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
         'mujoco_py'
     ],
 

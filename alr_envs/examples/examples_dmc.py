@@ -38,6 +38,7 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
             obs = env.reset()
 
     env.close()
+    del env
 
 
 def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
@@ -78,7 +79,12 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
             "d_gains": 0.05
         }
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
+    kwargs = {
+        "time_limit": 20,
+        "episode_length": 1000,
+        # "frame_skip": 1
+    }
+    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
     # OR for a deterministic ProMP:
     # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
@@ -105,6 +111,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
             obs = env.reset()
 
     env.close()
+    del env
 
 
 if __name__ == '__main__':
@@ -113,16 +120,18 @@ if __name__ == '__main__':
 
     # For rendering DMC
     # export MUJOCO_GL="osmesa"
+    render = False
 
-    # Standard DMC Suite tasks
-    example_dmc("fish-swim", seed=10, iterations=1000, render=True)
-
-    # Manipulation tasks
-    # Disclaimer: The vision versions are currently not integrated and yield an error
-    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=True)
+    # # Standard DMC Suite tasks
+    # example_dmc("fish-swim", seed=10, iterations=1000, render=render)
+    #
+    # # Manipulation tasks
+    # # Disclaimer: The vision versions are currently not integrated and yield an error
+    # example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
 
     # Gym + DMC hybrid task provided in the MP framework
-    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=True)
+    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=render)
 
     # Custom DMC task
-    example_custom_dmc_and_mp(seed=10, iterations=1, render=True)
+    # Different seed, because the episode is longer for this example and the name+seed combo is already registered above
+    example_custom_dmc_and_mp(seed=11, iterations=1, render=render)
