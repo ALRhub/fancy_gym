@@ -6,6 +6,7 @@ from alr_envs.classic_control.simple_reacher.simple_reacher_mp_wrapper import Si
 from alr_envs.classic_control.viapoint_reacher.viapoint_reacher_mp_wrapper import ViaPointReacherMPWrapper
 from alr_envs.dmc.ball_in_cup.ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.mujoco.ball_in_a_cup.ball_in_a_cup_mp_wrapper import BallInACupMPWrapper
+from alr_envs.open_ai import reacher_v2, continuous_mountain_car, fetch
 from alr_envs.stochastic_search.functions.f_rosenbrock import Rosenbrock
 
 # Mujoco
@@ -562,6 +563,83 @@ register(
                 "p_gains": 50,
                 "d_gains": 1
             }
+        }
+    }
+)
+
+## Open AI
+register(
+    id='ContinuousMountainCarDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.classic_control:MountainCarContinuous-v0",
+        "wrappers": [continuous_mountain_car.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 1,
+            "num_basis": 4,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "motor",
+            "policy_kwargs": {
+                "p_gains": 1.,
+                "d_gains": 1.
+            }
+        }
+    }
+)
+
+register(
+    id='ReacherDetPMP-v2',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.mujoco:Reacher-v2",
+        "wrappers": [reacher_v2.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 2,
+            "num_basis": 6,
+            "duration": 1,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "motor",
+            "policy_kwargs": {
+                "p_gains": .6,
+                "d_gains": .075
+            }
+        }
+    }
+)
+
+register(
+    id='FetchSlideDenseDetPMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.robotics:FetchSlideDense-v1",
+        "wrappers": [fetch.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 4,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "position"
+        }
+    }
+)
+
+register(
+    id='FetchReachDenseDetPMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.robotics:FetchReachDense-v1",
+        "wrappers": [fetch.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 4,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "position"
         }
     }
 )

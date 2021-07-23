@@ -3,7 +3,8 @@
 This repository collects custom Robotics environments not included in benchmark suites like OpenAI gym, rllab, etc. 
 Creating a custom (Mujoco) gym environment can be done according to [this guide](https://github.com/openai/gym/blob/master/docs/creating-environments.md).
 For stochastic search problems with gym interface use the `Rosenbrock-v0` reference implementation.
-We also support to solve environments with DMPs. When adding new DMP tasks check the `ViaPointReacherDMP-v0` reference implementation.
+We also support to solve environments with Dynamic Movement Primitives (DMPs) and Probabilistic Movement Primitives (DetPMP, we only consider the mean usually). 
+When adding new DMP tasks check the `ViaPointReacherDMP-v0` reference implementation.
 When simply using the tasks, you can also leverage the wrapper class `DmpWrapper` to turn normal gym environments in to DMP tasks.
 
 ## Environments
@@ -47,6 +48,17 @@ All environments provide the full episode reward and additional information abou
 |`ALRBallInACupGoalDMP-v0`| A DMP provides a trajectory for the `ALRBallInACupGoal-v0` task. | 4000 | 35 | 3 
 
 [//]:  |`HoleReacherDetPMP-v0`|
+
+### OpenAi-gym Environments
+These environments are wrapped-versions of their OpenAi-gym counterparts.
+
+|Name| Description|Horizon|Action Dimension|Context Dimension
+|---|---|---|---|---|
+|`ContinuousMountainCarDetPMP-v0`| A DetPmP wrapped version of the ContinuousMountainCar-v0 environment. | 100 | 1
+|`ReacherDetPMP-v2`| A DetPmP wrapped version of the Reacher-v2 environment. | 50 | 2
+|`FetchSlideDenseDetPMP-v1`| A DetPmP wrapped version of the FetchSlideDense-v1 environment. | 50 | 4 
+|`FetchReachDenseDetPMP-v1`| A DetPmP wrapped version of the FetchReachDense-v1 environment. | 50 | 4
+
 
 ### Stochastic Search
 |Name| Description|Horizon|Action Dimension|Observation Dimension

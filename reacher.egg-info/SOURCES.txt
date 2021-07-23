@@ -1,7 +1,0 @@
-README.md
-setup.py
-reacher.egg-info/PKG-INFO
-reacher.egg-info/SOURCES.txt
-reacher.egg-info/dependency_links.txt
-reacher.egg-info/requires.txt
-reacher.egg-info/top_level.txt
