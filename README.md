@@ -1,13 +1,11 @@
-## ALR Environments
+## ALR Robotics Control Environments
     
 This repository collects custom Robotics environments not included in benchmark suites like OpenAI gym, rllab, etc. 
 Creating a custom (Mujoco) gym environment can be done according to [this guide](https://github.com/openai/gym/blob/master/docs/creating-environments.md).
 For stochastic search problems with gym interface use the `Rosenbrock-v0` reference implementation.
 We also support to solve environments with Dynamic Movement Primitives (DMPs) and Probabilistic Movement Primitives (DetPMP, we only consider the mean usually). 
-When adding new DMP tasks check the `ViaPointReacherDMP-v0` reference implementation.
-When simply using the tasks, you can also leverage the wrapper class `DmpWrapper` to turn normal gym environments in to DMP tasks.
 
-## Environments
+## Step-based Environments
 Currently we have the following environments: 
 
 ### Mujoco
@@ -33,11 +31,13 @@ Currently we have the following environments:
 |`ViaPointReacher-v0`| Simple reaching task leveraging a via point, which supports self collision detection. Provides a reward only at 100 and 199 for reaching the viapoint and goal point, respectively.| 200 | 5 | 18 
 |`HoleReacher-v0`| 5 link reaching task where the end-effector needs to reach into a narrow hole without collding with itself or walls | 200 | 5 | 18
 
-### DMP Environments
-These environments are closer to stochastic search. They always execute a full trajectory, which is computed by a DMP and executed by a controller, e.g. a PD controller.
-The goal is to learn the parameters of this DMP to generate a suitable trajectory. 
-All environments provide the full episode reward and additional information about early terminations, e.g. due to collisions. 
+## Motion Primitive Environments (Episodic environments)
+Unlike step-based environments, these motion primitive (MP) environments are closer to stochastic search and what can be found in robotics. They always execute a full trajectory, which is computed by a Dynamic Motion Primitive (DMP) or Probabilitic Motion Primitive (DetPMP) and translated into individual actions with a controller, e.g. a PD controller. The actual Controller, however, depends on the type of environment, i.e. position, velocity, or torque controlled.
+The goal is to learn the parametrization of the motion primitives in order to generate a suitable trajectory. 
+MP This can also be done in a contextual setting, where all changing elements of the task are exposed once in the beginning. This requires to find a new parametrization for each trajectory.
+All environments provide the full cumulative episode reward and additional information about early terminations, e.g. due to collisions. 
 
+### Classic Control
 |Name| Description|Horizon|Action Dimension|Context Dimension
 |---|---|---|---|---|
 |`ViaPointReacherDMP-v0`| A DMP provides a trajectory for the `ViaPointReacher-v0` task. | 200 | 25
@@ -49,18 +49,31 @@ All environments provide the full episode reward and additional information abou
 
 [//]:  |`HoleReacherDetPMP-v0`|
 
-### OpenAi-gym Environments
-These environments are wrapped-versions of their OpenAi-gym counterparts.
+### OpenAI gym Environments
+These environments are wrapped-versions of their OpenAI-gym counterparts.
 
-|Name| Description|Horizon|Action Dimension|Context Dimension
+|Name| Description|Trajectory Horizon|Action Dimension|Context Dimension
 |---|---|---|---|---|
 |`ContinuousMountainCarDetPMP-v0`| A DetPmP wrapped version of the ContinuousMountainCar-v0 environment. | 100 | 1
 |`ReacherDetPMP-v2`| A DetPmP wrapped version of the Reacher-v2 environment. | 50 | 2
 |`FetchSlideDenseDetPMP-v1`| A DetPmP wrapped version of the FetchSlideDense-v1 environment. | 50 | 4 
 |`FetchReachDenseDetPMP-v1`| A DetPmP wrapped version of the FetchReachDense-v1 environment. | 50 | 4
 
+### Deep Mind Control Suite Environments
+These environments are wrapped-versions of their Deep Mind Control Suite (DMC) counterparts.
+Given most task can be solved in shorter horizon lengths than the original 1000 steps, we often shorten the episodes for those task. 
 
-### Stochastic Search
+|Name| Description|Trajectory Horizon|Action Dimension|Context Dimension
+|---|---|---|---|---|
+|`dmc_ball_in_cup-catch_detpmp-v0`| A DetPmP wrapped version of the "catch" task for the "ball_in_cup" environment. | 50 | 10 | 2
+|`dmc_ball_in_cup-catch_dmp-v0`| A DMP wrapped version of the "catch" task for the "ball_in_cup" environment. | 50| 10 | 2
+|`dmc_reacher-easy_detpmp-v0`| A DetPmP wrapped version of the "easy" task for the "reacher" environment. | 1000 | 10 | 4
+|`dmc_reacher-easy_dmp-v0`| A DMP wrapped version of the "easy" task for the "reacher" environment. | 1000| 10 | 4
+|`dmc_reacher-hard_detpmp-v0`| A DetPmP wrapped version of the "hard" task for the "reacher" environment.| 1000 | 10 | 4
+|`dmc_reacher-hard_dmp-v0`| A DMP wrapped version of the "hard" task for the "reacher" environment. | 1000 | 10 | 4
+
+
+## Stochastic Search
 |Name| Description|Horizon|Action Dimension|Observation Dimension
 |---|---|---|---|---|
 |`Rosenbrock{dim}-v0`| Gym interface for Rosenbrock function. `{dim}` is one of 5, 10, 25, 50 or 100. | 1 | `{dim}` | 0
