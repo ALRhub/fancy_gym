@@ -17,5 +17,6 @@ setup(
     license='MIT',
     author='Fabian Otto, Marcel Sandermann, Maximilian Huettenrauch',
     author_email='',
-    description='Custom Gym environments for various (robotics) simple_reacher.'
+    description='Custom Gym environments for various (robotics) tasks. integration of DMC environments into the'
+                'gym interface, and support for using motion primitives with gym environments.'
 )

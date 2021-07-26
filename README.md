@@ -48,12 +48,6 @@ All environments provide the full episode reward and additional information abou
 
 [//]:  |`HoleReacherDetPMP-v0`|
 
-### Stochastic Search
-|Name| Description|Horizon|Action Dimension|Observation Dimension
-|---|---|---|---|---|
-|`Rosenbrock{dim}-v0`| Gym interface for Rosenbrock function. `{dim}` is one of 5, 10, 25, 50 or 100. | 1 | `{dim}` | 0
-
-
 ## Install
 1. Clone the repository 
 ```bash 

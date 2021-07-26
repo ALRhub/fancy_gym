@@ -49,6 +49,8 @@ def make_env(env_id: str, seed, **kwargs):
         # Gym
         env = gym.make(env_id, **kwargs)
         env.seed(seed)
+        env.action_space.seed(seed)
+        env.observation_space.seed(seed)
     except gym.error.Error:
         # DMC
         from alr_envs.utils import make
@@ -79,7 +81,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     _env = make_env(env_id, seed, **kwargs)
 
     assert any(issubclass(w, MPEnvWrapper) for w in wrappers), \
-        "At least an MPEnvWrapper is required in order to leverage motion primitive environments."
+        "At least one MPEnvWrapper is required in order to leverage motion primitive environments."
     for w in wrappers:
         _env = w(_env)
 

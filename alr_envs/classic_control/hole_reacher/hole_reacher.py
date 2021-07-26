@@ -128,7 +128,7 @@ class HoleReacherEnv(gym.Env):
             width = np.copy(self.initial_width)
         if self.initial_x is None:
             # sample whole on left or right side
-            direction = np.random.choice([-1, 1])
+            direction = self.np_random.choice([-1, 1])
             # Hole center needs to be half the width away from the arm to give a valid setting.
             x = direction * self.np_random.uniform(width / 2, 3.5)
         else:
@@ -263,7 +263,7 @@ class HoleReacherEnv(gym.Env):
             self.fig.show()
 
         self.fig.gca().set_title(
-            f"Iteration: {self._steps}, distance: {self.end_effector - self._goal}")
+            f"Iteration: {self._steps}, distance: {np.linalg.norm(self.end_effector - self._goal) ** 2}")
 
         if mode == "human":
 

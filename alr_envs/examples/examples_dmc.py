@@ -1,4 +1,4 @@
-from alr_envs.dmc.ball_in_cup.ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
+from alr_envs.dmc.suite.ball_in_cup.ball_in_cup_mp_wrapper import DMCBallInCupMPWrapper
 from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
 
 
@@ -123,11 +123,11 @@ if __name__ == '__main__':
     render = False
 
     # # Standard DMC Suite tasks
-    # example_dmc("fish-swim", seed=10, iterations=1000, render=render)
-    #
-    # # Manipulation tasks
-    # # Disclaimer: The vision versions are currently not integrated and yield an error
-    # example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
+    example_dmc("fish-swim", seed=10, iterations=1000, render=render)
+
+    # Manipulation tasks
+    # Disclaimer: The vision versions are currently not integrated and yield an error
+    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
 
     # Gym + DMC hybrid task provided in the MP framework
     example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=render)

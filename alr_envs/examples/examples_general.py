@@ -86,17 +86,18 @@ def example_async(env_id="alr_envs:HoleReacher-v0", n_cpu=4, seed=int('533D', 16
 
 
 if __name__ == '__main__':
+    render = False
     # Basic gym task
-    example_general("Pendulum-v0", seed=10, iterations=200, render=True)
+    example_general("Pendulum-v0", seed=10, iterations=200, render=render)
     #
     # # Basis task from framework
-    example_general("alr_envs:HoleReacher-v0", seed=10, iterations=200, render=True)
+    example_general("alr_envs:HoleReacher-v0", seed=10, iterations=200, render=render)
     #
     # # OpenAI Mujoco task
-    example_general("HalfCheetah-v2", seed=10, render=True)
+    example_general("HalfCheetah-v2", seed=10, render=render)
     #
     # # Mujoco task from framework
-    example_general("alr_envs:ALRReacher-v0", seed=10, iterations=200, render=True)
+    example_general("alr_envs:ALRReacher-v0", seed=10, iterations=200, render=render)
 
     # Vectorized multiprocessing environments
     example_async(env_id="alr_envs:HoleReacher-v0", n_cpu=2, seed=int('533D', 16), n_samples=2 * 200)
