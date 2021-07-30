@@ -1,15 +1,12 @@
-import numpy as np
 from gym.envs.registration import register
+from gym.wrappers import FlattenObservation
 
-from alr_envs.classic_control.hole_reacher.hole_reacher_mp_wrapper import HoleReacherMPWrapper
-from alr_envs.classic_control.simple_reacher.simple_reacher_mp_wrapper import SimpleReacherMPWrapper
-from alr_envs.classic_control.viapoint_reacher.viapoint_reacher_mp_wrapper import ViaPointReacherMPWrapper
-from alr_envs.dmc.manipulation.reach.reach_mp_wrapper import DMCReachSiteMPWrapper
-from alr_envs.dmc.suite.ball_in_cup.ball_in_cup_mp_wrapper import DMCBallInCupMPWrapper
-from alr_envs.dmc.suite.cartpole.cartpole_mp_wrapper import DMCCartpoleMPWrapper, DMCCartpoleThreePolesMPWrapper, \
-    DMCCartpoleTwoPolesMPWrapper
-from alr_envs.open_ai import reacher_v2, continuous_mountain_car, fetch
-from alr_envs.dmc.suite.reacher.reacher_mp_wrapper import DMCReacherMPWrapper
+from alr_envs import classic_control, dmc, open_ai
+
+from alr_envs.utils.make_env_helpers import make_dmp_env
+from alr_envs.utils.make_env_helpers import make_detpmp_env
+from alr_envs.utils.make_env_helpers import make_env
+from alr_envs.utils.make_env_helpers import make_env_rank
 
 # Mujoco
 
@@ -206,7 +203,7 @@ for v in versions:
         # max_episode_steps=1,
         kwargs={
             "name": f"alr_envs:{v}",
-            "wrappers": [SimpleReacherMPWrapper],
+            "wrappers": [classic_control.simple_reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 2 if "long" not in v.lower() else 5,
                 "num_basis": 5,
@@ -225,7 +222,7 @@ register(
     # max_episode_steps=1,
     kwargs={
         "name": "alr_envs:ViaPointReacher-v0",
-        "wrappers": [ViaPointReacherMPWrapper],
+        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
         "mp_kwargs": {
             "num_dof": 5,
             "num_basis": 5,
@@ -234,6 +231,25 @@ register(
             "alpha_phase": 2,
             "policy_type": "velocity",
             "weights_scale": 50,
+        }
+    }
+)
+
+register(
+    id='ViaPointReacherDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    # max_episode_steps=1,
+    kwargs={
+        "name": "alr_envs:ViaPointReacher-v0",
+        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "width": 0.025,
+            "policy_type": "velocity",
+            "weights_scale": 0.2,
+            "zero_start": True
         }
     }
 )
@@ -247,7 +263,7 @@ for v in versions:
         # max_episode_steps=1,
         kwargs={
             "name": f"alr_envs:HoleReacher-{v}",
-            "wrappers": [HoleReacherMPWrapper],
+            "wrappers": [classic_control.hole_reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,
                 "num_basis": 5,
@@ -267,7 +283,7 @@ for v in versions:
         entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
         kwargs={
             "name": f"alr_envs:HoleReacher-{v}",
-            "wrappers": [HoleReacherMPWrapper],
+            "wrappers": [classic_control.hole_reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,
                 "num_basis": 5,
@@ -283,11 +299,6 @@ for v in versions:
 ## Deep Mind Control Suite (DMC)
 ### Suite
 
-# tasks = ["ball_in_cup-catch", "reacher-easy", "reacher-hard", "cartpole-balance", "cartpole-balance_sparse",
-#          "cartpole-swingup", "cartpole-swingup_sparse", "cartpole-two_poles", "cartpole-three_poles"]
-# wrappers = [DMCBallInCupMPWrapper, DMCReacherMPWrapper, DMCReacherMPWrapper, DMCCartpoleMPWrapper,
-#             partial(DMCCartpoleMPWrapper)]
-# for t, w in zip(tasks, wrappers):
 register(
     id=f'dmc_ball_in_cup-catch_dmp-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
@@ -296,7 +307,7 @@ register(
         "name": f"ball_in_cup-catch",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCBallInCupMPWrapper],
+        "wrappers": [dmc.suite.ball_in_cup.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -322,7 +333,7 @@ register(
         "name": f"ball_in_cup-catch",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCBallInCupMPWrapper],
+        "wrappers": [dmc.suite.ball_in_cup.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -339,7 +350,7 @@ register(
     }
 )
 
-# TODO tune gains and episode length for all below
+# TODO tune episode length for all below
 register(
     id=f'dmc_reacher-easy_dmp-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
@@ -348,7 +359,7 @@ register(
         "name": f"reacher-easy",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCReacherMPWrapper],
+        "wrappers": [dmc.suite.reacher.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -374,7 +385,7 @@ register(
         "name": f"reacher-easy",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCReacherMPWrapper],
+        "wrappers": [dmc.suite.reacher.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -399,7 +410,7 @@ register(
         "name": f"reacher-hard",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCReacherMPWrapper],
+        "wrappers": [dmc.suite.reacher.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -425,7 +436,7 @@ register(
         "name": f"reacher-hard",
         "time_limit": 1,
         "episode_length": 50,
-        "wrappers": [DMCReacherMPWrapper],
+        "wrappers": [dmc.suite.reacher.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
@@ -448,8 +459,9 @@ register(
     kwargs={
         "name": f"cartpole-balance",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -461,8 +473,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -474,8 +486,9 @@ register(
     kwargs={
         "name": f"cartpole-balance",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -485,8 +498,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -498,8 +511,9 @@ register(
     kwargs={
         "name": f"cartpole-balance_sparse",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -511,8 +525,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -524,8 +538,9 @@ register(
     kwargs={
         "name": f"cartpole-balance_sparse",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -535,8 +550,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -549,8 +564,9 @@ register(
     kwargs={
         "name": f"cartpole-swingup",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -562,8 +578,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -575,8 +591,9 @@ register(
     kwargs={
         "name": f"cartpole-swingup",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -586,8 +603,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -599,8 +616,9 @@ register(
     kwargs={
         "name": f"cartpole-swingup_sparse",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -612,8 +630,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -625,8 +643,9 @@ register(
     kwargs={
         "name": f"cartpole-swingup_sparse",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
-        "wrappers": [DMCCartpoleMPWrapper],
+        "wrappers": [dmc.suite.cartpole.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -636,8 +655,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -649,9 +668,10 @@ register(
     kwargs={
         "name": f"cartpole-two_poles",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
         # "wrappers": [partial(DMCCartpoleMPWrapper, n_poles=2)],
-        "wrappers": [DMCCartpoleTwoPolesMPWrapper],
+        "wrappers": [dmc.suite.cartpole.TwoPolesMPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -663,8 +683,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -676,9 +696,10 @@ register(
     kwargs={
         "name": f"cartpole-two_poles",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
         # "wrappers": [partial(DMCCartpoleMPWrapper, n_poles=2)],
-        "wrappers": [DMCCartpoleTwoPolesMPWrapper],
+        "wrappers": [dmc.suite.cartpole.TwoPolesMPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -688,8 +709,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -701,9 +722,10 @@ register(
     kwargs={
         "name": f"cartpole-three_poles",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
         # "wrappers": [partial(DMCCartpoleMPWrapper, n_poles=3)],
-        "wrappers": [DMCCartpoleThreePolesMPWrapper],
+        "wrappers": [dmc.suite.cartpole.ThreePolesMPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -715,8 +737,8 @@ register(
             "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -728,9 +750,10 @@ register(
     kwargs={
         "name": f"cartpole-three_poles",
         # "time_limit": 1,
+        "camera_id": 0,
         "episode_length": 1000,
         # "wrappers": [partial(DMCCartpoleMPWrapper, n_poles=3)],
-        "wrappers": [DMCCartpoleThreePolesMPWrapper],
+        "wrappers": [dmc.suite.cartpole.ThreePolesMPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
@@ -740,8 +763,8 @@ register(
             "weights_scale": 0.2,
             "zero_start": True,
             "policy_kwargs": {
-                "p_gains": 50,
-                "d_gains": 1
+                "p_gains": 10,
+                "d_gains": 10
             }
         }
     }
@@ -757,7 +780,7 @@ register(
         "name": f"manipulation-reach_site_features",
         # "time_limit": 1,
         "episode_length": 250,
-        "wrappers": [DMCReachSiteMPWrapper],
+        "wrappers": [dmc.manipulation.reach.MPWrapper],
         "mp_kwargs": {
             "num_dof": 9,
             "num_basis": 5,
@@ -779,7 +802,7 @@ register(
         "name": f"manipulation-reach_site_features",
         # "time_limit": 1,
         "episode_length": 250,
-        "wrappers": [DMCReachSiteMPWrapper],
+        "wrappers": [dmc.manipulation.reach.MPWrapper],
         "mp_kwargs": {
             "num_dof": 9,
             "num_basis": 5,
@@ -798,7 +821,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.classic_control:MountainCarContinuous-v0",
-        "wrappers": [continuous_mountain_car.MPWrapper],
+        "wrappers": [open_ai.classic_control.continuous_mountain_car.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
@@ -819,7 +842,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.mujoco:Reacher-v2",
-        "wrappers": [reacher_v2.MPWrapper],
+        "wrappers": [open_ai.mujoco.reacher_v2.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 6,
@@ -840,7 +863,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.robotics:FetchSlideDense-v1",
-        "wrappers": [fetch.MPWrapper],
+        "wrappers": [FlattenObservation, open_ai.robotics.fetch.MPWrapper],
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
@@ -857,7 +880,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": "gym.envs.robotics:FetchReachDense-v1",
-        "wrappers": [fetch.MPWrapper],
+        "wrappers": [FlattenObservation, open_ai.robotics.fetch.MPWrapper],
         "mp_kwargs": {
             "num_dof": 4,
             "num_basis": 5,

@@ -2,10 +2,10 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
+from mp_env_api import MPEnvWrapper
 
 
-class DMCCartpoleMPWrapper(MPEnvWrapper):
+class MPWrapper(MPEnvWrapper):
 
     def __init__(self, env, n_poles: int = 1):
         self.n_poles = n_poles
@@ -39,13 +39,13 @@ class DMCCartpoleMPWrapper(MPEnvWrapper):
         return self.env.dt
 
 
-class DMCCartpoleTwoPolesMPWrapper(DMCCartpoleMPWrapper):
+class TwoPolesMPWrapper(MPWrapper):
 
     def __init__(self, env):
         super().__init__(env, n_poles=2)
 
 
-class DMCCartpoleThreePolesMPWrapper(DMCCartpoleMPWrapper):
+class ThreePolesMPWrapper(MPWrapper):
 
     def __init__(self, env):
         super().__init__(env, n_poles=3)

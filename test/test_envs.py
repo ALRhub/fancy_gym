@@ -88,11 +88,8 @@ class TestEnvironments(unittest.TestCase):
     def test_environment_determinism(self):
         """Tests that identical seeds produce identical trajectories."""
         seed = 0
-        # Iterate over two trajectories generated using identical sequences of
-        # random actions, and with identical task random states. Check that the
-        # observations, rewards, discounts and step types are identical.
+        # Iterate over two trajectories, which should have the same state and action sequence
         for spec in ALL_SPECS:
-            # try:
             with self.subTest(msg=spec.id):
                 self._run_env(spec.id)
                 traj1 = self._run_env(spec.id, seed=seed)

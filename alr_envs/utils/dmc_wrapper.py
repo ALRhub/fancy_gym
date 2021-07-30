@@ -33,11 +33,14 @@ def _spec_to_box(spec):
 
 
 def _flatten_obs(obs: collections.MutableMapping):
-    # obs_pieces = []
-    # for v in obs.values():
-    #     flat = np.array([v]) if np.isscalar(v) else v.ravel()
-    #     obs_pieces.append(flat)
-    # return np.concatenate(obs_pieces, axis=0)
+    """
+    Flattens an observation of type MutableMapping, e.g. a dict to a 1D array.
+    Args:
+        obs: observation to flatten
+
+    Returns: 1D array of observation
+
+    """
 
     if not isinstance(obs, collections.MutableMapping):
         raise ValueError(f'Requires dict-like observations structure. {type(obs)} found.')
@@ -52,19 +55,19 @@ def _flatten_obs(obs: collections.MutableMapping):
 class DMCWrapper(core.Env):
     def __init__(
             self,
-            domain_name,
-            task_name,
-            task_kwargs={},
-            visualize_reward=True,
-            from_pixels=False,
-            height=84,
-            width=84,
-            camera_id=0,
-            frame_skip=1,
-            environment_kwargs=None,
-            channels_first=True
+            domain_name: str,
+            task_name: str,
+            task_kwargs: dict = {},
+            visualize_reward: bool = True,
+            from_pixels: bool = False,
+            height: int = 84,
+            width: int = 84,
+            camera_id: int = 0,
+            frame_skip: int = 1,
+            environment_kwargs: dict = None,
+            channels_first: bool = True
     ):
-        assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
+        assert 'random' in task_kwargs, 'Please specify a seed for deterministic behavior.'
         self._from_pixels = from_pixels
         self._height = height
         self._width = width
@@ -74,7 +77,7 @@ class DMCWrapper(core.Env):
 
         # create task
         if domain_name == "manipulation":
-            assert not from_pixels, \
+            assert not from_pixels and not task_name.endswith("_vision"), \
                 "TODO: Vision interface for manipulation is different to suite and needs to be implemented"
             self._env = manipulation.load(environment_name=task_name, seed=task_kwargs['random'])
         else:
@@ -169,11 +172,12 @@ class DMCWrapper(core.Env):
         if self._last_state is None:
             raise ValueError('Environment not ready to render. Call reset() first.')
 
+        camera_id = camera_id or self._camera_id
+
         # assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
         if mode == "rgb_array":
             height = height or self._height
             width = width or self._width
-            camera_id = camera_id or self._camera_id
             return self._env.physics.render(height=height, width=width, camera_id=camera_id)
 
         elif mode == 'human':
@@ -184,7 +188,8 @@ class DMCWrapper(core.Env):
                 self.viewer = rendering.SimpleImageViewer()
             # Render max available buffer size. Larger is only possible by altering the XML.
             img = self._env.physics.render(height=self._env.physics.model.vis.global_.offheight,
-                                           width=self._env.physics.model.vis.global_.offwidth)
+                                           width=self._env.physics.model.vis.global_.offwidth,
+                                           camera_id=camera_id)
             self.viewer.imshow(img)
             return self.viewer.isopen
 

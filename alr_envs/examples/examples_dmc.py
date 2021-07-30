@@ -1,5 +1,5 @@
-from alr_envs.dmc.suite.ball_in_cup.ball_in_cup_mp_wrapper import DMCBallInCupMPWrapper
-from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
+import alr_envs
+from alr_envs.dmc.suite.ball_in_cup.mp_wrapper import MPWrapper
 
 
 def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
@@ -17,13 +17,12 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = make_env(env_id, seed)
+    env = alr_envs.make_env(env_id, seed)
     rewards = 0
     obs = env.reset()
     print("observation shape:", env.observation_space.shape)
     print("action shape:", env.action_space.shape)
 
-    # number of samples(multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
@@ -63,7 +62,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [DMCBallInCupMPWrapper]
+    wrappers = [MPWrapper]
     mp_kwargs = {
         "num_dof": 2,
         "num_basis": 5,
@@ -84,9 +83,9 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         "episode_length": 1000,
         # "frame_skip": 1
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
+    env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
     # OR for a deterministic ProMP:
-    # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+    # env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.

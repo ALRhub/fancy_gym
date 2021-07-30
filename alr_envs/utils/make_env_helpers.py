@@ -2,13 +2,14 @@ import logging
 from typing import Iterable, List, Type, Union
 
 import gym
+import numpy as np
 
-from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
+from mp_env_api import MPEnvWrapper
 from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 
 
-def make_env_rank(env_id: str, seed: int, rank: int = 0, **kwargs):
+def make_env_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
     """
     TODO: Do we need this?
     Generate a callable to create a new gym environment with a given seed.
@@ -22,11 +23,16 @@ def make_env_rank(env_id: str, seed: int, rank: int = 0, **kwargs):
         env_id: name of the environment
         seed: seed for deterministic behaviour
         rank: environment rank for deterministic over multiple seeds behaviour
+        return_callable: If True returns a callable to create the environment instead of the environment itself.
 
     Returns:
 
     """
-    return lambda: make_env(env_id, seed + rank, **kwargs)
+
+    def f():
+        return make_env(env_id, seed + rank, **kwargs)
+
+    return f if return_callable else f()
 
 
 def make_env(env_id: str, seed, **kwargs):
@@ -103,6 +109,9 @@ def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs
     verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
+
+    verify_dof(_env, mp_kwargs.get("num_dof"))
+
     return DmpWrapper(_env, **mp_kwargs)
 
 
@@ -120,6 +129,9 @@ def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwa
     verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
+
+    verify_dof(_env, mp_kwargs.get("num_dof"))
+
     return DetPMPWrapper(_env, **mp_kwargs)
 
 
@@ -185,5 +197,12 @@ def verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[N
     """
     if mp_time_limit is not None and env_time_limit is not None:
         assert mp_time_limit == env_time_limit, \
-            f"The manually specified 'time_limit' of {env_time_limit}s does not match " \
+            f"The specified 'time_limit' of {env_time_limit}s does not match " \
             f"the duration of {mp_time_limit}s for the MP."
+
+
+def verify_dof(base_env: gym.Env, dof: int):
+    action_shape = np.prod(base_env.action_space.shape)
+    assert dof == action_shape, \
+        f"The specified degrees of freedom ('num_dof') {dof} do not match " \
+        f"the action space of {action_shape} the base environments"

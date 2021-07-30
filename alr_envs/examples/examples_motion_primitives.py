@@ -1,4 +1,4 @@
-from alr_envs import HoleReacherMPWrapper
+from alr_envs import MPWrapper
 from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
 
 
@@ -113,7 +113,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [HoleReacherMPWrapper]
+    wrappers = [MPWrapper]
     mp_kwargs = {
         "num_dof": 5,
         "num_basis": 5,

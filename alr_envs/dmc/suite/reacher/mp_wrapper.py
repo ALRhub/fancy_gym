@@ -2,23 +2,18 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
+from mp_env_api import MPEnvWrapper
 
 
-class DMCReachSiteMPWrapper(MPEnvWrapper):
+class MPWrapper(MPEnvWrapper):
 
     @property
     def active_obs(self):
         # Joint and target positions are randomized, velocities are always set to 0.
         return np.hstack([
-            [True] * 3,  # target position
-            [True] * 12,  # sin/cos arm joint position
-            [True] * 6,  # arm joint torques
-            [False] * 6,  # arm joint velocities
-            [True] * 3,  # sin/cos hand joint position
-            [False] * 3,  # hand joint velocities
-            [True] * 3,  # hand pinch site position
-            [True] * 9,  # pinch site rmat
+            [True] * 2,  # joint position
+            [True] * 2,  # target position
+            [False] * 2,  # joint velocity
         ])
 
     @property
