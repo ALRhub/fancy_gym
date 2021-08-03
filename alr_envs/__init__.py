@@ -191,6 +191,14 @@ register(
     }
 )
 
+# Short Continuous Mountain Car
+register(
+    id="MountainCarContinuous-v1",
+    entry_point="gym.envs.classic_control:Continuous_MountainCarEnv",
+    max_episode_steps=100,
+    reward_threshold=90.0,
+)
+
 # Motion Primitive Environments
 
 ## Simple Reacher
@@ -817,10 +825,10 @@ register(
 
 ## Open AI
 register(
-    id='ContinuousMountainCarDetPMP-v0',
+    id='ContinuousMountainCarDetPMP-v1',
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
-        "name": "gym.envs.classic_control:MountainCarContinuous-v0",
+        "name": "alr_envs:MountainCarContinuous-v1",
         "wrappers": [open_ai.classic_control.continuous_mountain_car.MPWrapper],
         "mp_kwargs": {
             "num_dof": 1,
