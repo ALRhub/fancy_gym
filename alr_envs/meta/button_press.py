@@ -33,11 +33,12 @@ class MPWrapper(MPEnvWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray]:
-        return self.env.physics.named.data.qpos[:]
+        r_close = self.env.data.get_joint_qpos("r_close")
+        return np.hstack([self.env.data.mocap_pos.flatten(), r_close])
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.physics.named.data.qvel[:]
+        raise NotImplementedError("Velocity cannot be retrieved.")
 
     @property
     def goal_pos(self) -> Union[float, int, np.ndarray, Tuple]:
