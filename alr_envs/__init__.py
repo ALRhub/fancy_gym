@@ -1,12 +1,12 @@
 from gym.envs.registration import register
 from gym.wrappers import FlattenObservation
 
-from alr_envs import classic_control, dmc, open_ai
+from alr_envs import classic_control, dmc, open_ai, meta
 
 from alr_envs.utils.make_env_helpers import make_dmp_env
 from alr_envs.utils.make_env_helpers import make_detpmp_env
-from alr_envs.utils.make_env_helpers import make_env
-from alr_envs.utils.make_env_helpers import make_env_rank
+from alr_envs.utils.make_env_helpers import make
+from alr_envs.utils.make_env_helpers import make_rank
 
 # Mujoco
 
@@ -305,13 +305,13 @@ register(
     # max_episode_steps=1,
     kwargs={
         "name": f"ball_in_cup-catch",
-        "time_limit": 1,
-        "episode_length": 50,
+        "time_limit": 2,
+        "episode_length": 100,
         "wrappers": [dmc.suite.ball_in_cup.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 1,
+            "duration": 2,
             "learn_goal": True,
             "alpha_phase": 2,
             "bandwidth_factor": 2,
@@ -331,16 +331,16 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
         "name": f"ball_in_cup-catch",
-        "time_limit": 1,
-        "episode_length": 50,
+        "time_limit": 2,
+        "episode_length": 100,
         "wrappers": [dmc.suite.ball_in_cup.MPWrapper],
         "mp_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
-            "duration": 1,
+            "duration": 2,
             "width": 0.025,
             "policy_type": "motor",
-            "weights_scale": 0.2,
+            "weights_scale": 1,
             "zero_start": True,
             "policy_kwargs": {
                 "p_gains": 50,
@@ -876,6 +876,23 @@ register(
 )
 
 register(
+    id='FetchSlideDetPMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.robotics:FetchSlide-v1",
+        "wrappers": [FlattenObservation, open_ai.robotics.fetch.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 4,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "position"
+        }
+    }
+)
+
+register(
     id='FetchReachDenseDetPMP-v1',
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
@@ -891,3 +908,38 @@ register(
         }
     }
 )
+
+register(
+    id='FetchReachDetPMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "gym.envs.robotics:FetchReach-v1",
+        "wrappers": [FlattenObservation, open_ai.robotics.fetch.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 4,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "policy_type": "position"
+        }
+    }
+)
+
+register(
+    id='ButtonPressDetPMP-v2',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "button-press-v2",
+        "wrappers": [meta.button_press.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 4,
+            "num_basis": 5,
+            "duration": 6.25,
+            "post_traj_time": 0,
+            "width": 0.025,
+            "policy_type": "position"
+        }
+    }
+)
+

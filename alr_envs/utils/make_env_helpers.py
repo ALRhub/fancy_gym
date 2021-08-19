@@ -3,21 +3,22 @@ from typing import Iterable, List, Type, Union
 
 import gym
 import numpy as np
+from gym.envs.registration import EnvSpec
 
 from mp_env_api import MPEnvWrapper
 from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 
 
-def make_env_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
+def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
     """
     TODO: Do we need this?
     Generate a callable to create a new gym environment with a given seed.
     The rank is added to the seed and can be used for example when using vector environments.
-    E.g. [make_env_rank("my_env_name-v0", 123, i) for i in range(8)] creates a list of 8 environments
+    E.g. [make_rank("my_env_name-v0", 123, i) for i in range(8)] creates a list of 8 environments
     with seeds 123 through 130.
     Hence, testing environments should be seeded with a value which is offset by the number of training environments.
-    Here e.g. [make_env_rank("my_env_name-v0", 123 + 8, i) for i in range(5)] for 5 testing environmetns
+    Here e.g. [make_rank("my_env_name-v0", 123 + 8, i) for i in range(5)] for 5 testing environmetns
 
     Args:
         env_id: name of the environment
@@ -30,12 +31,12 @@ def make_env_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, *
     """
 
     def f():
-        return make_env(env_id, seed + rank, **kwargs)
+        return make(env_id, seed + rank, **kwargs)
 
     return f if return_callable else f()
 
 
-def make_env(env_id: str, seed, **kwargs):
+def make(env_id: str, seed, **kwargs):
     """
     Converts an env_id to an environment with the gym API.
     This also works for DeepMind Control Suite interface_wrappers
@@ -58,13 +59,30 @@ def make_env(env_id: str, seed, **kwargs):
         env.action_space.seed(seed)
         env.observation_space.seed(seed)
     except gym.error.Error:
-        # DMC
-        from alr_envs.utils import make
-        env = make(env_id, seed=seed, **kwargs)
 
-        assert env.base_step_limit == env.spec.max_episode_steps, \
-            f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym is different from " \
-            f"the DMC environment specification of {env.base_step_limit} steps."
+        # MetaWorld env
+        import metaworld
+        if env_id in metaworld.ML1.ENV_NAMES:
+            env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[env_id + "-goal-observable"](seed=seed, **kwargs)
+            # setting this avoids generating the same initialization after each reset
+            env._freeze_rand_vec = False
+            # Manually set spec, as metaworld environments are not registered via gym
+            env.unwrapped.spec = EnvSpec(env_id)
+            # Set Timelimit based on the maximum allowed path length of the environment
+            env = gym.wrappers.TimeLimit(env, max_episode_steps=env.max_path_length)
+            env.seed(seed)
+            env.action_space.seed(seed)
+            env.observation_space.seed(seed)
+            env.goal_space.seed(seed)
+
+        else:
+            # DMC
+            from alr_envs.utils import make_dmc
+            env = make_dmc(env_id, seed=seed, **kwargs)
+
+            assert env.base_step_limit == env.spec.max_episode_steps, \
+                f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym is different from " \
+                f"the DMC environment specification of {env.base_step_limit} steps."
 
     return env
 
@@ -84,7 +102,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
 
     """
     # _env = gym.make(env_id)
-    _env = make_env(env_id, seed, **kwargs)
+    _env = make(env_id, seed, **kwargs)
 
     assert any(issubclass(w, MPEnvWrapper) for w in wrappers), \
         "At least one MPEnvWrapper is required in order to leverage motion primitive environments."
@@ -175,7 +193,7 @@ def make_detpmp_env_helper(**kwargs):
 
 
 def make_contextual_env(env_id, context, seed, rank):
-    env = make_env(env_id, seed + rank, context=context)
+    env = make(env_id, seed + rank, context=context)
     # env = gym.make(env_id, context=context)
     # env.seed(seed + rank)
     return lambda: env

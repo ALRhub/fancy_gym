@@ -12,6 +12,7 @@ setup(
         'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
         'mujoco-py<2.1,>=2.0',
         'dm_control'
+        'metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld'
     ],
 
     url='https://github.com/ALRhub/alr_envs/',

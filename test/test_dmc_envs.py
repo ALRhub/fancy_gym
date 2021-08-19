@@ -3,10 +3,12 @@ import unittest
 import gym
 import numpy as np
 
-import alr_envs  # noqa
-from alr_envs.utils.make_env_helpers import make
+from dm_control import suite, manipulation
 
-ALL_SPECS = list(spec for spec in gym.envs.registry.all() if "alr_envs" in spec.entry_point)
+from alr_envs import make
+
+DMC_ENVS = [f'{env}-{task}' for env, task in suite.ALL_TASKS if env != "lqr"]
+MANIPULATION_SPECS = [f'manipulation-{task}' for task in manipulation.ALL if task.endswith('_features')]
 SEED = 1
 
 
@@ -79,24 +81,45 @@ class TestEnvironments(unittest.TestCase):
     def _verify_done(self, done):
         self.assertIsInstance(done, bool, f"Returned {done} as done flag, expected bool.")
 
-    def test_environment_functionality(self):
+    def test_dmc_functionality(self):
         """Tests that environments runs without errors using random actions."""
-        for spec in ALL_SPECS:
-            with self.subTest(msg=spec.id):
-                self._run_env(spec.id)
+        for env_id in DMC_ENVS:
+            with self.subTest(msg=env_id):
+                self._run_env(env_id)
 
-    def test_environment_determinism(self):
+    def test_dmc_determinism(self):
         """Tests that identical seeds produce identical trajectories."""
         seed = 0
         # Iterate over two trajectories, which should have the same state and action sequence
-        for spec in ALL_SPECS:
-            with self.subTest(msg=spec.id):
-                traj1 = self._run_env(spec.id, seed=seed)
-                traj2 = self._run_env(spec.id, seed=seed)
+        for env_id in DMC_ENVS:
+            with self.subTest(msg=env_id):
+                traj1 = self._run_env(env_id, seed=seed)
+                traj2 = self._run_env(env_id, seed=seed)
                 for i, time_step in enumerate(zip(*traj1, *traj2)):
                     obs1, rwd1, done1, obs2, rwd2, done2 = time_step
                     self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
                     self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
+                    self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
+
+    def test_manipulation_functionality(self):
+        """Tests that environments runs without errors using random actions."""
+        for env_id in MANIPULATION_SPECS:
+            with self.subTest(msg=env_id):
+                self._run_env(env_id)
+
+    def test_manipulation_determinism(self):
+        """Tests that identical seeds produce identical trajectories."""
+        seed = 0
+        # Iterate over two trajectories, which should have the same state and action sequence
+        for env_id in MANIPULATION_SPECS:
+            with self.subTest(msg=env_id):
+                traj1 = self._run_env(env_id, seed=seed)
+                traj2 = self._run_env(env_id, seed=seed)
+                for i, time_step in enumerate(zip(*traj1, *traj2)):
+                    obs1, rwd1, done1, obs2, rwd2, done2 = time_step
+                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
+                    self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
+                    self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 
 
