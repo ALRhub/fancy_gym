@@ -17,7 +17,7 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = alr_envs.make_env(env_id, seed)
+    env = alr_envs.make(env_id, seed)
     rewards = 0
     obs = env.reset()
     print("observation shape:", env.observation_space.shape)

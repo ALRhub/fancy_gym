@@ -3,7 +3,7 @@ from gym.vector.async_vector_env import AsyncVectorEnv
 import numpy as np
 from _collections import defaultdict
 
-from alr_envs.utils.make_env_helpers import make_env_rank
+from alr_envs.utils.make_env_helpers import make_rank
 
 
 def split_array(ary, size):
@@ -54,7 +54,7 @@ class AlrMpEnvSampler:
 
     def __init__(self, env_id, num_envs, seed=0, **env_kwargs):
         self.num_envs = num_envs
-        self.env = AsyncVectorEnv([make_env_rank(env_id, seed, i, **env_kwargs) for i in range(num_envs)])
+        self.env = AsyncVectorEnv([make_rank(env_id, seed, i, **env_kwargs) for i in range(num_envs)])
 
     def __call__(self, params):
         params = np.atleast_2d(params)

@@ -1,30 +1,30 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from alr_envs import dmc
+from alr_envs import dmc, meta
 from alr_envs.utils.make_env_helpers import make_detpmp_env
 
 # This might work for some environments, however, please verify either way the correct trajectory information
 # for your environment are extracted below
 SEED = 10
-env_id = "cartpole-swingup"
-wrappers = [dmc.suite.cartpole.MPWrapper]
+env_id = "ball_in_cup-catch"
+wrappers = [dmc.ball_in_cup.MPWrapper]
 
 mp_kwargs = {
-    "num_dof": 1,
-    "num_basis": 5,
+    "num_dof": 2,
+    "num_basis": 10,
     "duration": 2,
     "width": 0.025,
     "policy_type": "motor",
-    "weights_scale": 0.2,
+    "weights_scale": 1,
     "zero_start": True,
     "policy_kwargs": {
-        "p_gains": 10,
-        "d_gains": 10 # a good starting point is the sqrt of p_gains
+        "p_gains": 1,
+        "d_gains": 1
     }
 }
 
-kwargs = dict(time_limit=2, episode_length=200)
+kwargs = dict(time_limit=2, episode_length=100)
 
 env = make_detpmp_env(env_id, wrappers, seed=SEED, mp_kwargs=mp_kwargs,
                       **kwargs)
@@ -35,7 +35,6 @@ pos, vel = env.mp_rollout(env.action_space.sample())
 
 base_shape = env.full_action_space.shape
 actual_pos = np.zeros((len(pos), *base_shape))
-actual_pos_ball = np.zeros((len(pos), *base_shape))
 actual_vel = np.zeros((len(pos), *base_shape))
 act = np.zeros((len(pos), *base_shape))
 
@@ -46,7 +45,6 @@ for t, pos_vel in enumerate(zip(pos, vel)):
     act[t, :] = actions
     # TODO verify for your environment
     actual_pos[t, :] = env.current_pos
-    # actual_pos_ball[t, :] = env.physics.data.qpos[2:]
     actual_vel[t, :] = env.current_vel
 
 plt.figure(figsize=(15, 5))

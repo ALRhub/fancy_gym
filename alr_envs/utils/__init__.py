@@ -4,8 +4,10 @@ from typing import Union
 import gym
 from gym.envs.registration import register
 
+from alr_envs.utils.make_env_helpers import make
 
-def make(
+
+def make_dmc(
         id: str,
         seed: int = 1,
         visualize_reward: bool = True,
