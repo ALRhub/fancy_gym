@@ -80,20 +80,21 @@ def example_async(env_id="alr_envs:HoleReacher-v0", n_cpu=4, seed=int('533D', 16
             rewards[done] = 0
 
     # do not return values above threshold
-    return *map(lambda v: np.stack(v)[:n_samples], buffer.values()),
+    return (*map(lambda v: np.stack(v)[:n_samples], buffer.values()),)
 
 
 if __name__ == '__main__':
-    render = False
+    render = True
+
     # Basic gym task
     example_general("Pendulum-v0", seed=10, iterations=200, render=render)
-    #
+
     # # Basis task from framework
     example_general("alr_envs:HoleReacher-v0", seed=10, iterations=200, render=render)
-    #
+
     # # OpenAI Mujoco task
     example_general("HalfCheetah-v2", seed=10, render=render)
-    #
+
     # # Mujoco task from framework
     example_general("alr_envs:ALRReacher-v0", seed=10, iterations=200, render=render)
 

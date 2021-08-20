@@ -316,7 +316,6 @@ register(
             "alpha_phase": 2,
             "bandwidth_factor": 2,
             "policy_type": "motor",
-            "weights_scale": 50,
             "goal_scale": 0.1,
             "policy_kwargs": {
                 "p_gains": 50,
@@ -340,7 +339,6 @@ register(
             "duration": 2,
             "width": 0.025,
             "policy_type": "motor",
-            "weights_scale": 1,
             "zero_start": True,
             "policy_kwargs": {
                 "p_gains": 50,
@@ -828,6 +826,7 @@ register(
             "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "motor",
             "policy_kwargs": {
                 "p_gains": 1.,
@@ -849,6 +848,7 @@ register(
             "duration": 1,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "motor",
             "policy_kwargs": {
                 "p_gains": .6,
@@ -870,6 +870,7 @@ register(
             "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "position"
         }
     }
@@ -887,6 +888,7 @@ register(
             "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "position"
         }
     }
@@ -904,6 +906,7 @@ register(
             "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "position"
         }
     }
@@ -921,25 +924,109 @@ register(
             "duration": 2,
             "post_traj_time": 0,
             "width": 0.02,
+            "zero_start": True,
             "policy_type": "position"
         }
     }
 )
 
-register(
-    id='ButtonPressDetPMP-v2',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-    kwargs={
-        "name": "button-press-v2",
-        "wrappers": [meta.button_press.MPWrapper],
-        "mp_kwargs": {
-            "num_dof": 4,
-            "num_basis": 5,
-            "duration": 6.25,
-            "post_traj_time": 0,
-            "width": 0.025,
-            "policy_type": "position"
-        }
-    }
-)
+# MetaWorld
 
+goal_change_envs = ["assembly-v2", "pick-out-of-hole-v2", "plate-slide-v2", "plate-slide-back-v2",
+                    ]
+for env_id in goal_change_envs:
+    env_id_split = env_id.split("-")
+    name = "".join([s.capitalize() for s in env_id_split[:-1]])
+    register(
+        id=f'{name}DetPMP-{env_id_split[-1]}',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+        kwargs={
+            "name": env_id,
+            "wrappers": [meta.goal_change.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 4,
+                "num_basis": 5,
+                "duration": 6.25,
+                "post_traj_time": 0,
+                "width": 0.025,
+                "zero_start": True,
+                "policy_type": "metaworld",
+            }
+        }
+    )
+
+object_change_envs = ["bin-picking-v2", "hammer-v2", "sweep-into-v2"]
+for env_id in object_change_envs:
+    env_id_split = env_id.split("-")
+    name = "".join([s.capitalize() for s in env_id_split[:-1]])
+    register(
+        id=f'{name}DetPMP-{env_id_split[-1]}',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+        kwargs={
+            "name": env_id,
+            "wrappers": [meta.object_change.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 4,
+                "num_basis": 5,
+                "duration": 6.25,
+                "post_traj_time": 0,
+                "width": 0.025,
+                "zero_start": True,
+                "policy_type": "metaworld",
+            }
+        }
+    )
+
+goal_and_object_change_envs = ["box-close-v2", "button-press-v2", "button-press-wall-v2", "button-press-topdown-v2",
+                               "button-press-topdown-wall-v2", "coffee-button-v2", "coffee-pull-v2",
+                               "coffee-push-v2", "dial-turn-v2", "disassemble-v2", "door-close-v2",
+                               "door-lock-v2", "door-open-v2", "door-unlock-v2", "hand-insert-v2",
+                               "drawer-close-v2", "drawer-open-v2", "faucet-open-v2", "faucet-close-v2",
+                               "handle-press-side-v2", "handle-press-v2", "handle-pull-side-v2",
+                               "handle-pull-v2", "lever-pull-v2", "peg-insert-side-v2", "pick-place-wall-v2",
+                               "reach-v2", "push-back-v2", "push-v2", "pick-place-v2", "peg-unplug-side-v2",
+                               "soccer-v2", "stick-push-v2", "stick-pull-v2", "push-wall-v2", "reach-wall-v2",
+                               "shelf-place-v2", "sweep-v2", "window-open-v2", "window-close-v2"
+                               ]
+for env_id in goal_and_object_change_envs:
+    env_id_split = env_id.split("-")
+    name = "".join([s.capitalize() for s in env_id_split[:-1]])
+    register(
+        id=f'{name}DetPMP-{env_id_split[-1]}',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+        kwargs={
+            "name": env_id,
+            "wrappers": [meta.goal_and_object_change.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 4,
+                "num_basis": 5,
+                "duration": 6.25,
+                "post_traj_time": 0,
+                "width": 0.025,
+                "zero_start": True,
+                "policy_type": "metaworld",
+            }
+        }
+    )
+
+goal_and_endeffector_change_envs = ["basketball-v2"]
+for env_id in goal_and_endeffector_change_envs:
+    env_id_split = env_id.split("-")
+    name = "".join([s.capitalize() for s in env_id_split[:-1]])
+    register(
+        id=f'{name}DetPMP-{env_id_split[-1]}',
+        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+        kwargs={
+            "name": env_id,
+            "wrappers": [meta.goal_and_endeffector_change.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 4,
+                "num_basis": 5,
+                "duration": 6.25,
+                "post_traj_time": 0,
+                "width": 0.025,
+                "zero_start": True,
+                "policy_type": "metaworld",
+            }
+        }
+    )

@@ -6,6 +6,25 @@ from mp_env_api import MPEnvWrapper
 
 
 class MPWrapper(MPEnvWrapper):
+    """
+    This Wrapper is for environments where merely the goal changes in the beginning
+    and no secondary objects or end effectors are altered at the start of an episode.
+    You can verify this by executing the code below for your environment id and check if the output is non-zero
+    at the same indices.
+    ```python
+    import alr_envs
+    env = alr_envs.make(env_id, 1)
+    print(env.reset() - env.reset())
+    array([ 0.        ,  0.        ,  0.        ,  0.        ,    0,
+        0         , 0          ,  0.        ,  0.        ,  0.        ,
+        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+        0.        ,  0.        ,  0         ,  0         ,  0         ,
+        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
+        0.        , !=0        , !=0        , !=0])
+    ```
+    """
 
     @property
     def active_obs(self):
@@ -15,7 +34,7 @@ class MPWrapper(MPEnvWrapper):
             # Current observation
             [False] * 3,  # end-effector position
             [False] * 1,  # normalized gripper open distance
-            [True] * 3,  # main object position
+            [False] * 3,  # main object position
             [False] * 4,  # main object quaternion
             [False] * 3,  # secondary object position
             [False] * 4,  # secondary object quaternion
