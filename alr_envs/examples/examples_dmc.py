@@ -1,5 +1,4 @@
 import alr_envs
-from alr_envs.dmc.suite.ball_in_cup.mp_wrapper import MPWrapper
 
 
 def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
@@ -62,29 +61,29 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [MPWrapper]
+    wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
     mp_kwargs = {
-        "num_dof": 2,
-        "num_basis": 5,
-        "duration": 20,
-        "learn_goal": True,
+        "num_dof": 2,  # degrees of fredom a.k.a. the old action space dimensionality
+        "num_basis": 5,  # number of basis functions, the new action space has size num_dof x num_basis
+        "duration": 20,  # length of trajectory in s, number of steps = duration / dt
+        "learn_goal": True,  # learn the goal position (recommended)
         "alpha_phase": 2,
         "bandwidth_factor": 2,
-        "policy_type": "motor",
-        "weights_scale": 50,
-        "goal_scale": 0.1,
-        "policy_kwargs": {
+        "policy_type": "motor",  # controller type, 'velocity', 'position', and 'motor' (torque control)
+        "weights_scale": 1,  # scaling of MP weights
+        "goal_scale": 1,  # scaling of learned goal position
+        "policy_kwargs": {  # only required for torque control/PD-Controller
             "p_gains": 0.2,
             "d_gains": 0.05
         }
     }
     kwargs = {
-        "time_limit": 20,
-        "episode_length": 1000,
+        "time_limit": 20,  # same as duration value but as max horizon for underlying DMC environment
+        "episode_length": 1000,  # corresponding number of episode steps
         # "frame_skip": 1
     }
     env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
-    # OR for a deterministic ProMP:
+    # OR for a deterministic ProMP (other mp_kwargs are required, see metaworld_examples):
     # env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
     # This renders the full MP trajectory

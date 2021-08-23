@@ -1,5 +1,4 @@
 import alr_envs
-from alr_envs.meta.goal_and_object_change import MPWrapper
 
 
 def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
@@ -65,19 +64,20 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [MPWrapper]
+    wrappers = [alr_envs.meta.goal_and_object_change.MPWrapper]
     mp_kwargs = {
-        "num_dof": 4,
-        "num_basis": 5,
-        "duration": 6.25,
-        "post_traj_time": 0,
-        "width": 0.025,
-        "zero_start": True,
-        "policy_type": "metaworld",
+        "num_dof": 4,  # degrees of fredom a.k.a. the old action space dimensionality
+        "num_basis": 5,  # number of basis functions, the new action space has size num_dof x num_basis
+        "duration": 6.25,  # length of trajectory in s, number of steps = duration / dt
+        "post_traj_time": 0,  # pad trajectory with additional zeros at the end (recommended: 0)
+        "width": 0.025,  # width of the basis functions
+        "zero_start": True,  # start from current environment position if True
+        "weights_scale": 1,  # scaling of MP weights
+        "policy_type": "metaworld",  # custom controller type for metaworld environments
     }
 
     env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
-    # OR for a DMP:
+    # OR for a DMP (other mp_kwargs are required, see dmc_examples):
     # env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
 
     # This renders the full MP trajectory
