@@ -1,4 +1,4 @@
-from alr_envs.utils.make_env_helpers import make_env
+import alr_envs
 
 
 def example_mp(env_name, seed=1):
@@ -13,7 +13,7 @@ def example_mp(env_name, seed=1):
 
     """
     # While in this case gym.make() is possible to use as well, we recommend our custom make env function.
-    env = make_env(env_name, seed)
+    env = alr_envs.make(env_name, seed)
 
     rewards = 0
     obs = env.reset()
@@ -29,13 +29,13 @@ def example_mp(env_name, seed=1):
             rewards = 0
             obs = env.reset()
 
+
 if __name__ == '__main__':
     # DMP - not supported yet
-    #example_mp("ReacherDetPMP-v2")
+    # example_mp("ReacherDMP-v2")
 
     # DetProMP
     example_mp("ContinuousMountainCarDetPMP-v0")
     example_mp("ReacherDetPMP-v2")
     example_mp("FetchReachDenseDetPMP-v1")
     example_mp("FetchSlideDenseDetPMP-v1")
-

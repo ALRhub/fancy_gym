@@ -21,7 +21,7 @@ def example_general(env_id="Pendulum-v0", seed=1, iterations=1000, render=True):
 
     """
 
-    env = alr_envs.make_env(env_id, seed)
+    env = alr_envs.make(env_id, seed)
     rewards = 0
     obs = env.reset()
     print("Observation shape: ", env.observation_space.shape)
@@ -56,7 +56,7 @@ def example_async(env_id="alr_envs:HoleReacher-v0", n_cpu=4, seed=int('533D', 16
     Returns: Tuple of (obs, reward, done, info) with type np.ndarray
 
     """
-    env = gym.vector.AsyncVectorEnv([alr_envs.make_env_rank(env_id, seed, i) for i in range(n_cpu)])
+    env = gym.vector.AsyncVectorEnv([alr_envs.make_rank(env_id, seed, i) for i in range(n_cpu)])
     # OR
     # envs = gym.vector.AsyncVectorEnv([make_env(env_id, seed + i) for i in range(n_cpu)])
 
@@ -80,20 +80,21 @@ def example_async(env_id="alr_envs:HoleReacher-v0", n_cpu=4, seed=int('533D', 16
             rewards[done] = 0
 
     # do not return values above threshold
-    return *map(lambda v: np.stack(v)[:n_samples], buffer.values()),
+    return (*map(lambda v: np.stack(v)[:n_samples], buffer.values()),)
 
 
 if __name__ == '__main__':
-    render = False
+    render = True
+
     # Basic gym task
     example_general("Pendulum-v0", seed=10, iterations=200, render=render)
-    #
+
     # # Basis task from framework
     example_general("alr_envs:HoleReacher-v0", seed=10, iterations=200, render=render)
-    #
+
     # # OpenAI Mujoco task
     example_general("HalfCheetah-v2", seed=10, render=render)
-    #
+
     # # Mujoco task from framework
     example_general("alr_envs:ALRReacher-v0", seed=10, iterations=200, render=render)
 

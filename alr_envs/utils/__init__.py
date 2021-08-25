@@ -4,8 +4,10 @@ from typing import Union
 import gym
 from gym.envs.registration import register
 
+from alr_envs.utils.make_env_helpers import make
 
-def make(
+
+def make_dmc(
         id: str,
         seed: int = 1,
         visualize_reward: bool = True,
@@ -45,7 +47,7 @@ def make(
             task_kwargs['time_limit'] = time_limit
         register(
             id=env_id,
-            entry_point='alr_envs.utils.dmc_wrapper:DMCWrapper',
+            entry_point='alr_envs.dmc.dmc_wrapper:DMCWrapper',
             kwargs=dict(
                 domain_name=domain_name,
                 task_name=task_name,
