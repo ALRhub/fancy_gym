@@ -5,8 +5,40 @@ from . import classic_control, mujoco, robotics
 
 ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "DetPMP": []}
 
+# Short Continuous Mountain Car
+register(
+    id="MountainCarContinuous-v1",
+    entry_point="gym.envs.classic_control:Continuous_MountainCarEnv",
+    max_episode_steps=100,
+    reward_threshold=90.0,
+)
+
 # Open AI
 # Classic Control
+register(
+    id='ContinuousMountainCarDetPMP-v1',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+    kwargs={
+        "name": "alr_envs:MountainCarContinuous-v1",
+        "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 1,
+            "num_basis": 4,
+            "duration": 2,
+            "post_traj_time": 0,
+            "width": 0.02,
+            "zero_start": True,
+            "policy_type": "motor",
+            "policy_kwargs": {
+                "p_gains": 1.,
+                "d_gains": 1.
+            }
+        }
+    }
+)
+ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("ContinuousMountainCarDetPMP-v1")
+
 register(
     id='ContinuousMountainCarDetPMP-v0',
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
@@ -16,7 +48,7 @@ register(
         "mp_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
-            "duration": 2,
+            "duration": 19.98,
             "post_traj_time": 0,
             "width": 0.02,
             "zero_start": True,
