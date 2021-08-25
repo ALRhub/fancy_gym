@@ -1,5 +1,4 @@
-import logging
-from typing import Iterable, List, Type, Union
+from typing import Iterable, Type, Union
 
 import gym
 import numpy as np

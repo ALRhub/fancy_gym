@@ -99,6 +99,12 @@ class TestEnvironments(unittest.TestCase):
                     self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 
+    def test_environment_functionality_meta(self):
+        """Tests that environments runs without errors using random actions."""
+        for id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+            with self.subTest(msg=id):
+                self._run_env(id)
+
 
 if __name__ == '__main__':
     unittest.main()
