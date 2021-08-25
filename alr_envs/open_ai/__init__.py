@@ -19,7 +19,6 @@ register(
     id='ContinuousMountainCarDetPMP-v1',
     entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
     kwargs={
-    kwargs={
         "name": "alr_envs:MountainCarContinuous-v1",
         "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
         "mp_kwargs": {
