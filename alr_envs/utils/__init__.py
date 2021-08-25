@@ -47,7 +47,7 @@ def make_dmc(
             task_kwargs['time_limit'] = time_limit
         register(
             id=env_id,
-            entry_point='alr_envs.utils.dmc_wrapper:DMCWrapper',
+            entry_point='alr_envs.dmc.dmc_wrapper:DMCWrapper',
             kwargs=dict(
                 domain_name=domain_name,
                 task_name=task_name,

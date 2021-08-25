@@ -1,1 +1,1 @@
-from alr_envs.dmc.manipulation import reach
+from . import reach_site

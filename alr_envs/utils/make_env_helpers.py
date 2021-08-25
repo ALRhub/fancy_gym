@@ -76,7 +76,7 @@ def make(env_id: str, seed, **kwargs):
 
         else:
             # DMC
-            from alr_envs.utils import make_dmc
+            from alr_envs import make_dmc
             env = make_dmc(env_id, seed=seed, **kwargs)
 
             assert env.base_step_limit == env.spec.max_episode_steps, \
@@ -123,11 +123,11 @@ def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs
     Returns: DMP wrapped gym env
 
     """
-    verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
+    _verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 
-    verify_dof(_env, mp_kwargs.get("num_dof"))
+    _verify_dof(_env, mp_kwargs.get("num_dof"))
 
     return DmpWrapper(_env, **mp_kwargs)
 
@@ -143,11 +143,11 @@ def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwa
     Returns: DMP wrapped gym env
 
     """
-    verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
+    _verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
 
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 
-    verify_dof(_env, mp_kwargs.get("num_dof"))
+    _verify_dof(_env, mp_kwargs.get("num_dof"))
 
     return DetPMPWrapper(_env, **mp_kwargs)
 
@@ -191,14 +191,7 @@ def make_detpmp_env_helper(**kwargs):
                            mp_kwargs=kwargs.pop("mp_kwargs"), **kwargs)
 
 
-def make_contextual_env(env_id, context, seed, rank):
-    env = make(env_id, seed + rank, context=context)
-    # env = gym.make(env_id, context=context)
-    # env.seed(seed + rank)
-    return lambda: env
-
-
-def verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):
+def _verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):
     """
     When using DMC check if a manually specified time limit matches the trajectory duration the MP receives.
     Mostly, the time_limit for DMC is not specified and the default values from DMC are taken.
@@ -218,7 +211,7 @@ def verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[N
             f"the duration of {mp_time_limit}s for the MP."
 
 
-def verify_dof(base_env: gym.Env, dof: int):
+def _verify_dof(base_env: gym.Env, dof: int):
     action_shape = np.prod(base_env.action_space.shape)
     assert dof == action_shape, \
         f"The specified degrees of freedom ('num_dof') {dof} do not match " \

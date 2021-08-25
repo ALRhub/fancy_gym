@@ -3,8 +3,7 @@ from setuptools import setup
 setup(
     name='alr_envs',
     version='0.0.1',
-    packages=['alr_envs', 'alr_envs.classic_control', 'alr_envs.open_ai', 'alr_envs.mujoco', 'alr_envs.dmc',
-              'alr_envs.utils'],
+    packages=['alr_envs', 'alr_envs.alr', 'alr_envs.open_ai', 'alr_envs.dmc', 'alr_envs.meta', 'alr_envs.utils'],
     install_requires=[
         'gym',
         'PyQt5',
