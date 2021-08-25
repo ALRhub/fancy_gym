@@ -10,7 +10,7 @@ ALL_ENVS = [env.split("-goal-observable")[0] for env, _ in ALL_V2_ENVIRONMENTS_G
 SEED = 1
 
 
-class TestEnvironments(unittest.TestCase):
+class TestStepMetaWorlEnvironments(unittest.TestCase):
 
     def _run_env(self, env_id, iterations=None, seed=SEED, render=False):
         """

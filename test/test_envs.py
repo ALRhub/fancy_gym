@@ -10,7 +10,7 @@ ALL_SPECS = list(spec for spec in gym.envs.registry.all() if "alr_envs" in spec.
 SEED = 1
 
 
-class TestEnvironments(unittest.TestCase):
+class TestMPEnvironments(unittest.TestCase):
 
     def _run_env(self, env_id, iterations=None, seed=SEED, render=False):
         """
@@ -68,6 +68,18 @@ class TestEnvironments(unittest.TestCase):
         del env
         return np.array(observations), np.array(rewards), np.array(dones)
 
+    def _run_env_determinism(self, ids):
+        seed = 0
+        for env_id in ids:
+            with self.subTest(msg=env_id):
+                traj1 = self._run_env(env_id, seed=seed)
+                traj2 = self._run_env(env_id, seed=seed)
+                for i, time_step in enumerate(zip(*traj1, *traj2)):
+                    obs1, rwd1, done1, obs2, rwd2, done2 = time_step
+                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
+                    self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
+                    self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
+
     def _verify_observations(self, obs, observation_space, obs_type="reset()"):
         self.assertTrue(observation_space.contains(obs),
                         f"Observation {obs} received from {obs_type} "
@@ -79,31 +91,81 @@ class TestEnvironments(unittest.TestCase):
     def _verify_done(self, done):
         self.assertIsInstance(done, bool, f"Returned {done} as done flag, expected bool.")
 
-    def test_environment_functionality(self):
-        """Tests that environments runs without errors using random actions."""
-        for spec in ALL_SPECS:
-            with self.subTest(msg=spec.id):
-                self._run_env(spec.id)
+    def test_alr_environment_functionality(self):
+        """Tests that environments runs without errors using random actions for ALR MP envs."""
+        with self.subTest(msg="DMP"):
+            for env_id in alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS['DMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
 
-    def test_environment_determinism(self):
-        """Tests that identical seeds produce identical trajectories."""
-        seed = 0
-        # Iterate over two trajectories, which should have the same state and action sequence
-        for spec in ALL_SPECS:
-            with self.subTest(msg=spec.id):
-                traj1 = self._run_env(spec.id, seed=seed)
-                traj2 = self._run_env(spec.id, seed=seed)
-                for i, time_step in enumerate(zip(*traj1, *traj2)):
-                    obs1, rwd1, done1, obs2, rwd2, done2 = time_step
-                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
-                    self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
-                    self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
+        with self.subTest(msg="DetPMP"):
+            for env_id in alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
 
-    def test_environment_functionality_meta(self):
-        """Tests that environments runs without errors using random actions."""
-        for id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
-            with self.subTest(msg=id):
-                self._run_env(id)
+    def test_openai_environment_functionality(self):
+        """Tests that environments runs without errors using random actions for OpenAI gym MP envs."""
+        with self.subTest(msg="DMP"):
+            for env_id in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS['DMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+        with self.subTest(msg="DetPMP"):
+            for env_id in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+    def test_dmc_environment_functionality(self):
+        """Tests that environments runs without errors using random actions for DMC MP envs."""
+        with self.subTest(msg="DMP"):
+            for env_id in alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS['DMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+        with self.subTest(msg="DetPMP"):
+            for env_id in alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+    def test_metaworld_environment_functionality(self):
+        """Tests that environments runs without errors using random actions for Metaworld MP envs."""
+        with self.subTest(msg="DMP"):
+            for env_id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['DMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+        with self.subTest(msg="DetPMP"):
+            for env_id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+                with self.subTest(msg=env_id):
+                    self._run_env(env_id)
+
+    def test_alr_environment_determinism(self):
+        """Tests that identical seeds produce identical trajectories for ALR MP Envs."""
+        with self.subTest(msg="DMP"):
+            self._run_env_determinism(alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
+        with self.subTest(msg="DetPMP"):
+            self._run_env_determinism(alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+
+    def test_openai_environment_determinism(self):
+        """Tests that identical seeds produce identical trajectories for OpenAI gym MP Envs."""
+        with self.subTest(msg="DMP"):
+            self._run_env_determinism(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
+        with self.subTest(msg="DetPMP"):
+            self._run_env_determinism(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+
+    def test_dmc_environment_determinism(self):
+        """Tests that identical seeds produce identical trajectories for DMC MP Envs."""
+        with self.subTest(msg="DMP"):
+            self._run_env_determinism(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
+        with self.subTest(msg="DetPMP"):
+            self._run_env_determinism(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+
+    def test_metaworld_environment_determinism(self):
+        """Tests that identical seeds produce identical trajectories for Metaworld MP Envs."""
+        with self.subTest(msg="DMP"):
+            self._run_env_determinism(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
+        with self.subTest(msg="DetPMP"):
+            self._run_env_determinism(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
 
 
 if __name__ == '__main__':

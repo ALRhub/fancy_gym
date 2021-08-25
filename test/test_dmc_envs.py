@@ -12,7 +12,7 @@ MANIPULATION_SPECS = [f'manipulation-{task}' for task in manipulation.ALL if tas
 SEED = 1
 
 
-class TestEnvironments(unittest.TestCase):
+class TestStepDMCEnvironments(unittest.TestCase):
 
     def _run_env(self, env_id, iterations=None, seed=SEED, render=False):
         """
