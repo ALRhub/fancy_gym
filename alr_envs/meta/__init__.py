@@ -7,7 +7,8 @@ ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "DetPMP": []}
 
 # MetaWorld
 
-_goal_change_envs = ["assembly-v2", "pick-out-of-hole-v2", "plate-slide-v2", "plate-slide-back-v2"]
+_goal_change_envs = ["assembly-v2", "pick-out-of-hole-v2", "plate-slide-v2", "plate-slide-back-v2",
+                     "plate-slide-side-v2", "plate-slide-back-side-v2"]
 for _task in _goal_change_envs:
     task_id_split = _task.split("-")
     name = "".join([s.capitalize() for s in task_id_split[:-1]])
