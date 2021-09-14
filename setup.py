@@ -8,10 +8,11 @@ setup(
         'gym',
         'PyQt5',
         'matplotlib',
-        'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
+        # 'mp_env_api @ git+https://github.com/ALRhub/motion_primitive_env_api.git@dmc_integration',
+        'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git@dmc_integration',
         'mujoco-py<2.1,>=2.0',
-        'dm_control'
-        'metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld'
+        'dm_control',
+        'metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld',
     ],
 
     url='https://github.com/ALRhub/alr_envs/',
