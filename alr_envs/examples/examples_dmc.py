@@ -1,5 +1,4 @@
-from alr_envs.dmc.ball_in_cup.ball_in_the_cup_mp_wrapper import DMCBallInCupMPWrapper
-from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
+import alr_envs
 
 
 def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
@@ -17,13 +16,12 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = make_env(env_id, seed)
+    env = alr_envs.make(env_id, seed)
     rewards = 0
     obs = env.reset()
     print("observation shape:", env.observation_space.shape)
     print("action shape:", env.action_space.shape)
 
-    # number of samples(multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
@@ -38,6 +36,7 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
             obs = env.reset()
 
     env.close()
+    del env
 
 
 def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
@@ -62,21 +61,30 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [DMCBallInCupMPWrapper]
+    wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
     mp_kwargs = {
-        "num_dof": 2,  # env.start_pos
-        "num_basis": 5,
-        "duration": 20,
-        "learn_goal": True,
+        "num_dof": 2,  # degrees of fredom a.k.a. the old action space dimensionality
+        "num_basis": 5,  # number of basis functions, the new action space has size num_dof x num_basis
+        "duration": 20,  # length of trajectory in s, number of steps = duration / dt
+        "learn_goal": True,  # learn the goal position (recommended)
         "alpha_phase": 2,
         "bandwidth_factor": 2,
-        "policy_type": "velocity",
-        "weights_scale": 50,
-        "goal_scale": 0.1
+        "policy_type": "motor",  # controller type, 'velocity', 'position', and 'motor' (torque control)
+        "weights_scale": 1,  # scaling of MP weights
+        "goal_scale": 1,  # scaling of learned goal position
+        "policy_kwargs": {  # only required for torque control/PD-Controller
+            "p_gains": 0.2,
+            "d_gains": 0.05
+        }
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
-    # OR for a deterministic ProMP:
-    # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+    kwargs = {
+        "time_limit": 20,  # same as duration value but as max horizon for underlying DMC environment
+        "episode_length": 1000,  # corresponding number of episode steps
+        # "frame_skip": 1
+    }
+    env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
+    # OR for a deterministic ProMP (other mp_kwargs are required, see metaworld_examples):
+    # env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
@@ -101,6 +109,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
             obs = env.reset()
 
     env.close()
+    del env
 
 
 if __name__ == '__main__':
@@ -109,16 +118,18 @@ if __name__ == '__main__':
 
     # For rendering DMC
     # export MUJOCO_GL="osmesa"
+    render = False
 
-    # Standard DMC Suite tasks
-    example_dmc("fish-swim", seed=10, iterations=1000, render=True)
+    # # Standard DMC Suite tasks
+    example_dmc("fish-swim", seed=10, iterations=1000, render=render)
 
     # Manipulation tasks
     # Disclaimer: The vision versions are currently not integrated and yield an error
-    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=True)
+    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
 
     # Gym + DMC hybrid task provided in the MP framework
-    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=True)
+    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=render)
 
     # Custom DMC task
-    example_custom_dmc_and_mp(seed=10, iterations=1, render=True)
+    # Different seed, because the episode is longer for this example and the name+seed combo is already registered above
+    example_custom_dmc_and_mp(seed=11, iterations=1, render=render)

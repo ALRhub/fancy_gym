@@ -1,12 +1,13 @@
-import collections
 import re
 from typing import Union
 
 import gym
 from gym.envs.registration import register
 
+from alr_envs.utils.make_env_helpers import make
 
-def make(
+
+def make_dmc(
         id: str,
         seed: int = 1,
         visualize_reward: bool = True,
@@ -38,7 +39,6 @@ def make(
         episode_length = 250 if domain_name == "manipulation" else 1000
 
     max_episode_steps = (episode_length + frame_skip - 1) // frame_skip
-
     if env_id not in gym.envs.registry.env_specs:
         task_kwargs = {'random': seed}
         # if seed is not None:
@@ -47,7 +47,7 @@ def make(
             task_kwargs['time_limit'] = time_limit
         register(
             id=env_id,
-            entry_point='alr_envs.utils.dmc2gym_wrapper:DMCWrapper',
+            entry_point='alr_envs.dmc.dmc_wrapper:DMCWrapper',
             kwargs=dict(
                 domain_name=domain_name,
                 task_name=task_name,

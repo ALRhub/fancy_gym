@@ -1,5 +1,4 @@
-from alr_envs import HoleReacherMPWrapper
-from alr_envs.utils.make_env_helpers import make_dmp_env, make_env
+import alr_envs
 
 
 def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, render=True):
@@ -16,7 +15,7 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, rend
     """
     # While in this case gym.make() is possible to use as well, we recommend our custom make env function.
     # First, it already takes care of seeding and second enables the use of DMC tasks within the gym interface.
-    env = make_env(env_name, seed)
+    env = alr_envs.make(env_name, seed)
 
     rewards = 0
     # env.render(mode=None)
@@ -71,7 +70,7 @@ def example_custom_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=
         "weights_scale": 50,
         "goal_scale": 0.1
     }
-    env = make_env(env_name, seed, mp_kwargs=mp_kwargs)
+    env = alr_envs.make(env_name, seed, mp_kwargs=mp_kwargs)
 
     # This time rendering every trajectory
     if render:
@@ -113,7 +112,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [HoleReacherMPWrapper]
+    wrappers = [alr_envs.classic_control.hole_reacher.MPWrapper]
     mp_kwargs = {
         "num_dof": 5,
         "num_basis": 5,
@@ -125,7 +124,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
         "weights_scale": 50,
         "goal_scale": 0.1
     }
-    env = make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
+    env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
     # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
 
@@ -148,14 +147,15 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
+    render = False
     # DMP
-    example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=True)
+    example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
 
     # DetProMP
-    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=True)
+    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
 
     # Altered basis functions
-    example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=True)
+    example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
 
     # Custom MP
-    example_fully_custom_mp(seed=10, iterations=1, render=True)
+    example_fully_custom_mp(seed=10, iterations=1, render=render)
