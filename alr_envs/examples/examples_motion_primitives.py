@@ -147,9 +147,12 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = False
+    render = True
     # DMP
     example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
+
+    # ProMP
+    example_mp("alr_envs:HoleReacherProMP-v1", seed=10, iterations=1, render=render)
 
     # DetProMP
     example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)

@@ -3,7 +3,7 @@ from gym.wrappers import FlattenObservation
 
 from . import classic_control, mujoco, robotics
 
-ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "DetPMP": []}
+ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "DetPMP": []}
 
 # Short Continuous Mountain Car
 register(
