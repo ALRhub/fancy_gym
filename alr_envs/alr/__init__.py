@@ -9,7 +9,7 @@ from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from .mujoco.reacher.alr_reacher import ALRReacherEnv
 from .mujoco.reacher.balancing import BalancingEnv
 
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "DetPMP": []}
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "DetPMP": []}
 
 # Classic Control
 ## Simple Reacher
@@ -307,6 +307,25 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
+
+    _env_id = f'HoleReacherProMP-{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:HoleReacher-{_v}",
+            "wrappers": [classic_control.hole_reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 5,
+                "duration": 2,
+                "policy_type": "velocity",
+                "weights_scale": 0.2,
+                "zero_start": True
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
     _env_id = f'HoleReacherDetPMP-{_v}'
     register(
