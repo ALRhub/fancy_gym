@@ -1,6 +1,6 @@
 from . import manipulation, suite
 
-ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "DetPMP": []}
+ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "DetPMP": []}
 
 from gym.envs.registration import register
 
