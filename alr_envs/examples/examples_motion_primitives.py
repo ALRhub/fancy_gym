@@ -147,18 +147,18 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = True
+    render = False
     # DMP
-    example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
+    # example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=10, render=render)
 
     # ProMP
-    example_mp("alr_envs:HoleReacherProMP-v1", seed=10, iterations=1, render=render)
+    # example_mp("alr_envs:HoleReacherProMP-v1", seed=10, iterations=100, render=render)
 
     # DetProMP
-    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
+    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=100, render=render)
 
     # Altered basis functions
-    example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
+    # example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
 
     # Custom MP
-    example_fully_custom_mp(seed=10, iterations=1, render=render)
+    # example_fully_custom_mp(seed=10, iterations=1, render=render)

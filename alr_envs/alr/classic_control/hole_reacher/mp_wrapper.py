@@ -18,6 +18,14 @@ class MPWrapper(MPEnvWrapper):
             [False]  # env steps
         ])
 
+    # @property
+    # def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
+    #     return self._joint_angles.copy()
+    #
+    # @property
+    # def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
+    #     return self._angle_velocity.copy()
+
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.current_pos

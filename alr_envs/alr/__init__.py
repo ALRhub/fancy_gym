@@ -84,7 +84,7 @@ register(
 
 register(
     id='HoleReacher-v1',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    entry_point='alr_envs.alr.classic_control:HoleReacherEnvOld',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
