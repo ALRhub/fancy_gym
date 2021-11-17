@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
-from alr_envs.classic_control.utils import check_self_collision
+from alr_envs.alr.classic_control.utils import intersect
 
 
 class BaseReacherEnv(gym.Env):
@@ -16,7 +16,7 @@ class BaseReacherEnv(gym.Env):
     """
 
     def __init__(self, n_links: int, random_start: bool = True,
-                 allow_self_collision: bool = False, collision_penalty: float = 1000):
+                 allow_self_collision: bool = False):
         super().__init__()
         self.link_lengths = np.ones(n_links)
         self.n_links = n_links
@@ -24,19 +24,21 @@ class BaseReacherEnv(gym.Env):
 
         self.random_start = random_start
 
+        # state
         self._joints = None
         self._joint_angles = None
         self._angle_velocity = None
-        self._is_collided = False
-        self.allow_self_collision = allow_self_collision
-        self.collision_penalty = collision_penalty
         self._start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
         self._start_vel = np.zeros(self.n_links)
 
-        self.max_torque = 1
+        # joint limits
+        self.j_min = -np.pi * np.ones(n_links)
+        self.j_max = np.pi * np.ones(n_links)
+
+        self.max_vel = 1
         self.steps_before_reward = 199
 
-        action_bound = np.ones((self.n_links,)) * self.max_torque
+        action_bound = np.ones((self.n_links,)) * self.max_vel
         state_bound = np.hstack([
             [np.pi] * self.n_links,  # cos
             [np.pi] * self.n_links,  # sin
@@ -46,6 +48,8 @@ class BaseReacherEnv(gym.Env):
         ])
         self.action_space = spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
+
+        self.reward_function = None  # Needs to be set in sub class
 
         # containers for plotting
         self.metadata = {'render.modes': ["human"]}
@@ -84,27 +88,21 @@ class BaseReacherEnv(gym.Env):
 
     def step(self, action: np.ndarray):
         """
-        A single step with action in torque space
+        A single step with action in angular velocity space
         """
 
-        # action = self._add_action_noise(action)
-        ac = np.clip(action, -self.max_torque, self.max_torque)
-
-        self._angle_velocity = self._angle_velocity + self.dt * ac
+        acc = (action - self._angle_velocity) / self.dt
+        self._angle_velocity = action
         self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
         self._update_joints()
 
-        if not self.allow_self_collision:
-            self_collision = check_self_collision(line_points_in_taskspace)
-            if np.any(np.abs(self._joint_angles) > np.pi) and not self.allow_self_collision:
-                self_collision = True
-
         self._is_collided = self._check_collisions()
 
-        reward, info = self._get_reward(action)
+        # reward, info = self._get_reward(action)
+        reward, info = self.reward_function.get_reward(self, acc)
 
         self._steps += 1
-        done = False
+        done = self._terminate(info)
 
         return self._get_obs().copy(), reward, done, info
 
@@ -118,6 +116,19 @@ class BaseReacherEnv(gym.Env):
         x = self.link_lengths * np.vstack([np.cos(angles), np.sin(angles)])
         self._joints[1:] = self._joints[0] + np.cumsum(x.T, axis=0)
 
+    def _check_self_collision(self):
+        """Checks whether line segments intersect"""
+
+        if np.any(self._joint_angles > self.j_max) or np.any(self._joint_angles < self.j_min):
+            return True
+
+        link_lines = np.stack((self._joints[:-1, :], self._joints[1:, :]), axis=1)
+        for i, line1 in enumerate(link_lines):
+            for line2 in link_lines[i + 2:, :]:
+                if intersect(line1[0], line1[-1], line2[0], line2[-1]):
+                    return True
+        return False
+
     @abstractmethod
     def _get_reward(self, action: np.ndarray) -> (float, dict):
         pass
@@ -129,6 +140,10 @@ class BaseReacherEnv(gym.Env):
     @abstractmethod
     def _check_collisions(self) -> bool:
         pass
+
+    @abstractmethod
+    def _terminate(self, info) -> bool:
+        return False
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
