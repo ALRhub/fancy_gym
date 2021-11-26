@@ -84,7 +84,7 @@ register(
 
 register(
     id='HoleReacher-v1',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnvOld',
+    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -110,7 +110,7 @@ register(
         "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": 2,
-        "collision_penalty": 100,
+        "collision_penalty": 1,
     }
 )
 
@@ -247,6 +247,25 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
+    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:{_v}",
+            "wrappers": [classic_control.simple_reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 2 if "long" not in _v.lower() else 5,
+                "num_basis": 5,
+                "duration": 2,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "zero_start": True
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
     _env_id = f'{_name[0]}DetPMP-{_name[1]}'
     register(
         id=_env_id,
@@ -288,6 +307,24 @@ register(
     }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
+
+register(
+    id="ViaPointReacherProMP-v0",
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": f"alr_envs:ViaPointReacher-v0",
+        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 5,
+            "num_basis": 5,
+            "duration": 2,
+            "policy_type": "motor",
+            "weights_scale": 1,
+            "zero_start": True
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
 
 register(
     id='ViaPointReacherDetPMP-v0',

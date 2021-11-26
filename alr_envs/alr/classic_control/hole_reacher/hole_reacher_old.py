@@ -3,17 +3,23 @@ from typing import Union
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
+from gym.utils import seeding
 from matplotlib import patches
 
 from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from alr_envs.alr.classic_control.utils import check_self_collision
 
 
-class HoleReacherEnv(BaseReacherDirectEnv):
+class HoleReacherEnvOld(gym.Env):
+
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
-                 allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
+                 allow_wall_collision: bool = False, collision_penalty: float = 1000):
 
-        super().__init__(n_links, random_start, allow_self_collision)
+        self.n_links = n_links
+        self.link_lengths = np.ones((n_links, 1))
+
+        self.random_start = random_start
 
         # provided initial parameters
         self.initial_x = hole_x  # x-position of center of hole
@@ -26,7 +32,21 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         self._tmp_depth = None
         self._goal = None  # x-y coordinates for reaching the center at the bottom of the hole
 
-        # action_bound = np.pi * np.ones((self.n_links,))
+        # collision
+        self.allow_self_collision = allow_self_collision
+        self.allow_wall_collision = allow_wall_collision
+        self.collision_penalty = collision_penalty
+
+        # state
+        self._joints = None
+        self._joint_angles = None
+        self._angle_velocity = None
+        self._start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
+        self._start_vel = np.zeros(self.n_links)
+
+        self._dt = 0.01
+
+        action_bound = np.pi * np.ones((self.n_links,))
         state_bound = np.hstack([
             [np.pi] * self.n_links,  # cos
             [np.pi] * self.n_links,  # sin
@@ -36,27 +56,71 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps TODO: Maybe
         ])
-        # self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
+        self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
-        if rew_fct == "simple":
-            from alr_envs.alr.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
-            self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
-        else:
-            raise ValueError("Unknown reward function {}".format(rew_fct))
+        # containers for plotting
+        self.metadata = {'render.modes': ["human", "partial"]}
+        self.fig = None
+
+        self._steps = 0
+        self.seed()
+
+    @property
+    def dt(self) -> Union[float, int]:
+        return self._dt
+
+    # @property
+    # def start_pos(self):
+    #     return self._start_pos
+
+    @property
+    def current_pos(self):
+        return self._joint_angles.copy()
+
+    @property
+    def current_vel(self):
+        return self._angle_velocity.copy()
+
+    def step(self, action: np.ndarray):
+        """
+        A single step with an action in joint velocity space
+        """
+
+        acc = (action - self._angle_velocity) / self.dt
+        self._angle_velocity = action
+        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity  # + 0.001 * np.random.randn(5)
+        self._update_joints()
+
+        reward, info = self._get_reward(acc)
+
+        info.update({"is_collided": self._is_collided})
+        self.end_effector_traj.append(np.copy(self.end_effector))
+
+        self._steps += 1
+        done = self._is_collided
+
+        return self._get_obs().copy(), reward, done, info
 
     def reset(self):
+        if self.random_start:
+            # Maybe change more than first seed
+            first_joint = self.np_random.uniform(np.pi / 4, 3 * np.pi / 4)
+            self._joint_angles = np.hstack([[first_joint], np.zeros(self.n_links - 1)])
+            self._start_pos = self._joint_angles.copy()
+        else:
+            self._joint_angles = self._start_pos
+
         self._generate_hole()
         self._set_patches()
-        self.reward_function.reset()
 
-        return super().reset()
+        self._angle_velocity = self._start_vel
+        self._joints = np.zeros((self.n_links + 1, 2))
+        self._update_joints()
+        self._steps = 0
+        self.end_effector_traj = []
 
-    def _get_reward(self, action: np.ndarray) -> (float, dict):
-        return self.reward_function.get_reward(self)
-
-    def _terminate(self, info):
-        return info["is_collided"]
+        return self._get_obs().copy()
 
     def _generate_hole(self):
         if self.initial_width is None:
@@ -81,17 +145,45 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         self._tmp_depth = depth
         self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
 
-        self._line_ground_left = np.array([-self.n_links, 0, x - width / 2, 0])
-        self._line_ground_right = np.array([x + width / 2, 0, self.n_links, 0])
-        self._line_ground_hole = np.array([x - width / 2, -depth, x + width / 2, -depth])
-        self._line_hole_left = np.array([x - width / 2, -depth, x - width / 2, 0])
-        self._line_hole_right = np.array([x + width / 2, -depth, x + width / 2, 0])
+    def _update_joints(self):
+        """
+        update _joints to get new end effector position. The other links are only required for rendering.
+        Returns:
 
-        self.ground_lines = np.stack((self._line_ground_left,
-                                      self._line_ground_right,
-                                      self._line_ground_hole,
-                                      self._line_hole_left,
-                                      self._line_hole_right))
+        """
+        line_points_in_taskspace = self._get_forward_kinematics(num_points_per_link=20)
+
+        self._joints[1:, 0] = self._joints[0, 0] + line_points_in_taskspace[:, -1, 0]
+        self._joints[1:, 1] = self._joints[0, 1] + line_points_in_taskspace[:, -1, 1]
+
+        self_collision = False
+        wall_collision = False
+
+        if not self.allow_self_collision:
+            self_collision = check_self_collision(line_points_in_taskspace)
+            if np.any(np.abs(self._joint_angles) > np.pi) and not self.allow_self_collision:
+                self_collision = True
+
+        if not self.allow_wall_collision:
+            wall_collision = self._check_wall_collision(line_points_in_taskspace)
+
+        self._is_collided = self_collision or wall_collision
+
+    def _get_reward(self, acc: np.ndarray):
+        reward = 0
+        # success = False
+
+        if self._steps == 199 or self._is_collided:
+            # return reward only in last time step
+            # Episode also terminates when colliding, hence return reward
+            dist = np.linalg.norm(self.end_effector - self._goal)
+            # success = dist < 0.005 and not self._is_collided
+            reward = - dist ** 2 - self.collision_penalty * self._is_collided
+
+        reward -= 5e-8 * np.sum(acc ** 2)
+        # info = {"is_success": success}
+
+        return reward, {}  # info
 
     def _get_obs(self):
         theta = self._joint_angles
@@ -105,15 +197,15 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self._steps
         ])
 
-    def _get_line_points(self, num_points_per_link=1):
+    def _get_forward_kinematics(self, num_points_per_link=1):
         theta = self._joint_angles[:, None]
 
         intermediate_points = np.linspace(0, 1, num_points_per_link) if num_points_per_link > 1 else 1
         accumulated_theta = np.cumsum(theta, axis=0)
         end_effector = np.zeros(shape=(self.n_links, num_points_per_link, 2))
 
-        x = np.cos(accumulated_theta) * self.link_lengths[:, None] * intermediate_points
-        y = np.sin(accumulated_theta) * self.link_lengths[:, None] * intermediate_points
+        x = np.cos(accumulated_theta) * self.link_lengths * intermediate_points
+        y = np.sin(accumulated_theta) * self.link_lengths * intermediate_points
 
         end_effector[0, :, 0] = x[0, :]
         end_effector[0, :, 1] = y[0, :]
@@ -124,9 +216,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         return np.squeeze(end_effector + self._joints[0, :])
 
-    def check_wall_collision(self):
-        line_points = self._get_line_points(num_points_per_link=100)
-
+    def _check_wall_collision(self, line_points):
         # all points that are before the hole in x
         r, c = np.where(line_points[:, :, 0] < (self._tmp_x - self._tmp_width / 2))
 
@@ -192,7 +282,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
     def _set_patches(self):
         if self.fig is not None:
-            # self.fig.gca().patches = []
+            self.fig.gca().patches = []
             left_block = patches.Rectangle((-self.n_links, -self._tmp_depth),
                                            self.n_links + self._tmp_x - self._tmp_width / 2,
                                            self._tmp_depth,
@@ -211,15 +301,15 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.gca().add_patch(right_block)
             self.fig.gca().add_patch(hole_floor)
 
+    def seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
 
-if __name__ == "__main__":
-    import time
-    env = HoleReacherEnv(5)
-    env.reset()
+    @property
+    def end_effector(self):
+        return self._joints[self.n_links].T
 
-    for i in range(10000):
-        ac = env.action_space.sample()
-        obs, rew, done, info = env.step(ac)
-        # env.render()
-        if done:
-            env.reset()
+    def close(self):
+        super().close()
+        if self.fig is not None:
+            plt.close(self.fig)
