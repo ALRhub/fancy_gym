@@ -11,10 +11,11 @@ class HolereacherReward:
         self.collision_penalty = collision_penalty
         self._is_collided = False
 
-        self.reward_factors = np.array((-1, -1e-4, -1e-6, -collision_penalty, -1))
+        self.reward_factors = np.array((-1, -1e-4, -1e-6, -collision_penalty, 0))
 
     def reset(self):
         self._is_collided = False
+        self.collision_dist = 0
 
     def get_reward(self, env):
         dist_cost = 0
@@ -25,22 +26,25 @@ class HolereacherReward:
         self_collision = False
         wall_collision = False
 
-        if not self.allow_self_collision:
-            self_collision = env._check_self_collision()
+        if not self._is_collided:
+            if not self.allow_self_collision:
+                self_collision = env._check_self_collision()
 
-        if not self.allow_wall_collision:
-            wall_collision = env.check_wall_collision()
+            if not self.allow_wall_collision:
+                wall_collision = env.check_wall_collision()
 
-        self._is_collided = self_collision or wall_collision
+            self._is_collided = self_collision or wall_collision
 
-        if env._steps == 199 or self._is_collided:
+            self.collision_dist = np.linalg.norm(env.end_effector - env._goal)
+
+        if env._steps == 199: #  or self._is_collided:
             # return reward only in last time step
             # Episode also terminates when colliding, hence return reward
             dist = np.linalg.norm(env.end_effector - env._goal)
 
             success = dist < 0.005 and not self._is_collided
-            dist_cost = int(not self._is_collided) * dist ** 2
-            collision_cost = self._is_collided * dist ** 2
+            dist_cost = dist ** 2
+            collision_cost = self._is_collided * self.collision_dist ** 2
             time_cost = 199 - env._steps
 
         info = {"is_success": success,

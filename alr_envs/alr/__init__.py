@@ -335,7 +335,7 @@ for _v in _versions:
                 "num_basis": 5,
                 "duration": 2,
                 "learn_goal": True,
-                "alpha_phase": 2,
+                "alpha_phase": 2.5,
                 "bandwidth_factor": 2,
                 "policy_type": "velocity",
                 "weights_scale": 50,
@@ -357,7 +357,7 @@ for _v in _versions:
                 "num_basis": 5,
                 "duration": 2,
                 "policy_type": "velocity",
-                "weights_scale": 0.2,
+                "weights_scale": 0.1,
                 "zero_start": True
             }
         }
