@@ -22,6 +22,8 @@ class BaseReacherEnv(gym.Env, ABC):
 
         self.random_start = random_start
 
+        self.allow_self_collision = allow_self_collision
+
         # state
         self._joints = None
         self._joint_angles = None
@@ -102,6 +104,9 @@ class BaseReacherEnv(gym.Env, ABC):
 
     def _check_self_collision(self):
         """Checks whether line segments intersect"""
+
+        if self.allow_self_collision:
+            return False
 
         if np.any(self._joint_angles > self.j_max) or np.any(self._joint_angles < self.j_min):
             return True

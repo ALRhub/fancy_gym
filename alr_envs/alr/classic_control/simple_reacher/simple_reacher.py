@@ -88,6 +88,9 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
 
         self._goal = goal
 
+    def _check_collisions(self) -> bool:
+        return self._check_self_collision()
+
     def render(self, mode='human'):  # pragma: no cover
         if self.fig is None:
             # Create base figure once on the beginning. Afterwards only update

@@ -25,7 +25,6 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
         self._goal = np.array((n_links, 0))
 
         # collision
-        self.allow_self_collision = allow_self_collision
         self.collision_penalty = collision_penalty
 
         state_bound = np.hstack([
@@ -96,7 +95,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
         reward -= 5e-8 * np.sum(acc ** 2)
         info = {"is_success": success,
                 "is_collided": self._is_collided,
-                "end_effector": np.copy(env.end_effector)}
+                "end_effector": np.copy(self.end_effector)}
 
         return reward, info
 
@@ -113,6 +112,9 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
             self.end_effector - self._goal,
             self._steps
         ])
+
+    def _check_collisions(self) -> bool:
+        return self._check_self_collision()
 
     def render(self, mode='human'):
         goal_pos = self._goal.T
