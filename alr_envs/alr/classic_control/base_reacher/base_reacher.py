@@ -1,5 +1,5 @@
 from typing import Iterable, Union
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +8,7 @@ from gym.utils import seeding
 from alr_envs.alr.classic_control.utils import intersect
 
 
-class BaseReacherEnv(gym.Env):
+class BaseReacherEnv(gym.Env, ABC):
     """
     Base class for all reaching environments.
     """
