@@ -81,13 +81,13 @@ class TestStepMetaWorlEnvironments(unittest.TestCase):
     def _verify_done(self, done):
         self.assertIsInstance(done, bool, f"Returned {done} as done flag, expected bool.")
 
-    def test_dmc_functionality(self):
+    def test_metaworld_functionality(self):
         """Tests that environments runs without errors using random actions."""
         for env_id in ALL_ENVS:
             with self.subTest(msg=env_id):
                 self._run_env(env_id)
 
-    def test_dmc_determinism(self):
+    def test_metaworld_determinism(self):
         """Tests that identical seeds produce identical trajectories."""
         seed = 0
         # Iterate over two trajectories, which should have the same state and action sequence

@@ -126,7 +126,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
     }
     env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
-    # env = make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
+    # env = make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
 
     if render:
         env.render(mode="human")
@@ -147,7 +147,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = True
+    render = False
     # DMP
     example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
 

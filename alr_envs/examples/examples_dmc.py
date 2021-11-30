@@ -84,7 +84,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     }
     env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
     # OR for a deterministic ProMP (other mp_kwargs are required, see metaworld_examples):
-    # env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+    # env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
 
     # Gym + DMC hybrid task provided in the MP framework
-    example_dmc("dmc_ball_in_cup-catch_detpmp-v0", seed=10, iterations=1, render=render)
+    example_dmc("dmc_ball_in_cup-catch_promp-v0", seed=10, iterations=1, render=render)
 
     # Custom DMC task
     # Different seed, because the episode is longer for this example and the name+seed combo is already registered above

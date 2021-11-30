@@ -98,8 +98,8 @@ class TestMPEnvironments(unittest.TestCase):
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
-        with self.subTest(msg="DetPMP"):
-            for env_id in alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+        with self.subTest(msg="ProMP"):
+            for env_id in alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS['ProMP']:
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
@@ -110,8 +110,8 @@ class TestMPEnvironments(unittest.TestCase):
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
-        with self.subTest(msg="DetPMP"):
-            for env_id in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+        with self.subTest(msg="ProMP"):
+            for env_id in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS['ProMP']:
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
@@ -122,8 +122,8 @@ class TestMPEnvironments(unittest.TestCase):
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
-        with self.subTest(msg="DetPMP"):
-            for env_id in alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+        with self.subTest(msg="ProMP"):
+            for env_id in alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS['ProMP']:
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
@@ -134,8 +134,8 @@ class TestMPEnvironments(unittest.TestCase):
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
-        with self.subTest(msg="DetPMP"):
-            for env_id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['DetPMP']:
+        with self.subTest(msg="ProMP"):
+            for env_id in alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS['ProMP']:
                 with self.subTest(msg=env_id):
                     self._run_env(env_id)
 
@@ -143,29 +143,29 @@ class TestMPEnvironments(unittest.TestCase):
         """Tests that identical seeds produce identical trajectories for ALR MP Envs."""
         with self.subTest(msg="DMP"):
             self._run_env_determinism(alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
-        with self.subTest(msg="DetPMP"):
-            self._run_env_determinism(alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+        with self.subTest(msg="ProMP"):
+            self._run_env_determinism(alr_envs.ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"])
 
     def test_openai_environment_determinism(self):
         """Tests that identical seeds produce identical trajectories for OpenAI gym MP Envs."""
         with self.subTest(msg="DMP"):
             self._run_env_determinism(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
-        with self.subTest(msg="DetPMP"):
-            self._run_env_determinism(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+        with self.subTest(msg="ProMP"):
+            self._run_env_determinism(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"])
 
     def test_dmc_environment_determinism(self):
         """Tests that identical seeds produce identical trajectories for DMC MP Envs."""
         with self.subTest(msg="DMP"):
             self._run_env_determinism(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
-        with self.subTest(msg="DetPMP"):
-            self._run_env_determinism(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+        with self.subTest(msg="ProMP"):
+            self._run_env_determinism(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"])
 
     def test_metaworld_environment_determinism(self):
         """Tests that identical seeds produce identical trajectories for Metaworld MP Envs."""
         with self.subTest(msg="DMP"):
             self._run_env_determinism(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"])
-        with self.subTest(msg="DetPMP"):
-            self._run_env_determinism(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"])
+        with self.subTest(msg="ProMP"):
+            self._run_env_determinism(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"])
 
 
 if __name__ == '__main__':

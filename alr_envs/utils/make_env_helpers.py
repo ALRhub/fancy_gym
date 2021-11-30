@@ -1,3 +1,4 @@
+import warnings
 from typing import Iterable, Type, Union
 
 import gym
@@ -5,7 +6,6 @@ import numpy as np
 from gym.envs.registration import EnvSpec
 
 from mp_env_api import MPEnvWrapper
-from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 from mp_env_api.mp_wrappers.promp_wrapper import ProMPWrapper
 
@@ -48,6 +48,11 @@ def make(env_id: str, seed, **kwargs):
     Returns: Gym environment
 
     """
+    if any([det_pmp in env_id for det_pmp in ["DetPMP", "detpmp"]]):
+        warnings.warn("DetPMP is deprecated and converted to ProMP")
+        env_id = env_id.replace("DetPMP", "ProMP")
+        env_id = env_id.replace("detpmp", "promp")
+
     try:
         # Add seed to kwargs in case it is a predefined gym+dmc hybrid environment.
         if env_id.startswith("dmc"):
@@ -153,26 +158,6 @@ def make_promp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwar
     return ProMPWrapper(_env, **mp_kwargs)
 
 
-def make_detpmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs):
-    """
-    This can also be used standalone for manually building a custom Det ProMP environment.
-    Args:
-        env_id: base_env_name,
-        wrappers: list of wrappers (at least an MPEnvWrapper),
-        mp_kwargs: dict of at least {num_dof: int, num_basis: int, width: int}
-
-    Returns: Det ProMP wrapped gym env
-
-    """
-    _verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
-
-    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
-
-    _verify_dof(_env, mp_kwargs.get("num_dof"))
-
-    return DetPMPWrapper(_env, **mp_kwargs)
-
-
 def make_dmp_env_helper(**kwargs):
     """
     Helper function for registering a DMP gym environments.
@@ -210,26 +195,6 @@ def make_promp_env_helper(**kwargs):
     seed = kwargs.pop("seed", None)
     return make_promp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
                           mp_kwargs=kwargs.pop("mp_kwargs"), **kwargs)
-
-
-def make_detpmp_env_helper(**kwargs):
-    """
-    Helper function for registering ProMP gym environments.
-    This can also be used standalone for manually building a custom ProMP environment.
-    Args:
-        **kwargs: expects at least the following:
-        {
-        "name": base_env_name,
-        "wrappers": list of wrappers (at least an MPEnvWrapper),
-        "mp_kwargs": dict of at least {num_dof: int, num_basis: int, width: int}
-        }
-
-    Returns: DMP wrapped gym env
-
-    """
-    seed = kwargs.pop("seed", None)
-    return make_detpmp_env(env_id=kwargs.pop("name"), wrappers=kwargs.pop("wrappers"), seed=seed,
-                           mp_kwargs=kwargs.pop("mp_kwargs"), **kwargs)
 
 
 def _verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):

@@ -9,7 +9,7 @@ from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from .mujoco.reacher.alr_reacher import ALRReacherEnv
 from .mujoco.reacher.balancing import BalancingEnv
 
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "DetPMP": []}
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
 # Classic Control
 ## Simple Reacher
@@ -213,8 +213,12 @@ for _v in _versions:
                 "duration": 2,
                 "alpha_phase": 2,
                 "learn_goal": True,
-                "policy_type": "velocity",
+                "policy_type": "motor",
                 "weights_scale": 50,
+                "policy_kwargs": {
+                    "p_gains": .6,
+                    "d_gains": .075
+                }
             }
         }
     )
@@ -233,32 +237,15 @@ for _v in _versions:
                 "duration": 2,
                 "policy_type": "motor",
                 "weights_scale": 1,
-                "zero_start": True
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": .6,
+                    "d_gains": .075
+                }
             }
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-    _env_id = f'{_name[0]}DetPMP-{_name[1]}'
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-        # max_episode_steps=1,
-        kwargs={
-            "name": f"alr_envs:{_v}",
-            "wrappers": [classic_control.simple_reacher.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 2 if "long" not in _v.lower() else 5,
-                "num_basis": 5,
-                "duration": 2,
-                "width": 0.025,
-                "policy_type": "velocity",
-                "weights_scale": 0.2,
-                "zero_start": True
-            }
-        }
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append(_env_id)
 
 # Viapoint reacher
 register(
@@ -291,33 +278,13 @@ register(
             "num_dof": 5,
             "num_basis": 5,
             "duration": 2,
-            "policy_type": "motor",
+            "policy_type": "velocity",
             "weights_scale": 1,
             "zero_start": True
         }
     }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
-
-register(
-    id='ViaPointReacherDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-    # max_episode_steps=1,
-    kwargs={
-        "name": "alr_envs:ViaPointReacher-v0",
-        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
-        "mp_kwargs": {
-            "num_dof": 5,
-            "num_basis": 5,
-            "duration": 2,
-            "width": 0.025,
-            "policy_type": "velocity",
-            "weights_scale": 0.2,
-            "zero_start": True
-        }
-    }
-)
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("ViaPointReacherDetPMP-v0")
 
 ## Hole Reacher
 _versions = ["v0", "v1", "v2"]
@@ -363,23 +330,3 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-    _env_id = f'HoleReacherDetPMP-{_v}'
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-        kwargs={
-            "name": f"alr_envs:HoleReacher-{_v}",
-            "wrappers": [classic_control.hole_reacher.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 5,
-                "num_basis": 5,
-                "duration": 2,
-                "width": 0.025,
-                "policy_type": "velocity",
-                "weights_scale": 0.2,
-                "zero_start": True
-            }
-        }
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append(_env_id)

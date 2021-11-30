@@ -6,7 +6,7 @@ def example_mp(env_name, seed=1):
     Example for running a motion primitive based version of a OpenAI-gym environment, which is already registered.
     For more information on motion primitive specific stuff, look at the mp examples.
     Args:
-        env_name: DetPMP env_id
+        env_name: ProMP env_id
         seed: seed
 
     Returns:
@@ -35,7 +35,7 @@ if __name__ == '__main__':
     # example_mp("ReacherDMP-v2")
 
     # DetProMP
-    example_mp("ContinuousMountainCarDetPMP-v0")
-    example_mp("ReacherDetPMP-v2")
-    example_mp("FetchReachDenseDetPMP-v1")
-    example_mp("FetchSlideDenseDetPMP-v1")
+    example_mp("ContinuousMountainCarProMP-v0")
+    example_mp("ReacherProMP-v2")
+    example_mp("FetchReachDenseProMP-v1")
+    example_mp("FetchSlideDenseProMP-v1")

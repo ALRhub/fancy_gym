@@ -18,4 +18,4 @@
 |`ALRBallInACupDMP-v0`| A DMP provides a trajectory for the `ALRBallInACup-v0` task. | 4000 | 35
 |`ALRBallInACupGoalDMP-v0`| A DMP provides a trajectory for the `ALRBallInACupGoal-v0` task. | 4000 | 35 | 3
 
-[//]:  |`HoleReacherDetPMP-v0`|
+[//]:  |`HoleReacherProMPP-v0`|

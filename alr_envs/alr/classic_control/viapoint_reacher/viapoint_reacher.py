@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from gym.utils import seeding
 
-from alr_envs.alr.classic_control.utils import check_self_collision
 from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
 
 
