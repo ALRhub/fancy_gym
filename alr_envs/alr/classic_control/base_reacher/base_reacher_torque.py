@@ -1,9 +1,11 @@
+from abc import ABC
+
 from gym import spaces
 import numpy as np
 from alr_envs.alr.classic_control.base_reacher.base_reacher import BaseReacherEnv
 
 
-class BaseReacherTorqueEnv(BaseReacherEnv):
+class BaseReacherTorqueEnv(BaseReacherEnv, ABC):
     """
     Base class for torque controlled reaching environments
     """
@@ -20,10 +22,7 @@ class BaseReacherTorqueEnv(BaseReacherEnv):
         A single step with action in torque space
         """
 
-        # action = self._add_action_noise(action)
-        ac = np.clip(action, -self.max_torque, self.max_torque)
-
-        self._angle_velocity = self._angle_velocity + self.dt * ac
+        self._angle_velocity = self._angle_velocity + self.dt * action
         self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
         self._update_joints()
 

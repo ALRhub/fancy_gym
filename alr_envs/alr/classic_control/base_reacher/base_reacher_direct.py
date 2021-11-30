@@ -1,9 +1,11 @@
+from abc import ABC
+
 from gym import spaces
 import numpy as np
 from alr_envs.alr.classic_control.base_reacher.base_reacher import BaseReacherEnv
 
 
-class BaseReacherDirectEnv(BaseReacherEnv):
+class BaseReacherDirectEnv(BaseReacherEnv, ABC):
     """
     Base class for directly controlled reaching environments
     """
@@ -11,7 +13,7 @@ class BaseReacherDirectEnv(BaseReacherEnv):
                  allow_self_collision: bool = False):
         super().__init__(n_links, random_start, allow_self_collision)
 
-        self.max_vel = 10 * np.pi
+        self.max_vel = 2 * np.pi
         action_bound = np.ones((self.n_links,)) * self.max_vel
         self.action_space = spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
 
