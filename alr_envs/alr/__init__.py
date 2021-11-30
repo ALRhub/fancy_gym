@@ -210,7 +210,7 @@ for _v in _versions:
             "mp_kwargs": {
                 "num_dof": 2 if "long" not in _v.lower() else 5,
                 "num_basis": 5,
-                "duration": 20,
+                "duration": 2,
                 "alpha_phase": 2,
                 "learn_goal": True,
                 "policy_type": "velocity",
@@ -250,7 +250,7 @@ for _v in _versions:
             "mp_kwargs": {
                 "num_dof": 2 if "long" not in _v.lower() else 5,
                 "num_basis": 5,
-                "duration": 20,
+                "duration": 2,
                 "width": 0.025,
                 "policy_type": "velocity",
                 "weights_scale": 0.2,

@@ -127,6 +127,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         return np.squeeze(end_effector + self._joints[0, :])
 
+    def _check_collisions(self) -> bool:
+        return self._check_self_collision() or self.check_wall_collision()
+
     def check_wall_collision(self):
         line_points = self._get_line_points(num_points_per_link=100)
 
@@ -223,6 +226,6 @@ if __name__ == "__main__":
     for i in range(10000):
         ac = env.action_space.sample()
         obs, rew, done, info = env.step(ac)
-        # env.render()
+        env.render()
         if done:
             env.reset()

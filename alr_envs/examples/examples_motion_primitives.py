@@ -112,7 +112,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [alr_envs.classic_control.hole_reacher.MPWrapper]
+    wrappers = [alr_envs.alr.classic_control.hole_reacher.MPWrapper]
     mp_kwargs = {
         "num_dof": 5,
         "num_basis": 5,
@@ -147,15 +147,15 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = False
+    render = True
     # DMP
-    example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=10, render=render)
+    example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
 
     # ProMP
-    example_mp("alr_envs:HoleReacherProMP-v1", seed=10, iterations=100, render=render)
+    example_mp("alr_envs:HoleReacherProMP-v1", seed=10, iterations=1, render=render)
 
     # DetProMP
-    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=100, render=render)
+    example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
 
     # Altered basis functions
     example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
