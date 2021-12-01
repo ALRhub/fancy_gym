@@ -87,6 +87,7 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
             [self._steps],
         ])
 
+
 if __name__ == '__main__':
     nl = 5
     render_mode = "human"  # "human" or "partial" or "final"

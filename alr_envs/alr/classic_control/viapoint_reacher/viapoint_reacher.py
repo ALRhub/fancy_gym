@@ -6,17 +6,15 @@ import numpy as np
 from gym.utils import seeding
 
 from alr_envs.alr.classic_control.utils import check_self_collision
+from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
 
 
-class ViaPointReacherEnv(gym.Env):
+class ViaPointReacherEnv(BaseReacherDirectEnv):
 
     def __init__(self, n_links, random_start: bool = False, via_target: Union[None, Iterable] = None,
                  target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):
 
-        self.n_links = n_links
-        self.link_lengths = np.ones((n_links, 1))
-
-        self.random_start = random_start
+        super().__init__(n_links, random_start, allow_self_collision)
 
         # provided initial parameters
         self.intitial_target = target  # provided target value
@@ -27,20 +25,8 @@ class ViaPointReacherEnv(gym.Env):
         self._goal = np.array((n_links, 0))
 
         # collision
-        self.allow_self_collision = allow_self_collision
         self.collision_penalty = collision_penalty
 
-        # state
-        self._joints = None
-        self._joint_angles = None
-        self._angle_velocity = None
-        self._start_pos = np.hstack([[np.pi / 2], np.zeros(self.n_links - 1)])
-        self._start_vel = np.zeros(self.n_links)
-        self.weight_matrix_scale = 1
-
-        self._dt = 0.01
-
-        action_bound = np.pi * np.ones((self.n_links,))
         state_bound = np.hstack([
             [np.pi] * self.n_links,  # cos
             [np.pi] * self.n_links,  # sin
@@ -49,69 +35,15 @@ class ViaPointReacherEnv(gym.Env):
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps
         ])
-        self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
-
-        # containers for plotting
-        self.metadata = {'render.modes': ["human", "partial"]}
-        self.fig = None
-
-        self._steps = 0
-        self.seed()
-
-    @property
-    def dt(self):
-        return self._dt
 
     # @property
     # def start_pos(self):
     #     return self._start_pos
 
-    @property
-    def current_pos(self):
-        return self._joint_angles.copy()
-
-    @property
-    def current_vel(self):
-        return self._angle_velocity.copy()
-
-    def step(self, action: np.ndarray):
-        """
-        a single step with an action in joint velocity space
-        """
-        vel = action
-        self._angle_velocity = vel
-        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
-        self._update_joints()
-
-        acc = (vel - self._angle_velocity) / self.dt
-        reward, info = self._get_reward(acc)
-
-        info.update({"is_collided": self._is_collided})
-
-        self._steps += 1
-        done = self._is_collided
-
-        return self._get_obs().copy(), reward, done, info
-
     def reset(self):
-
-        if self.random_start:
-            # Maybe change more than dirst seed
-            first_joint = self.np_random.uniform(np.pi / 4, 3 * np.pi / 4)
-            self._joint_angles = np.hstack([[first_joint], np.zeros(self.n_links - 1)])
-            self._start_pos = self._joint_angles.copy()
-        else:
-            self._joint_angles = self._start_pos
-
         self._generate_goal()
-
-        self._angle_velocity = self._start_vel
-        self._joints = np.zeros((self.n_links + 1, 2))
-        self._update_joints()
-        self._steps = 0
-
-        return self._get_obs().copy()
+        return super().reset()
 
     def _generate_goal(self):
         # TODO: Maybe improve this later, this can yield quite a lot of invalid settings
@@ -137,29 +69,13 @@ class ViaPointReacherEnv(gym.Env):
         self._via_point = via_target
         self._goal = goal
 
-    def _update_joints(self):
-        """
-        update _joints to get new end effector position. The other links are only required for rendering.
-        Returns:
-
-        """
-        line_points_in_taskspace = self.get_forward_kinematics(num_points_per_link=20)
-
-        self._joints[1:, 0] = self._joints[0, 0] + line_points_in_taskspace[:, -1, 0]
-        self._joints[1:, 1] = self._joints[0, 1] + line_points_in_taskspace[:, -1, 1]
-
-        self_collision = False
-
-        if not self.allow_self_collision:
-            self_collision = check_self_collision(line_points_in_taskspace)
-            if np.any(np.abs(self._joint_angles) > np.pi):
-                self_collision = True
-
-        self._is_collided = self_collision
-
     def _get_reward(self, acc):
         success = False
         reward = -np.inf
+
+        if not self.allow_self_collision:
+            self._is_collided = self._check_self_collision()
+
         if not self._is_collided:
             dist = np.inf
             # return intermediate reward for via point
@@ -177,9 +93,14 @@ class ViaPointReacherEnv(gym.Env):
 
         reward -= dist ** 2
         reward -= 5e-8 * np.sum(acc ** 2)
-        info = {"is_success": success}
+        info = {"is_success": success,
+                "is_collided": self._is_collided,
+                "end_effector": np.copy(self.end_effector)}
 
         return reward, info
+
+    def _terminate(self, info):
+        return info["is_collided"]
 
     def _get_obs(self):
         theta = self._joint_angles
@@ -190,28 +111,10 @@ class ViaPointReacherEnv(gym.Env):
             self.end_effector - self._via_point,
             self.end_effector - self._goal,
             self._steps
-        ])
+        ]).astype(np.float32)
 
-    def get_forward_kinematics(self, num_points_per_link=1):
-        theta = self._joint_angles[:, None]
-
-        intermediate_points = np.linspace(0, 1, num_points_per_link) if num_points_per_link > 1 else 1
-
-        accumulated_theta = np.cumsum(theta, axis=0)
-
-        endeffector = np.zeros(shape=(self.n_links, num_points_per_link, 2))
-
-        x = np.cos(accumulated_theta) * self.link_lengths * intermediate_points
-        y = np.sin(accumulated_theta) * self.link_lengths * intermediate_points
-
-        endeffector[0, :, 0] = x[0, :]
-        endeffector[0, :, 1] = y[0, :]
-
-        for i in range(1, self.n_links):
-            endeffector[i, :, 0] = x[i, :] + endeffector[i - 1, -1, 0]
-            endeffector[i, :, 1] = y[i, :] + endeffector[i - 1, -1, 1]
-
-        return np.squeeze(endeffector + self._joints[0, :])
+    def _check_collisions(self) -> bool:
+        return self._check_self_collision()
 
     def render(self, mode='human'):
         goal_pos = self._goal.T
@@ -281,14 +184,14 @@ class ViaPointReacherEnv(gym.Env):
 
                 plt.pause(0.01)
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
+if __name__ == "__main__":
+    import time
+    env = ViaPointReacherEnv(5)
+    env.reset()
 
-    @property
-    def end_effector(self):
-        return self._joints[self.n_links].T
-
-    def close(self):
-        if self.fig is not None:
-            plt.close(self.fig)
+    for i in range(10000):
+        ac = env.action_space.sample()
+        obs, rew, done, info = env.step(ac)
+        env.render()
+        if done:
+            env.reset()

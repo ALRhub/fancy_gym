@@ -1,26 +1,22 @@
 from typing import Iterable, Union
 
-import gym
 import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
-from gym.utils import seeding
+
+from alr_envs.alr.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
 
 
-class SimpleReacherEnv(gym.Env):
+class SimpleReacherEnv(BaseReacherTorqueEnv):
     """
     Simple Reaching Task without any physics simulation.
     Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions
     towards the end of the trajectory.
     """
 
-    def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True):
-        super().__init__()
-        self.link_lengths = np.ones(n_links)
-        self.n_links = n_links
-        self._dt = 0.1
-
-        self.random_start = random_start
+    def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True,
+                 allow_self_collision: bool = False,):
+        super().__init__(n_links, random_start, allow_self_collision)
 
         # provided initial parameters
         self.inital_target = target
@@ -28,16 +24,10 @@ class SimpleReacherEnv(gym.Env):
         # temp container for current env state
         self._goal = None
 
-        self._joints = None
-        self._joint_angles = None
-        self._angle_velocity = None
         self._start_pos = np.zeros(self.n_links)
-        self._start_vel = np.zeros(self.n_links)
 
-        self.max_torque = 1
         self.steps_before_reward = 199
 
-        action_bound = np.ones((self.n_links,)) * self.max_torque
         state_bound = np.hstack([
             [np.pi] * self.n_links,  # cos
             [np.pi] * self.n_links,  # sin
@@ -45,83 +35,23 @@ class SimpleReacherEnv(gym.Env):
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps TODO: Maybe
         ])
-        self.action_space = spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
-
-        # containers for plotting
-        self.metadata = {'render.modes': ["human"]}
-        self.fig = None
-
-        self._steps = 0
-        self.seed()
-
-    @property
-    def dt(self) -> Union[float, int]:
-        return self._dt
 
     # @property
     # def start_pos(self):
     #     return self._start_pos
 
-    @property
-    def current_pos(self):
-        return self._joint_angles
-
-    @property
-    def current_vel(self):
-        return self._angle_velocity
-
-    def step(self, action: np.ndarray):
-        """
-        A single step with action in torque space
-        """
-
-        # action = self._add_action_noise(action)
-        ac = np.clip(action, -self.max_torque, self.max_torque)
-
-        self._angle_velocity = self._angle_velocity + self.dt * ac
-        self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
-        self._update_joints()
-
-        reward, info = self._get_reward(action)
-
-        self._steps += 1
-        done = False
-
-        return self._get_obs().copy(), reward, done, info
-
     def reset(self):
-
-        # TODO: maybe do initialisation more random?
-        # Sample only orientation of first link, i.e. the arm is always straight.
-        if self.random_start:
-            self._joint_angles = np.hstack([[self.np_random.uniform(-np.pi, np.pi)], np.zeros(self.n_links - 1)])
-            self._start_pos = self._joint_angles.copy()
-        else:
-            self._joint_angles = self._start_pos
-
         self._generate_goal()
 
-        self._angle_velocity = self._start_vel
-        self._joints = np.zeros((self.n_links + 1, 2))
-        self._update_joints()
-        self._steps = 0
-
-        return self._get_obs().copy()
-
-    def _update_joints(self):
-        """
-        update joints to get new end-effector position. The other links are only required for rendering.
-        Returns:
-
-        """
-        angles = np.cumsum(self._joint_angles)
-        x = self.link_lengths * np.vstack([np.cos(angles), np.sin(angles)])
-        self._joints[1:] = self._joints[0] + np.cumsum(x.T, axis=0)
+        return super().reset()
 
     def _get_reward(self, action: np.ndarray):
         diff = self.end_effector - self._goal
         reward_dist = 0
+
+        if not self.allow_self_collision:
+            self._is_collided = self._check_self_collision()
 
         if self._steps >= self.steps_before_reward:
             reward_dist -= np.linalg.norm(diff)
@@ -132,6 +62,9 @@ class SimpleReacherEnv(gym.Env):
         reward = reward_dist - reward_ctrl
         return reward, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl)
 
+    def _terminate(self, info):
+        return False
+
     def _get_obs(self):
         theta = self._joint_angles
         return np.hstack([
@@ -140,7 +73,7 @@ class SimpleReacherEnv(gym.Env):
             self._angle_velocity,
             self.end_effector - self._goal,
             self._steps
-        ])
+        ]).astype(np.float32)
 
     def _generate_goal(self):
 
@@ -154,6 +87,9 @@ class SimpleReacherEnv(gym.Env):
             goal = np.copy(self.inital_target)
 
         self._goal = goal
+
+    def _check_collisions(self) -> bool:
+        return self._check_self_collision()
 
     def render(self, mode='human'):  # pragma: no cover
         if self.fig is None:
@@ -190,13 +126,14 @@ class SimpleReacherEnv(gym.Env):
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
 
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
 
-    def close(self):
-        del self.fig
+if __name__ == "__main__":
+    env = SimpleReacherEnv(5)
+    env.reset()
+    for i in range(200):
+        ac = env.action_space.sample()
+        obs, rew, done, info = env.step(ac)
 
-    @property
-    def end_effector(self):
-        return self._joints[self.n_links].T
+        env.render()
+        if done:
+            break

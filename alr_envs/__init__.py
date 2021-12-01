@@ -1,5 +1,5 @@
 from alr_envs import dmc, meta, open_ai
-from alr_envs.utils.make_env_helpers import make, make_detpmp_env, make_dmp_env, make_rank
+from alr_envs.utils.make_env_helpers import make, make_detpmp_env, make_dmp_env, make_promp_env, make_rank
 from alr_envs.utils import make_dmc
 
 # Convenience function for all MP environments

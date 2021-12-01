@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def ccw(A, B, C):
     return (C[1] - A[1]) * (B[0] - A[0]) - (B[1] - A[1]) * (C[0] - A[0]) > 1e-12
 
@@ -10,7 +13,7 @@ def intersect(A, B, C, D):
 
 
 def check_self_collision(line_points):
-    """Checks whether line segments and intersect"""
+    """Checks whether line segments intersect"""
     for i, line1 in enumerate(line_points):
         for line2 in line_points[i + 2:, :, :]:
             if intersect(line1[0], line1[-1], line2[0], line2[-1]):
