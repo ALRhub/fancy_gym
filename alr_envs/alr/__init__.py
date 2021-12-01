@@ -1,3 +1,4 @@
+import numpy as np
 from gym import register
 
 from . import classic_control, mujoco
@@ -193,6 +194,32 @@ register(
     }
 )
 
+## Table Tennis
+from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
+register(id='TableTennis2DCtxt-v0',
+         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         max_episode_steps=MAX_EPISODE_STEPS,
+         kwargs={'ctxt_dim':2})
+
+register(id='TableTennis4DCtxt-v0',
+         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         max_episode_steps=MAX_EPISODE_STEPS,
+         kwargs={'ctxt_dim':4})
+
+## BeerPong
+difficulties = ["simple", "intermediate", "hard", "hardest"]
+
+for v, difficulty in enumerate(difficulties):
+    register(
+        id='ALRBeerPong-v{}'.format(v),
+        entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+        max_episode_steps=600,
+        kwargs={
+            "difficulty": difficulty,
+            "reward_type": "staged",
+        }
+    )
+
 # Motion Primitive Environments
 
 ## Simple Reacher
@@ -327,3 +354,59 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append(_env_id)
+
+## Beerpong
+register(
+    id='BeerpongDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRBeerPong-v0",
+        "wrappers": [mujoco.beerpong.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 2,
+            "n_zero_bases": 2,
+            "duration": 0.5,
+            "post_traj_time": 2.5,
+            "width": 0.01,
+            "off": 0.01,
+            "policy_type": "motor",
+            "weights_scale": 0.08,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
+                "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("BeerpongDetPMP-v0")
+
+## Table Tennis
+register(
+    id='TableTennisDetPMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    kwargs={
+        "name": "alr_envs:TableTennis4DCtxt-v0",
+        "wrappers": [mujoco.table_tennis.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 2,
+            "n_zero_bases": 2,
+            "duration": 1.25,
+            "post_traj_time": 4.5,
+            "width": 0.01,
+            "off": 0.01,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": 0.5*np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                "d_gains": 0.5*np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("TableTennisDetPMP-v0")
