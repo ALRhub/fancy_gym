@@ -110,7 +110,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
             self.end_effector - self._via_point,
             self.end_effector - self._goal,
             self._steps
-        ])
+        ]).astype(np.float32)
 
     def _check_collisions(self) -> bool:
         return self._check_self_collision()

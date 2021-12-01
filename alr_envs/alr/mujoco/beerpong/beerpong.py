@@ -1,3 +1,4 @@
+import mujoco_py.builder
 import os
 
 import numpy as np
@@ -5,44 +6,67 @@ from gym import utils
 from gym.envs.mujoco import MujocoEnv
 
 
-
-class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self, model_path, frame_skip, n_substeps=4, apply_gravity_comp=True, reward_function=None):
-        utils.EzPickle.__init__(**locals())
-        MujocoEnv.__init__(self, model_path=model_path, frame_skip=frame_skip)
+class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
+    def __init__(self, frame_skip=1, apply_gravity_comp=True, reward_type: str = "staged", noisy=False,
+                 context: np.ndarray = None, difficulty='simple'):
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
-                                     "beerpong" + ".xml")
-
-        self.start_pos = np.array([0.0, 1.35, 0.0, 1.18, 0.0, -0.786, -1.59])
-        self.start_vel = np.zeros(7)
-
-        self._q_pos = []
-        self._q_vel = []
-        # self.weight_matrix_scale = 50
-        self.max_ctrl = np.array([150., 125., 40., 60., 5., 5., 2.])
-        self.p_gains = 1 / self.max_ctrl * np.array([200, 300, 100, 100, 10, 10, 2.5])
-        self.d_gains = 1 / self.max_ctrl * np.array([7, 15, 5, 2.5, 0.3, 0.3, 0.05])
+                                     "beerpong_wo_cup" + ".xml")
 
         self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
         self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
 
-        self.context = None
-        # alr_mujoco_env.AlrMujocoEnv.__init__(self,
-        #                                      self.xml_path,
-        #                                      apply_gravity_comp=apply_gravity_comp,
-        #                                      n_substeps=n_substeps)
+        self.context = context
+        self.apply_gravity_comp = apply_gravity_comp
+        self.add_noise = noisy
 
-        self.sim_time = 8  # seconds
-        self.sim_steps = int(self.sim_time / self.dt)
-        if reward_function is None:
-            from alr_envs.alr.mujoco.beerpong.beerpong_reward import BeerpongReward
-            reward_function = BeerpongReward
-        self.reward_function = reward_function(self.sim, self.sim_steps)
-        self.cup_robot_id = self.sim.model._site_name2id["cup_robot_final"]
-        self.ball_id = self.sim.model._body_name2id["ball"]
-        self.cup_table_id = self.sim.model._body_name2id["cup_table"]
+        self._start_pos = np.array([0.0, 1.35, 0.0, 1.18, 0.0, -0.786, -1.59])
+        self._start_vel = np.zeros(7)
+
+        self.ball_site_id = 0
+        self.ball_id = 11
+
+        self._release_step = 100  # time step of ball release
+
+        self.sim_time = 4  # seconds
+        self.ep_length = 600  # based on 5 seconds with dt = 0.005 int(self.sim_time / self.dt)
+        self.cup_table_id = 10
+
+        if noisy:
+            self.noise_std = 0.01
+        else:
+            self.noise_std = 0
+
+        if difficulty == 'simple':
+            self.cup_goal_pos = np.array([0, -1.7, 0.840])
+        elif difficulty == 'intermediate':
+            self.cup_goal_pos = np.array([0.3, -1.5, 0.840])
+        elif difficulty == 'hard':
+            self.cup_goal_pos = np.array([-0.3, -2.2, 0.840])
+        elif difficulty == 'hardest':
+            self.cup_goal_pos = np.array([-0.3, -1.2, 0.840])
+
+        if reward_type == "no_context":
+            from alr_envs.alr.mujoco.beerpong.beerpong_reward import BeerPongReward
+            reward_function = BeerPongReward
+        elif reward_type == "staged":
+            from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
+            reward_function = BeerPongReward
+        else:
+            raise ValueError("Unknown reward type: {}".format(reward_type))
+        self.reward_function = reward_function()
+
+        MujocoEnv.__init__(self, self.xml_path, frame_skip)
+        utils.EzPickle.__init__(self)
+
+    @property
+    def start_pos(self):
+        return self._start_pos
+
+    @property
+    def start_vel(self):
+        return self._start_vel
 
     @property
     def current_pos(self):
@@ -52,9 +76,9 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
     def current_vel(self):
         return self.sim.data.qvel[0:7].copy()
 
-    def configure(self, context):
-        self.context = context
-        self.reward_function.reset(context)
+    def reset(self):
+        self.reward_function.reset(self.add_noise)
+        return super().reset()
 
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
@@ -62,19 +86,14 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
         init_vel = np.zeros_like(init_pos_all)
 
         self._steps = 0
-        self._q_pos = []
-        self._q_vel = []
 
         start_pos = init_pos_all
         start_pos[0:7] = init_pos_robot
-        # start_pos[7:] = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
 
         self.set_state(start_pos, init_vel)
-
-        ball_pos = np.copy(self.sim.data.site_xpos[self.cup_robot_id, :]) + np.array([0., 0.0, 0.05])
-        self.sim.model.body_pos[self.ball_id] = ball_pos.copy()
-        self.sim.model.body_pos[self.cup_table_id] = self.context.copy()
-
+        self.sim.model.body_pos[self.cup_table_id] = self.cup_goal_pos
+        start_pos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
+        self.set_state(start_pos, init_vel)
         return self._get_obs()
 
     def step(self, a):
@@ -82,32 +101,55 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
         angular_vel = 0.0
         reward_ctrl = - np.square(a).sum()
 
-        crash = self.do_simulation(a)
-        joint_cons_viol = self.check_traj_in_joint_limits()
-
-        self._q_pos.append(self.sim.data.qpos[0:7].ravel().copy())
-        self._q_vel.append(self.sim.data.qvel[0:7].ravel().copy())
+        if self.apply_gravity_comp:
+            a = a + self.sim.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
+        try:
+            self.do_simulation(a, self.frame_skip)
+            if self._steps < self._release_step:
+                self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
+                self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.ball_site_id, :].copy()
+            elif self._steps == self._release_step and self.add_noise:
+                 self.sim.data.qvel[7::] += self.noise_std * np.random.randn(3)
+            crash = False
+        except mujoco_py.builder.MujocoException:
+            crash = True
+        # joint_cons_viol = self.check_traj_in_joint_limits()
 
         ob = self._get_obs()
 
-        if not crash and not joint_cons_viol:
-            reward, success, stop_sim = self.reward_function.compute_reward(a, self.sim, self._steps)
-            done = success or self._steps == self.sim_steps - 1 or stop_sim
+        if not crash:
+            reward, reward_infos = self.reward_function.compute_reward(self, a)
+            success = reward_infos['success']
+            is_collided = reward_infos['is_collided']
+            ball_pos = reward_infos['ball_pos']
+            ball_vel = reward_infos['ball_vel']
+            done = is_collided or self._steps == self.ep_length - 1
             self._steps += 1
         else:
-            reward = -1000
+            reward = -30
             success = False
+            is_collided = False
             done = True
+            ball_pos = np.zeros(3)
+            ball_vel = np.zeros(3)
+
         return ob, reward, done, dict(reward_dist=reward_dist,
                                       reward_ctrl=reward_ctrl,
+                                      reward=reward,
                                       velocity=angular_vel,
-                                      traj=self._q_pos, is_success=success,
-                                      is_collided=crash or joint_cons_viol)
+                                      # traj=self._q_pos,
+                                      action=a,
+                                      q_pos=self.sim.data.qpos[0:7].ravel().copy(),
+                                      q_vel=self.sim.data.qvel[0:7].ravel().copy(),
+                                      ball_pos=ball_pos,
+                                      ball_vel=ball_vel,
+                                      is_success=success,
+                                      is_collided=is_collided, sim_crash=crash)
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
-    # TODO
+    # TODO: extend observation space
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         return np.concatenate([
@@ -118,28 +160,26 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
         ])
 
     # TODO
+    @property
     def active_obs(self):
-        pass
-
+        return np.hstack([
+            [False] * 7,  # cos
+            [False] * 7,  # sin
+            # [True] * 2,  # x-y coordinates of target distance
+            [False]  # env steps
+        ])
 
 
 if __name__ == "__main__":
-    env = ALRBeerpongEnv()
-    ctxt = np.array([0, -2, 0.840])    # initial
+    env = ALRBeerBongEnv(reward_type="no_context", difficulty='hardest')
 
-    env.configure(ctxt)
+    # env.configure(ctxt)
     env.reset()
-    env.render()
-    for i in range(16000):
-        # test with random actions
-        ac = 0.0 * env.action_space.sample()[0:7]
-        ac[1] = -0.8
-        ac[3] = - 0.3
-        ac[5] = -0.2
-        # ac = env.start_pos
-        # ac[0] += np.pi/2
+    env.render("human")
+    for i in range(800):
+        ac = 10 * env.action_space.sample()[0:7]
         obs, rew, d, info = env.step(ac)
-        env.render()
+        env.render("human")
 
         print(rew)
 
@@ -147,4 +187,3 @@ if __name__ == "__main__":
             break
 
     env.close()
-
