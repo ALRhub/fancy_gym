@@ -1,6 +1,6 @@
 ## ALR Robotics Control Environments
 
-This project offers a large verity of reinforcement learning environments under a unifying interface base on OpenAI gym.
+This project offers a large variety of reinforcement learning environments under a unifying interface base on OpenAI gym.
 Besides, some custom environments we also provide support for the benchmark suites
 [OpenAI gym](https://gym.openai.com/),
 [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control)
