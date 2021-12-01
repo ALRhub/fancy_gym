@@ -73,7 +73,7 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
             self._angle_velocity,
             self.end_effector - self._goal,
             self._steps
-        ])
+        ]).astype(np.float32)
 
     def _generate_goal(self):
 

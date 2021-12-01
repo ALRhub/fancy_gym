@@ -106,7 +106,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             # self._tmp_hole_depth,
             self.end_effector - self._goal,
             self._steps
-        ])
+        ]).astype(np.float32)
 
     def _get_line_points(self, num_points_per_link=1):
         theta = self._joint_angles[:, None]
