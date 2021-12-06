@@ -198,14 +198,19 @@ register(
 
 ## Table Tennis
 register(id='TableTennis2DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
          max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim':2})
+         kwargs={'ctxt_dim': 2})
+
+register(id='TableTennis2DCtxt-v1',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
+         max_episode_steps=1750,
+         kwargs={'ctxt_dim': 2, 'fixed_goal': True})
 
 register(id='TableTennis4DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
          max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim':4})
+         kwargs={'ctxt_dim': 4})
 
 ## BeerPong
 difficulties = ["simple", "intermediate", "hard", "hardest"]
@@ -369,13 +374,10 @@ register(
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 2,
-            "n_zero_bases": 2,
-            "duration": 0.5,
-            "post_traj_time": 2.5,
-            # "width": 0.01,
-            # "off": 0.01,
+            "duration": 1,
+            "post_traj_time": 2,
             "policy_type": "motor",
-            "weights_scale": 0.08,
+            "weights_scale": 0.2,
             "zero_start": True,
             "zero_goal": False,
             "policy_kwargs": {
@@ -388,22 +390,46 @@ register(
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("BeerpongProMP-v0")
 
 ## Table Tennis
+ctxt_dim = [2, 4]
+for _v, cd in enumerate(ctxt_dim):
+    _env_id = f'TableTennisProMP-v{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": "alr_envs:TableTennis{}DCtxt-v0".format(cd),
+            "wrappers": [mujoco.table_tennis.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 7,
+                "num_basis": 2,
+                "duration": 1.25,
+                "post_traj_time": 4.5,
+                "policy_type": "motor",
+                "weights_scale": 1.0,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": 0.5*np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                    "d_gains": 0.5*np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+                }
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
 register(
-    id='TableTennisProMP-v0',
+    id='TableTennisProMP-v2',
     entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
     kwargs={
-        "name": "alr_envs:TableTennis4DCtxt-v0",
+        "name": "alr_envs:TableTennis2DCtxt-v1",
         "wrappers": [mujoco.table_tennis.MPWrapper],
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 2,
-            "n_zero_bases": 2,
-            "duration": 1.25,
-            "post_traj_time": 4.5,
-            # "width": 0.01,
-            # "off": 0.01,
+            "duration": 1.,
+            "post_traj_time": 2.5,
             "policy_type": "motor",
-            "weights_scale": 1.0,
+            "weights_scale": 0.2,
             "zero_start": True,
             "zero_goal": False,
             "policy_kwargs": {
@@ -413,4 +439,4 @@ register(
         }
     }
 )
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("TableTennisProMP-v0")
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("TableTennisProMP-v2")

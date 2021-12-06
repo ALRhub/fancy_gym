@@ -6,8 +6,6 @@ from gym.envs.mujoco import MujocoEnv
 
 class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, n_substeps=4, apply_gravity_comp=True, reward_function=None):
-        utils.EzPickle.__init__(**locals())
-
         self._steps = 0
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
@@ -28,15 +26,13 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
 
         self.context = None
 
-        MujocoEnv.__init__(self, model_path=self.xml_path, frame_skip=n_substeps)
-
         # alr_mujoco_env.AlrMujocoEnv.__init__(self,
         #                                      self.xml_path,
         #                                      apply_gravity_comp=apply_gravity_comp,
         #                                      n_substeps=n_substeps)
 
         self.sim_time = 8  # seconds
-        self.sim_steps = int(self.sim_time / self.dt)
+        # self.sim_steps = int(self.sim_time / self.dt)
         if reward_function is None:
             from alr_envs.alr.mujoco.beerpong.beerpong_reward_simple import BeerpongReward
             reward_function = BeerpongReward
@@ -45,6 +41,9 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
         self.ball_id = self.sim.model._body_name2id["ball"]
         self.cup_table_id = self.sim.model._body_name2id["cup_table"]
         # self.bounce_table_id = self.sim.model._body_name2id["bounce_table"]
+
+        MujocoEnv.__init__(self, model_path=self.xml_path, frame_skip=n_substeps)
+        utils.EzPickle.__init__(self)
 
     @property
     def current_pos(self):
@@ -90,7 +89,7 @@ class ALRBeerpongEnv(MujocoEnv, utils.EzPickle):
         reward_ctrl = - np.square(a).sum()
         action_cost = np.sum(np.square(a))
 
-        crash = self.do_simulation(a)
+        crash = self.do_simulation(a, self.frame_skip)
         joint_cons_viol = self.check_traj_in_joint_limits()
 
         self._q_pos.append(self.sim.data.qpos[0:7].ravel().copy())

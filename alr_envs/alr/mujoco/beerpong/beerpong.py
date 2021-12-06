@@ -27,10 +27,10 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.ball_site_id = 0
         self.ball_id = 11
 
-        self._release_step = 100  # time step of ball release
+        self._release_step = 175  # time step of ball release
 
-        self.sim_time = 4  # seconds
-        self.ep_length = 600  # based on 5 seconds with dt = 0.005 int(self.sim_time / self.dt)
+        self.sim_time = 3  # seconds
+        self.ep_length = 600  # based on 3 seconds with dt = 0.005 int(self.sim_time / self.dt)
         self.cup_table_id = 10
 
         if noisy:
@@ -143,7 +143,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
                                       q_vel=self.sim.data.qvel[0:7].ravel().copy(),
                                       ball_pos=ball_pos,
                                       ball_vel=ball_vel,
-                                      is_success=success,
+                                      success=success,
                                       is_collided=is_collided, sim_crash=crash)
 
     def check_traj_in_joint_limits(self):
@@ -171,7 +171,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = ALRBeerBongEnv(reward_type="no_context", difficulty='hardest')
+    env = ALRBeerBongEnv(reward_type="staged", difficulty='hardest')
 
     # env.configure(ctxt)
     env.reset()
