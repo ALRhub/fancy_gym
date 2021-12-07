@@ -110,7 +110,7 @@ class BeerPongReward:
             success = ball_in_cup
             crash = self._is_collided
         else:
-            reward = - 1e-4 * action_cost
+            reward = - 1e-2 * action_cost
             success = False
             crash = False
 

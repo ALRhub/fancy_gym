@@ -204,7 +204,7 @@ register(id='TableTennis2DCtxt-v0',
 
 register(id='TableTennis2DCtxt-v1',
          entry_point='alr_envs.alr.mujoco:TTEnvGym',
-         max_episode_steps=1750,
+         max_episode_steps=MAX_EPISODE_STEPS,
          kwargs={'ctxt_dim': 2, 'fixed_goal': True})
 
 register(id='TableTennis4DCtxt-v0',
@@ -365,29 +365,32 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## Beerpong
-register(
-    id='BeerpongProMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-    kwargs={
-        "name": "alr_envs:ALRBeerPong-v0",
-        "wrappers": [mujoco.beerpong.MPWrapper],
-        "mp_kwargs": {
-            "num_dof": 7,
-            "num_basis": 2,
-            "duration": 1,
-            "post_traj_time": 2,
-            "policy_type": "motor",
-            "weights_scale": 0.2,
-            "zero_start": True,
-            "zero_goal": False,
-            "policy_kwargs": {
-                "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
-                "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+_versions = ["v0", "v1", "v2", "v3"]
+for _v in _versions:
+    _env_id = f'BeerpongProMP-{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:ALRBeerPong-{_v}",
+            "wrappers": [mujoco.beerpong.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 7,
+                "num_basis": 2,
+                "duration": 1,
+                "post_traj_time": 2,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
+                    "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+                }
             }
         }
-    }
-)
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("BeerpongProMP-v0")
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## Table Tennis
 ctxt_dim = [2, 4]
@@ -429,7 +432,9 @@ register(
             "duration": 1.,
             "post_traj_time": 2.5,
             "policy_type": "motor",
-            "weights_scale": 0.2,
+            "weights_scale": 1,
+            "off": -0.05,
+            "bandwidth_factor": 3.5,
             "zero_start": True,
             "zero_goal": False,
             "policy_kwargs": {

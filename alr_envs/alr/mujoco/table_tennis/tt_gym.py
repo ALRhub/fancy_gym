@@ -10,7 +10,7 @@ from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
-MAX_EPISODE_STEPS = 2875
+MAX_EPISODE_STEPS = 1750
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"
 TABLE_NAME = 'table_tennis_table'
@@ -42,9 +42,10 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         else:
             raise ValueError("either 2 or 4 dimensional Contexts available")
 
-        action_space_low = np.array([-2.6, -2.0, -2.8, -0.9, -4.8, -1.6, -2.2])
-        action_space_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
-        self.action_space = spaces.Box(low=action_space_low, high=action_space_high, dtype='float64')
+        # has no effect as it is overwritten in init of super
+        # action_space_low = np.array([-2.6, -2.0, -2.8, -0.9, -4.8, -1.6, -2.2])
+        # action_space_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
+        # self.action_space = spaces.Box(low=action_space_low, high=action_space_high, dtype='float64')
 
         self.time_steps = 0
         self.init_qpos_tt = np.array([0, 0, 0, 1.5, 0, 0, 1.5, 0, 0, 0])
@@ -159,7 +160,10 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
             done = True
             reward = -25
         ob = self._get_obs()
-        return ob, reward, done, {"hit_ball": self.hit_ball}  # might add some information here ....
+        info = {"hit_ball": self.hit_ball,
+                "q_pos": np.copy(self.sim.data.qpos[:7]),
+                "ball_pos": np.copy(self.sim.data.qpos[7:])}
+        return ob, reward, done, info # might add some information here ....
 
     def set_context(self, context):
         old_state = self.sim.get_state()

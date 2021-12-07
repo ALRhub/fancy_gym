@@ -19,7 +19,7 @@ class TT_Reward:
             # # seems to work for episodic case
             min_r_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj) - np.array(self.c_racket_traj), axis=1))
             if not hited_ball:
-                return 0.2 * (1- np.tanh(min_r_b_dist**2))
+                return 0.2 * (1 - np.tanh(min_r_b_dist**2))
             else:
                 if ball_landing_pos is None:
                     min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj)[:,:2] - self.c_goal[:2], axis=1))
