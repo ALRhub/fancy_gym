@@ -6,11 +6,14 @@ from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
 
 from alr_envs.alr.mujoco.table_tennis.tt_utils import ball_init
+
+MAX_EPISODE_STEPS = 1750
+
 from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
-MAX_EPISODE_STEPS = 1750
+
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"
 TABLE_NAME = 'table_tennis_table'
@@ -25,11 +28,12 @@ CONTEXT_RANGE_BOUNDS_4DIM = np.array([[-1.35, -0.75, -1.25, -0.75], [-0.1, 0.75,
 
 class TTEnvGym(MujocoEnv, utils.EzPickle):
 
-    def __init__(self, ctxt_dim=2, fixed_goal=False):
+    def __init__(self, ctxt_dim=2, fixed_goal=False, apply_gravity_comp=True):
         model_path = os.path.join(os.path.dirname(__file__), "xml", 'table_tennis_env.xml')
 
         self.ctxt_dim = ctxt_dim
         self.fixed_goal = fixed_goal
+        self.apply_gravity_comp = apply_gravity_comp
         if ctxt_dim == 2:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_2DIM
             if self.fixed_goal:
@@ -130,31 +134,15 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
     def step(self, action):
         if not self._ids_set:
             self._set_ids()
-        done = False
-        episode_end = False if self.time_steps + 1 < MAX_EPISODE_STEPS else True
-        if not self.hit_ball:
-            self.hit_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_1) # check for one side
-            if not self.hit_ball:
-                self.hit_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_2) # check for other side
-        if self.hit_ball:
-            if not self.ball_contact_after_hit:
-                if self._contact_checker(self.ball_contact_id, self.floor_contact_id):  # first check contact with floor
-                    self.ball_contact_after_hit = True
-                    self.ball_landing_pos = self.sim.data.body_xpos[self.ball_id]
-                elif self._contact_checker(self.ball_contact_id, self.table_contact_id): # second check contact with table
-                    self.ball_contact_after_hit = True
-                    self.ball_landing_pos = self.sim.data.body_xpos[self.ball_id]
-        c_ball_pos = self.sim.data.body_xpos[self.ball_id]
-        racket_pos = self.sim.data.geom_xpos[self.racket_id]        # TODO: use this to reach out the position of the paddle?
-        if self.ball_landing_pos is not None:
-            done = True
-            episode_end =True
-        reward = self.reward_func.get_reward(episode_end, c_ball_pos, racket_pos, self.hit_ball, self.ball_landing_pos)
-        self.time_steps += 1
+
+        # reward = self.reward_func.get_reward(episode_end, c_ball_pos, racket_pos, self.hit_ball, self.ball_landing_pos)
         # gravity compensation on joints:
         #action += self.sim.data.qfrc_bias[:7].copy()
+        if self.apply_gravity_comp:
+            action = action + self.sim.data.qfrc_bias[:len(action)].copy() / self.model.actuator_gear[:, 0]
         try:
             self.do_simulation(action, self.frame_skip)
+            reward, done = self.reward_func.get_reward(self, action)
         except mujoco_py.MujocoException as e:
             print('Simulation got unstable returning')
             done = True
@@ -163,6 +151,8 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         info = {"hit_ball": self.hit_ball,
                 "q_pos": np.copy(self.sim.data.qpos[:7]),
                 "ball_pos": np.copy(self.sim.data.qpos[7:])}
+
+        self.time_steps += 1
         return ob, reward, done, info # might add some information here ....
 
     def set_context(self, context):
