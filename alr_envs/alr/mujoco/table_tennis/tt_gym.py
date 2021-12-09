@@ -7,7 +7,7 @@ from gym.envs.mujoco import MujocoEnv
 
 from alr_envs.alr.mujoco.table_tennis.tt_utils import ball_init
 
-MAX_EPISODE_STEPS = 1750
+MAX_EPISODE_STEPS = 1500
 
 from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
@@ -37,7 +37,7 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         if ctxt_dim == 2:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_2DIM
             if self.fixed_goal:
-                self.goal = np.array([-1, -0.1, 0])
+                self.goal = np.array([-1.36, -0.76, 0])
             else:
                 self.goal = np.zeros(3)  # 2 x,y + 1z
         elif ctxt_dim == 4:
@@ -142,18 +142,21 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
             action = action + self.sim.data.qfrc_bias[:len(action)].copy() / self.model.actuator_gear[:, 0]
         try:
             self.do_simulation(action, self.frame_skip)
-            reward, done = self.reward_func.get_reward(self, action)
+            reward, done, reward_info = self.reward_func.get_reward(self, action)
         except mujoco_py.MujocoException as e:
             print('Simulation got unstable returning')
             done = True
             reward = -25
+            reward_info = {}
         ob = self._get_obs()
         info = {"hit_ball": self.hit_ball,
                 "q_pos": np.copy(self.sim.data.qpos[:7]),
                 "ball_pos": np.copy(self.sim.data.qpos[7:])}
 
+        info.update(reward_info)
+
         self.time_steps += 1
-        return ob, reward, done, info # might add some information here ....
+        return ob, reward, done, info  # might add some information here ....
 
     def set_context(self, context):
         old_state = self.sim.get_state()
@@ -168,3 +171,22 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         self.sim.model.body_pos[5] = self.goal[:3]      # TODO: Missing: Setting the desired incomoing landing position
         self.sim.forward()
         return self._get_obs()
+
+
+if __name__ == "__main__":
+    env = TTEnvGym(fixed_goal=True)
+
+    # env.configure(ctxt)
+    env.reset()
+    env.render("human")
+    for i in range(1750):
+        ac = 1 * env.action_space.sample()[0:7]
+        obs, rew, d, info = env.step(ac)
+        env.render("human")
+
+        print(rew)
+
+        if d:
+            break
+
+    env.close()

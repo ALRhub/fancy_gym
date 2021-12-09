@@ -430,7 +430,7 @@ register(
             "num_dof": 7,
             "num_basis": 2,
             "duration": 1.,
-            "post_traj_time": 2.5,
+            "post_traj_time": 2.,
             "policy_type": "motor",
             "weights_scale": 1,
             "off": -0.05,
