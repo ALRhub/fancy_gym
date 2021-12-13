@@ -432,7 +432,7 @@ register(
             "duration": 1.,
             "post_traj_time": 2.,
             "policy_type": "motor",
-            "weights_scale": 1,
+            "weights_scale": 0.1,
             "off": -0.05,
             "bandwidth_factor": 3.5,
             "zero_start": True,
