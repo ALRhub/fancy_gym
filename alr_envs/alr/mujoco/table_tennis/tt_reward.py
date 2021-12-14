@@ -48,16 +48,16 @@ class TT_Reward:
             # # seems to work for episodic case
             min_r_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj) - np.array(self.c_racket_traj), axis=1))
             if not self.hit_ball:
-                return 0.2 * (1 - np.tanh(min_r_b_dist**2)), done, info
+                return 0.2 * (1 - np.tanh(min_r_b_dist)), done, info
             else:
                 if self.ball_landing_pos is None:
                     min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj) - self.c_goal, axis=1))
-                    reward = 1 * (1 - np.tanh(min_r_b_dist ** 2)) + 2 * (1 - np.tanh(min_b_des_b_dist**2)) - 1e-5 * np.sum(np.square(self.actions))
+                    reward = 1 * (1 - np.tanh(min_r_b_dist )) + 2 * (1 - np.tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
                     return reward, done, info
                 else:
                     min_b_des_b_land_dist = np.linalg.norm(self.c_goal[:2] - self.ball_landing_pos[:2])
                     over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
-                    return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus - 1e-5 * np.sum(np.square(self.actions)), done, info
+                    return 2 * (1 - np.tanh(min_r_b_dist )) + 4 * (1 - np.tanh(min_b_des_b_land_dist )) + over_net_bonus - 1e-5 * np.sum(np.square(self.actions)), done, info
 
 
             # if not hited_ball:
