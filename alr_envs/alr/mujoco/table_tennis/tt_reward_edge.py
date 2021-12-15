@@ -17,7 +17,7 @@ class TT_Reward:
 
     def get_reward(self, env, action):
         self.actions.append(action)
-        # done = False
+        success = False
         done = episode_end = False if env.time_steps + 1 < MAX_EPISODE_STEPS else True
         if not self.hit_ball:
             self.hit_ball = env._contact_checker(env.ball_contact_id, env.paddle_contact_id_1) # check for one side
@@ -39,8 +39,10 @@ class TT_Reward:
         if self.ball_landing_pos is not None:
             done = True
             episode_end = True
+            success = self.ball_landing_pos[0] < 0 and self.ball_landing_pos[2] > 0.7
 
-        info = {"ball_landing_pos": self.ball_landing_pos}
+        info = {"ball_landing_pos": self.ball_landing_pos,
+                "success": success}
 
         if not episode_end:
             return 0, done, info
@@ -51,13 +53,18 @@ class TT_Reward:
                 return 0.2 * (1 - np.tanh(min_r_b_dist)), done, info
             else:
                 if self.ball_landing_pos is None:
-                    min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj) - self.c_goal, axis=1))
-                    reward = 1 * (1 - np.tanh(min_r_b_dist )) + 2 * (1 - np.tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
+                    min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj)[:, ::2] - self.c_goal[::2], axis=1))
+                    reward = 0.5 * (1 - np.tanh(min_r_b_dist )) + 1 * (1 - np.tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
                     return reward, done, info
                 else:
-                    min_b_des_b_land_dist = np.linalg.norm(self.c_goal[:2] - self.ball_landing_pos[:2])
+                    min_b_des_b_land_pos = np.linalg.norm(self.c_goal[::2] - self.ball_landing_pos[::2])
                     over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
-                    return 2 * (1 - np.tanh(min_r_b_dist )) + 4 * (1 - np.tanh(min_b_des_b_land_dist )) + over_net_bonus - 1e-5 * np.sum(np.square(self.actions)), done, info
+                    if over_net_bonus:
+                        return 5 * (1 - np.tanh(min_r_b_dist )) + 10 * (
+                            - self.ball_landing_pos[0]) - 1e-5 * np.sum(np.square(self.actions)), done, info
+                    else:
+                        return 2 * (1 - np.tanh(min_r_b_dist)) + 3 * (1 - np.tanh(min_b_des_b_land_pos))\
+                               - 1e-5 * np.sum(np.square(self.actions)), done, info
 
 
             # if not hited_ball:

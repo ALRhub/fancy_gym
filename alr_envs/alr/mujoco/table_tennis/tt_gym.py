@@ -9,7 +9,6 @@ from alr_envs.alr.mujoco.table_tennis.tt_utils import ball_init
 
 MAX_EPISODE_STEPS = 1500
 
-from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
@@ -28,16 +27,18 @@ CONTEXT_RANGE_BOUNDS_4DIM = np.array([[-1.35, -0.75, -1.25, -0.75], [-0.1, 0.75,
 
 class TTEnvGym(MujocoEnv, utils.EzPickle):
 
-    def __init__(self, ctxt_dim=2, fixed_goal=False, apply_gravity_comp=True):
+    def __init__(self, ctxt_dim=2, fixed_goal=False, apply_gravity_comp=True, noisy_actions=False,
+                 reward_type: str = "ctxt"):
         model_path = os.path.join(os.path.dirname(__file__), "xml", 'table_tennis_env.xml')
 
         self.ctxt_dim = ctxt_dim
         self.fixed_goal = fixed_goal
         self.apply_gravity_comp = apply_gravity_comp
+        self.noisy_actions = noisy_actions
         if ctxt_dim == 2:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_2DIM
             if self.fixed_goal:
-                self.goal = np.array([-1.36, -0.76, 0])
+                self.goal = np.array([-1.37, -0.76, 0])
             else:
                 self.goal = np.zeros(3)  # 2 x,y + 1z
         elif ctxt_dim == 4:
@@ -55,7 +56,15 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         self.init_qpos_tt = np.array([0, 0, 0, 1.5, 0, 0, 1.5, 0, 0, 0])
         self.init_qvel_tt = np.zeros(10)
 
-        self.reward_func = TT_Reward(self.ctxt_dim)
+        if reward_type == "ctxt":
+            from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
+            self.reward_func = TT_Reward(self.ctxt_dim)
+        elif reward_type == "edge":
+            from alr_envs.alr.mujoco.table_tennis.tt_reward_edge import TT_Reward
+            self.reward_func = TT_Reward(self.ctxt_dim)
+        else:
+            raise NotImplementedError
+
         self.ball_landing_pos = None
         self.hit_ball = False
         self.ball_contact_after_hit = False
@@ -140,6 +149,8 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         #action += self.sim.data.qfrc_bias[:7].copy()
         if self.apply_gravity_comp:
             action = action + self.sim.data.qfrc_bias[:len(action)].copy() / self.model.actuator_gear[:, 0]
+        if self.noisy_actions:
+            action += 0.05 * np.random.randn(7)
         try:
             self.do_simulation(action, self.frame_skip)
             reward, done, reward_info = self.reward_func.get_reward(self, action)
@@ -174,7 +185,7 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = TTEnvGym(fixed_goal=True)
+    env = TTEnvGym(fixed_goal=True, reward_type="edge")
 
     # env.configure(ctxt)
     env.reset()
