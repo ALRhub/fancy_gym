@@ -180,7 +180,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.show()
 
         self.fig.gca().set_title(
-            f"Iteration: {self._steps}, distance: {np.linalg.norm(self.end_effector - self._goal) ** 2}")
+            f"Iteration: {self._steps}, distance: {np.linalg.norm(self.end_effector - self._goal)}")
 
         if mode == "human":
 

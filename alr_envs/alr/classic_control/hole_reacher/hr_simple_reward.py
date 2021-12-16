@@ -11,7 +11,7 @@ class HolereacherReward:
         self.collision_penalty = collision_penalty
         self._is_collided = False
 
-        self.reward_factors = np.array((-1, -5e-8, -collision_penalty))
+        self.reward_factors = np.array((-1, -5e-6, -collision_penalty))
 
     def reset(self):
         self._is_collided = False

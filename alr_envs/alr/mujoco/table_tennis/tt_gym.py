@@ -7,11 +7,9 @@ from gym.envs.mujoco import MujocoEnv
 
 from alr_envs.alr.mujoco.table_tennis.tt_utils import ball_init
 
-MAX_EPISODE_STEPS = 1500
-
+MAX_EPISODE_STEPS = 1000
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
-
 
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"

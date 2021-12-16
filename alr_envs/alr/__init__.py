@@ -112,7 +112,7 @@ register(
         "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": 2,
-        "collision_penalty": 10,
+        "collision_penalty": 100,
     }
 )
 
@@ -214,7 +214,7 @@ register(id='TableTennis4DCtxt-v0',
 
 register(id='TableTennisEdge-v0',
          entry_point='alr_envs.alr.mujoco:TTEnvGym',
-         max_episode_steps=MAX_EPISODE_STEPS,
+         max_episode_steps=1000,
          kwargs={'ctxt_dim': 2, 'fixed_goal': True, 'reward_type': 'edge'})
 
 ## BeerPong
@@ -359,7 +359,7 @@ for _v in _versions:
             "wrappers": [classic_control.hole_reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,
-                "num_basis": 5,
+                "num_basis": 3,
                 "duration": 2,
                 "policy_type": "velocity",
                 "weights_scale": 0.1,
@@ -462,7 +462,7 @@ register(
             "num_dof": 7,
             "num_basis": 2,
             "duration": 1.,
-            "post_traj_time": 2.,
+            "post_traj_time": 1.,
             "policy_type": "motor",
             "weights_scale": 0.1,
             "off": -0.05,

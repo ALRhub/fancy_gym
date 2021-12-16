@@ -2,6 +2,10 @@ import numpy as np
 from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
 
 
+def better_tanh(x):
+    return x / (x + 1)
+
+
 class TT_Reward:
 
     def __init__(self, ctxt_dim):
@@ -39,33 +43,49 @@ class TT_Reward:
         if self.ball_landing_pos is not None:
             done = True
             episode_end = True
-            success = self.ball_landing_pos[0] < 0 and self.ball_landing_pos[2] > 0.7
-
-        info = {"ball_landing_pos": self.ball_landing_pos,
-                "success": success}
+            # success = self.ball_landing_pos[0] < 0 and self.ball_landing_pos[2] > 0.7
 
         if not episode_end:
-            return 0, done, info
+            reward = 0
+
+            # return 0, done, info
         else:
             # # seems to work for episodic case
             min_r_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj) - np.array(self.c_racket_traj), axis=1))
+            # if not self.hit_ball:
+            #     return 0.2 * (1 - np.tanh(min_r_b_dist)), done, info
+            # else:
+            #     if self.ball_landing_pos is None:
+            #         min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj)[:, ::2] - self.c_goal[::2], axis=1))
+            #         reward = 0.5 * (1 - np.tanh(min_r_b_dist )) + 1 * (1 - np.tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
+            #         return reward, done, info
+            #     else:
+            #         min_b_des_b_land_pos = np.linalg.norm(self.c_goal[::2] - self.ball_landing_pos[::2])
+            #         over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
+            #         if over_net_bonus:
+            #             return 5 * (1 - np.tanh(min_r_b_dist )) + 10 * (
+            #                 - self.ball_landing_pos[0]) - 1e-5 * np.sum(np.square(self.actions)), done, info
+            #         else:
+            #             return 2 * (1 - np.tanh(min_r_b_dist)) + 3 * (1 - np.tanh(min_b_des_b_land_pos))\
+            #                    - 1e-5 * np.sum(np.square(self.actions)), done, info
+
             if not self.hit_ball:
-                return 0.2 * (1 - np.tanh(min_r_b_dist)), done, info
+                reward = 0.2 * (1 - better_tanh(min_r_b_dist))  #, done, info
             else:
                 if self.ball_landing_pos is None:
                     min_b_des_b_dist = np.min(np.linalg.norm(np.array(self.c_ball_traj)[:, ::2] - self.c_goal[::2], axis=1))
-                    reward = 0.5 * (1 - np.tanh(min_r_b_dist )) + 1 * (1 - np.tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
-                    return reward, done, info
+                    reward = 0.5 * (1 - better_tanh(min_r_b_dist )) + 1 * (1 - better_tanh(min_b_des_b_dist)) - 1e-5 * np.sum(np.square(self.actions))
+                    # return reward, done, info
                 else:
+                    success = self.ball_landing_pos[0] < 0 and self.ball_landing_pos[2] > 0.7
                     min_b_des_b_land_pos = np.linalg.norm(self.c_goal[::2] - self.ball_landing_pos[::2])
                     over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
                     if over_net_bonus:
-                        return 5 * (1 - np.tanh(min_r_b_dist )) + 10 * (
-                            - self.ball_landing_pos[0]) - 1e-5 * np.sum(np.square(self.actions)), done, info
+                        reward = 5 * (1 - better_tanh(min_r_b_dist )) + 10 * (
+                            - self.ball_landing_pos[0]) - 1e-5 * np.sum(np.square(self.actions)) # , done, info
                     else:
-                        return 2 * (1 - np.tanh(min_r_b_dist)) + 3 * (1 - np.tanh(min_b_des_b_land_pos))\
-                               - 1e-5 * np.sum(np.square(self.actions)), done, info
-
+                        reward = 2 * (1 - better_tanh(min_r_b_dist)) + 3 * (1 - better_tanh(min_b_des_b_land_pos))\
+                               - 1e-5 * np.sum(np.square(self.actions))  # , done, info
 
             # if not hited_ball:
             #     min_r_b_dist = 1 + np.min(np.linalg.norm(np.array(self.c_ball_traj) - np.array(self.c_racket_traj), axis=1))
@@ -78,6 +98,11 @@ class TT_Reward:
             #     if dist_to_des_pos < -0.2:
             #         dist_to_des_pos = -0.2
             #     return -dist_to_des_pos
+
+        info = {"ball_landing_pos": self.ball_landing_pos,
+                "success": success}
+
+        return reward, done, info
 
     def reset(self, goal):
         self.c_goal = goal.copy()
