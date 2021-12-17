@@ -60,6 +60,7 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         elif reward_type == "edge":
             from alr_envs.alr.mujoco.table_tennis.tt_reward_edge import TT_Reward
             self.reward_func = TT_Reward(self.ctxt_dim)
+            self.goal = np.array([-1.37, 0., 0])
         else:
             raise NotImplementedError
 

@@ -79,11 +79,12 @@ class TT_Reward:
                 else:
                     success = self.ball_landing_pos[0] < 0 and self.ball_landing_pos[2] > 0.7
                     min_b_des_b_land_pos = np.linalg.norm(self.c_goal[::2] - self.ball_landing_pos[::2])
-                    over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
-                    if over_net_bonus:
+                    # over_net_bonus = int(self.ball_landing_pos[0] < 0) * int(self.ball_landing_pos[2] > 0.7)
+                    if success:
                         reward = 5 * (1 - better_tanh(min_r_b_dist )) + 10 * (
                             - self.ball_landing_pos[0]) - 1e-5 * np.sum(np.square(self.actions)) # , done, info
                     else:
+                        min_b_des_b_land_pos = np.linalg.norm(self.c_goal - self.ball_landing_pos)
                         reward = 2 * (1 - better_tanh(min_r_b_dist)) + 3 * (1 - better_tanh(min_b_des_b_land_pos))\
                                - 1e-5 * np.sum(np.square(self.actions))  # , done, info
 
