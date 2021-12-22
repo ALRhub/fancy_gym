@@ -3,13 +3,13 @@ import numpy as np
 
 def ball_init(random=False, context_range=None):
     if random:
-        dx = np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
-        dy = np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
-        dz = np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
+        dx = 1  # np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
+        dy = 0  # np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
+        dz = 0.05  # np.random.uniform(-0.1, 0.1)           # TODO: clarify these numbers?
 
-        v_x = np.random.uniform(1.7, 1.8)
-        v_y = np.random.uniform(0.7, 0.8)
-        v_z = np.random.uniform(0.1, 0.2)
+        v_x = np.random.uniform(2.51, 2.49)
+        v_y = 2  # np.random.uniform(0.7, 0.8)
+        v_z = 0.5  # np.random.uniform(0.1, 0.2)
     else:
         dx = 1
         dy = 0

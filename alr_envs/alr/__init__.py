@@ -112,7 +112,7 @@ register(
         "hole_width": 0.25,
         "hole_depth": 1,
         "hole_x": 2,
-        "collision_penalty": 100,
+        "collision_penalty": 1000,
     }
 )
 
@@ -216,6 +216,11 @@ register(id='TableTennisEdge-v0',
          entry_point='alr_envs.alr.mujoco:TTEnvGym',
          max_episode_steps=1000,
          kwargs={'ctxt_dim': 2, 'fixed_goal': True, 'reward_type': 'edge'})
+
+register(id='TableTennisEdge-v1',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
+         max_episode_steps=1000,
+         kwargs={'ctxt_dim': 2, 'fixed_goal': True, 'reward_type': 'edge', 'noisy_ball': True})
 
 ## BeerPong
 difficulties = ["simple", "intermediate", "hard", "hardest"]
@@ -477,3 +482,29 @@ register(
     }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("TableTennisProMP-v3")
+
+register(
+    id='TableTennisProMP-v4',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:TableTennisEdge-v1",
+        "wrappers": [mujoco.table_tennis.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 7,
+            "num_basis": 2,
+            "duration": 1.,
+            "post_traj_time": 1.,
+            "policy_type": "motor",
+            "weights_scale": 0.1,
+            "off": -0.05,
+            "bandwidth_factor": 3.5,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": 0.5*np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                "d_gains": 0.5*np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("TableTennisProMP-v4")

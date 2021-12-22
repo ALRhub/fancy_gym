@@ -25,7 +25,7 @@ CONTEXT_RANGE_BOUNDS_4DIM = np.array([[-1.35, -0.75, -1.25, -0.75], [-0.1, 0.75,
 
 class TTEnvGym(MujocoEnv, utils.EzPickle):
 
-    def __init__(self, ctxt_dim=2, fixed_goal=False, apply_gravity_comp=True, noisy_actions=False,
+    def __init__(self, ctxt_dim=2, fixed_goal=False, apply_gravity_comp=True, noisy_actions=False, noisy_ball=False,
                  reward_type: str = "ctxt"):
         model_path = os.path.join(os.path.dirname(__file__), "xml", 'table_tennis_env.xml')
 
@@ -33,6 +33,7 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         self.fixed_goal = fixed_goal
         self.apply_gravity_comp = apply_gravity_comp
         self.noisy_actions = noisy_actions
+        self.noisy_ball = noisy_ball
         if ctxt_dim == 2:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_2DIM
             if self.fixed_goal:
@@ -108,9 +109,9 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         else:
             self.goal = self.sample_context()[:2]
         if self.ctxt_dim == 2:
-            initial_ball_state = ball_init(random=False)  # fixed velocity, fixed position
+            initial_ball_state = ball_init(random=self.noisy_ball)  # fixed velocity, fixed position
         elif self.ctxt_dim == 4:
-            initial_ball_state = ball_init(random=False)#raise NotImplementedError
+            initial_ball_state = ball_init(random=self.noisy_ball)  # raise NotImplementedError
 
         self.sim.data.set_joint_qpos('tar:x', initial_ball_state[0])
         self.sim.data.set_joint_qpos('tar:y', initial_ball_state[1])
@@ -184,7 +185,7 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = TTEnvGym(fixed_goal=True, reward_type="edge")
+    env = TTEnvGym(fixed_goal=True, reward_type="edge", noisy_ball=True)
 
     # env.configure(ctxt)
     env.reset()
