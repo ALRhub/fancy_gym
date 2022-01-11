@@ -27,10 +27,10 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.ball_site_id = 0
         self.ball_id = 11
 
-        self._release_step = 100  # time step of ball release
+        self._release_step = 175  # time step of ball release
 
-        self.sim_time = 4  # seconds
-        self.ep_length = 600  # based on 5 seconds with dt = 0.005 int(self.sim_time / self.dt)
+        self.sim_time = 3  # seconds
+        self.ep_length = 600  # based on 3 seconds with dt = 0.005 int(self.sim_time / self.dt)
         self.cup_table_id = 10
 
         if noisy:
@@ -127,24 +127,28 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             self._steps += 1
         else:
             reward = -30
+            reward_infos = dict()
             success = False
             is_collided = False
             done = True
             ball_pos = np.zeros(3)
             ball_vel = np.zeros(3)
 
-        return ob, reward, done, dict(reward_dist=reward_dist,
-                                      reward_ctrl=reward_ctrl,
-                                      reward=reward,
-                                      velocity=angular_vel,
-                                      # traj=self._q_pos,
-                                      action=a,
-                                      q_pos=self.sim.data.qpos[0:7].ravel().copy(),
-                                      q_vel=self.sim.data.qvel[0:7].ravel().copy(),
-                                      ball_pos=ball_pos,
-                                      ball_vel=ball_vel,
-                                      is_success=success,
-                                      is_collided=is_collided, sim_crash=crash)
+        infos = dict(reward_dist=reward_dist,
+                     reward_ctrl=reward_ctrl,
+                     reward=reward,
+                     velocity=angular_vel,
+                     # traj=self._q_pos,
+                     action=a,
+                     q_pos=self.sim.data.qpos[0:7].ravel().copy(),
+                     q_vel=self.sim.data.qvel[0:7].ravel().copy(),
+                     ball_pos=ball_pos,
+                     ball_vel=ball_vel,
+                     success=success,
+                     is_collided=is_collided, sim_crash=crash)
+        infos.update(reward_infos)
+
+        return ob, reward, done, infos
 
     def check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
@@ -171,7 +175,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = ALRBeerBongEnv(reward_type="no_context", difficulty='hardest')
+    env = ALRBeerBongEnv(reward_type="staged", difficulty='hardest')
 
     # env.configure(ctxt)
     env.reset()

@@ -76,7 +76,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         "policy_type": "metaworld",  # custom controller type for metaworld environments
     }
 
-    env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
+    env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a DMP (other mp_kwargs are required, see dmc_examples):
     # env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     example_dmc("button-press-v2", seed=10, iterations=500, render=render)
 
     # MP + MetaWorld hybrid task provided in the our framework
-    example_dmc("ButtonPressDetPMP-v2", seed=10, iterations=1, render=render)
+    example_dmc("ButtonPressProMP-v2", seed=10, iterations=1, render=render)
 
     # Custom MetaWorld task
     example_custom_dmc_and_mp(seed=10, iterations=1, render=render)

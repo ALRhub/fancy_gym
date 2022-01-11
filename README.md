@@ -81,7 +81,7 @@ trajectory.
 ```python
 import alr_envs
 
-env = alr_envs.make('HoleReacherDetPMP-v0', seed=1)
+env = alr_envs.make('HoleReacherProMP-v0', seed=1)
 # render() can be called once in the beginning with all necessary arguments. To turn it of again just call render(None). 
 env.render()
 
@@ -95,7 +95,7 @@ for i in range(5):
 ```
 
 To show all available environments, we provide some additional convenience. Each value will return a dictionary with two
-keys `DMP` and `DetPMP` that store a list of available environment names.
+keys `DMP` and `ProMP` that store a list of available environment names.
 
 ```python
 import alr_envs
@@ -193,7 +193,7 @@ mp_kwargs = {...}
 kwargs = {...}
 env = alr_envs.make_dmp_env(base_env_id, wrappers=wrappers, seed=1, mp_kwargs=mp_kwargs, **kwargs)
 # OR for a deterministic ProMP (other mp_kwargs are required):
-# env = alr_envs.make_detpmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+# env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
 
 rewards = 0
 obs = env.reset()

@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from alr_envs import dmc, meta
-from alr_envs.utils.make_env_helpers import make_detpmp_env
+from alr_envs.utils.make_env_helpers import make_promp_env
 
 # This might work for some environments, however, please verify either way the correct trajectory information
 # for your environment are extracted below
@@ -26,8 +26,8 @@ mp_kwargs = {
 
 kwargs = dict(time_limit=2, episode_length=100)
 
-env = make_detpmp_env(env_id, wrappers, seed=SEED, mp_kwargs=mp_kwargs,
-                      **kwargs)
+env = make_promp_env(env_id, wrappers, seed=SEED, mp_kwargs=mp_kwargs,
+                     **kwargs)
 
 # Plot difference between real trajectory and target MP trajectory
 env.reset()

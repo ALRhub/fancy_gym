@@ -10,7 +10,9 @@ from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from .mujoco.reacher.alr_reacher import ALRReacherEnv
 from .mujoco.reacher.balancing import BalancingEnv
 
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "DetPMP": []}
+from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
+
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
 # Classic Control
 ## Simple Reacher
@@ -195,16 +197,20 @@ register(
 )
 
 ## Table Tennis
-from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
 register(id='TableTennis2DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
          max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim':2})
+         kwargs={'ctxt_dim': 2})
+
+register(id='TableTennis2DCtxt-v1',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
+         max_episode_steps=MAX_EPISODE_STEPS,
+         kwargs={'ctxt_dim': 2, 'fixed_goal': True})
 
 register(id='TableTennis4DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TT_Env_Gym',
+         entry_point='alr_envs.alr.mujoco:TTEnvGym',
          max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim':4})
+         kwargs={'ctxt_dim': 4})
 
 ## BeerPong
 difficulties = ["simple", "intermediate", "hard", "hardest"]
@@ -240,8 +246,12 @@ for _v in _versions:
                 "duration": 2,
                 "alpha_phase": 2,
                 "learn_goal": True,
-                "policy_type": "velocity",
+                "policy_type": "motor",
                 "weights_scale": 50,
+                "policy_kwargs": {
+                    "p_gains": .6,
+                    "d_gains": .075
+                }
             }
         }
     )
@@ -260,32 +270,15 @@ for _v in _versions:
                 "duration": 2,
                 "policy_type": "motor",
                 "weights_scale": 1,
-                "zero_start": True
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": .6,
+                    "d_gains": .075
+                }
             }
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-    _env_id = f'{_name[0]}DetPMP-{_name[1]}'
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-        # max_episode_steps=1,
-        kwargs={
-            "name": f"alr_envs:{_v}",
-            "wrappers": [classic_control.simple_reacher.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 2 if "long" not in _v.lower() else 5,
-                "num_basis": 5,
-                "duration": 2,
-                "width": 0.025,
-                "policy_type": "velocity",
-                "weights_scale": 0.2,
-                "zero_start": True
-            }
-        }
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append(_env_id)
 
 # Viapoint reacher
 register(
@@ -318,33 +311,13 @@ register(
             "num_dof": 5,
             "num_basis": 5,
             "duration": 2,
-            "policy_type": "motor",
+            "policy_type": "velocity",
             "weights_scale": 1,
             "zero_start": True
         }
     }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
-
-register(
-    id='ViaPointReacherDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-    # max_episode_steps=1,
-    kwargs={
-        "name": "alr_envs:ViaPointReacher-v0",
-        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
-        "mp_kwargs": {
-            "num_dof": 5,
-            "num_basis": 5,
-            "duration": 2,
-            "width": 0.025,
-            "policy_type": "velocity",
-            "weights_scale": 0.2,
-            "zero_start": True
-        }
-    }
-)
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("ViaPointReacherDetPMP-v0")
 
 ## Hole Reacher
 _versions = ["v0", "v1", "v2"]
@@ -391,71 +364,77 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
-    _env_id = f'HoleReacherDetPMP-{_v}'
+## Beerpong
+_versions = ["v0", "v1", "v2", "v3"]
+for _v in _versions:
+    _env_id = f'BeerpongProMP-{_v}'
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
         kwargs={
-            "name": f"alr_envs:HoleReacher-{_v}",
-            "wrappers": [classic_control.hole_reacher.MPWrapper],
+            "name": f"alr_envs:ALRBeerPong-{_v}",
+            "wrappers": [mujoco.beerpong.MPWrapper],
             "mp_kwargs": {
-                "num_dof": 5,
-                "num_basis": 5,
-                "duration": 2,
-                "width": 0.025,
-                "policy_type": "velocity",
-                "weights_scale": 0.2,
-                "zero_start": True
+                "num_dof": 7,
+                "num_basis": 2,
+                "duration": 1,
+                "post_traj_time": 2,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
+                    "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+                }
             }
         }
     )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append(_env_id)
-
-## Beerpong
-register(
-    id='BeerpongDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
-    kwargs={
-        "name": "alr_envs:ALRBeerPong-v0",
-        "wrappers": [mujoco.beerpong.MPWrapper],
-        "mp_kwargs": {
-            "num_dof": 7,
-            "num_basis": 2,
-            "n_zero_bases": 2,
-            "duration": 0.5,
-            "post_traj_time": 2.5,
-            "width": 0.01,
-            "off": 0.01,
-            "policy_type": "motor",
-            "weights_scale": 0.08,
-            "zero_start": True,
-            "zero_goal": False,
-            "policy_kwargs": {
-                "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
-                "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
-            }
-        }
-    }
-)
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("BeerpongDetPMP-v0")
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## Table Tennis
+ctxt_dim = [2, 4]
+for _v, cd in enumerate(ctxt_dim):
+    _env_id = f'TableTennisProMP-v{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": "alr_envs:TableTennis{}DCtxt-v0".format(cd),
+            "wrappers": [mujoco.table_tennis.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 7,
+                "num_basis": 2,
+                "duration": 1.25,
+                "post_traj_time": 4.5,
+                "policy_type": "motor",
+                "weights_scale": 1.0,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": 0.5*np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                    "d_gains": 0.5*np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+                }
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
 register(
-    id='TableTennisDetPMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_detpmp_env_helper',
+    id='TableTennisProMP-v2',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
     kwargs={
-        "name": "alr_envs:TableTennis4DCtxt-v0",
+        "name": "alr_envs:TableTennis2DCtxt-v1",
         "wrappers": [mujoco.table_tennis.MPWrapper],
         "mp_kwargs": {
             "num_dof": 7,
             "num_basis": 2,
-            "n_zero_bases": 2,
-            "duration": 1.25,
-            "post_traj_time": 4.5,
-            "width": 0.01,
-            "off": 0.01,
+            "duration": 1.,
+            "post_traj_time": 2.5,
             "policy_type": "motor",
-            "weights_scale": 1.0,
+            "weights_scale": 1,
+            "off": -0.05,
+            "bandwidth_factor": 3.5,
             "zero_start": True,
             "zero_goal": False,
             "policy_kwargs": {
@@ -465,4 +444,4 @@ register(
         }
     }
 )
-ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DetPMP"].append("TableTennisDetPMP-v0")
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("TableTennisProMP-v2")

@@ -71,6 +71,7 @@ class BeerPongReward:
 
         goal_pos = env.sim.data.site_xpos[self.goal_id]
         ball_pos = env.sim.data.body_xpos[self.ball_id]
+        ball_vel = env.sim.data.body_xvelp[self.ball_id]
         goal_final_pos = env.sim.data.site_xpos[self.goal_final_id]
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
@@ -131,6 +132,7 @@ class BeerPongReward:
         infos["success"] = success
         infos["is_collided"] = self._is_collided
         infos["ball_pos"] = ball_pos.copy()
+        infos["ball_vel"] = ball_vel.copy()
         infos["action_cost"] = 5e-4 * action_cost
 
         return reward, infos

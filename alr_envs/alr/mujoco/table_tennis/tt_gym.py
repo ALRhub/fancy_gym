@@ -10,7 +10,7 @@ from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
-MAX_EPISODE_STEPS = 1375
+MAX_EPISODE_STEPS = 1750
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"
 TABLE_NAME = 'table_tennis_table'
@@ -22,24 +22,30 @@ RACKET_NAME = 'bat'
 CONTEXT_RANGE_BOUNDS_2DIM = np.array([[-1.2, -0.6], [-0.2, 0.0]])
 CONTEXT_RANGE_BOUNDS_4DIM = np.array([[-1.35, -0.75, -1.25, -0.75], [-0.1, 0.75, -0.1, 0.75]])
 
-class TT_Env_Gym(MujocoEnv, utils.EzPickle):
 
-    def __init__(self, ctxt_dim=2):
+class TTEnvGym(MujocoEnv, utils.EzPickle):
+
+    def __init__(self, ctxt_dim=2, fixed_goal=False):
         model_path = os.path.join(os.path.dirname(__file__), "xml", 'table_tennis_env.xml')
 
         self.ctxt_dim = ctxt_dim
+        self.fixed_goal = fixed_goal
         if ctxt_dim == 2:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_2DIM
-            self.goal = np.zeros(3)  # 2 x,y + 1z
+            if self.fixed_goal:
+                self.goal = np.array([-1, -0.1, 0])
+            else:
+                self.goal = np.zeros(3)  # 2 x,y + 1z
         elif ctxt_dim == 4:
             self.context_range_bounds = CONTEXT_RANGE_BOUNDS_4DIM
             self.goal = np.zeros(3)
         else:
             raise ValueError("either 2 or 4 dimensional Contexts available")
 
-        action_space_low = np.array([-2.6, -2.0, -2.8, -0.9, -4.8, -1.6, -2.2])
-        action_space_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
-        self.action_space = spaces.Box(low=action_space_low, high=action_space_high, dtype='float64')
+        # has no effect as it is overwritten in init of super
+        # action_space_low = np.array([-2.6, -2.0, -2.8, -0.9, -4.8, -1.6, -2.2])
+        # action_space_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
+        # self.action_space = spaces.Box(low=action_space_low, high=action_space_high, dtype='float64')
 
         self.time_steps = 0
         self.init_qpos_tt = np.array([0, 0, 0, 1.5, 0, 0, 1.5, 0, 0, 0])
@@ -47,10 +53,10 @@ class TT_Env_Gym(MujocoEnv, utils.EzPickle):
 
         self.reward_func = TT_Reward(self.ctxt_dim)
         self.ball_landing_pos = None
-        self.hited_ball = False
+        self.hit_ball = False
         self.ball_contact_after_hit = False
         self._ids_set = False
-        super(TT_Env_Gym, self).__init__(model_path=model_path, frame_skip=1)
+        super(TTEnvGym, self).__init__(model_path=model_path, frame_skip=1)
         self.ball_id = self.sim.model._body_name2id[BALL_NAME]  # find the proper -> not protected func.
         self.ball_contact_id = self.sim.model._geom_name2id[BALL_NAME_CONTACT]
         self.table_contact_id = self.sim.model._geom_name2id[TABLE_NAME]
@@ -77,15 +83,18 @@ class TT_Env_Gym(MujocoEnv, utils.EzPickle):
         return obs
 
     def sample_context(self):
-        return np.random.uniform(self.context_range_bounds[0], self.context_range_bounds[1], size=self.ctxt_dim)
+        return self.np_random.uniform(self.context_range_bounds[0], self.context_range_bounds[1], size=self.ctxt_dim)
 
     def reset_model(self):
         self.set_state(self.init_qpos_tt, self.init_qvel_tt)    # reset to initial sim state
         self.time_steps = 0
         self.ball_landing_pos = None
-        self.hited_ball = False
+        self.hit_ball = False
         self.ball_contact_after_hit = False
-        self.goal = self.sample_context()[:2]
+        if self.fixed_goal:
+            self.goal = self.goal[:2]
+        else:
+            self.goal = self.sample_context()[:2]
         if self.ctxt_dim == 2:
             initial_ball_state = ball_init(random=False)  # fixed velocity, fixed position
         elif self.ctxt_dim == 4:
@@ -122,12 +131,12 @@ class TT_Env_Gym(MujocoEnv, utils.EzPickle):
         if not self._ids_set:
             self._set_ids()
         done = False
-        episode_end = False if self.time_steps+1<MAX_EPISODE_STEPS else True
-        if not self.hited_ball:
-            self.hited_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_1) # check for one side
-            if not self.hited_ball:
-                self.hited_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_2) # check for other side
-        if self.hited_ball:
+        episode_end = False if self.time_steps + 1 < MAX_EPISODE_STEPS else True
+        if not self.hit_ball:
+            self.hit_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_1) # check for one side
+            if not self.hit_ball:
+                self.hit_ball = self._contact_checker(self.ball_contact_id, self.paddle_contact_id_2) # check for other side
+        if self.hit_ball:
             if not self.ball_contact_after_hit:
                 if self._contact_checker(self.ball_contact_id, self.floor_contact_id):  # first check contact with floor
                     self.ball_contact_after_hit = True
@@ -140,7 +149,7 @@ class TT_Env_Gym(MujocoEnv, utils.EzPickle):
         if self.ball_landing_pos is not None:
             done = True
             episode_end =True
-        reward = self.reward_func.get_reward(episode_end, c_ball_pos, racket_pos, self.hited_ball, self.ball_landing_pos)
+        reward = self.reward_func.get_reward(episode_end, c_ball_pos, racket_pos, self.hit_ball, self.ball_landing_pos)
         self.time_steps += 1
         # gravity compensation on joints:
         #action += self.sim.data.qfrc_bias[:7].copy()
@@ -151,7 +160,10 @@ class TT_Env_Gym(MujocoEnv, utils.EzPickle):
             done = True
             reward = -25
         ob = self._get_obs()
-        return ob, reward, done, {"hit_ball":self.hited_ball}# might add some information here ....
+        info = {"hit_ball": self.hit_ball,
+                "q_pos": np.copy(self.sim.data.qpos[:7]),
+                "ball_pos": np.copy(self.sim.data.qpos[7:])}
+        return ob, reward, done, info # might add some information here ....
 
     def set_context(self, context):
         old_state = self.sim.get_state()
