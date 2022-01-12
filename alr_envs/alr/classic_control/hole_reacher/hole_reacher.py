@@ -41,6 +41,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         if rew_fct == "simple":
             from alr_envs.alr.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
+            self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision)
+        elif rew_fct == "penalty":
+            from alr_envs.alr.classic_control.hole_reacher.hr_penalty_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
         elif rew_fct == "vel_acc":
             from alr_envs.alr.classic_control.hole_reacher.hr_dist_vel_acc_reward import HolereacherReward
@@ -68,9 +71,10 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             width = np.copy(self.initial_width)
         if self.initial_x is None:
             # sample whole on left or right side
-            direction = self.np_random.choice([-1, 1])
+            # direction = self.np_random.choice([-1, 1])
             # Hole center needs to be half the width away from the arm to give a valid setting.
-            x = direction * self.np_random.uniform(width / 2, 3.5)
+            # x = direction * self.np_random.uniform(width / 2, 3.5)
+            x = self.np_random.uniform(1.9, 2.1)
         else:
             x = np.copy(self.initial_x)
         if self.initial_depth is None:

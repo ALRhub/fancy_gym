@@ -116,6 +116,21 @@ register(
     }
 )
 
+register(
+    id='HoleReacher-v3',
+    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "random_start": False,
+        "allow_self_collision": False,
+        "allow_wall_collision": False,
+        "hole_width": 0.25,
+        "hole_depth": 1,
+        "collision_penalty": 0,
+    }
+)
+
 # Mujoco
 
 ## Reacher
@@ -330,7 +345,7 @@ register(
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
 
 ## Hole Reacher
-_versions = ["v0", "v1", "v2"]
+_versions = ["v0", "v1", "v2", "v3"]
 for _v in _versions:
     _env_id = f'HoleReacherDMP-{_v}'
     register(
