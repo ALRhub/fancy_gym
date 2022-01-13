@@ -22,6 +22,7 @@ class BaseReacherTorqueEnv(BaseReacherEnv, ABC):
         A single step with action in torque space
         """
 
+        self._acc = action
         self._angle_velocity = self._angle_velocity + self.dt * action
         self._joint_angles = self._joint_angles + self.dt * self._angle_velocity
         self._update_joints()
@@ -31,6 +32,6 @@ class BaseReacherTorqueEnv(BaseReacherEnv, ABC):
         reward, info = self._get_reward(action)
 
         self._steps += 1
-        done = False
+        done = self._terminate(info)
 
         return self._get_obs().copy(), reward, done, info

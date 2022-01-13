@@ -2,7 +2,8 @@ import numpy as np
 from gym import register
 
 from . import classic_control, mujoco
-from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
+from .classic_control.hole_reacher.hole_reacher import HoleReacherDirectEnv
+from .classic_control.hole_reacher.hole_reacher import HoleReacherTorqueEnv
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
 from .classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacherEnv
 from .mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
@@ -70,7 +71,7 @@ register(
 ## Hole Reacher
 register(
     id='HoleReacher-v0',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    entry_point='alr_envs.alr.classic_control:HoleReacherDirectEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -86,7 +87,7 @@ register(
 
 register(
     id='HoleReacher-v1',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    entry_point='alr_envs.alr.classic_control:HoleReacherDirectEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -102,7 +103,7 @@ register(
 
 register(
     id='HoleReacher-v2',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    entry_point='alr_envs.alr.classic_control:HoleReacherDirectEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
@@ -118,15 +119,31 @@ register(
 
 register(
     id='HoleReacher-v3',
-    entry_point='alr_envs.alr.classic_control:HoleReacherEnv',
+    entry_point='alr_envs.alr.classic_control:HoleReacherTorqueEnv',
     max_episode_steps=200,
     kwargs={
         "n_links": 5,
         "random_start": False,
         "allow_self_collision": False,
         "allow_wall_collision": False,
-        "hole_width": 0.25,
+        "hole_width": 0.2,
         "hole_depth": 1,
+        "hole_x": 2,
+        "collision_penalty": 0,
+    }
+)
+
+register(
+    id='HoleReacher-v4',
+    entry_point='alr_envs.alr.classic_control:HoleReacherTorqueEnv',
+    max_episode_steps=200,
+    kwargs={
+        "n_links": 5,
+        "random_start": False,
+        "allow_self_collision": False,
+        "allow_wall_collision": False,
+        "hole_width": 0.2,
+        "hole_x": 2,
         "collision_penalty": 0,
     }
 )
@@ -345,7 +362,7 @@ register(
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
 
 ## Hole Reacher
-_versions = ["v0", "v1", "v2", "v3"]
+_versions = ["v0", "v1", "v2"]
 for _v in _versions:
     _env_id = f'HoleReacherDMP-{_v}'
     register(
@@ -384,6 +401,31 @@ for _v in _versions:
                 "policy_type": "velocity",
                 "weights_scale": 0.1,
                 "zero_start": True
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+_versions = ["v3", "v4"]
+for _v in _versions:
+    _env_id = f'HoleReacherProMP-{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:HoleReacher-{_v}",
+            "wrappers": [classic_control.hole_reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 3,
+                "duration": 2,
+                "policy_type": "motor",
+                "weights_scale": 0.1,
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": np.array([50, 50, 50, 50, 50]) * 2,
+                    "d_gains": np.array([5, 5, 5, 5, 5]) * 2
+                }
             }
         }
     )

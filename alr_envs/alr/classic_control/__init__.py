@@ -1,3 +1,4 @@
-from .hole_reacher.hole_reacher import HoleReacherEnv
+from .hole_reacher.hole_reacher import HoleReacherDirectEnv
+from .hole_reacher.hole_reacher import HoleReacherTorqueEnv
 from .simple_reacher.simple_reacher import SimpleReacherEnv
 from .viapoint_reacher.viapoint_reacher import ViaPointReacherEnv

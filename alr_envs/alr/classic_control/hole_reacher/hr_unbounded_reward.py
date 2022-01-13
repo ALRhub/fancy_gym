@@ -29,17 +29,23 @@ class HolereacherReward:
 
         self._is_collided = self_collision or wall_collision
 
+        if env._steps == 180 or self._is_collided:
+            self.end_eff_pos = np.copy(env.end_effector)
+
         if env._steps == 199 or self._is_collided:
             # return reward only in last time step
             # Episode also terminates when colliding, hence return reward
-            dist = np.linalg.norm(env.end_effector - env._goal)
+            dist = np.linalg.norm(self.end_eff_pos - env._goal)
 
             if self._is_collided:
-                dist_reward = 0.5 * np.exp(- dist)
+                dist_reward = 0.25 * np.exp(- dist)
             else:
-                dist_reward = np.exp(- dist)
+                if env.end_effector[1] > 0:
+                    dist_reward = np.exp(- dist)
+                else:
+                    dist_reward = 1 - self.end_eff_pos[1]
 
-            success = dist < 0.005 and not self._is_collided
+            success = not self._is_collided
 
         info = {"is_success": success,
                 "is_collided": self._is_collided,

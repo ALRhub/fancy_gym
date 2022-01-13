@@ -1,14 +1,16 @@
 from typing import Union
-
+from abc import ABC
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches
 
+from alr_envs.alr.classic_control.base_reacher.base_reacher import BaseReacherEnv
 from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from alr_envs.alr.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
 
 
-class HoleReacherEnv(BaseReacherDirectEnv):
+class HoleReacherBaseEnv(BaseReacherEnv, ABC):
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
                  allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
@@ -45,6 +47,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         elif rew_fct == "penalty":
             from alr_envs.alr.classic_control.hole_reacher.hr_penalty_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
+        elif rew_fct == "unbounded":
+            from alr_envs.alr.classic_control.hole_reacher.hr_unbounded_reward import HolereacherReward
+            self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision)
         elif rew_fct == "vel_acc":
             from alr_envs.alr.classic_control.hole_reacher.hr_dist_vel_acc_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
@@ -74,19 +79,20 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             # direction = self.np_random.choice([-1, 1])
             # Hole center needs to be half the width away from the arm to give a valid setting.
             # x = direction * self.np_random.uniform(width / 2, 3.5)
-            x = self.np_random.uniform(1.9, 2.1)
+            x = self.np_random.uniform(1.96, 2.04)
         else:
             x = np.copy(self.initial_x)
         if self.initial_depth is None:
             # TODO we do not want this right now.
-            depth = self.np_random.uniform(1, 1)
+            depth = self.np_random.uniform(0.98, 1.02)
         else:
             depth = np.copy(self.initial_depth)
 
         self._tmp_width = width
         self._tmp_x = x
         self._tmp_depth = depth
-        self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
+        # self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
+        self._goal = np.hstack([self._tmp_x, -0.1])
 
         self._line_ground_left = np.array([-self.n_links, 0, x - width / 2, 0])
         self._line_ground_right = np.array([x + width / 2, 0, self.n_links, 0])
@@ -222,9 +228,27 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.gca().add_patch(hole_floor)
 
 
+class HoleReacherDirectEnv(HoleReacherBaseEnv, BaseReacherDirectEnv):
+    def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
+                 hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
+                 allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
+        super(HoleReacherDirectEnv, self).__init__(n_links, hole_x, hole_depth,
+                                                   hole_width, random_start, allow_self_collision,
+                                                   allow_wall_collision, collision_penalty, rew_fct)
+
+
+class HoleReacherTorqueEnv(HoleReacherBaseEnv, BaseReacherTorqueEnv):
+    def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
+                 hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
+                 allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
+        super(HoleReacherTorqueEnv, self).__init__(n_links, hole_x, hole_depth,
+                                                   hole_width, random_start, allow_self_collision,
+                                                   allow_wall_collision, collision_penalty, rew_fct)
+
+
 if __name__ == "__main__":
     import time
-    env = HoleReacherEnv(5)
+    env = HoleReacherTorqueEnv(5)
     env.reset()
 
     for i in range(10000):
