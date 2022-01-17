@@ -181,7 +181,7 @@ if __name__ == "__main__":
     env.reset()
     env.render("human")
     for i in range(800):
-        ac = 10 * env.action_space.sample()[0:7]
+        ac = env.action_space.sample()[0:7]
         obs, rew, d, info = env.step(ac)
         env.render("human")
 

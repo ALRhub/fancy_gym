@@ -1,6 +1,10 @@
 import numpy as np
 
 
+def better_tanh(x):
+    return x / (x + 1)
+
+
 class BeerPongReward:
     def __init__(self):
 
@@ -97,14 +101,18 @@ class BeerPongReward:
             # encourage bounce before falling into cup
             if not ball_in_cup:
                 if not self.ball_table_contact:
-                    reward = 0.2 * (1 - np.tanh(min_dist ** 2)) + 0.1 * (1 - np.tanh(final_dist ** 2))
+                    # reward = 0.2 * (1 - np.tanh(min_dist ** 2)) + 0.1 * (1 - np.tanh(final_dist ** 2))
+                    reward = 0.2 * (1 - better_tanh(min_dist)) + 0.1 * (1 - better_tanh(final_dist))
                 else:
-                    reward = (1 - np.tanh(min_dist ** 2)) + 0.5 * (1 - np.tanh(final_dist ** 2))
+                    # reward = (1 - np.tanh(min_dist ** 2)) + 0.5 * (1 - np.tanh(final_dist ** 2))
+                    reward = (1 - better_tanh(min_dist)) + 0.5 * (1 - better_tanh(final_dist))
             else:
                 if not self.ball_table_contact:
-                    reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 1
+                    # reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 1
+                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 1
                 else:
-                    reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 3
+                    # reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 3
+                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 3
 
             # reward = - 1 * cost - self.collision_penalty * int(self._is_collided)
             success = ball_in_cup
