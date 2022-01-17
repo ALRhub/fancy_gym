@@ -89,7 +89,7 @@ class BeerPongReward:
             self.ball_table_contact = self._check_collision_single_objects(env.sim, self.ball_collision_id,
                                                                            self.table_collision_id)
 
-        self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
+        self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)  # or env.check_traj_in_joint_limits()
         if env._steps == env.ep_length - 1 or self._is_collided:
 
             min_dist = np.min(self.dists)
@@ -102,23 +102,23 @@ class BeerPongReward:
             if not ball_in_cup:
                 if not self.ball_table_contact:
                     # reward = 0.2 * (1 - np.tanh(min_dist ** 2)) + 0.1 * (1 - np.tanh(final_dist ** 2))
-                    reward = 0.2 * (1 - better_tanh(min_dist)) + 0.1 * (1 - better_tanh(final_dist))
+                    reward = 0.2 * (1 - better_tanh(min_dist)) + 0.1 * (1 - better_tanh(final_dist)) - 1e-3 * np.sum(self.action_costs)
                 else:
                     # reward = (1 - np.tanh(min_dist ** 2)) + 0.5 * (1 - np.tanh(final_dist ** 2))
-                    reward = (1 - better_tanh(min_dist)) + 0.5 * (1 - better_tanh(final_dist))
+                    reward = (1 - better_tanh(min_dist)) + 0.5 * (1 - better_tanh(final_dist)) - 5e-3 * np.sum(self.action_costs)
             else:
                 if not self.ball_table_contact:
                     # reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 1
-                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 1
+                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 1 - 1e-2 * np.sum(self.action_costs)
                 else:
                     # reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 3
-                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 3
+                    reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 3 - 5e-2 * np.sum(self.action_costs)
 
             # reward = - 1 * cost - self.collision_penalty * int(self._is_collided)
             success = ball_in_cup
             crash = self._is_collided
         else:
-            reward = - 1e-2 * action_cost
+            reward = 0  #- 5e-2 * action_cost
             success = False
             crash = False
 

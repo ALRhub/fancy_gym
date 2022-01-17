@@ -34,7 +34,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.cup_table_id = 10
 
         if noisy:
-            self.noise_std = 0.01
+            self.noise_std = 0.025
         else:
             self.noise_std = 0
 
