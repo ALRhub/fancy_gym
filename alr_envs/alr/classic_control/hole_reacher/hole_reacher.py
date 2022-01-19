@@ -41,6 +41,8 @@ class HoleReacherBaseEnv(BaseReacherEnv, ABC):
         # self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
+        self.rew_fct_type = rew_fct
+
         if rew_fct == "simple":
             from alr_envs.alr.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision)
@@ -91,8 +93,10 @@ class HoleReacherBaseEnv(BaseReacherEnv, ABC):
         self._tmp_width = width
         self._tmp_x = x
         self._tmp_depth = depth
-        # self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
-        self._goal = np.hstack([self._tmp_x, -0.1])
+        if self.rew_fct_type == "unbounded":
+            self._goal = np.hstack([self._tmp_x, -0.1])
+        else:
+            self._goal = np.hstack([self._tmp_x, -self._tmp_depth])
 
         self._line_ground_left = np.array([-self.n_links, 0, x - width / 2, 0])
         self._line_ground_right = np.array([x + width / 2, 0, self.n_links, 0])

@@ -36,7 +36,7 @@ class HolereacherReward:
             # return reward only in last time step
             # Episode also terminates when colliding, hence return reward
             dist = np.linalg.norm(env.end_effector - env._goal)
-            dist_cost = int(not self._is_collided) * dist ** 2
+            dist_cost = dist ** 2  # int(not self._is_collided) * dist ** 2
             collision_cost = int(self._is_collided)
             success = dist < 0.005 and not self._is_collided
 
