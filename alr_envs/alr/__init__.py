@@ -213,16 +213,26 @@ register(id='TableTennis4DCtxt-v0',
          kwargs={'ctxt_dim': 4})
 
 ## BeerPong
-difficulties = ["simple", "intermediate", "hard", "hardest"]
-
-for v, difficulty in enumerate(difficulties):
-    register(
-        id='ALRBeerPong-v{}'.format(v),
+# fixed goal cup position
+register(
+        id='ALRBeerPong-v0',
         entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
         max_episode_steps=600,
         kwargs={
-            "difficulty": difficulty,
-            "reward_type": "staged",
+            "rndm_goal": False,
+            "cup_goal_pos": [-0.3, -1.2]
+        }
+    )
+
+
+# random goal cup position
+register(
+        id='ALRBeerPong-v1',
+        entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+        max_episode_steps=600,
+        kwargs={
+            "rndm_goal": True,
+            "cup_goal_pos": [-0.3, -1.2]
         }
     )
 

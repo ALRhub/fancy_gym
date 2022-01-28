@@ -9,11 +9,10 @@ class MPWrapper(MPEnvWrapper):
 
     @property
     def active_obs(self):
-        # TODO: @Max Filter observations correctly
         return np.hstack([
             [False] * 7,  # cos
             [False] * 7,  # sin
-            # [True] * 2,  # x-y coordinates of target distance
+            [True] * 2,  # xy position of cup
             [False]  # env steps
         ])
 
@@ -31,7 +30,6 @@ class MPWrapper(MPEnvWrapper):
 
     @property
     def goal_pos(self):
-        # TODO: @Max I think the default value of returning to the start is reasonable here
         raise ValueError("Goal position is not available and has to be learnt based on the environment.")
 
     @property
