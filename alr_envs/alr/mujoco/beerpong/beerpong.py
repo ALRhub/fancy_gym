@@ -13,9 +13,15 @@ CUP_POS_MAX = np.array([0.32, -1.2])
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
-                 rndm_goal=False, cup_goal_pos=[-0.3, -1.2]):
-        self._steps = 0
+                 rndm_goal=False, cup_goal_pos=None):
+        if cup_goal_pos is None:
+            cup_goal_pos = [-0.3, -1.2, 0.840]
+        elif len(cup_goal_pos)==2:
+            cup_goal_pos = np.array(cup_goal_pos)
+            cup_goal_pos = np.insert(cup_goal_pos, 2, 0.80)
+        self.cup_goal_pos = np.array(cup_goal_pos)
 
+        self._steps = 0
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "beerpong_wo_cup" + ".xml")
 
@@ -43,7 +49,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         else:
             self.noise_std = 0
 
-        self.cup_goal_pos = np.array(cup_goal_pos.append(0.840))
+
         reward_function = BeerPongReward
         self.reward_function = reward_function()
 

@@ -375,7 +375,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## Beerpong
-_versions = ["v0", "v1", "v2", "v3"]
+_versions = ["v0", "v1"]
 for _v in _versions:
     _env_id = f'BeerpongProMP-{_v}'
     register(
