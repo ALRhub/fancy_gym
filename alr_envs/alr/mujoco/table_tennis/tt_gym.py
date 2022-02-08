@@ -10,7 +10,8 @@ from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
-MAX_EPISODE_STEPS = 1750
+# MAX_EPISODE_STEPS = 1750
+MAX_EPISODE_STEPS = 1375
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"
 TABLE_NAME = 'table_tennis_table'
@@ -76,10 +77,11 @@ class TTEnvGym(MujocoEnv, utils.EzPickle):
         self._ids_set = True
 
     def _get_obs(self):
-        ball_pos = self.sim.data.body_xpos[self.ball_id]
+        ball_pos = self.sim.data.body_xpos[self.ball_id][:2].copy()
+        goal_pos = self.goal[:2].copy()
         obs = np.concatenate([self.sim.data.qpos[:7].copy(),  # 7 joint positions
                               ball_pos,
-                              self.goal.copy()])
+                              goal_pos])
         return obs
 
     def sample_context(self):

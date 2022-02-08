@@ -132,18 +132,19 @@
                 </body>
             </body>
         </body>
-        <body name="table_body" pos="0 -1.85 0.4025">
-            <geom name="table" type="box" size="0.4 0.6 0.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+         <body name="table_body" pos="0 -2.8 0.4025">
+            <geom name="table" type="box" size="1.5 1.5 0.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
-            <geom name="table_contact_geom" type="box" size="0.4 0.6 0.1" pos="0 0 0.31" rgba="1.4 0.8 0.45 1" solimp="0.999 0.999 0.001"
+            <geom name="table_contact_geom" type="box" size="1.5 1.5 0.1" pos="0 0 0.31" rgba="1.4 0.8 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
         </body>
         <geom name="table_robot" type="box" size="0.1 0.1 0.3" pos="0 0.00 0.3025" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
-        <geom name="wall" type="box" quat="1 0 0 0" size="0.4 0.04 1.1" pos="0. -2.45 1.1" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+        <geom name="wall" type="box" quat="1 0 0 0" size="1.5 0.04 1.4" pos="0. -4.3 1.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
 
-        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">
+<!--        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">-->
+        <body name="cup_table" pos="1.42 -1.25 0.84" quat="0.7071068 0.7071068 0 0">
             <inertial pos="-3.75236e-10 8.27811e-05 0.0947015" quat="0.999945 -0.0104888 0 0" mass="10.132" diaginertia="0.000285643 0.000270485 9.65696e-05" />
             <geom priority= "1" name="cup_geom_table3" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup3_table" mass="10"/>
             <geom priority= "1" name="cup_geom_table4" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup4_table" mass="10"/>

@@ -11,9 +11,9 @@ class MPWrapper(MPEnvWrapper):
     def active_obs(self):
         # TODO: @Max Filter observations correctly
         return np.hstack([
-            [True] * 7,  # Joint Pos
-            [True] * 3, # Ball pos
-            [True] * 3  # goal pos
+            [False] * 7,  # Joint Pos
+            [True] * 2, # Ball pos
+            [True] * 2  # goal pos
         ])
 
     @property

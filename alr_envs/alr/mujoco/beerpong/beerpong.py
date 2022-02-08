@@ -7,8 +7,11 @@ from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
 
-CUP_POS_MIN = np.array([-0.32, -2.2])
-CUP_POS_MAX = np.array([0.32, -1.2])
+# CUP_POS_MIN = np.array([-0.32, -2.2])
+# CUP_POS_MAX = np.array([0.32, -1.2])
+
+CUP_POS_MIN = np.array([-1.42, -4.05])
+CUP_POS_MAX = np.array([1.42, -1.25])
 
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):

@@ -236,6 +236,17 @@ register(
         }
     )
 
+# Beerpong devel big table
+register(
+        id='ALRBeerPong-v3',
+        entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+        max_episode_steps=600,
+        kwargs={
+            "rndm_goal": True,
+            "cup_goal_pos": [-0.3, -1.2]
+        }
+    )
+
 # Motion Primitive Environments
 
 ## Simple Reacher
@@ -402,6 +413,32 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
+## Beerpong- Big table devel
+
+register(
+        id='BeerpongProMP-v3',
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:ALRBeerPong-v3",
+            "wrappers": [mujoco.beerpong.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 7,
+                "num_basis": 5,
+                "duration": 1,
+                "post_traj_time": 2,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
+                    "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+                }
+            }
+        }
+    )
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('BeerpongProMP-v3')
+
 ## Table Tennis
 ctxt_dim = [2, 4]
 for _v, cd in enumerate(ctxt_dim):
@@ -416,7 +453,7 @@ for _v, cd in enumerate(ctxt_dim):
                 "num_dof": 7,
                 "num_basis": 2,
                 "duration": 1.25,
-                "post_traj_time": 4.5,
+                "post_traj_time": 1.5,
                 "policy_type": "motor",
                 "weights_scale": 1.0,
                 "zero_start": True,

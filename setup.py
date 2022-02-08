@@ -7,7 +7,7 @@ setup(
     install_requires=[
         'gym',
         'PyQt5',
-        'matplotlib',
+        #'matplotlib',
         #'mp_env_api @ git+https://github.com/ALRhub/motion_primitive_env_api.git',
 #         'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
         'mujoco-py<2.1,>=2.0',
