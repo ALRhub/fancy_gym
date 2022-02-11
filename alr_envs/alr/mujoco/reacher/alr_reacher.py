@@ -42,7 +42,10 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
         if self._steps >= self.steps_before_reward:
             vec = self.get_body_com("fingertip") - self.get_body_com("target")
             reward_dist -= self.reward_weight * np.linalg.norm(vec)
-            angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
+            if self.steps_before_reward > 0:
+                # avoid giving this penalty for normal step based case
+                angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
+                # angular_vel -= np.square(self.sim.data.qvel.flat[:self.n_links]).sum()
         reward_ctrl = - np.square(a).sum()
 
         if self.balance:
@@ -61,14 +64,29 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
 
+    # def reset_model(self):
+    #     qpos = self.np_random.uniform(low=-0.1, high=0.1, size=self.model.nq) + self.init_qpos
+    #     while True:
+    #         self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
+    #         if np.linalg.norm(self.goal) < self.n_links / 10:
+    #             break
+    #     qpos[-2:] = self.goal
+    #     qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
+    #     qvel[-2:] = 0
+    #     self.set_state(qpos, qvel)
+    #     self._steps = 0
+    #
+    #     return self._get_obs()
+
     def reset_model(self):
-        qpos = self.np_random.uniform(low=-0.1, high=0.1, size=self.model.nq) + self.init_qpos
-        while True:
-            self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
-            if np.linalg.norm(self.goal) < self.n_links / 10:
-                break
+        qpos = self.init_qpos
+        if not hasattr(self, "goal"):
+            while True:
+                self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
+                if np.linalg.norm(self.goal) < self.n_links / 10:
+                    break
         qpos[-2:] = self.goal
-        qvel = self.init_qvel + self.np_random.uniform(low=-.005, high=.005, size=self.model.nv)
+        qvel = self.init_qvel
         qvel[-2:] = 0
         self.set_state(qpos, qvel)
         self._steps = 0

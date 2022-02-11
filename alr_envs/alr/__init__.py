@@ -11,7 +11,7 @@ from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from .mujoco.reacher.alr_reacher import ALRReacherEnv
 from .mujoco.reacher.balancing import BalancingEnv
 
-from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
+from .mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
 
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
@@ -401,6 +401,58 @@ for _v in _versions:
                 "policy_type": "velocity",
                 "weights_scale": 0.1,
                 "zero_start": True
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    
+## ALRReacher
+_versions = ["ALRReacher-v0", "ALRLongReacher-v0", "ALRReacherSparse-v0", "ALRLongReacherSparse-v0"]
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}DMP-{_name[1]}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
+        # max_episode_steps=1,
+        kwargs={
+            "name": f"alr_envs:{_v}",
+            "wrappers": [mujoco.reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5 if "long" not in _v.lower() else 7,
+                "num_basis": 5,
+                "duration": 4,
+                "alpha_phase": 2,
+                "learn_goal": True,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "policy_kwargs": {
+                    "p_gains": 1,
+                    "d_gains": 0.1
+                }
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
+
+    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:{_v}",
+            "wrappers": [mujoco.reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5 if "long" not in _v.lower() else 7,
+                "num_basis": 5,
+                "duration": 4,
+                "policy_type": "motor",
+                "weights_scale": 1,
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": 1,
+                    "d_gains": 0.1
+                }
             }
         }
     )
