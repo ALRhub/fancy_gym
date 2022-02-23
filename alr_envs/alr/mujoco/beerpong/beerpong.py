@@ -109,7 +109,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
                 self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
                 self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.ball_site_id, :].copy()
             elif self._steps == self._release_step and self.add_noise:
-                 self.sim.data.qvel[7::] += self.noise_std * np.random.randn(3)
+                 self.sim.data.qvel[7::] += self.noise_std * self.np_random.randn(3)
             crash = False
         except mujoco_py.builder.MujocoException:
             crash = True

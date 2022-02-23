@@ -17,12 +17,16 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
 
         self.balance = balance
         self.balance_weight = 1.0
+        self.ctrl_weight = 1.
 
         self.reward_weight = 1
         if steps_before_reward == 200:
             self.reward_weight = 200
         elif steps_before_reward == 50:
             self.reward_weight = 50
+        elif steps_before_reward == 0:
+            self.reward_weight = 1
+            self.ctrl_weight = 0.00001
 
         if n_links == 5:
             file_name = 'reacher_5links.xml'
@@ -46,7 +50,7 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
                 # avoid giving this penalty for normal step based case
                 angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
                 # angular_vel -= np.square(self.sim.data.qvel.flat[:self.n_links]).sum()
-        reward_ctrl = - np.square(a).sum()
+        reward_ctrl = - self.ctrl_weight * np.square(a).sum()
 
         if self.balance:
             reward_balance -= self.balance_weight * np.abs(
@@ -59,6 +63,7 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
         return ob, reward, done, dict(reward_dist=reward_dist, reward_ctrl=reward_ctrl,
                                       velocity=angular_vel, reward_balance=reward_balance,
                                       end_effector=self.get_body_com("fingertip").copy(),
+                                      q_pos=self.sim.data.qpos.flat[:self.n_links].copy(),
                                       goal=self.goal if hasattr(self, "goal") else None)
 
     def viewer_setup(self):
@@ -100,7 +105,7 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
             np.sin(theta),
             self.sim.data.qpos.flat[self.n_links:],  # this is goal position
             self.sim.data.qvel.flat[:self.n_links],  # this is angular velocity
-            self.get_body_com("fingertip") - self.get_body_com("target"),
+            self.get_body_com("fingertip")[:2] - self.get_body_com("target")[:2],
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
         ])

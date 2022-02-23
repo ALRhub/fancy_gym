@@ -98,6 +98,7 @@ class BeerPongReward:
             ball_in_cup = self._check_collision_single_objects(env.sim, self.ball_collision_id,
                                                                self.cup_table_collision_id)
 
+            success = False
             # encourage bounce before falling into cup
             if not ball_in_cup:
                 if not self.ball_table_contact:
@@ -113,9 +114,9 @@ class BeerPongReward:
                 else:
                     # reward = 2 * (1 - np.tanh(final_dist ** 2)) + 1 * (1 - np.tanh(min_dist ** 2)) + 3
                     reward = 2 * (1 - better_tanh(final_dist)) + 1 * (1 - better_tanh(min_dist)) + 3 - 5e-2 * np.sum(self.action_costs)
-
+                    success = True
             # reward = - 1 * cost - self.collision_penalty * int(self._is_collided)
-            success = ball_in_cup
+
             crash = self._is_collided
         else:
             reward = 0  #- 5e-2 * action_cost

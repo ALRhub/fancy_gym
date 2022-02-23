@@ -13,7 +13,7 @@ class MPWrapper(MPEnvWrapper):
             [True] * self.n_links,  # sin
             [True] * 2,  # goal position
             [True] * self.n_links,  # angular velocity
-            [True] * 3,  # goal distance
+            [True] * 2,  # goal distance
             # self.get_body_com("target"),  # only return target to make problem harder
             [False], # step
         ])
