@@ -11,7 +11,8 @@ from alr_envs.alr.mujoco.table_tennis.tt_reward import TT_Reward
 #TODO: Check for simulation stability. Make sure the code runs even for sim crash
 
 # MAX_EPISODE_STEPS = 1750
-MAX_EPISODE_STEPS = 1375
+# MAX_EPISODE_STEPS = 1375
+MAX_EPISODE_STEPS = 2875
 BALL_NAME_CONTACT = "target_ball_contact"
 BALL_NAME = "target_ball"
 TABLE_NAME = 'table_tennis_table'
