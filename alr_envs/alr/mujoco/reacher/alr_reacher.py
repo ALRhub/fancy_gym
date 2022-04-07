@@ -44,9 +44,9 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
             reward_dist -= self.reward_weight * np.linalg.norm(vec)
             if self.steps_before_reward > 0:
                 # avoid giving this penalty for normal step based case
-                angular_vel -= np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
-                # angular_vel -= np.square(self.sim.data.qvel.flat[:self.n_links]).sum()
-        reward_ctrl = - np.square(a).sum()
+                # angular_vel -= 10 * np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
+                angular_vel -= 10 * np.square(self.sim.data.qvel.flat[:self.n_links]).sum()
+        reward_ctrl = - 10 * np.square(a).sum()
 
         if self.balance:
             reward_balance -= self.balance_weight * np.abs(
@@ -65,6 +65,35 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
         self.viewer.cam.trackbodyid = 0
 
     # def reset_model(self):
+    #     qpos = self.init_qpos
+    #     if not hasattr(self, "goal"):
+    #         self.goal = np.array([-0.25, 0.25])
+    #         # self.goal = self.init_qpos.copy()[:2] + 0.05
+    #     qpos[-2:] = self.goal
+    #     qvel = self.init_qvel
+    #     qvel[-2:] = 0
+    #     self.set_state(qpos, qvel)
+    #     self._steps = 0
+    #
+    #     return self._get_obs()
+
+    def reset_model(self):
+        qpos = self.init_qpos.copy()
+        while True:
+            self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
+            # self.goal = self.np_random.uniform(low=0, high=self.n_links / 10, size=2)
+            # self.goal = np.random.uniform(low=[-self.n_links / 10, 0], high=[0, self.n_links / 10], size=2)
+            if np.linalg.norm(self.goal) < self.n_links / 10:
+                break
+        qpos[-2:] = self.goal
+        qvel = self.init_qvel.copy()
+        qvel[-2:] = 0
+        self.set_state(qpos, qvel)
+        self._steps = 0
+
+        return self._get_obs()
+
+    # def reset_model(self):
     #     qpos = self.np_random.uniform(low=-0.1, high=0.1, size=self.model.nq) + self.init_qpos
     #     while True:
     #         self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
@@ -78,30 +107,15 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
     #
     #     return self._get_obs()
 
-    def reset_model(self):
-        qpos = self.init_qpos
-        if not hasattr(self, "goal"):
-            while True:
-                self.goal = self.np_random.uniform(low=-self.n_links / 10, high=self.n_links / 10, size=2)
-                if np.linalg.norm(self.goal) < self.n_links / 10:
-                    break
-        qpos[-2:] = self.goal
-        qvel = self.init_qvel
-        qvel[-2:] = 0
-        self.set_state(qpos, qvel)
-        self._steps = 0
-
-        return self._get_obs()
-
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:self.n_links]
+        target = self.get_body_com("target")
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
-            self.sim.data.qpos.flat[self.n_links:],  # this is goal position
-            self.sim.data.qvel.flat[:self.n_links],  # this is angular velocity
-            self.get_body_com("fingertip") - self.get_body_com("target"),
-            # self.get_body_com("target"),  # only return target to make problem harder
+            target[:2],  # x-y of goal position
+            self.sim.data.qvel.flat[:self.n_links],  # angular velocity
+            self.get_body_com("fingertip") - target,  # goal distance
             [self._steps],
         ])
 

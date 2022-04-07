@@ -9,14 +9,26 @@ class MPWrapper(MPEnvWrapper):
     @property
     def active_obs(self):
         return np.concatenate([
-            [True] * self.n_links,  # cos
-            [True] * self.n_links,  # sin
+            [False] * self.n_links,  # cos
+            [False] * self.n_links,  # sin
             [True] * 2,  # goal position
-            [True] * self.n_links,  # angular velocity
-            [True] * 3,  # goal distance
+            [False] * self.n_links,  # angular velocity
+            [False] * 3,  # goal distance
             # self.get_body_com("target"),  # only return target to make problem harder
-            [False], # step
+            [False],  # step
         ])
+
+    # @property
+    # def active_obs(self):
+    #     return np.concatenate([
+    #         [True] * self.n_links,  # cos, True
+    #         [True] * self.n_links,  # sin, True
+    #         [True] * 2,  # goal position
+    #         [True] * self.n_links,  # angular velocity, True
+    #         [True] * 3,  # goal distance
+    #         # self.get_body_com("target"),  # only return target to make problem harder
+    #         [False],  # step
+    #     ])
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray]:

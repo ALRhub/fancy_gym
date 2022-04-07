@@ -357,13 +357,13 @@ for _v in _versions:
                 "num_basis": 5,
                 "duration": 2,
                 "policy_type": "velocity",
-                "weights_scale": 0.1,
+                "weights_scale": 5,
                 "zero_start": True
             }
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-    
+
 ## ALRReacher
 _versions = ["ALRReacher-v0", "ALRLongReacher-v0", "ALRReacherSparse-v0", "ALRLongReacherSparse-v0"]
 for _v in _versions:
@@ -378,12 +378,12 @@ for _v in _versions:
             "wrappers": [mujoco.reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5 if "long" not in _v.lower() else 7,
-                "num_basis": 5,
+                "num_basis": 2,
                 "duration": 4,
                 "alpha_phase": 2,
                 "learn_goal": True,
                 "policy_type": "motor",
-                "weights_scale": 1,
+                "weights_scale": 5,
                 "policy_kwargs": {
                     "p_gains": 1,
                     "d_gains": 0.1
@@ -402,10 +402,10 @@ for _v in _versions:
             "wrappers": [mujoco.reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5 if "long" not in _v.lower() else 7,
-                "num_basis": 5,
+                "num_basis": 1,
                 "duration": 4,
                 "policy_type": "motor",
-                "weights_scale": 1,
+                "weights_scale": 5,
                 "zero_start": True,
                 "policy_kwargs": {
                     "p_gains": 1,
