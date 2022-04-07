@@ -417,7 +417,7 @@ for _v, cd in enumerate(ctxt_dim):
                 "num_dof": 7,
                 "num_basis": 2,
                 "duration": 1.25,
-                "post_traj_time": 4.5,
+                "post_traj_time": 1.5,
                 "policy_type": "motor",
                 "weights_scale": 1.0,
                 "zero_start": True,
