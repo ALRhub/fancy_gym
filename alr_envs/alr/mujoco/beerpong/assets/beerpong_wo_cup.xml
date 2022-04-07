@@ -132,7 +132,7 @@
                 </body>
             </body>
         </body>
-         <body name="table_body" pos="0 -1.85 0.4025">
+        <body name="table_body" pos="0 -1.85 0.4025">
             <geom name="table" type="box" size="0.4 0.6 0.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
                   solref="-10000 -100"/>
             <geom name="table_contact_geom" type="box" size="0.4 0.6 0.1" pos="0 0 0.31" rgba="1.4 0.8 0.45 1" solimp="0.999 0.999 0.001"
