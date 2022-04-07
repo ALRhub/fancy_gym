@@ -54,6 +54,7 @@ class BeerPongReward:
         self.ball_table_contact = False
         self.ball_wall_contact = False
         self.ball_cup_contact = False
+        self.ball_in_cup = False
         self.noisy_bp = noisy
         self._t_min_final_dist = -1
 
@@ -80,39 +81,94 @@ class BeerPongReward:
 
         action_cost = np.sum(np.square(action))
         self.action_costs.append(action_cost)
+        # ##################### Reward function which forces to bounce once on the table (tanh) ########################
+        # if not self.ball_table_contact:
+        #     self.ball_table_contact = self._check_collision_single_objects(env.sim, self.ball_collision_id,
+        #                                                                        self.table_collision_id)
 
-        if not self.ball_table_contact:
-            self.ball_table_contact = self._check_collision_single_objects(env.sim, self.ball_collision_id,
-                                                                           self.table_collision_id)
+        # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
+        # if env._steps == env.ep_length - 1 or self._is_collided:
+        #     min_dist = np.min(self.dists)
+        #     final_dist = self.dists_final[-1]
+        #
+        #     ball_in_cup = self._check_collision_single_objects(env.sim, self.ball_collision_id,
+        #                                                        self.cup_table_collision_id)
+        #
+        #     # encourage bounce before falling into cup
+        #     if not ball_in_cup:
+        #         if not self.ball_table_contact:
+        #             reward = 0.2 * (1 - np.tanh(0.5*min_dist)) + 0.1 * (1 - np.tanh(0.5*final_dist))
+        #         else:
+        #             reward = (1 - np.tanh(0.5*min_dist)) + 0.5 * (1 - np.tanh(0.5*final_dist))
+        #     else:
+        #         if not self.ball_table_contact:
+        #             reward = 2 * (1 - np.tanh(0.5*final_dist)) + 1 * (1 - np.tanh(0.5*min_dist)) + 1
+        #         else:
+        #             reward = 2 * (1 - np.tanh(0.5*final_dist)) + 1 * (1 - np.tanh(0.5*min_dist)) + 3
+        #
+        #     # reward = - 1 * cost - self.collision_penalty * int(self._is_collided)
+        #     success = ball_in_cup
+        #     crash = self._is_collided
+        # else:
+        #     reward = - 1e-2 * action_cost
+        #     success = False
+        #     crash = False
+        # ################################################################################################################
 
+        # ##################### Reward function which does not force to bounce once on the table (tanh) ################
+        # self._check_contacts(env.sim)
+        # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
+        # if env._steps == env.ep_length - 1 or self._is_collided:
+        #     min_dist = np.min(self.dists)
+        #     final_dist = self.dists_final[-1]
+        #
+        #     # encourage bounce before falling into cup
+        #     if not self.ball_in_cup:
+        #         if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact:
+        #             min_dist_coeff, final_dist_coeff, rew_offset = 0.2, 0.1, 0
+        #             # reward = 0.2 * (1 - np.tanh(0.5*min_dist)) + 0.1 * (1 - np.tanh(0.5*final_dist))
+        #         else:
+        #             min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, 0
+        #             # reward = (1 - np.tanh(0.5*min_dist)) + 0.5 * (1 - np.tanh(0.5*final_dist))
+        #     else:
+        #         min_dist_coeff, final_dist_coeff, rew_offset = 1, 2, 3
+        #         # reward = 2 * (1 - np.tanh(0.5*final_dist)) + 1 * (1 - np.tanh(0.5*min_dist)) + 3
+        #
+        #     reward = final_dist_coeff * (1 - np.tanh(0.5 * final_dist)) + min_dist_coeff * (1 - np.tanh(0.5 * min_dist)) \
+        #              + rew_offset
+        #     success = self.ball_in_cup
+        #     crash = self._is_collided
+        # else:
+        #     reward = - 1e-2 * action_cost
+        #     success = False
+        #     crash = False
+        # ################################################################################################################
+
+        # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
+        self._check_contacts(env.sim)
         self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
         if env._steps == env.ep_length - 1 or self._is_collided:
-
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
 
-            ball_in_cup = self._check_collision_single_objects(env.sim, self.ball_collision_id,
-                                                               self.cup_table_collision_id)
-
             # encourage bounce before falling into cup
-            if not ball_in_cup:
-                if not self.ball_table_contact:
-                    reward = 0.2 * (1 - np.tanh(0.5*min_dist)) + 0.1 * (1 - np.tanh(0.5*final_dist))
+            if not self.ball_in_cup:
+                if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact:
+                    min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -4
                 else:
-                    reward = (1 - np.tanh(0.5*min_dist)) + 0.5 * (1 - np.tanh(0.5*final_dist))
+                    min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -2
             else:
-                if not self.ball_table_contact:
-                    reward = 2 * (1 - np.tanh(0.5*final_dist)) + 1 * (1 - np.tanh(0.5*min_dist)) + 1
-                else:
-                    reward = 2 * (1 - np.tanh(0.5*final_dist)) + 1 * (1 - np.tanh(0.5*min_dist)) + 3
+                min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, 0
 
-            # reward = - 1 * cost - self.collision_penalty * int(self._is_collided)
-            success = ball_in_cup
+            reward = rew_offset - min_dist_coeff * min_dist**2 - final_dist_coeff * final_dist**2 - \
+                     1e-4*np.mean(action_cost)
+            success = self.ball_in_cup
             crash = self._is_collided
         else:
             reward = - 1e-2 * action_cost
             success = False
             crash = False
+        # ################################################################################################################
 
         infos = {}
         infos["success"] = success
@@ -123,6 +179,20 @@ class BeerPongReward:
         infos["task_reward"] = reward
 
         return reward, infos
+
+    def _check_contacts(self, sim):
+        if not self.ball_table_contact:
+            self.ball_table_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
+                                                                           self.table_collision_id)
+        if not self.ball_cup_contact:
+            self.ball_cup_contact = self._check_collision_with_set_of_objects(sim, self.ball_collision_id,
+                                                                            self.cup_collision_ids)
+        if not self.ball_wall_contact:
+            self.ball_wall_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
+                                                                  self.wall_collision_id)
+        if not self.ball_in_cup:
+            self.ball_in_cup = self._check_collision_single_objects(sim, self.ball_collision_id,
+                                                                    self.cup_table_collision_id)
 
     def _check_collision_single_objects(self, sim, id_1, id_2):
         for coni in range(0, sim.data.ncon):

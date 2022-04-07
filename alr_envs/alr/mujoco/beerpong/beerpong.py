@@ -7,21 +7,16 @@ from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
 
-# CUP_POS_MIN = np.array([-0.32, -2.2])
-# CUP_POS_MAX = np.array([0.32, -1.2])
-
-CUP_POS_MIN = np.array([-1.42, -4.05])
-CUP_POS_MAX = np.array([1.42, -1.25])
+CUP_POS_MIN = np.array([-0.32, -2.2])
+CUP_POS_MAX = np.array([0.32, -1.2])
 
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
                  rndm_goal=False, cup_goal_pos=None):
-        if cup_goal_pos is None:
-            cup_goal_pos = [-0.3, -1.2, 0.840]
-        elif len(cup_goal_pos)==2:
-            cup_goal_pos = np.array(cup_goal_pos)
-            cup_goal_pos = np.insert(cup_goal_pos, 2, 0.80)
+        cup_goal_pos = np.array(cup_goal_pos if cup_goal_pos is not None else [-0.3, -1.2, 0.840])
+        if cup_goal_pos.shape[0]==2:
+            cup_goal_pos = np.insert(cup_goal_pos, 2, 0.840)
         self.cup_goal_pos = np.array(cup_goal_pos)
 
         self._steps = 0
@@ -51,7 +46,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             self.noise_std = 0.01
         else:
             self.noise_std = 0
-
 
         reward_function = BeerPongReward
         self.reward_function = reward_function()
@@ -94,7 +88,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         start_pos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
         self.set_state(start_pos, init_vel)
         if self.rndm_goal:
-            xy = np.random.uniform(CUP_POS_MIN, CUP_POS_MAX)
+            xy = self.np_random.uniform(CUP_POS_MIN, CUP_POS_MAX)
             xyz = np.zeros(3)
             xyz[:2] = xy
             xyz[-1] = 0.840
