@@ -85,7 +85,7 @@ class BeerPongReward:
         # if not self.ball_table_contact:
         #     self.ball_table_contact = self._check_collision_single_objects(env.sim, self.ball_collision_id,
         #                                                                        self.table_collision_id)
-
+        #
         # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
         # if env._steps == env.ep_length - 1 or self._is_collided:
         #     min_dist = np.min(self.dists)
@@ -115,7 +115,7 @@ class BeerPongReward:
         #     crash = False
         # ################################################################################################################
 
-        # ##################### Reward function which does not force to bounce once on the table (tanh) ################
+        ##################### Reward function which does not force to bounce once on the table (tanh) ################
         # self._check_contacts(env.sim)
         # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
         # if env._steps == env.ep_length - 1 or self._is_collided:
@@ -142,9 +142,9 @@ class BeerPongReward:
         #     reward = - 1e-2 * action_cost
         #     success = False
         #     crash = False
-        # ################################################################################################################
+        ################################################################################################################
 
-        # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
+        # # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
         self._check_contacts(env.sim)
         self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
         if env._steps == env.ep_length - 1 or self._is_collided:
@@ -162,12 +162,12 @@ class BeerPongReward:
 
             reward = rew_offset - min_dist_coeff * min_dist**2 - final_dist_coeff * final_dist**2 - \
                      1e-4*np.mean(action_cost)
+                     # 1e-7*np.mean(action_cost)
             success = self.ball_in_cup
-            crash = self._is_collided
         else:
-            reward = - 1e-2 * action_cost
+            # reward = - 1e-2 * action_cost
+            reward = - 1e-4 * action_cost
             success = False
-            crash = False
         # ################################################################################################################
 
         infos = {}

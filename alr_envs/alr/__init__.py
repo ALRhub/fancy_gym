@@ -391,6 +391,7 @@ for _v in _versions:
                 "duration": 1,
                 "post_traj_time": 2,
                 "policy_type": "motor",
+                # "weights_scale": 0.15,
                 "weights_scale": 1,
                 "zero_start": True,
                 "zero_goal": False,

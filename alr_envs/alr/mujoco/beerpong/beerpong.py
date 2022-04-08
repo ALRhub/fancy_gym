@@ -10,6 +10,10 @@ from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 CUP_POS_MIN = np.array([-0.32, -2.2])
 CUP_POS_MAX = np.array([0.32, -1.2])
 
+# smaller context space -> Easier task
+# CUP_POS_MIN = np.array([-0.16, -2.2])
+# CUP_POS_MAX = np.array([0.16, -1.7])
+
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
@@ -36,7 +40,8 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.ball_site_id = 0
         self.ball_id = 11
 
-        self._release_step = 175  # time step of ball release
+        # self._release_step = 175  # time step of ball release
+        self._release_step = 130  # time step of ball release
 
         self.sim_time = 3  # seconds
         self.ep_length = 600  # based on 3 seconds with dt = 0.005 int(self.sim_time / self.dt)
