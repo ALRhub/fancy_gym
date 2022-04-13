@@ -11,6 +11,13 @@ from .mujoco.reacher.alr_reacher import ALRReacherEnv
 from .mujoco.reacher.balancing import BalancingEnv
 
 from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
+from .mujoco.ant_jump.ant_jump import MAX_EPISODE_STEPS_ANTJUMP
+from .mujoco.half_cheetah_jump.half_cheetah_jump import MAX_EPISODE_STEPS_HALFCHEETAHJUMP
+from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
+from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
+from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
+from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
+from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
@@ -185,6 +192,69 @@ register(
     }
 )
 
+
+register(
+    id='ALRAntJump-v0',
+    entry_point='alr_envs.alr.mujoco:ALRAntJumpEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_ANTJUMP
+    }
+)
+
+register(
+    id='ALRHalfCheetahJump-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHalfCheetahJumpEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HALFCHEETAHJUMP
+    }
+)
+
+register(
+    id='ALRHopperJump-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperJumpEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP
+    }
+)
+
+register(
+    id='ALRHopperJumpOnBox-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperJumpOnBoxEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMPONBOX
+    }
+)
+
+register(
+    id='ALRHopperThrow-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperThrowEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROW,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROW
+    }
+)
+
+register(
+    id='ALRHopperThrowInBasket-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperThrowInBasketEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
+    }
+)
+
+register(
+    id='ALRWalker2DJump-v0',
+    entry_point='alr_envs.alr.mujoco:ALRWalker2dJumpEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_WALKERJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_WALKERJUMP
+    }
+)
 ## Balancing Reacher
 
 register(
@@ -431,3 +501,204 @@ for _v, cd in enumerate(ctxt_dim):
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+
+## AntJump
+for _v, cd in enumerate(ctxt_dim):
+    _env_id = f'TableTennisProMP-v{_v}'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": "alr_envs:TableTennis{}DCtxt-v0".format(cd),
+            "wrappers": [mujoco.table_tennis.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 7,
+                "num_basis": 2,
+                "duration": 1.25,
+                "post_traj_time": 1.5,
+                "policy_type": "motor",
+                "weights_scale": 1.0,
+                "zero_start": True,
+                "zero_goal": False,
+                "policy_kwargs": {
+                    "p_gains": 0.5*np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                    "d_gains": 0.5*np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+                }
+            }
+        }
+    )
+    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+
+register(
+    id='ALRAntJumpProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRAntJump-v0",
+        "wrappers": [mujoco.ant_jump.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 8,
+            "num_basis": 5,
+            "duration": 10,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(8),
+                "d_gains": 0.1*np.ones(8)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRAntJumpProMP-v0')
+
+register(
+    id='ALRHalfCheetahJumpProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRHalfCheetahJump-v0",
+        "wrappers": [mujoco.half_cheetah_jump.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 6,
+            "num_basis": 5,
+            "duration": 5,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(6),
+                "d_gains": 0.1*np.ones(6)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRHalfCheetahJumpProMP-v0')
+
+
+register(
+    id='ALRHopperJumpProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRHopperJump-v0",
+        "wrappers": [mujoco.hopper_jump.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRHopperJumpProMP-v0')
+
+register(
+    id='ALRHopperJumpOnBoxProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRHopperJumpOnBox-v0",
+        "wrappers": [mujoco.hopper_jump.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRHopperJumpOnBoxProMP-v0')
+
+
+register(
+    id='ALRHopperThrowProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRHopperThrow-v0",
+        "wrappers": [mujoco.hopper_throw.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRHopperThrowProMP-v0')
+
+
+register(
+    id='ALRHopperThrowInBasketProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRHopperThrowInBasket-v0",
+        "wrappers": [mujoco.hopper_throw.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRHopperThrowInBasketProMP-v0')
+
+
+register(
+    id='ALRWalker2DJumpProMP-v0',
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRWalker2DJump-v0",
+        "wrappers": [mujoco.walker_2d_jump.MPWrapper],
+        "mp_kwargs": {
+            "num_dof": 6,
+            "num_basis": 5,
+            "duration": 2.4,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(6),
+                "d_gains": 0.1*np.ones(6)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append('ALRWalker2DJumpProMP-v0')
