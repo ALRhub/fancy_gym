@@ -100,8 +100,11 @@ class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
     def reset_model(self):
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
-
-        qpos = self.init_qpos + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        rnd_vec = self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        rnd_vec[2] *= 0.05  # the angle around the y axis shouldn't be too high as the agent then falls down quickly and
+                            # can not recover
+        rnd_vec[1] = np.clip(rnd_vec[1], 0, 0.3)
+        qpos = self.init_qpos + rnd_vec
         qvel = self.init_qvel #+ self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
 
         self.set_state(qpos, qvel)
