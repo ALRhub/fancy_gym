@@ -91,6 +91,54 @@ class ALRHopperJumpEnv(HopperEnv):
         observation = self._get_obs()
         return observation
 
+
+class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
+    def __init__(self, max_episode_steps=250):
+        super(ALRHopperJumpRndmPosEnv, self).__init__(exclude_current_positions_from_observation=False,
+                                                      reset_noise_scale=5e-1,
+                                                      max_episode_steps=max_episode_steps)
+    def reset_model(self):
+        noise_low = -self._reset_noise_scale
+        noise_high = self._reset_noise_scale
+
+        qpos = self.init_qpos + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        qvel = self.init_qvel #+ self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
+
+        self.set_state(qpos, qvel)
+
+        observation = self._get_obs()
+        return observation
+
+    def step(self, action):
+
+        self.current_step += 1
+        self.do_simulation(action, self.frame_skip)
+        height_after = self.get_body_com("torso")[2]
+        self.max_height = max(height_after, self.max_height)
+
+        ctrl_cost = self.control_cost(action)
+        costs = ctrl_cost
+        done = False
+
+        if self.current_step >= self.max_episode_steps:
+            healthy_reward = 0
+            height_reward = self._forward_reward_weight * self.max_height  # maybe move reward calculation into if structure and define two different _forward_reward_weight variables for context and episodic seperatley
+            rewards = height_reward + healthy_reward
+
+        else:
+            # penalty for wrong start direction of first two joints; not needed, could be removed
+            rewards = ((action[:2] > 0) * self.penalty).sum() if self.current_step < 10 else 0
+
+        observation = self._get_obs()
+        reward = rewards - costs
+        info = {
+            'height': height_after,
+            'max_height': self.max_height,
+            'goal': self.goal
+        }
+
+        return observation, reward, done, info
+
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
     env = ALRHopperJumpEnv()

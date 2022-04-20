@@ -253,6 +253,15 @@ register(
         "context": True
     }
 )
+
+register(
+    id='ALRHopperJump-v2',
+    entry_point='alr_envs.alr.mujoco:ALRHopperJumpRndmPosEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP
+    }
+)
 # CtxtFree are v0, Contextual are v1
 register(
     id='ALRHopperJumpOnBox-v0',
@@ -666,6 +675,31 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+## HopperJump
+register(
+    id= "ALRHopperJumpProMP-v2",
+    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    kwargs={
+        "name": f"alr_envs:ALRHopperJump-v2",
+        "wrappers": [mujoco.hopper_jump.HighCtxtMPWrapper],
+        "mp_kwargs": {
+            "num_dof": 3,
+            "num_basis": 5,
+            "duration": 2,
+            "post_traj_time": 0,
+            "policy_type": "motor",
+            "weights_scale": 1.0,
+            "zero_start": True,
+            "zero_goal": False,
+            "policy_kwargs": {
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3)
+            }
+        }
+    }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ALRHopperJumpProMP-v2")
 
 ## HopperJumpOnBox
 _versions = ["v0", "v1"]
