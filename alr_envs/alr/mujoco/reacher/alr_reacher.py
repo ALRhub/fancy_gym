@@ -87,6 +87,27 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
             [self._steps],
         ])
 
+class ALRReacherOptCtrlEnv(ALRReacherEnv):
+    def __init__(self, steps_before_reward=200, n_links=5, balance=False):
+        super(ALRReacherOptCtrlEnv, self).__init__(steps_before_reward, n_links, balance)
+        self.goal = np.array([0.1, 0.1])
+
+    def _get_obs(self):
+        theta = self.sim.data.qpos.flat[:self.n_links]
+        return np.concatenate([
+            theta,
+            self.sim.data.qvel.flat[:self.n_links],  # this is angular velocity
+        ])
+
+    def reset_model(self):
+        qpos = self.init_qpos
+        qpos[-2:] = self.goal
+        qvel = self.init_qvel
+        qvel[-2:] = 0
+        self.set_state(qpos, qvel)
+        self._steps = 0
+
+        return self._get_obs()
 
 if __name__ == '__main__':
     nl = 5

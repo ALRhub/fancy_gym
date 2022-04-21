@@ -149,6 +149,17 @@ register(
 )
 
 register(
+    id='ALRReacherSparseOptCtrl-v0',
+    entry_point='alr_envs.alr.mujoco:ALRReacherOptCtrlEnv',
+    max_episode_steps=200,
+    kwargs={
+        "steps_before_reward": 200,
+        "n_links": 5,
+        "balance": False,
+    }
+)
+
+register(
     id='ALRReacherSparseBalanced-v0',
     entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
     max_episode_steps=200,

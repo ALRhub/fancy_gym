@@ -94,10 +94,16 @@ class ALRHopperJumpEnv(HopperEnv):
 
 class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
     def __init__(self, max_episode_steps=250):
+        self.contact_with_floor = False
+        self._floor_geom_id = None
+        self._foot_geom_id = None
         super(ALRHopperJumpRndmPosEnv, self).__init__(exclude_current_positions_from_observation=False,
                                                       reset_noise_scale=5e-1,
                                                       max_episode_steps=max_episode_steps)
+
     def reset_model(self):
+        self._floor_geom_id = self.model.geom_name2id('floor')
+        self._foot_geom_id = self.model.geom_name2id('foot_geom')
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
         rnd_vec = self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
@@ -116,8 +122,12 @@ class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
 
         self.current_step += 1
         self.do_simulation(action, self.frame_skip)
+
+        self.contact_with_floor = self._contact_checker(self._floor_geom_id, self._foot_geom_id) if not \
+                                                                      self.contact_with_floor else True
+
         height_after = self.get_body_com("torso")[2]
-        self.max_height = max(height_after, self.max_height)
+        self.max_height = max(height_after, self.max_height) if self.contact_with_floor else 0
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
@@ -142,9 +152,19 @@ class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
 
         return observation, reward, done, info
 
+    def _contact_checker(self, id_1, id_2):
+        for coni in range(0, self.sim.data.ncon):
+            con = self.sim.data.contact[coni]
+            collision = con.geom1 == id_1 and con.geom2 == id_2
+            collision_trans = con.geom1 == id_2 and con.geom2 == id_1
+            if collision or collision_trans:
+                return True
+        return False
+
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRHopperJumpEnv()
+    # env = ALRHopperJumpEnv()
+    env = ALRHopperJumpRndmPosEnv()
     obs = env.reset()
 
     for i in range(2000):
@@ -152,8 +172,9 @@ if __name__ == '__main__':
         # test with random actions
         ac = env.action_space.sample()
         obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
+        # if i % 10 == 0:
+        #     env.render(mode=render_mode)
+        env.render(mode=render_mode)
         if d:
             print('After ', i, ' steps, done: ', d)
             env.reset()
