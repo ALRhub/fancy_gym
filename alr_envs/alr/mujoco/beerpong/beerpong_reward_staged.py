@@ -50,7 +50,7 @@ class BeerPongReward:
         self.angle_rewards = []
         self.cup_angles = []
         self.cup_z_axes = []
-        self.ball_ground_contact = False
+        self.ball_ground_contact_first = False
         self.ball_table_contact = False
         self.ball_wall_contact = False
         self.ball_cup_contact = False
@@ -150,8 +150,9 @@ class BeerPongReward:
         if env._steps == env.ep_length - 1 or self._is_collided:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
-
-            # encourage bounce before falling into cup
+            # if self.ball_ground_contact_first:
+            #     min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -6
+            # else:
             if not self.ball_in_cup:
                 if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact:
                     min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -4
@@ -159,17 +160,47 @@ class BeerPongReward:
                     min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -2
             else:
                 min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, 0
-
-            reward = rew_offset - min_dist_coeff * min_dist**2 - final_dist_coeff * final_dist**2 - \
-                     1e-4*np.mean(action_cost)
-                     # 1e-7*np.mean(action_cost)
+            reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
+                     1e-4 * np.mean(action_cost)
+            # 1e-7*np.mean(action_cost)
             success = self.ball_in_cup
         else:
-            # reward = - 1e-2 * action_cost
-            reward = - 1e-4 * action_cost
+            reward = - 1e-2 * action_cost
+            # reward = - 1e-4 * action_cost
+            # reward = 0
             success = False
         # ################################################################################################################
 
+        # # # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
+        # self._check_contacts(env.sim)
+        # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
+        # if env._steps == env.ep_length - 1 or self._is_collided:
+        #     min_dist = np.min(self.dists)
+        #     final_dist = self.dists_final[-1]
+        #
+        #     if not self.ball_in_cup:
+        #         if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact:
+        #             min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -6
+        #         else:
+        #             if self.ball_ground_contact_first:
+        #                 min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -4
+        #             else:
+        #                 min_dist_coeff, final_dist_coeff, rew_offset = 1, 0.5, -2
+        #     else:
+        #         if self.ball_ground_contact_first:
+        #             min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, -1
+        #         else:
+        #             min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, 0
+        #     reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
+        #              1e-7 * np.mean(action_cost)
+        #     # 1e-4*np.mean(action_cost)
+        #     success = self.ball_in_cup
+        # else:
+        #     # reward = - 1e-2 * action_cost
+        #     # reward = - 1e-4 * action_cost
+        #     reward = 0
+        #     success = False
+        # ################################################################################################################
         infos = {}
         infos["success"] = success
         infos["is_collided"] = self._is_collided
@@ -193,6 +224,10 @@ class BeerPongReward:
         if not self.ball_in_cup:
             self.ball_in_cup = self._check_collision_single_objects(sim, self.ball_collision_id,
                                                                     self.cup_table_collision_id)
+        if not self.ball_ground_contact_first:
+            if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact and not self.ball_in_cup:
+                self.ball_ground_contact_first = self._check_collision_single_objects(sim, self.ball_collision_id,
+                                                                    self.ground_collision_id)
 
     def _check_collision_single_objects(self, sim, id_1, id_2):
         for coni in range(0, sim.data.ncon):

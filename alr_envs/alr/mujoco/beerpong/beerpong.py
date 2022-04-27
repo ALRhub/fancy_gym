@@ -41,9 +41,9 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.ball_id = 11
 
         # self._release_step = 175  # time step of ball release
-        self._release_step = 130  # time step of ball release
+        # self._release_step = 130  # time step of ball release
+        self._release_step = 100  # time step of ball release
 
-        self.sim_time = 3  # seconds
         self.ep_length = 600  # based on 3 seconds with dt = 0.005 int(self.sim_time / self.dt)
         self.cup_table_id = 10
 
@@ -54,6 +54,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
         reward_function = BeerPongReward
         self.reward_function = reward_function()
+        self.n_table_bounces_first = 0
 
         MujocoEnv.__init__(self, self.xml_path, frame_skip)
         utils.EzPickle.__init__(self)
@@ -75,6 +76,8 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return self.sim.data.qvel[0:7].copy()
 
     def reset(self):
+        print(not self.reward_function.ball_ground_contact_first)
+        self.n_table_bounces_first += int(not self.reward_function.ball_ground_contact_first)
         self.reward_function.reset(self.add_noise)
         return super().reset()
 

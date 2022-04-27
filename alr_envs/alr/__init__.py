@@ -559,11 +559,13 @@ for _v in _versions:
             "mp_kwargs": {
                 "num_dof": 7,
                 "num_basis": 2,
-                "duration": 1,
-                "post_traj_time": 2,
+                # "duration": 1,
+                "duration": 0.5,
+                # "post_traj_time": 2,
+                "post_traj_time": 2.5,
                 "policy_type": "motor",
-                # "weights_scale": 0.15,
-                "weights_scale": 1,
+                "weights_scale": 0.14,
+                # "weights_scale": 1,
                 "zero_start": True,
                 "zero_goal": False,
                 "policy_kwargs": {
