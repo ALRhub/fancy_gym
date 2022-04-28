@@ -825,3 +825,10 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+
+# --------------------- Testing new mp wrapper -----------------------------------------------------
+
+# register(
+#     id='ALRReacherProMP-v0'
+# )
