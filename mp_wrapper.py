@@ -6,6 +6,7 @@ import numpy as np
 
 from gym import spaces
 from gym.envs.mujoco import MujocoEnv
+
 from policies import get_policy_class, BaseController
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
@@ -24,7 +25,6 @@ class BaseMPWrapper(gym.Env, ABC):
         policy_type: Type or object defining the policy that is used to generate action based on the trajectory
         weight_scale: Scaling parameter for the actions given to this wrapper
         render_mode: Equivalent to gym render mode
-
     """
 
     def __init__(self,
@@ -44,6 +44,7 @@ class BaseMPWrapper(gym.Env, ABC):
         self.traj_steps = int(duration / self.dt)
         self.post_traj_steps = self.env.spec.max_episode_steps - self.traj_steps
 
+        # TODO: move to constructer, use policy factory instead what Fabian already coded
         if isinstance(policy_type, str):
             # pop policy kwargs here such that they are not passed to the initialize_mp method
             self.policy = get_policy_class(policy_type, self, **mp_kwargs.pop('policy_kwargs', {}))
@@ -56,11 +57,10 @@ class BaseMPWrapper(gym.Env, ABC):
         # rendering
         self.render_mode = render_mode
         self.render_kwargs = {}
-        self.time_steps = np.linspace(0, self.duration, self.traj_steps + 1)
+        # self.time_steps = np.linspace(0, self.duration, self.traj_steps + 1)
+        self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         self.mp.set_mp_times(self.time_steps)
 
-        # TODO: put action bounds in mp wrapper (e.g. time bound for traj. length ...), otherwis learning the durations
-        #  might not work
         # action_bounds = np.inf * np.ones((np.prod(self.mp.num_params)))
         min_action_bounds, max_action_bounds = mp.get_param_bounds()
         self.action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
@@ -73,11 +73,13 @@ class BaseMPWrapper(gym.Env, ABC):
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
         self.mp.set_params(action)
+        self.mp.set_boundary_conditions(bc_time=self.time_steps[:1], bc_pos=self.current_pos, bc_vel=self.current_vel)
         traj_dict = self.mp.get_mp_trajs(get_pos = True, get_vel = True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
         trajectory = trajectory_tensor.numpy()
         velocity = velocity_tensor.numpy()
+
         if self.post_traj_steps > 0:
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
             velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dof))])
@@ -112,10 +114,16 @@ class BaseMPWrapper(gym.Env, ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def _step_callback(self, action):
+        pass
+
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
-
-
+        # TODO: Think about sequencing
+        # TODO: put in a callback function here which every environment can implement. Important for e.g. BP to allow the
+        # TODO: Reward Function rather here?
+        # agent to learn when to release the ball
         trajectory, velocity = self.get_trajectory(action)
 
         trajectory_length = len(trajectory)
@@ -148,6 +156,7 @@ class BaseMPWrapper(gym.Env, ABC):
                 break
         infos.update({k: v[:t + 1] for k, v in infos.items()})
         infos['trajectory'] = trajectory
+        # TODO: remove step information? Might be relevant for debugging -> return only in debug mode (verbose)?
         infos['step_actions'] = actions[:t + 1]
         infos['step_observations'] = observations[:t + 1]
         infos['step_rewards'] = rewards[:t + 1]
@@ -168,3 +177,20 @@ class BaseMPWrapper(gym.Env, ABC):
 
     def get_observation_from_step(self, observation: np.ndarray) -> np.ndarray:
         return observation[self.active_obs]
+
+    def plot_trajs(self, des_trajs, des_vels):
+        import matplotlib.pyplot as plt
+        import matplotlib
+        matplotlib.use('TkAgg')
+        pos_fig = plt.figure('positions')
+        vel_fig = plt.figure('velocities')
+        for i in range(des_trajs.shape[1]):
+            plt.figure(pos_fig.number)
+            plt.subplot(des_trajs.shape[1], 1, i + 1)
+            plt.plot(np.ones(des_trajs.shape[0])*self.current_pos[i])
+            plt.plot(des_trajs[:, i])
+
+            plt.figure(vel_fig.number)
+            plt.subplot(des_vels.shape[1], 1, i + 1)
+            plt.plot(np.ones(des_trajs.shape[0])*self.current_vel[i])
+            plt.plot(des_vels[:, i])
