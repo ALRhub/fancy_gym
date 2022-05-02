@@ -22,6 +22,3 @@ class MPWrapper(BaseMPWrapper):
             # self.get_body_com("target"),  # only return target to make problem harder
             [False],  # step
         ])
-
-    def _step_callback(self, action):
-        pass
