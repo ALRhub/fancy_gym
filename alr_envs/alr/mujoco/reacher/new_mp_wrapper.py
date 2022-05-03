@@ -1,9 +1,9 @@
-from mp_wrapper import BaseMPWrapper
+from alr_envs.mp.episodic_wrapper import EpisodicWrapper
 from typing import Union, Tuple
 import numpy as np
 
 
-class MPWrapper(BaseMPWrapper):
+class MPWrapper(EpisodicWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:

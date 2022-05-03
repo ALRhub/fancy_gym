@@ -391,7 +391,8 @@ register(
         max_episode_steps=600,
         kwargs={
             "rndm_goal": False,
-            "cup_goal_pos": [-0.3, -1.2]
+            "cup_goal_pos": [0.1, -2.0],
+            "learn_release_step": True
         }
     )
 
@@ -403,7 +404,8 @@ register(
         max_episode_steps=600,
         kwargs={
             "rndm_goal": True,
-            "cup_goal_pos": [-0.3, -1.2]
+            "cup_goal_pos": [-0.3, -1.2],
+            "learn_release_step": True
         }
     )
 
@@ -546,34 +548,72 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
+# ## Beerpong
+# _versions = ["v0", "v1"]
+# for _v in _versions:
+#     _env_id = f'BeerpongProMP-{_v}'
+#     register(
+#         id=_env_id,
+#         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+#         kwargs={
+#             "name": f"alr_envs:ALRBeerPong-{_v}",
+#             "wrappers": [mujoco.beerpong.MPWrapper],
+#             "mp_kwargs": {
+#                 "num_dof": 7,
+#                 "num_basis": 2,
+#                 # "duration": 1,
+#                 "duration": 0.5,
+#                 # "post_traj_time": 2,
+#                 "post_traj_time": 2.5,
+#                 "policy_type": "motor",
+#                 "weights_scale": 0.14,
+#                 # "weights_scale": 1,
+#                 "zero_start": True,
+#                 "zero_goal": False,
+#                 "policy_kwargs": {
+#                     "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
+#                     "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+#                 }
+#             }
+#         }
+#     )
+#     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
 ## Beerpong
 _versions = ["v0", "v1"]
 for _v in _versions:
     _env_id = f'BeerpongProMP-{_v}'
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
         kwargs={
             "name": f"alr_envs:ALRBeerPong-{_v}",
-            "wrappers": [mujoco.beerpong.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 7,
-                "num_basis": 2,
-                # "duration": 1,
-                "duration": 0.5,
-                # "post_traj_time": 2,
-                "post_traj_time": 2.5,
-                "policy_type": "motor",
-                "weights_scale": 0.14,
-                # "weights_scale": 1,
-                "zero_start": True,
-                "zero_goal": False,
-                "policy_kwargs": {
-                    "p_gains": np.array([       1.5,   5,   2.55,    3,   2.,    2,   1.25]),
-                    "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
+            "wrappers": [mujoco.beerpong.NewMPWrapper],
+            "ep_wrapper_kwargs": {
+                "weight_scale": 1
+                },
+            "movement_primitives_kwargs": {
+                'movement_primitives_type': 'promp',
+                'num_dof': 7
+                },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear',
+                'delay': 0,
+                'tau': 0.8,     # initial value
+                'learn_tau': True,
+                'learn_delay': False
+                },
+            "controller_kwargs": {
+                'controller_type': 'motor',
+                "p_gains": np.array([1.5, 5, 2.55, 3, 2., 2, 1.25]),
+                "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125]),
+                },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 2,
+                'num_basis_zero_start': 2
                 }
             }
-        }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 

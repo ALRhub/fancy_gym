@@ -3,15 +3,13 @@ from typing import Union, Tuple
 
 import gym
 import numpy as np
-
 from gym import spaces
-from gym.envs.mujoco import MujocoEnv
-
-from policies import get_policy_class, BaseController
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
+from alr_envs.mp.controllers.base_controller import BaseController
 
-class BaseMPWrapper(gym.Env, ABC):
+
+class EpisodicWrapper(gym.Env, ABC):
     """
     Base class for movement primitive based gym.Wrapper implementations.
 
@@ -20,41 +18,34 @@ class BaseMPWrapper(gym.Env, ABC):
         num_dof: Dimension of the action space of the wrapped env
         num_basis: Number of basis functions per dof
         duration: Length of the trajectory of the movement primitive in seconds
-        post_traj_time: Time for which the last position of the trajectory is fed to the environment to continue
-        simulation in seconds
-        policy_type: Type or object defining the policy that is used to generate action based on the trajectory
+        controller: Type or object defining the policy that is used to generate action based on the trajectory
         weight_scale: Scaling parameter for the actions given to this wrapper
         render_mode: Equivalent to gym render mode
     """
-
     def __init__(self,
-                 env: MujocoEnv,
+                 env: gym.Env,
                  mp: MPInterface,
+                 controller: BaseController,
                  duration: float,
-                 policy_type: Union[str, BaseController] = None,
                  render_mode: str = None,
-                 verbose=2,
-                 **mp_kwargs
-                 ):
+                 verbose: int = 1,
+                 weight_scale: float = 1):
         super().__init__()
 
-        assert env.dt is not None
         self.env = env
-        self.dt = env.dt
+        try:
+            self.dt = env.dt
+        except AttributeError:
+            raise AttributeError("step based environment needs to have a function 'dt' ")
         self.duration = duration
         self.traj_steps = int(duration / self.dt)
         self.post_traj_steps = self.env.spec.max_episode_steps - self.traj_steps
 
-        # TODO: move to constructor, use policy factory instead what Fabian already coded
-        if isinstance(policy_type, str):
-            # pop policy kwargs here such that they are not passed to the initialize_mp method
-            self.policy = get_policy_class(policy_type, self, **mp_kwargs.pop('policy_kwargs', {}))
-        else:
-            self.policy = policy_type
-
+        self.controller = controller
         self.mp = mp
         self.env = env
         self.verbose = verbose
+        self.weight_scale = weight_scale
 
         # rendering
         self.render_mode = render_mode
@@ -62,19 +53,24 @@ class BaseMPWrapper(gym.Env, ABC):
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps + 1)
         self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         self.mp.set_mp_times(self.time_steps)
-
         # action_bounds = np.inf * np.ones((np.prod(self.mp.num_params)))
         min_action_bounds, max_action_bounds = mp.get_param_bounds()
-        self.action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
+        self.mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
                                            dtype=np.float32)
 
+        self.action_space = self.set_action_space()
         self.active_obs = self.set_active_obs()
         self.observation_space = spaces.Box(low=self.env.observation_space.low[self.active_obs],
                                             high=self.env.observation_space.high[self.active_obs],
                                             dtype=self.env.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
-        self.mp.set_params(action)
+        # TODO: this follows the implementation of the mp_pytorch library which includes the paramters tau and delay at
+        #  the beginning of the array.
+        ignore_indices = int(self.mp.learn_tau) + int(self.mp.learn_delay)
+        scaled_mp_params = action.copy()
+        scaled_mp_params[ignore_indices:] *= self.weight_scale
+        self.mp.set_params(scaled_mp_params)
         self.mp.set_boundary_conditions(bc_time=self.time_steps[:1], bc_pos=self.current_pos, bc_vel=self.current_vel)
         traj_dict = self.mp.get_mp_trajs(get_pos = True, get_vel = True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
@@ -88,9 +84,54 @@ class BaseMPWrapper(gym.Env, ABC):
 
         return trajectory, velocity
 
+    def set_action_space(self):
+        """
+        This function can be used to modify the action space for considering actions which are not learned via motion
+        primitives. E.g. ball releasing time for the beer pong task. By default, it is the parameter space of the
+        motion primitive.
+        Only needs to be overwritten if the action space needs to be modified.
+        """
+        return self.mp_action_space
+
+    def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
+        """
+        Used to extract the parameters for the motion primitive and other parameters from an action array which might
+        include other actions like ball releasing time for the beer pong environment.
+        This only needs to be overwritten if the action space is modified.
+        Args:
+            action: a vector instance of the whole action space, includes mp parameters and additional parameters if
+            specified, else only mp parameters
+
+        Returns:
+            Tuple: mp_arguments and other arguments
+        """
+        return action, None
+
+    def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[np.ndarray]:
+        """
+        This function can be used to modify the step_action with additional parameters e.g. releasing the ball in the
+        Beerpong env. The parameters used should not be part of the motion primitive parameters.
+        Returns step_action by default, can be overwritten in individual mp_wrappers.
+        Args:
+            t: the current time step of the episode
+            env_spec_params: the environment specific parameter, as defined in fucntion _episode_callback
+            (e.g. ball release time in Beer Pong)
+            step_action: the current step-based action
+
+        Returns:
+            modified step action
+        """
+        return step_action
+
     @abstractmethod
-    def set_active_obs(self):
-        pass
+    def set_active_obs(self) -> np.ndarray:
+        """
+        This function defines the contexts. The contexts are defined as specific observations.
+        Returns:
+            boolearn array representing the indices of the observations
+
+        """
+        return np.ones(self.env.observation_space.shape[0], dtype=bool)
 
     @property
     @abstractmethod
@@ -116,38 +157,34 @@ class BaseMPWrapper(gym.Env, ABC):
         """
         raise NotImplementedError()
 
-    def _step_callback(self, t, action):
-        pass
-
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
         # TODO: Think about sequencing
         # TODO: Reward Function rather here?
         # agent to learn when to release the ball
-        trajectory, velocity = self.get_trajectory(action)
+        mp_params, env_spec_params = self._episode_callback(action)
+        trajectory, velocity = self.get_trajectory(mp_params)
 
         trajectory_length = len(trajectory)
-        actions = np.zeros(shape=(trajectory_length,) + self.env.action_space.shape)
-        if isinstance(self.env.observation_space, spaces.Dict):  # For goal environments
-            observations = np.zeros(shape=(trajectory_length,) + self.env.observation_space["observation"].shape,
-                                    dtype=self.env.observation_space.dtype)
-        else:
+        if self.verbose >=2 :
+            actions = np.zeros(shape=(trajectory_length,) + self.env.action_space.shape)
             observations = np.zeros(shape=(trajectory_length,) + self.env.observation_space.shape,
-                                    dtype=self.env.observation_space.dtype)
-        rewards = np.zeros(shape=(trajectory_length,))
+                                        dtype=self.env.observation_space.dtype)
+            rewards = np.zeros(shape=(trajectory_length,))
         trajectory_return = 0
 
         infos = dict()
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
-            ac = self.policy.get_action(pos_vel[0], pos_vel[1])
-            callback_action = self._step_callback(t, action)
-            if callback_action is not None:
-                ac = np.concatenate((callback_action, ac))      # include callback action at first pos of vector
-            actions[t, :] = np.clip(ac, self.env.action_space.low, self.env.action_space.high)
-            obs, rewards[t], done, info = self.env.step(actions[t, :])
-            observations[t, :] = obs["observation"] if isinstance(self.env.observation_space, spaces.Dict) else obs
-            trajectory_return += rewards[t]
+            step_action = self.controller.get_action(pos_vel[0], pos_vel[1], self.current_pos, self.current_vel)
+            step_action = self._step_callback(t, env_spec_params, step_action)   # include possible callback info
+            c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
+            obs, c_reward, done, info = self.env.step(c_action)
+            if self.verbose >= 2:
+                actions[t, :] = c_action
+                rewards[t] = c_reward
+                observations[t, :] = obs
+            trajectory_return += c_reward
             for k, v in info.items():
                 elems = infos.get(k, [None] * trajectory_length)
                 elems[t] = v
@@ -158,14 +195,14 @@ class BaseMPWrapper(gym.Env, ABC):
             if done:
                 break
         infos.update({k: v[:t + 1] for k, v in infos.items()})
-        infos['trajectory'] = trajectory
-        if self.verbose == 2:
+        if self.verbose >= 2:
+            infos['trajectory'] = trajectory
             infos['step_actions'] = actions[:t + 1]
             infos['step_observations'] = observations[:t + 1]
             infos['step_rewards'] = rewards[:t + 1]
             infos['trajectory_length'] = t + 1
         done = True
-        return self.get_observation_from_step(observations[t]), trajectory_return, done, infos
+        return self.get_observation_from_step(obs), trajectory_return, done, infos
 
     def reset(self):
         return self.get_observation_from_step(self.env.reset())

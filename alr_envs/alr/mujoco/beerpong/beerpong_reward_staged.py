@@ -162,6 +162,10 @@ class BeerPongReward:
                 min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, 0
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
                      1e-4 * np.mean(action_cost)
+            if env.learn_release_step and not self.ball_in_cup:
+                too_small = (env._release_step<50)*(env._release_step-50)**2
+                too_big = (env._release_step>200)*0.2*(env._release_step-200)**2
+                reward = reward - too_small -too_big
             # 1e-7*np.mean(action_cost)
             success = self.ball_in_cup
         else:

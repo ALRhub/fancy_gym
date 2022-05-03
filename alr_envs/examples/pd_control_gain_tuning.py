@@ -39,7 +39,7 @@ actual_vel = np.zeros((len(pos), *base_shape))
 act = np.zeros((len(pos), *base_shape))
 
 for t, pos_vel in enumerate(zip(pos, vel)):
-    actions = env.policy.get_action(pos_vel[0], pos_vel[1])
+    actions = env.policy.get_action(pos_vel[0], pos_vel[1],, self.current_vel, self.current_pos
     actions = np.clip(actions, env.full_action_space.low, env.full_action_space.high)
     _, _, _, _ = env.env.step(actions)
     act[t, :] = actions

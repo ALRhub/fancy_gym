@@ -1,13 +1,20 @@
 import warnings
-from typing import Iterable, Type, Union
+from typing import Iterable, Type, Union, Mapping, MutableMapping
 
 import gym
 import numpy as np
 from gym.envs.registration import EnvSpec
 
-from mp_env_api import MPEnvWrapper
 from mp_env_api.mp_wrappers.dmp_wrapper import DmpWrapper
 from mp_env_api.mp_wrappers.promp_wrapper import ProMPWrapper
+from mp_pytorch import MPInterface
+
+from alr_envs.mp.basis_generator_factory import get_basis_generator
+from alr_envs.mp.controllers.base_controller import BaseController
+from alr_envs.mp.controllers.controller_factory import get_controller
+from alr_envs.mp.mp_factory import get_movement_primitive
+from alr_envs.mp.episodic_wrapper import EpisodicWrapper
+from alr_envs.mp.phase_generator_factory import get_phase_generator
 
 
 def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
@@ -92,7 +99,8 @@ def make(env_id: str, seed, **kwargs):
     return env
 
 
-def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1, **kwargs):
+def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], mp: MPInterface, controller: BaseController,
+                      ep_wrapper_kwargs: Mapping, seed=1, **kwargs):
     """
     Helper function for creating a wrapped gym environment using MPs.
     It adds all provided wrappers to the specified environment and verifies at least one MPEnvWrapper is
@@ -108,14 +116,102 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     """
     # _env = gym.make(env_id)
     _env = make(env_id, seed, **kwargs)
-
-    assert any(issubclass(w, MPEnvWrapper) for w in wrappers), \
-        "At least one MPEnvWrapper is required in order to leverage motion primitive environments."
+    has_episodic_wrapper = False
     for w in wrappers:
-        _env = w(_env)
-
+        # only wrap the environment if not EpisodicWrapper, e.g. for vision
+        if not issubclass(w, EpisodicWrapper):
+            _env = w(_env)
+        else: # if EpisodicWrapper, use specific constructor
+            has_episodic_wrapper = True
+            _env = w(env=_env, mp=mp, controller=controller, **ep_wrapper_kwargs)
+    assert has_episodic_wrapper, \
+            "At least one MPEnvWrapper is required in order to leverage motion primitive environments."
     return _env
 
+def make_mp_from_kwargs(
+        env_id: str, wrappers: Iterable, ep_wrapper_kwargs: MutableMapping, mp_kwargs: MutableMapping,
+        controller_kwargs: MutableMapping, phase_kwargs: MutableMapping, basis_kwargs: MutableMapping, seed=1,
+        sequenced=False, **kwargs
+        ):
+    """
+    This can also be used standalone for manually building a custom DMP environment.
+    Args:
+        ep_wrapper_kwargs:
+        basis_kwargs:
+        phase_kwargs:
+        controller_kwargs:
+        env_id: base_env_name,
+        wrappers: list of wrappers (at least an EpisodicWrapper),
+        seed: seed of environment
+        sequenced: When true, this allows to sequence multiple ProMPs by specifying the duration of each sub-trajectory,
+                this behavior is much closer to step based learning.
+        mp_kwargs: dict of at least {num_dof: int, num_basis: int} for DMP
+
+    Returns: DMP wrapped gym env
+
+    """
+    _verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
+    dummy_env = make(env_id, seed)
+    if ep_wrapper_kwargs.get('duration', None) is None:
+        ep_wrapper_kwargs['duration'] = dummy_env.spec.max_episode_steps*dummy_env.dt
+    if phase_kwargs.get('tau', None) is None:
+        phase_kwargs['tau'] = ep_wrapper_kwargs['duration']
+    action_dim = mp_kwargs.pop('num_dof', None)
+    action_dim = action_dim if action_dim is not None else np.prod(dummy_env.action_space.shape).item()
+    phase_gen = get_phase_generator(**phase_kwargs)
+    basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)
+    controller = get_controller(**controller_kwargs)
+    mp = get_movement_primitive(action_dim=action_dim, basis_generator=basis_gen, **mp_kwargs)
+    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, mp=mp, controller=controller,
+                             ep_wrapper_kwargs=ep_wrapper_kwargs, seed=seed, **kwargs)
+    return _env
+
+
+def make_mp_env_helper(**kwargs):
+    """
+    Helper function for registering a DMP gym environments.
+    Args:
+        **kwargs: expects at least the following:
+        {
+        "name": base environment name.
+        "wrappers": list of wrappers (at least an EpisodicWrapper is required),
+        "movement_primitives_kwargs": {
+            "movement_primitives_type": type_of_your_movement_primitive,
+            non default arguments for the movement primitive instance
+            ...
+            }
+        "controller_kwargs": {
+            "controller_type": type_of_your_controller,
+            non default arguments for the controller instance
+            ...
+            },
+        "basis_generator_kwargs": {
+            "basis_generator_type": type_of_your_basis_generator,
+            non default arguments for the basis generator instance
+            ...
+            },
+        "phase_generator_kwargs": {
+            "phase_generator_type": type_of_your_phase_generator,
+            non default arguments for the phase generator instance
+            ...
+            },
+        }
+
+    Returns: MP wrapped gym env
+
+    """
+    seed = kwargs.pop("seed", None)
+    wrappers = kwargs.pop("wrappers")
+
+    mp_kwargs = kwargs.pop("movement_primitives_kwargs")
+    ep_wrapper_kwargs = kwargs.pop('ep_wrapper_kwargs')
+    contr_kwargs = kwargs.pop("controller_kwargs")
+    phase_kwargs = kwargs.pop("phase_generator_kwargs")
+    basis_kwargs = kwargs.pop("basis_generator_kwargs")
+
+    return make_mp_from_kwargs(env_id=kwargs.pop("name"), wrappers=wrappers,  ep_wrapper_kwargs=ep_wrapper_kwargs,
+                               mp_kwargs=mp_kwargs, controller_kwargs=contr_kwargs, phase_kwargs=phase_kwargs,
+                               basis_kwargs=basis_kwargs, **kwargs, seed=seed)
 
 def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs):
     """
