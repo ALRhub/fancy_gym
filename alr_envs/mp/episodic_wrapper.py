@@ -70,7 +70,7 @@ class EpisodicWrapper(gym.Env, ABC):
         ignore_indices = int(self.mp.learn_tau) + int(self.mp.learn_delay)
         scaled_mp_params = action.copy()
         scaled_mp_params[ignore_indices:] *= self.weight_scale
-        self.mp.set_params(scaled_mp_params)
+        self.mp.set_params(np.clip(scaled_mp_params, self.mp_action_space.low, self.mp_action_space.high))
         self.mp.set_boundary_conditions(bc_time=self.time_steps[:1], bc_pos=self.current_pos, bc_vel=self.current_vel)
         traj_dict = self.mp.get_mp_trajs(get_pos = True, get_vel = True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']

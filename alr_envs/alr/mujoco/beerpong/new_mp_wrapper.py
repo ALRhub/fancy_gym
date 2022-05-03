@@ -38,7 +38,7 @@ class NewMPWrapper(EpisodicWrapper):
             min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
             min_action_bounds = np.concatenate((min_action_bounds.numpy(), [self.env.action_space.low[-1]]))
             max_action_bounds = np.concatenate((max_action_bounds.numpy(), [self.env.action_space.high[-1]]))
-            self.mp_action_space = gym.spaces.Box(low=min_action_bounds, high=max_action_bounds, dtype=np.float32)
-            return self.mp_action_space
+            self.action_space = gym.spaces.Box(low=min_action_bounds, high=max_action_bounds, dtype=np.float32)
+            return self.action_space
         else:
             return super(NewMPWrapper, self).set_action_space()
