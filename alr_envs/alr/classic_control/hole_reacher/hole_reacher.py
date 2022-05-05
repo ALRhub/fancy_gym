@@ -45,6 +45,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         elif rew_fct == "vel_acc":
             from alr_envs.alr.classic_control.hole_reacher.hr_dist_vel_acc_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
+        elif rew_fct == "unbounded":
+            from alr_envs.alr.classic_control.hole_reacher.hr_unbounded_reward import HolereacherReward
+            self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision)
         else:
             raise ValueError("Unknown reward function {}".format(rew_fct))
 
