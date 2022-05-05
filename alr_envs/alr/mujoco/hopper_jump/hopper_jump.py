@@ -80,8 +80,6 @@ class ALRHopperJumpEnv(HopperEnv):
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
-        noise_low = -self._reset_noise_scale
-        noise_high = self._reset_noise_scale
 
         qpos = self.init_qpos # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
         qvel = self.init_qvel # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
@@ -104,14 +102,26 @@ class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):
     def reset_model(self):
         self._floor_geom_id = self.model.geom_name2id('floor')
         self._foot_geom_id = self.model.geom_name2id('foot_geom')
-        noise_low = -self._reset_noise_scale
-        noise_high = self._reset_noise_scale
+        noise_low = -np.ones(self.model.nq)*self._reset_noise_scale
+        noise_low[1] = 0
+        noise_low[2] = -0.3
+        noise_low[3] = -0.1
+        noise_low[4] = -1.1
+        noise_low[5] = -0.785
+
+        noise_high = np.ones(self.model.nq)*self._reset_noise_scale
+        noise_high[1] = 0
+        noise_high[2] = 0.3
+        noise_high[3] = 0
+        noise_high[4] = 0
+        noise_high[5] = 0.785
+
         rnd_vec = self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
-        rnd_vec[2] *= 0.05  # the angle around the y axis shouldn't be too high as the agent then falls down quickly and
+        # rnd_vec[2] *= 0.05  # the angle around the y axis shouldn't be too high as the agent then falls down quickly and
                             # can not recover
-        rnd_vec[1] = np.clip(rnd_vec[1], 0, 0.3)
+        # rnd_vec[1] = np.clip(rnd_vec[1], 0, 0.3)
         qpos = self.init_qpos + rnd_vec
-        qvel = self.init_qvel #+ self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
+        qvel = self.init_qvel
 
         self.set_state(qpos, qvel)
 
@@ -167,16 +177,19 @@ if __name__ == '__main__':
     env = ALRHopperJumpRndmPosEnv()
     obs = env.reset()
 
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        # if i % 10 == 0:
-        #     env.render(mode=render_mode)
-        env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
+    for k in range(10):
+        obs = env.reset()
+        print('observation :', obs[:6])
+        for i in range(200):
+            # objective.load_result("/tmp/cma")
+            # test with random actions
+            ac = env.action_space.sample()
+            obs, rew, d, info = env.step(ac)
+            # if i % 10 == 0:
+            #     env.render(mode=render_mode)
+            env.render(mode=render_mode)
+            if d:
+                print('After ', i, ' steps, done: ', d)
+                env.reset()
 
     env.close()

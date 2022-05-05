@@ -50,13 +50,10 @@ class EpisodicWrapper(gym.Env, ABC):
         # rendering
         self.render_mode = render_mode
         self.render_kwargs = {}
-        # self.time_steps = np.linspace(0, self.duration, self.traj_steps + 1)
         self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         self.mp.set_mp_times(self.time_steps)
         # action_bounds = np.inf * np.ones((np.prod(self.mp.num_params)))
-        min_action_bounds, max_action_bounds = mp.get_param_bounds()
-        self.mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
-                                           dtype=np.float32)
+        self.mp_action_space = self.set_mp_action_space()
 
         self.action_space = self.set_action_space()
         self.active_obs = self.set_active_obs()
@@ -65,7 +62,7 @@ class EpisodicWrapper(gym.Env, ABC):
                                             dtype=self.env.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
-        # TODO: this follows the implementation of the mp_pytorch library which includes the paramters tau and delay at
+        # TODO: this follows the implementation of the mp_pytorch library which includes the parameters tau and delay at
         #  the beginning of the array.
         ignore_indices = int(self.mp.learn_tau) + int(self.mp.learn_delay)
         scaled_mp_params = action.copy()
@@ -83,6 +80,13 @@ class EpisodicWrapper(gym.Env, ABC):
             velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dof))])
 
         return trajectory, velocity
+
+    def set_mp_action_space(self):
+        """This function can be used to set up an individual space for the parameters of the mp."""
+        min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
+        mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
+                                              dtype=np.float32)
+        return mp_action_space
 
     def set_action_space(self):
         """
@@ -179,6 +183,7 @@ class EpisodicWrapper(gym.Env, ABC):
             step_action = self.controller.get_action(pos_vel[0], pos_vel[1], self.current_pos, self.current_vel)
             step_action = self._step_callback(t, env_spec_params, step_action)   # include possible callback info
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
+            # print('step/clipped action ratio: ', step_action/c_action)
             obs, c_reward, done, info = self.env.step(c_action)
             if self.verbose >= 2:
                 actions[t, :] = c_action

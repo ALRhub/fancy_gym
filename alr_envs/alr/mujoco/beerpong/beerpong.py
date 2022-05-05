@@ -3,7 +3,6 @@ import os
 
 import numpy as np
 from gym import utils
-from gym import spaces
 from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
@@ -18,7 +17,7 @@ CUP_POS_MAX = np.array([0.32, -1.2])
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
-                 rndm_goal=False, learn_release_step=True, cup_goal_pos=None):
+                 rndm_goal=False, cup_goal_pos=None):
         cup_goal_pos = np.array(cup_goal_pos if cup_goal_pos is not None else [-0.3, -1.2, 0.840])
         if cup_goal_pos.shape[0]==2:
             cup_goal_pos = np.insert(cup_goal_pos, 2, 0.840)
@@ -43,7 +42,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
         # self._release_step = 175  # time step of ball release
         # self._release_step = 130  # time step of ball release
-        self._release_step = 100  # time step of ball release
+        self.release_step = 100  # time step of ball release
 
         self.ep_length = 600  # based on 3 seconds with dt = 0.005 int(self.sim_time / self.dt)
         self.cup_table_id = 10
@@ -52,7 +51,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             self.noise_std = 0.01
         else:
             self.noise_std = 0
-        self.learn_release_step = learn_release_step
         reward_function = BeerPongReward
         self.reward_function = reward_function()
 
@@ -62,13 +60,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     @property
     def start_pos(self):
         return self._start_pos
-
-    def _set_action_space(self):
-        bounds = self.model.actuator_ctrlrange.copy().astype(np.float32)
-        bounds = np.concatenate((bounds, [[50, self.ep_length*0.333]]), axis=0)
-        low, high = bounds.T
-        self.action_space = spaces.Box(low=low, high=high, dtype=np.float32)
-        return self.action_space
 
     @property
     def start_vel(self):
@@ -109,21 +100,22 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def step(self, a):
-        self._release_step = a[-1] if self.learn_release_step else self._release_step
-        self._release_step = np.clip(self._release_step, self.action_space.low[-1], self.action_space.high[-1]) \
-            if self.learn_release_step else self._release_step
+        # if a.shape[0] == 8: # we learn also when to release the ball
+        #     self._release_step = a[-1]
+        # self._release_step = np.clip(self._release_step, 50, 250)
+        # self.release_step = 0.5/self.dt
         reward_dist = 0.0
         angular_vel = 0.0
-        applied_action = a[:a.shape[0]-int(self.learn_release_step)]
+        applied_action = a
         reward_ctrl = - np.square(applied_action).sum()
         if self.apply_gravity_comp:
             applied_action += self.sim.data.qfrc_bias[:len(applied_action)].copy() / self.model.actuator_gear[:, 0]
         try:
             self.do_simulation(applied_action, self.frame_skip)
-            if self._steps < self._release_step:
+            if self._steps < self.release_step:
                 self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
                 self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.ball_site_id, :].copy()
-            elif self._steps == self._release_step and self.add_noise:
+            elif self._steps == self.release_step and self.add_noise:
                  self.sim.data.qvel[7::] += self.noise_std * np.random.randn(3)
             crash = False
         except mujoco_py.builder.MujocoException:
@@ -160,7 +152,8 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
                      ball_pos=ball_pos,
                      ball_vel=ball_vel,
                      success=success,
-                     is_collided=is_collided, sim_crash=crash)
+                     is_collided=is_collided, sim_crash=crash,
+                     table_contact_first=int(not self.reward_function.ball_ground_contact_first))
         infos.update(reward_infos)
 
         return ob, reward, done, infos

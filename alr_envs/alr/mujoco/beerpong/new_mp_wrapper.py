@@ -21,24 +21,35 @@ class NewMPWrapper(EpisodicWrapper):
             [False]  # env steps
         ])
 
-    def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[np.ndarray]:
-        if self.env.learn_release_step:
-            return np.concatenate((step_action, np.atleast_1d(env_spec_params)))
-        else:
-            return step_action
+    # def set_mp_action_space(self):
+    #     min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
+    #     if self.mp.learn_tau:
+    #         min_action_bounds[0] = 20*self.env.dt
+    #         max_action_bounds[0] = 260*self.env.dt
+    #     mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
+    #                                      dtype=np.float32)
+    #     return mp_action_space
+
+    # def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[np.ndarray]:
+    #     if self.mp.learn_tau:
+    #         return np.concatenate((step_action, np.atleast_1d(env_spec_params)))
+    #     else:
+    #         return step_action
 
     def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
-        if self.env.learn_release_step:
-            return action[:-1], action[-1]  # mp_params, release step
+        if self.mp.learn_tau:
+            self.env.env.release_step = action[0]/self.env.dt         # Tau value
+            # self.env.env.release_step = np.clip(action[0]/self.env.dt, 20, 260)        # Tau value
+            return action, None
         else:
             return action, None
 
-    def set_action_space(self):
-        if self.env.learn_release_step:
-            min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
-            min_action_bounds = np.concatenate((min_action_bounds.numpy(), [self.env.action_space.low[-1]]))
-            max_action_bounds = np.concatenate((max_action_bounds.numpy(), [self.env.action_space.high[-1]]))
-            self.action_space = gym.spaces.Box(low=min_action_bounds, high=max_action_bounds, dtype=np.float32)
-            return self.action_space
-        else:
-            return super(NewMPWrapper, self).set_action_space()
+    # def set_action_space(self):
+    #     if self.mp.learn_tau:
+    #         min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
+    #         min_action_bounds = np.concatenate((min_action_bounds.numpy(), [self.env.action_space.low[-1]]))
+    #         max_action_bounds = np.concatenate((max_action_bounds.numpy(), [self.env.action_space.high[-1]]))
+    #         self.action_space = gym.spaces.Box(low=min_action_bounds, high=max_action_bounds, dtype=np.float32)
+    #         return self.action_space
+    #     else:
+    #         return super(NewMPWrapper, self).set_action_space()

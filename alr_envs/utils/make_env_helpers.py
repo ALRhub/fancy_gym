@@ -156,12 +156,11 @@ def make_mp_from_kwargs(
         ep_wrapper_kwargs['duration'] = dummy_env.spec.max_episode_steps*dummy_env.dt
     if phase_kwargs.get('tau', None) is None:
         phase_kwargs['tau'] = ep_wrapper_kwargs['duration']
-    action_dim = mp_kwargs.pop('num_dof', None)
-    action_dim = action_dim if action_dim is not None else np.prod(dummy_env.action_space.shape).item()
+    mp_kwargs['action_dim'] = mp_kwargs.get('action_dim', np.prod(dummy_env.action_space.shape).item())
     phase_gen = get_phase_generator(**phase_kwargs)
     basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)
     controller = get_controller(**controller_kwargs)
-    mp = get_movement_primitive(action_dim=action_dim, basis_generator=basis_gen, **mp_kwargs)
+    mp = get_movement_primitive(basis_generator=basis_gen, **mp_kwargs)
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, mp=mp, controller=controller,
                              ep_wrapper_kwargs=ep_wrapper_kwargs, seed=seed, **kwargs)
     return _env

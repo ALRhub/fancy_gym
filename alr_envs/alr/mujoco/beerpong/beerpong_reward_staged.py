@@ -162,12 +162,16 @@ class BeerPongReward:
                 min_dist_coeff, final_dist_coeff, rew_offset = 0, 1, 0
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
                      1e-4 * np.mean(action_cost)
-            if env.learn_release_step and not self.ball_in_cup:
-                too_small = (env._release_step<50)*(env._release_step-50)**2
-                too_big = (env._release_step>200)*0.2*(env._release_step-200)**2
-                reward = reward - too_small -too_big
             # 1e-7*np.mean(action_cost)
+            # release step punishment
+            min_time_bound = 0.1
+            max_time_bound = 1.0
+            release_time = env.release_step*env.dt
+            release_time_rew = int(release_time<min_time_bound)*(-30-10*(release_time-min_time_bound)**2) \
+                                +int(release_time>max_time_bound)*(-30-10*(release_time-max_time_bound)**2)
+            reward += release_time_rew
             success = self.ball_in_cup
+            # print('release time :', release_time)
         else:
             reward = - 1e-2 * action_cost
             # reward = - 1e-4 * action_cost

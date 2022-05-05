@@ -391,8 +391,7 @@ register(
         max_episode_steps=600,
         kwargs={
             "rndm_goal": False,
-            "cup_goal_pos": [0.1, -2.0],
-            "learn_release_step": True
+            "cup_goal_pos": [0.1, -2.0]
         }
     )
 
@@ -404,8 +403,7 @@ register(
         max_episode_steps=600,
         kwargs={
             "rndm_goal": True,
-            "cup_goal_pos": [-0.3, -1.2],
-            "learn_release_step": True
+            "cup_goal_pos": [-0.3, -1.2]
         }
     )
 
@@ -646,7 +644,7 @@ for _v in _versions:
                 },
             "movement_primitives_kwargs": {
                 'movement_primitives_type': 'promp',
-                'num_dof': 7
+                'action_dim': 7
                 },
             "phase_generator_kwargs": {
                 'phase_generator_type': 'linear',
@@ -658,7 +656,9 @@ for _v in _versions:
             "controller_kwargs": {
                 'controller_type': 'motor',
                 "p_gains": np.array([1.5, 5, 2.55, 3, 2., 2, 1.25]),
+                # "p_gains": 0.125*np.array([200, 300, 100, 100, 10, 10, 2.5]),
                 "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125]),
+                # "d_gains": 0.025*np.array([7, 15, 5, 2.5, 0.3, 0.3, 0.05]),
                 },
             "basis_generator_kwargs": {
                 'basis_generator_type': 'zero_rbf',
@@ -753,29 +753,92 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
+# ## HopperJump
+# _versions = ["v0", "v1"]
+# for _v in _versions:
+#     _env_id = f'ALRHopperJumpProMP-{_v}'
+#     register(
+#         id= _env_id,
+#         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+#         kwargs={
+#             "name": f"alr_envs:ALRHopperJump-{_v}",
+#             "wrappers": [mujoco.hopper_jump.MPWrapper],
+#             "mp_kwargs": {
+#                 "num_dof": 3,
+#                 "num_basis": 5,
+#                 "duration": 2,
+#                 "post_traj_time": 0,
+#                 "policy_type": "motor",
+#                 "weights_scale": 1.0,
+#                 "zero_start": True,
+#                 "zero_goal": False,
+#                 "policy_kwargs": {
+#                     "p_gains": np.ones(3),
+#                     "d_gains": 0.1*np.ones(3)
+#                 }
+#             }
+#         }
+#     )
+#     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+# ## HopperJump
+# register(
+#     id= "ALRHopperJumpProMP-v2",
+#     entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+#     kwargs={
+#         "name": f"alr_envs:ALRHopperJump-v2",
+#         "wrappers": [mujoco.hopper_jump.HighCtxtMPWrapper],
+#         "mp_kwargs": {
+#             "num_dof": 3,
+#             "num_basis": 5,
+#             "duration": 2,
+#             "post_traj_time": 0,
+#             "policy_type": "motor",
+#             "weights_scale": 1.0,
+#             "zero_start": True,
+#             "zero_goal": False,
+#             "policy_kwargs": {
+#                 "p_gains": np.ones(3),
+#                 "d_gains": 0.1*np.ones(3)
+#             }
+#         }
+#     }
+# )
+# ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ALRHopperJumpProMP-v2")
+
 ## HopperJump
 _versions = ["v0", "v1"]
 for _v in _versions:
     _env_id = f'ALRHopperJumpProMP-{_v}'
     register(
         id= _env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
         kwargs={
             "name": f"alr_envs:ALRHopperJump-{_v}",
-            "wrappers": [mujoco.hopper_jump.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 3,
-                "num_basis": 5,
-                "duration": 2,
-                "post_traj_time": 0,
-                "policy_type": "motor",
-                "weights_scale": 1.0,
-                "zero_start": True,
-                "zero_goal": False,
-                "policy_kwargs": {
-                    "p_gains": np.ones(3),
-                    "d_gains": 0.1*np.ones(3)
-                }
+            "wrappers": [mujoco.hopper_jump.NewMPWrapper],
+            "ep_wrapper_kwargs": {
+                "weight_scale": 1
+            },
+            "movement_primitives_kwargs": {
+                'movement_primitives_type': 'promp',
+                'action_dim': 3
+            },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear',
+                'delay': 0,
+                'tau': 2,  # initial value
+                'learn_tau': False,
+                'learn_delay': False
+            },
+            "controller_kwargs": {
+                'controller_type': 'motor',
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3),
+            },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 5,
+                'num_basis_zero_start': 2
             }
         }
     )
@@ -784,25 +847,35 @@ for _v in _versions:
 ## HopperJump
 register(
     id= "ALRHopperJumpProMP-v2",
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
     kwargs={
         "name": f"alr_envs:ALRHopperJump-v2",
-        "wrappers": [mujoco.hopper_jump.HighCtxtMPWrapper],
-        "mp_kwargs": {
-            "num_dof": 3,
-            "num_basis": 5,
-            "duration": 2,
-            "post_traj_time": 0,
-            "policy_type": "motor",
-            "weights_scale": 1.0,
-            "zero_start": True,
-            "zero_goal": False,
-            "policy_kwargs": {
+        "wrappers": [mujoco.hopper_jump.NewHighCtxtMPWrapper],
+        "ep_wrapper_kwargs": {
+                "weight_scale": 1
+            },
+            "movement_primitives_kwargs": {
+                'movement_primitives_type': 'promp',
+                'action_dim': 3
+            },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear',
+                'delay': 0,
+                'tau': 2,  # initial value
+                'learn_tau': False,
+                'learn_delay': False
+            },
+            "controller_kwargs": {
+                'controller_type': 'motor',
                 "p_gains": np.ones(3),
-                "d_gains": 0.1*np.ones(3)
+                "d_gains": 0.1*np.ones(3),
+            },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 5,
+                'num_basis_zero_start': 2
             }
         }
-    }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ALRHopperJumpProMP-v2")
 
@@ -917,10 +990,3 @@ for _v in _versions:
         }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-
-# --------------------- Testing new mp wrapper -----------------------------------------------------
-
-# register(
-#     id='ALRReacherProMP-v0'
-# )
