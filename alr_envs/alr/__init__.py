@@ -97,6 +97,7 @@ register(
         "hole_depth": 1,
         "hole_x": None,
         "collision_penalty": 100,
+        "rew_fct": "unbounded"
     }
 )
 
@@ -354,7 +355,7 @@ for _v in _versions:
             "wrappers": [classic_control.hole_reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,
-                "num_basis": 5,
+                "num_basis": 3,
                 "duration": 2,
                 "policy_type": "velocity",
                 "weights_scale": 5,
@@ -402,7 +403,7 @@ for _v in _versions:
             "wrappers": [mujoco.reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5 if "long" not in _v.lower() else 7,
-                "num_basis": 1,
+                "num_basis": 2,
                 "duration": 4,
                 "policy_type": "motor",
                 "weights_scale": 5,

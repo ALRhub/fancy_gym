@@ -39,14 +39,18 @@ class ALRReacherEnv(MujocoEnv, utils.EzPickle):
         reward_dist = 0.0
         angular_vel = 0.0
         reward_balance = 0.0
+        is_delayed = self.steps_before_reward > 0
+        reward_ctrl = - np.square(a).sum()
         if self._steps >= self.steps_before_reward:
             vec = self.get_body_com("fingertip") - self.get_body_com("target")
             reward_dist -= self.reward_weight * np.linalg.norm(vec)
-            if self.steps_before_reward > 0:
+            if is_delayed:
                 # avoid giving this penalty for normal step based case
                 # angular_vel -= 10 * np.linalg.norm(self.sim.data.qvel.flat[:self.n_links])
                 angular_vel -= 10 * np.square(self.sim.data.qvel.flat[:self.n_links]).sum()
-        reward_ctrl = - 10 * np.square(a).sum()
+        if is_delayed:
+            # Higher control penalty for sparse reward per timestep
+            reward_ctrl *= 10
 
         if self.balance:
             reward_balance -= self.balance_weight * np.abs(
