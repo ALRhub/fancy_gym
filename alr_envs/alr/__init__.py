@@ -656,9 +656,7 @@ for _v in _versions:
             "controller_kwargs": {
                 'controller_type': 'motor',
                 "p_gains": np.array([1.5, 5, 2.55, 3, 2., 2, 1.25]),
-                # "p_gains": 0.125*np.array([200, 300, 100, 100, 10, 10, 2.5]),
                 "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125]),
-                # "d_gains": 0.025*np.array([7, 15, 5, 2.5, 0.3, 0.3, 0.05]),
                 },
             "basis_generator_kwargs": {
                 'basis_generator_type': 'zero_rbf',
