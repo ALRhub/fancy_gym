@@ -39,7 +39,6 @@ class NewMPWrapper(EpisodicWrapper):
     def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         if self.mp.learn_tau:
             self.env.env.release_step = action[0]/self.env.dt         # Tau value
-            # self.env.env.release_step = np.clip(action[0]/self.env.dt, 20, 260)        # Tau value
             return action, None
         else:
             return action, None

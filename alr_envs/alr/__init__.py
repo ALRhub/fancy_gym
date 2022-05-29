@@ -400,11 +400,11 @@ register(id='TableTennis4DCtxt-v0',
 register(
         id='ALRBeerPong-v0',
         entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
-        max_episode_steps=150,
+        max_episode_steps=600,
         kwargs={
             "rndm_goal": False,
             "cup_goal_pos": [0.1, -2.0],
-            "frameskip": 4
+            "frame_skip": 1
         }
     )
 
@@ -413,11 +413,11 @@ register(
 register(
         id='ALRBeerPong-v1',
         entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
-        max_episode_steps=150,
+        max_episode_steps=600,
         kwargs={
             "rndm_goal": True,
             "cup_goal_pos": [-0.3, -1.2],
-            "frameskip": 4
+            "frame_skip": 1
         }
     )
 

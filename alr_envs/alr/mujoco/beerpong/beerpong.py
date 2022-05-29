@@ -177,12 +177,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
     @property
     def dt(self):
-        return super(ALRBeerBongEnv, self).dt()*self.repeat_action
-
-class ALRBeerPongStepEnv(ALRBeerBongEnv):
-    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
-                 rndm_goal=False, cup_goal_pos=None):
-        super(ALRBeerPongStepEnv, self).__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
+        return super(ALRBeerBongEnv, self).dt*self.repeat_action
 
 if __name__ == "__main__":
     env = ALRBeerBongEnv(rndm_goal=True)
