@@ -60,7 +60,7 @@ class BeerPongReward:
         self.noisy_bp = noisy
         self._t_min_final_dist = -1
 
-    def compute_reward(self, env, action):
+    def initialize(self, env):
 
         if not self.is_initialized:
             self.is_initialized = True
@@ -77,12 +77,14 @@ class BeerPongReward:
             self.ground_collision_id = env.sim.model._geom_name2id["ground"]
             self.robot_collision_ids = [env.sim.model._geom_name2id[name] for name in self.robot_collision_objects]
 
+    def compute_reward(self, env, action):
+
         goal_pos = env.sim.data.site_xpos[self.goal_id]
         ball_pos = env.sim.data.body_xpos[self.ball_id]
         ball_vel = env.sim.data.body_xvelp[self.ball_id]
         goal_final_pos = env.sim.data.site_xpos[self.goal_final_id]
 
-        self._check_contacts(env.sim)
+        self.check_contacts(env.sim)
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
         self.dist_ground_cup = np.linalg.norm(ball_pos-goal_pos) \
@@ -137,7 +139,7 @@ class BeerPongReward:
 
         return reward, infos
 
-    def _check_contacts(self, sim):
+    def check_contacts(self, sim):
         if not self.ball_table_contact:
             self.ball_table_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
                                                                            self.table_collision_id)
