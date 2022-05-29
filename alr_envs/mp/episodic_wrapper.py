@@ -205,7 +205,7 @@ class EpisodicWrapper(gym.Env, ABC):
             infos['step_actions'] = actions[:t + 1]
             infos['step_observations'] = observations[:t + 1]
             infos['step_rewards'] = rewards[:t + 1]
-            infos['trajectory_length'] = t + 1
+        infos['trajectory_length'] = t + 1
         done = True
         return self.get_observation_from_step(obs), trajectory_return, done, infos
 

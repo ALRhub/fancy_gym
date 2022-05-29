@@ -144,7 +144,7 @@
                   solref="-10000 -100"/>
 
 <!--        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">-->
-        <body name="cup_table" pos="1.42 -1.25 0.84" quat="0.7071068 0.7071068 0 0">
+        <body name="cup_table" pos="-1.42 -4.05 0.84" quat="0.7071068 0.7071068 0 0">
             <inertial pos="-3.75236e-10 8.27811e-05 0.0947015" quat="0.999945 -0.0104888 0 0" mass="10.132" diaginertia="0.000285643 0.000270485 9.65696e-05" />
             <geom priority= "1" name="cup_geom_table3" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup3_table" mass="10"/>
             <geom priority= "1" name="cup_geom_table4" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup4_table" mass="10"/>

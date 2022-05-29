@@ -7,8 +7,12 @@ from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
 
-CUP_POS_MIN = np.array([-0.32, -2.2])
-CUP_POS_MAX = np.array([0.32, -1.2])
+CUP_POS_MIN = np.array([-1.42, -4.05])
+CUP_POS_MAX = np.array([1.42, -1.25])
+
+
+# CUP_POS_MIN = np.array([-0.32, -2.2])
+# CUP_POS_MAX = np.array([0.32, -1.2])
 
 # smaller context space -> Easier task
 # CUP_POS_MIN = np.array([-0.16, -2.2])
@@ -24,8 +28,10 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.cup_goal_pos = np.array(cup_goal_pos)
 
         self._steps = 0
+        # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
+        #                              "beerpong_wo_cup" + ".xml")
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
-                                     "beerpong_wo_cup" + ".xml")
+                                     "beerpong_wo_cup_big_table" + ".xml")
 
         self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
         self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
@@ -100,10 +106,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def step(self, a):
-        # if a.shape[0] == 8: # we learn also when to release the ball
-        #     self._release_step = a[-1]
-        # self._release_step = np.clip(self._release_step, 50, 250)
-        # self.release_step = 0.5/self.dt
         reward_dist = 0.0
         angular_vel = 0.0
         applied_action = a
@@ -170,16 +172,11 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             [self._steps],
         ])
 
-    # TODO
-    @property
-    def active_obs(self):
-        return np.hstack([
-            [False] * 7,  # cos
-            [False] * 7,  # sin
-            [True] * 2,  # xy position of cup
-            [False]  # env steps
-        ])
 
+class ALRBeerPongStepEnv(ALRBeerBongEnv):
+    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
+                 rndm_goal=False, cup_goal_pos=None):
+        super(ALRBeerPongStepEnv, self).__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
 
 if __name__ == "__main__":
     env = ALRBeerBongEnv(rndm_goal=True)

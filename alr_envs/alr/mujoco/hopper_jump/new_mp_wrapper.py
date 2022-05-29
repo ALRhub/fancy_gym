@@ -12,9 +12,19 @@ class NewMPWrapper(EpisodicWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qvel[3:6].copy()
 
+    # # random goal
+    # def set_active_obs(self):
+    #     return np.hstack([
+    #         [False] * (5 + int(not self.env.exclude_current_positions_from_observation)),  # position
+    #         [False] * 6,  # velocity
+    #         [True]
+    #     ])
+
+    # Random x goal + random init pos
     def set_active_obs(self):
         return np.hstack([
-            [False] * (5 + int(not self.env.exclude_current_positions_from_observation)),  # position
+            [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
+            [True] * 3,    # set to true if randomize initial pos
             [False] * 6,  # velocity
             [True]
         ])

@@ -44,6 +44,12 @@ class NewMPWrapper(EpisodicWrapper):
         else:
             return action, None
 
+    def set_context(self, context):
+        xyz = np.zeros(3)
+        xyz[:2] = context
+        xyz[-1] = 0.840
+        self.env.env.model.body_pos[self.env.env.cup_table_id] = xyz
+        return self.get_observation_from_step(self.env.env._get_obs())
     # def set_action_space(self):
     #     if self.mp.learn_tau:
     #         min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
