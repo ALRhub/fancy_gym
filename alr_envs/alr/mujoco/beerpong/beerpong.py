@@ -106,6 +106,10 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def step(self, a):
+        # if a.shape[0] == 8: # we learn also when to release the ball
+        #     self._release_step = a[-1]
+        # self._release_step = np.clip(self._release_step, 50, 250)
+        # self.release_step = 0.5/self.dt
         reward_dist = 0.0
         angular_vel = 0.0
         applied_action = a
@@ -172,11 +176,16 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             [self._steps],
         ])
 
+    # TODO
+    @property
+    def active_obs(self):
+        return np.hstack([
+            [False] * 7,  # cos
+            [False] * 7,  # sin
+            [True] * 2,  # xy position of cup
+            [False]  # env steps
+        ])
 
-class ALRBeerPongStepEnv(ALRBeerBongEnv):
-    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
-                 rndm_goal=False, cup_goal_pos=None):
-        super(ALRBeerPongStepEnv, self).__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
 
 if __name__ == "__main__":
     env = ALRBeerBongEnv(rndm_goal=True)
