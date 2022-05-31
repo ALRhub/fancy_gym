@@ -285,6 +285,20 @@ register(
         "healthy_reward": 1.0
     }
 )
+
+##### Hopper Jump step based reward
+register(
+    id='ALRHopperJump-v4',
+    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnvStepBased',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
+    kwargs={
+        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
+        "context": True,
+        "healthy_reward": 1.0
+    }
+)
+
+
 # CtxtFree are v0, Contextual are v1
 register(
     id='ALRHopperJumpOnBox-v0',
@@ -925,7 +939,7 @@ register(
             "basis_generator_kwargs": {
                 'basis_generator_type': 'zero_rbf',
                 'num_basis': 5,
-                'num_basis_zero_start': 2
+                'num_basis_zero_start': 1
             }
         }
 )
@@ -961,11 +975,47 @@ register(
             "basis_generator_kwargs": {
                 'basis_generator_type': 'zero_rbf',
                 'num_basis': 5,
-                'num_basis_zero_start': 2
+                'num_basis_zero_start': 1
             }
         }
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ALRHopperJumpProMP-v3")
+
+
+## HopperJump
+register(
+    id= "ALRHopperJumpProMP-v4",
+    entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+    kwargs={
+        "name": f"alr_envs:ALRHopperJump-v4",
+        "wrappers": [mujoco.hopper_jump.NewMPWrapper],
+        "ep_wrapper_kwargs": {
+                "weight_scale": 1
+            },
+            "movement_primitives_kwargs": {
+                'movement_primitives_type': 'promp',
+                'action_dim': 3
+            },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear',
+                'delay': 0,
+                'tau': 2,  # initial value
+                'learn_tau': False,
+                'learn_delay': False
+            },
+            "controller_kwargs": {
+                'controller_type': 'motor',
+                "p_gains": np.ones(3),
+                "d_gains": 0.1*np.ones(3),
+            },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 5,
+                'num_basis_zero_start': 1
+            }
+        }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ALRHopperJumpProMP-v4")
 
 ## HopperJumpOnBox
 _versions = ["v0", "v1"]

@@ -223,6 +223,9 @@ class EpisodicWrapper(gym.Env, ABC):
     def get_observation_from_step(self, observation: np.ndarray) -> np.ndarray:
         return observation[self.active_obs]
 
+    def seed(self, seed=None):
+        self.env.seed(seed)
+
     def plot_trajs(self, des_trajs, des_vels):
         import matplotlib.pyplot as plt
         import matplotlib

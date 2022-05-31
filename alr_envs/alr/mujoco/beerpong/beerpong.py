@@ -189,7 +189,7 @@ if __name__ == "__main__":
         ac = np.zeros(7)
         obs, rew, d, info = env.step(ac)
         env.render("human")
-
+        print(env.dt)
         print(rew)
 
         if d:
