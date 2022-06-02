@@ -435,6 +435,17 @@ register(
         }
     )
 
+# random goal cup position
+register(
+        id='ALRBeerPong-v2',
+        entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvStepBased',
+        max_episode_steps=300,
+        kwargs={
+            "rndm_goal": True,
+            "cup_goal_pos": [-0.3, -1.2],
+            "frame_skip": 2
+        }
+    )
 
 # Motion Primitive Environments
 

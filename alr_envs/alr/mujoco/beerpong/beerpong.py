@@ -2,7 +2,7 @@ import mujoco_py.builder
 import os
 
 import numpy as np
-from gym import utils
+from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
@@ -160,7 +160,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
                      is_collided=is_collided, sim_crash=crash,
                      table_contact_first=int(not self.reward_function.ball_ground_contact_first))
         infos.update(reward_infos)
-
         return ob, reward, done, infos
 
     def check_traj_in_joint_limits(self):
@@ -168,9 +167,16 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
+        theta_dot = self.sim.data.qvel.flat[:7]
+        ball_pos = self.sim.data.body_xpos[self.sim.model._body_name2id["ball"]].copy()
+        cup_goal_diff_final = ball_pos - self.sim.data.site_xpos[self.sim.model._site_name2id["cup_goal_final_table"]].copy()
+        cup_goal_diff_top = ball_pos - self.sim.data.site_xpos[self.sim.model._site_name2id["cup_goal_table"]].copy()
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
+            theta_dot,
+            cup_goal_diff_final,
+            cup_goal_diff_top,
             self.sim.model.body_pos[self.cup_table_id][:2].copy(),
             [self._steps],
         ])
@@ -179,14 +185,37 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def dt(self):
         return super(ALRBeerBongEnv, self).dt*self.repeat_action
 
+
+class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
+
+    def _set_action_space(self):
+        bounds = super(ALRBeerBongEnvStepBased, self)._set_action_space()
+        min_bound = np.concatenate(([-1], bounds.low), dtype=bounds.dtype)
+        max_bound = np.concatenate(([1], bounds.high), dtype=bounds.dtype)
+        self.action_space = spaces.Box(low=min_bound, high=max_bound, dtype=bounds.dtype)
+        return self.action_space
+
+    def step(self, a):
+        self.release_step = self._steps if a[0]>=0 and self.release_step >= self._steps else self.release_step
+        return super(ALRBeerBongEnvStepBased, self).step(a[1:])
+
+    def reset(self):
+        ob = super(ALRBeerBongEnvStepBased, self).reset()
+        self.release_step = self.ep_length + 1
+        return ob
+
 if __name__ == "__main__":
-    env = ALRBeerBongEnv(rndm_goal=True)
+    # env = ALRBeerBongEnv(rndm_goal=True)
+    env = ALRBeerBongEnvStepBased(rndm_goal=True)
     import time
     env.reset()
     env.render("human")
     for i in range(1500):
         # ac = 10 * env.action_space.sample()[0:7]
-        ac = np.zeros(7)
+        ac = np.zeros(8)
+        ac[0] = -1
+        if env._steps > 150:
+            ac[0] = 1
         obs, rew, d, info = env.step(ac)
         env.render("human")
         print(env.dt)

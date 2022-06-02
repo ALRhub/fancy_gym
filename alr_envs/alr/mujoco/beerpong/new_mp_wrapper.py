@@ -17,6 +17,9 @@ class NewMPWrapper(EpisodicWrapper):
         return np.hstack([
             [False] * 7,  # cos
             [False] * 7,  # sin
+            [False] * 7,  # joint velocities
+            [False] * 3,  # cup_goal_diff_final
+            [False] * 3,  # cup_goal_diff_top
             [True] * 2,  # xy position of cup
             [False]  # env steps
         ])
