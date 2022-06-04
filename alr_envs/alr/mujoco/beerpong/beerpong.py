@@ -186,6 +186,26 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return super(ALRBeerBongEnv, self).dt*self.repeat_action
 
 
+class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
+    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
+        super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
+        self.release_step = 62  # empirically evaluated for frame_skip=2!
+
+    def step(self, a):
+        if self._steps < self.release_step:
+            return super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(a)
+        else:
+            reward = 0
+            done = False
+            while not done:
+                sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(np.zeros(a.shape))
+                reward += sub_reward
+            infos = sub_infos
+            ob = sub_ob
+            ob[-1] = self.release_step + 1     # Since we simulate until the end of the episode, PPO does not see the
+                                               # internal steps and thus, the observation also needs to be set correctly
+        return ob, reward, done, infos
+
 class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
@@ -230,13 +250,16 @@ class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
                     reward = reward - sub_infos['action_cost'] + dist_rew
             infos = sub_infos
             ob = sub_ob
+            ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
+            # internal steps and thus, the observation also needs to be set correctly
         return ob, reward, done, infos
 
 
 
 if __name__ == "__main__":
     # env = ALRBeerBongEnv(rndm_goal=True)
-    env = ALRBeerBongEnvStepBased(frame_skip=2, rndm_goal=True)
+    # env = ALRBeerBongEnvStepBased(frame_skip=2, rndm_goal=True)
+    env = ALRBeerBongEnvStepBasedEpisodicReward(frame_skip=2, rndm_goal=True)
     import time
     env.reset()
     env.render("human")
