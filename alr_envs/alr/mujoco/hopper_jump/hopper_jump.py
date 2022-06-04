@@ -80,7 +80,8 @@ class ALRHopperJumpEnv(HopperEnv):
             'x_pos': site_pos_after,
             'max_height': self.max_height,
             'height_rew': self.max_height,
-            'healthy_reward': self.healthy_reward * 2
+            'healthy_reward': self.healthy_reward * 2,
+            'healthy': self.is_healthy
         }
 
         return observation, reward, done, info
@@ -171,7 +172,8 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
             'goal': self.goal,
             'goal_dist': goal_dist,
             'height_rew': self.max_height,
-            'healthy_reward': self.healthy_reward * 2
+            'healthy_reward': self.healthy_reward * 2,
+            'healthy': self.is_healthy
         }
         return observation, reward, done, info
 
@@ -207,13 +209,38 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
         super().reset()
         # self.goal = np.random.uniform(-1.5, 1.5, 1)
         # self.goal = np.random.uniform(0, 1.5, 1)
-        self.goal = self.np_random.uniform(0, 1.5, 1)
-        # self.goal = np.array([1.5])
+        # self.goal = self.np_random.uniform(0, 1.5, 1)
+        self.goal = self.np_random.uniform(0.3, 1.35, 1)
         self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0], dtype=object)
         return self.reset_model()
 
 
 class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
+
+    def __init__(self,
+                 xml_file='hopper_jump.xml',
+                 forward_reward_weight=1.0,
+                 ctrl_cost_weight=1e-3,
+                 healthy_reward=0.0,
+                 penalty=0.0,
+                 context=True,
+                 terminate_when_unhealthy=False,
+                 healthy_state_range=(-100.0, 100.0),
+                 healthy_z_range=(0.5, float('inf')),
+                 healthy_angle_range=(-float('inf'), float('inf')),
+                 reset_noise_scale=5e-3,
+                 exclude_current_positions_from_observation=True,
+                 max_episode_steps=250,
+                 height_scale = 10,
+                 dist_scale = 3,
+                 healthy_scale = 2):
+        self.height_scale = height_scale
+        self.dist_scale = dist_scale
+        self.healthy_scale = healthy_scale
+        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, penalty, context,
+                         terminate_when_unhealthy, healthy_state_range, healthy_z_range, healthy_angle_range,
+                         reset_noise_scale, exclude_current_positions_from_observation, max_episode_steps)
+
     def step(self, action):
 
         self._floor_geom_id = self.model.geom_name2id('floor')
@@ -226,10 +253,10 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
         self.max_height = max(height_after, self.max_height)
         ctrl_cost = self.control_cost(action)
 
-        healthy_reward = self.healthy_reward * 2
-        height_reward = 10*height_after
+        healthy_reward = self.healthy_reward * self.healthy_scale
+        height_reward = self.height_scale*height_after
         goal_dist = np.atleast_1d(np.linalg.norm(site_pos_after - np.array([self.goal, 0, 0], dtype=object)))[0]
-        goal_dist_reward = -3*goal_dist
+        goal_dist_reward = -self.dist_scale*goal_dist
         dist_reward = self._forward_reward_weight * (goal_dist_reward + height_reward)
         reward = -ctrl_cost + healthy_reward + dist_reward
         done = False
@@ -240,12 +267,10 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
             'max_height': self.max_height,
             'goal': self.goal,
             'goal_dist': goal_dist,
-            'dist_rew': dist_reward,
-            'height_rew': height_reward,
-            'healthy_reward': healthy_reward,
-            'ctrl_reward': -ctrl_cost
+            'height_rew': self.max_height,
+            'healthy_reward': self.healthy_reward * 2,
+            'healthy': self.is_healthy
         }
-
         return observation, reward, done, info
 
 class ALRHopperJumpRndmPosEnv(ALRHopperJumpEnv):

@@ -90,7 +90,7 @@ class BeerPongReward:
         self.dist_ground_cup = np.linalg.norm(ball_pos-goal_pos) \
             if self.ball_ground_contact_first and self.dist_ground_cup == -1 else self.dist_ground_cup
         action_cost = np.sum(np.square(action))
-        self.action_costs.append(action_cost)
+        self.action_costs.append(np.copy(action_cost))
         # # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
 
         self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
@@ -110,8 +110,9 @@ class BeerPongReward:
                 else:
                     min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 0, 1, 0 ,0
             # dist_ground_cup = 1 * self.dist_ground_cup
+            action_cost = 1e-4 * np.mean(action_cost)
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
-                     1e-4 * np.mean(action_cost) - ground_contact_dist_coeff*self.dist_ground_cup ** 2
+                     action_cost - ground_contact_dist_coeff*self.dist_ground_cup ** 2
             # 1e-7*np.mean(action_cost)
             # release step punishment
             min_time_bound = 0.1
@@ -124,7 +125,8 @@ class BeerPongReward:
             # print('release time :', release_time)
             # print('dist_ground_cup :', dist_ground_cup)
         else:
-            reward = - 1e-2 * action_cost
+            action_cost = 1e-2 * action_cost
+            reward = - action_cost
             # reward = - 1e-4 * action_cost
             # reward = 0
             success = False

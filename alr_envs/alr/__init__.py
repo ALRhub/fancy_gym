@@ -253,7 +253,7 @@ register(
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
         "context": False,
-        "healthy_rewasrd": 1.0
+        "healthy_reward": 1.0
     }
 )
 register(
@@ -405,7 +405,7 @@ register(id='TableTennis2DCtxt-v1',
          kwargs={'ctxt_dim': 2, 'fixed_goal': True})
 
 register(id='TableTennis4DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TTEnvGym',
+         entry_point='alr_envs.alr.mujocco:TTEnvGym',
          max_episode_steps=MAX_EPISODE_STEPS,
          kwargs={'ctxt_dim': 4})
 
@@ -915,7 +915,7 @@ for _v in _versions:
             "basis_generator_kwargs": {
                 'basis_generator_type': 'zero_rbf',
                 'num_basis': 5,
-                'num_basis_zero_start': 2
+                'num_basis_zero_start': 1
             }
         }
     )
