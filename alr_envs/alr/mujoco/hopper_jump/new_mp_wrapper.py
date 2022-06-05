@@ -23,17 +23,19 @@ class NewMPWrapper(EpisodicWrapper):
     # Random x goal + random init pos
     def set_active_obs(self):
         return np.hstack([
-            [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
-            [True] * 3,    # set to true if randomize initial pos
-            [False] * 6,  # velocity
-            [True]
-        ])
+                [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
+                [True] * 3,    # set to true if randomize initial pos
+                [False] * 6,  # velocity
+                [True]
+            ])
 
 
 class NewHighCtxtMPWrapper(NewMPWrapper):
     def set_active_obs(self):
         return np.hstack([
-            [True] * (5 + int(not self.env.exclude_current_positions_from_observation)),  # position
+            [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
+            [True] * 3,  # set to true if randomize initial pos
             [False] * 6,  # velocity
-            [False]
+            [True],     # goal
+            [False] * 3 # goal diff
         ])

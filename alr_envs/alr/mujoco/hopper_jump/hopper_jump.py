@@ -11,7 +11,7 @@ class ALRHopperJumpEnv(HopperEnv):
     - healthy_reward: 1.0 -> 0.1 -> 0
     - healthy_angle_range: (-0.2, 0.2) -> (-float('inf'), float('inf'))
     - healthy_z_range: (0.7, float('inf')) -> (0.5, float('inf'))
-
+    - exclude current positions from observatiosn is set to False
     """
 
     def __init__(self,
@@ -26,7 +26,7 @@ class ALRHopperJumpEnv(HopperEnv):
                  healthy_z_range=(0.5, float('inf')),
                  healthy_angle_range=(-float('inf'), float('inf')),
                  reset_noise_scale=5e-3,
-                 exclude_current_positions_from_observation=True,
+                 exclude_current_positions_from_observation=False,
                  max_episode_steps=250):
         self.current_step = 0
         self.max_height = 0
@@ -90,7 +90,7 @@ class ALRHopperJumpEnv(HopperEnv):
         return np.append(super()._get_obs(), self.goal)
 
     def reset(self):
-        self.goal = np.random.uniform(1.4, 2.16, 1) # 1.3 2.3
+        self.goal = self.np_random.uniform(1.4, 2.16, 1)[0] # 1.3 2.3
         self.max_height = 0
         self.current_step = 0
         return super().reset()
@@ -149,12 +149,12 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
 
         if self.contact_dist is None and self.contact_with_floor:
                 self.contact_dist = np.linalg.norm(self.sim.data.site_xpos[self.model.site_name2id('foot_site')]
-                                               - np.array([self.goal, 0, 0], dtype=object))[0]
+                                               - np.array([self.goal, 0, 0]))
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
         done = False
-        goal_dist = np.atleast_1d(np.linalg.norm(site_pos_after - np.array([self.goal, 0, 0], dtype=object)))[0]
+        goal_dist = np.linalg.norm(site_pos_after - np.array([self.goal, 0, 0]))
         rewards = 0
         if self.current_step >= self.max_episode_steps:
             # healthy_reward = 0 if self.context else self.healthy_reward * self.current_step
@@ -210,10 +210,14 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
         # self.goal = np.random.uniform(-1.5, 1.5, 1)
         # self.goal = np.random.uniform(0, 1.5, 1)
         # self.goal = self.np_random.uniform(0, 1.5, 1)
-        self.goal = self.np_random.uniform(0.3, 1.35, 1)
-        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0], dtype=object)
+        self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
+        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0])
         return self.reset_model()
 
+    def _get_obs(self):
+        goal_diff = self.sim.data.site_xpos[self.model.site_name2id('foot_site')].copy() \
+                    - np.array([self.goal, 0, 0])
+        return np.concatenate((super(ALRHopperXYJumpEnv, self)._get_obs(), goal_diff))
 
 class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
 
@@ -229,7 +233,7 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
                  healthy_z_range=(0.5, float('inf')),
                  healthy_angle_range=(-float('inf'), float('inf')),
                  reset_noise_scale=5e-3,
-                 exclude_current_positions_from_observation=True,
+                 exclude_current_positions_from_observation=False,
                  max_episode_steps=250,
                  height_scale = 10,
                  dist_scale = 3,
@@ -242,7 +246,10 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
                          reset_noise_scale, exclude_current_positions_from_observation, max_episode_steps)
 
     def step(self, action):
-
+        print("")
+        print('height_scale: ', self.height_scale)
+        print('healthy_scale: ', self.healthy_scale)
+        print('dist_scale: ', self.dist_scale)
         self._floor_geom_id = self.model.geom_name2id('floor')
         self._foot_geom_id = self.model.geom_name2id('foot_geom')
 
@@ -348,7 +355,9 @@ if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
     # env = ALRHopperJumpEnv()
     # env = ALRHopperXYJumpEnv()
+    np.random.seed(0)
     env = ALRHopperXYJumpEnvStepBased()
+    env.seed(0)
     # env = ALRHopperJumpRndmPosEnv()
     obs = env.reset()
 

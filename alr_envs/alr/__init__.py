@@ -974,7 +974,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
     kwargs={
         "name": f"alr_envs:ALRHopperJump-v3",
-        "wrappers": [mujoco.hopper_jump.NewMPWrapper],
+        "wrappers": [mujoco.hopper_jump.NewHighCtxtMPWrapper],
         "ep_wrapper_kwargs": {
                 "weight_scale": 1
             },
@@ -1010,7 +1010,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
     kwargs={
         "name": f"alr_envs:ALRHopperJump-v4",
-        "wrappers": [mujoco.hopper_jump.NewMPWrapper],
+        "wrappers": [mujoco.hopper_jump.NewHighCtxtMPWrapper],
         "ep_wrapper_kwargs": {
                 "weight_scale": 1
             },
