@@ -203,6 +203,34 @@ register(
     }
 )
 
+_vs = np.arange(101).tolist() + [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1]
+for i in _vs:
+    _env_id = f'ALRReacher{i}-v0'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
+        max_episode_steps=200,
+        kwargs={
+            "steps_before_reward": 0,
+            "n_links": 5,
+            "balance": False,
+            'ctrl_cost_weight': i
+        }
+    )
+
+    _env_id = f'ALRReacherSparse{i}-v0'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
+        max_episode_steps=200,
+        kwargs={
+            "steps_before_reward": 200,
+            "n_links": 5,
+            "balance": False,
+            'ctrl_cost_weight': i
+        }
+    )
+
 # CtxtFree are v0, Contextual are v1
 register(
     id='ALRAntJump-v0',
@@ -458,6 +486,18 @@ register(
         }
     )
 
+# Beerpong with episodic reward, but fixed release time step
+register(
+        id='ALRBeerPong-v4',
+        entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvFixedReleaseStep',
+        max_episode_steps=300,
+        kwargs={
+            "rndm_goal": True,
+            "cup_goal_pos": [-0.3, -1.2],
+            "frame_skip": 2
+        }
+    )
+
 # Motion Primitive Environments
 
 ## Simple Reacher
@@ -648,6 +688,56 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
+
+_vs = np.arange(101).tolist() + [1e-5, 5e-5, 1e-4, 5e-4, 1e-3, 5e-3, 1e-2, 5e-2, 1e-1, 5e-1]
+for i in _vs:
+    _env_id = f'ALRReacher{i}ProMP-v0'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:{_env_id.replace('ProMP', '')}",
+            "wrappers": [mujoco.reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 5,
+                "duration": 4,
+                "policy_type": "motor",
+                # "weights_scale": 5,
+                "n_zero_basis": 1,
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": 1,
+                    "d_gains": 0.1
+                }
+            }
+        }
+    )
+
+    _env_id = f'ALRReacherSparse{i}ProMP-v0'
+    register(
+        id=_env_id,
+        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        kwargs={
+            "name": f"alr_envs:{_env_id.replace('ProMP', '')}",
+            "wrappers": [mujoco.reacher.MPWrapper],
+            "mp_kwargs": {
+                "num_dof": 5,
+                "num_basis": 5,
+                "duration": 4,
+                "policy_type": "motor",
+                # "weights_scale": 5,
+                "n_zero_basis": 1,
+                "zero_start": True,
+                "policy_kwargs": {
+                    "p_gains": 1,
+                    "d_gains": 0.1
+                }
+            }
+        }
+    )
+
+
 # ## Beerpong
 # _versions = ["v0", "v1"]
 # for _v in _versions:
@@ -716,6 +806,42 @@ for _v in _versions:
             }
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+## Beerpong ProMP fixed release
+_env_id = 'BeerpongProMP-v2'
+register(
+    id=_env_id,
+    entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+    kwargs={
+        "name": "alr_envs:ALRBeerPong-v4",
+        "wrappers": [mujoco.beerpong.NewMPWrapper],
+        "ep_wrapper_kwargs": {
+            "weight_scale": 1
+            },
+        "movement_primitives_kwargs": {
+            'movement_primitives_type': 'promp',
+            'action_dim': 7
+            },
+        "phase_generator_kwargs": {
+            'phase_generator_type': 'linear',
+            'delay': 0,
+            'tau': 0.62,     # initial value
+            'learn_tau': False,
+            'learn_delay': False
+            },
+        "controller_kwargs": {
+            'controller_type': 'motor',
+            "p_gains": np.array([1.5, 5, 2.55, 3, 2., 2, 1.25]),
+            "d_gains": np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125]),
+            },
+        "basis_generator_kwargs": {
+            'basis_generator_type': 'zero_rbf',
+            'num_basis': 2,
+            'num_basis_zero_start': 2
+            }
+        }
+)
+ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## Table Tennis
 ctxt_dim = [2, 4]

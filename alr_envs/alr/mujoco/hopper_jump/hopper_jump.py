@@ -123,7 +123,6 @@ class ALRHopperJumpEnv(HopperEnv):
 class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
 
     def step(self, action):
-
         self._floor_geom_id = self.model.geom_name2id('floor')
         self._foot_geom_id = self.model.geom_name2id('foot_geom')
 
@@ -173,7 +172,8 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
             'goal_dist': goal_dist,
             'height_rew': self.max_height,
             'healthy_reward': self.healthy_reward * 2,
-            'healthy': self.is_healthy
+            'healthy': self.is_healthy,
+            'contact_dist': self.contact_dist if self.contact_dist is not None else 0
         }
         return observation, reward, done, info
 
@@ -194,7 +194,6 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
         rnd_vec = self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
         qpos = self.init_qpos + rnd_vec
         qvel = self.init_qvel
-
         self.set_state(qpos, qvel)
 
         observation = self._get_obs()
@@ -207,9 +206,6 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
 
     def reset(self):
         super().reset()
-        # self.goal = np.random.uniform(-1.5, 1.5, 1)
-        # self.goal = np.random.uniform(0, 1.5, 1)
-        # self.goal = self.np_random.uniform(0, 1.5, 1)
         self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
         self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0])
         return self.reset_model()
@@ -218,6 +214,16 @@ class ALRHopperXYJumpEnv(ALRHopperJumpEnv):
         goal_diff = self.sim.data.site_xpos[self.model.site_name2id('foot_site')].copy() \
                     - np.array([self.goal, 0, 0])
         return np.concatenate((super(ALRHopperXYJumpEnv, self)._get_obs(), goal_diff))
+
+    def set_context(self, context):
+        # context is 4 dimensional
+        qpos = self.init_qpos
+        qvel = self.init_qvel
+        qpos[-3:] = context[:3]
+        self.goal = context[-1]
+        self.set_state(qpos, qvel)
+        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0])
+        return self._get_obs()
 
 class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
 
@@ -246,10 +252,6 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
                          reset_noise_scale, exclude_current_positions_from_observation, max_episode_steps)
 
     def step(self, action):
-        print("")
-        print('height_scale: ', self.height_scale)
-        print('healthy_scale: ', self.healthy_scale)
-        print('dist_scale: ', self.dist_scale)
         self._floor_geom_id = self.model.geom_name2id('floor')
         self._foot_geom_id = self.model.geom_name2id('foot_geom')
 
@@ -268,6 +270,23 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
         reward = -ctrl_cost + healthy_reward + dist_reward
         done = False
         observation = self._get_obs()
+
+
+        ###########################################################
+        # This is only for logging the distance to goal when first having the contact
+        ##########################################################
+        floor_contact = self._contact_checker(self._floor_geom_id,
+                                              self._foot_geom_id) if not self.contact_with_floor else False
+        if not self.init_floor_contact:
+            self.init_floor_contact = floor_contact
+        if self.init_floor_contact and not self.has_left_floor:
+            self.has_left_floor = not floor_contact
+        if not self.contact_with_floor and self.has_left_floor:
+            self.contact_with_floor = floor_contact
+
+        if self.contact_dist is None and self.contact_with_floor:
+            self.contact_dist = np.linalg.norm(self.sim.data.site_xpos[self.model.site_name2id('foot_site')]
+                                               - np.array([self.goal, 0, 0]))
         info = {
             'height': height_after,
             'x_pos': site_pos_after,
@@ -275,8 +294,9 @@ class ALRHopperXYJumpEnvStepBased(ALRHopperXYJumpEnv):
             'goal': self.goal,
             'goal_dist': goal_dist,
             'height_rew': self.max_height,
-            'healthy_reward': self.healthy_reward * 2,
-            'healthy': self.is_healthy
+            'healthy_reward': self.healthy_reward * self.healthy_reward,
+            'healthy': self.is_healthy,
+            'contact_dist': self.contact_dist if self.contact_dist is not None else 0
         }
         return observation, reward, done, info
 
@@ -361,7 +381,7 @@ if __name__ == '__main__':
     # env = ALRHopperJumpRndmPosEnv()
     obs = env.reset()
 
-    for k in range(10):
+    for k in range(1000):
         obs = env.reset()
         print('observation :', obs[:])
         for i in range(200):

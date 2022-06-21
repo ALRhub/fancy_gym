@@ -39,3 +39,7 @@ class NewHighCtxtMPWrapper(NewMPWrapper):
             [True],     # goal
             [False] * 3 # goal diff
         ])
+
+    def set_context(self, context):
+        return self.get_observation_from_step(self.env.env.set_context(context))
+

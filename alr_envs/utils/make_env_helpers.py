@@ -98,7 +98,6 @@ def make(env_id: str, seed, **kwargs):
 
     return env
 
-
 def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], mp: MPInterface, controller: BaseController,
                       ep_wrapper_kwargs: Mapping, seed=1, **kwargs):
     """
