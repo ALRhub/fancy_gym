@@ -55,7 +55,7 @@ def make(env_id: str, seed, **kwargs):
     Returns: Gym environment
 
     """
-    if any([det_pmp in env_id for det_pmp in ["DetPMP", "detpmp"]]):
+    if any(deprec in env_id for deprec in ["DetPMP", "detpmp"]):
         warnings.warn("DetPMP is deprecated and converted to ProMP")
         env_id = env_id.replace("DetPMP", "ProMP")
         env_id = env_id.replace("detpmp", "promp")
@@ -92,14 +92,17 @@ def make(env_id: str, seed, **kwargs):
             from alr_envs import make_dmc
             env = make_dmc(env_id, seed=seed, **kwargs)
 
-            assert env.base_step_limit == env.spec.max_episode_steps, \
-                f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym is different from " \
-                f"the DMC environment specification of {env.base_step_limit} steps."
+            if not env.base_step_limit == env.spec.max_episode_steps:
+                raise ValueError(f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym "
+                                 f"is different from the DMC environment specification of {env.base_step_limit} steps.")
 
     return env
 
-def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], mp: MPInterface, controller: BaseController,
-                      ep_wrapper_kwargs: Mapping, seed=1, **kwargs):
+
+def _make_wrapped_env(
+        env_id: str, wrappers: Iterable[Type[gym.Wrapper]], mp: MPInterface, controller: BaseController,
+        ep_wrapper_kwargs: Mapping, seed=1, **kwargs
+        ):
     """
     Helper function for creating a wrapped gym environment using MPs.
     It adds all provided wrappers to the specified environment and verifies at least one MPEnvWrapper is
@@ -120,12 +123,13 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], mp: MP
         # only wrap the environment if not EpisodicWrapper, e.g. for vision
         if not issubclass(w, EpisodicWrapper):
             _env = w(_env)
-        else: # if EpisodicWrapper, use specific constructor
+        else:  # if EpisodicWrapper, use specific constructor
             has_episodic_wrapper = True
             _env = w(env=_env, mp=mp, controller=controller, **ep_wrapper_kwargs)
-    assert has_episodic_wrapper, \
-            "At least one MPEnvWrapper is required in order to leverage motion primitive environments."
+    if not has_episodic_wrapper:
+        raise ValueError("An EpisodicWrapper is required in order to leverage movement primitive environments.")
     return _env
+
 
 def make_mp_from_kwargs(
         env_id: str, wrappers: Iterable, ep_wrapper_kwargs: MutableMapping, mp_kwargs: MutableMapping,
@@ -152,7 +156,7 @@ def make_mp_from_kwargs(
     _verify_time_limit(mp_kwargs.get("duration", None), kwargs.get("time_limit", None))
     dummy_env = make(env_id, seed)
     if ep_wrapper_kwargs.get('duration', None) is None:
-        ep_wrapper_kwargs['duration'] = dummy_env.spec.max_episode_steps*dummy_env.dt
+        ep_wrapper_kwargs['duration'] = dummy_env.spec.max_episode_steps * dummy_env.dt
     if phase_kwargs.get('tau', None) is None:
         phase_kwargs['tau'] = ep_wrapper_kwargs['duration']
     mp_kwargs['action_dim'] = mp_kwargs.get('action_dim', np.prod(dummy_env.action_space.shape).item())
@@ -207,9 +211,10 @@ def make_mp_env_helper(**kwargs):
     phase_kwargs = kwargs.pop("phase_generator_kwargs")
     basis_kwargs = kwargs.pop("basis_generator_kwargs")
 
-    return make_mp_from_kwargs(env_id=kwargs.pop("name"), wrappers=wrappers,  ep_wrapper_kwargs=ep_wrapper_kwargs,
+    return make_mp_from_kwargs(env_id=kwargs.pop("name"), wrappers=wrappers, ep_wrapper_kwargs=ep_wrapper_kwargs,
                                mp_kwargs=mp_kwargs, controller_kwargs=contr_kwargs, phase_kwargs=phase_kwargs,
                                basis_kwargs=basis_kwargs, **kwargs, seed=seed)
+
 
 def make_dmp_env(env_id: str, wrappers: Iterable, seed=1, mp_kwargs={}, **kwargs):
     """

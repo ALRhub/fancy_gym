@@ -9,7 +9,7 @@ from mp_pytorch.mp.mp_interfaces import MPInterface
 from alr_envs.mp.controllers.base_controller import BaseController
 
 
-class EpisodicWrapper(gym.Env, ABC):
+class EpisodicWrapper(gym.Env, gym.wrappers.TransformReward, ABC):
     """
     Base class for movement primitive based gym.Wrapper implementations.
 
@@ -22,14 +22,19 @@ class EpisodicWrapper(gym.Env, ABC):
         weight_scale: Scaling parameter for the actions given to this wrapper
         render_mode: Equivalent to gym render mode
     """
-    def __init__(self,
-                 env: gym.Env,
-                 mp: MPInterface,
-                 controller: BaseController,
-                 duration: float,
-                 render_mode: str = None,
-                 verbose: int = 1,
-                 weight_scale: float = 1):
+
+    def __init__(
+            self,
+            env: gym.Env,
+            mp: MPInterface,
+            controller: BaseController,
+            duration: float,
+            render_mode: str = None,
+            verbose: int = 1,
+            weight_scale: float = 1,
+            sequencing=True,
+            reward_aggregation=np.mean,
+            ):
         super().__init__()
 
         self.env = env
@@ -40,11 +45,11 @@ class EpisodicWrapper(gym.Env, ABC):
         self.duration = duration
         self.traj_steps = int(duration / self.dt)
         self.post_traj_steps = self.env.spec.max_episode_steps - self.traj_steps
+        # duration = self.env.max_episode_steps * self.dt
 
-        self.controller = controller
         self.mp = mp
         self.env = env
-        self.verbose = verbose
+        self.controller = controller
         self.weight_scale = weight_scale
 
         # rendering
@@ -52,14 +57,17 @@ class EpisodicWrapper(gym.Env, ABC):
         self.render_kwargs = {}
         self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         self.mp.set_mp_times(self.time_steps)
+        # self.mp.set_mp_duration(self.time_steps, dt)
         # action_bounds = np.inf * np.ones((np.prod(self.mp.num_params)))
-        self.mp_action_space = self.set_mp_action_space()
+        self.mp_action_space = self.get_mp_action_space()
 
-        self.action_space = self.set_action_space()
+        self.action_space = self.get_action_space()
         self.active_obs = self.set_active_obs()
         self.observation_space = spaces.Box(low=self.env.observation_space.low[self.active_obs],
                                             high=self.env.observation_space.high[self.active_obs],
                                             dtype=self.env.observation_space.dtype)
+
+        self.verbose = verbose
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
         # TODO: this follows the implementation of the mp_pytorch library which includes the parameters tau and delay at
@@ -69,33 +77,37 @@ class EpisodicWrapper(gym.Env, ABC):
         scaled_mp_params[ignore_indices:] *= self.weight_scale
         self.mp.set_params(np.clip(scaled_mp_params, self.mp_action_space.low, self.mp_action_space.high))
         self.mp.set_boundary_conditions(bc_time=self.time_steps[:1], bc_pos=self.current_pos, bc_vel=self.current_vel)
-        traj_dict = self.mp.get_mp_trajs(get_pos = True, get_vel = True)
+        traj_dict = self.mp.get_mp_trajs(get_pos=True, get_vel=True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
         trajectory = trajectory_tensor.numpy()
         velocity = velocity_tensor.numpy()
 
+        # TODO: Do we need this or does mp_pytorch have this?
         if self.post_traj_steps > 0:
             trajectory = np.vstack([trajectory, np.tile(trajectory[-1, :], [self.post_traj_steps, 1])])
             velocity = np.vstack([velocity, np.zeros(shape=(self.post_traj_steps, self.mp.num_dof))])
 
         return trajectory, velocity
 
-    def set_mp_action_space(self):
+    def get_mp_action_space(self):
         """This function can be used to set up an individual space for the parameters of the mp."""
         min_action_bounds, max_action_bounds = self.mp.get_param_bounds()
         mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
-                                              dtype=np.float32)
+                                         dtype=np.float32)
         return mp_action_space
 
-    def set_action_space(self):
+    def get_action_space(self):
         """
         This function can be used to modify the action space for considering actions which are not learned via motion
         primitives. E.g. ball releasing time for the beer pong task. By default, it is the parameter space of the
         motion primitive.
         Only needs to be overwritten if the action space needs to be modified.
         """
-        return self.mp_action_space
+        try:
+            return self.mp_action_space
+        except AttributeError:
+            return self.get_mp_action_space()
 
     def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         """
@@ -111,7 +123,8 @@ class EpisodicWrapper(gym.Env, ABC):
         """
         return action, None
 
-    def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[np.ndarray]:
+    def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[
+        np.ndarray]:
         """
         This function can be used to modify the step_action with additional parameters e.g. releasing the ball in the
         Beerpong env. The parameters used should not be part of the motion primitive parameters.
@@ -169,11 +182,15 @@ class EpisodicWrapper(gym.Env, ABC):
         mp_params, env_spec_params = self._episode_callback(action)
         trajectory, velocity = self.get_trajectory(mp_params)
 
+        # TODO
+        # self.time_steps = np.linspace(0, learned_duration, self.traj_steps)
+        # self.mp.set_mp_times(self.time_steps)
+
         trajectory_length = len(trajectory)
-        if self.verbose >=2 :
+        if self.verbose >= 2:
             actions = np.zeros(shape=(trajectory_length,) + self.env.action_space.shape)
             observations = np.zeros(shape=(trajectory_length,) + self.env.observation_space.shape,
-                                        dtype=self.env.observation_space.dtype)
+                                    dtype=self.env.observation_space.dtype)
             rewards = np.zeros(shape=(trajectory_length,))
         trajectory_return = 0
 
@@ -181,7 +198,7 @@ class EpisodicWrapper(gym.Env, ABC):
 
         for t, pos_vel in enumerate(zip(trajectory, velocity)):
             step_action = self.controller.get_action(pos_vel[0], pos_vel[1], self.current_pos, self.current_vel)
-            step_action = self._step_callback(t, env_spec_params, step_action)   # include possible callback info
+            step_action = self._step_callback(t, env_spec_params, step_action)  # include possible callback info
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
             # print('step/clipped action ratio: ', step_action/c_action)
             obs, c_reward, done, info = self.env.step(c_action)
@@ -197,7 +214,7 @@ class EpisodicWrapper(gym.Env, ABC):
             # infos['step_infos'].append(info)
             if self.render_mode:
                 self.render(mode=self.render_mode, **self.render_kwargs)
-            if done:
+            if done or do_replanning(kwargs):
                 break
         infos.update({k: v[:t + 1] for k, v in infos.items()})
         if self.verbose >= 2:
@@ -235,10 +252,10 @@ class EpisodicWrapper(gym.Env, ABC):
         for i in range(des_trajs.shape[1]):
             plt.figure(pos_fig.number)
             plt.subplot(des_trajs.shape[1], 1, i + 1)
-            plt.plot(np.ones(des_trajs.shape[0])*self.current_pos[i])
+            plt.plot(np.ones(des_trajs.shape[0]) * self.current_pos[i])
             plt.plot(des_trajs[:, i])
 
             plt.figure(vel_fig.number)
             plt.subplot(des_vels.shape[1], 1, i + 1)
-            plt.plot(np.ones(des_trajs.shape[0])*self.current_vel[i])
+            plt.plot(np.ones(des_trajs.shape[0]) * self.current_vel[i])
             plt.plot(des_vels[:, i])

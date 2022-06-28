@@ -67,7 +67,7 @@ class BallInACupReward(alr_reward_fct.AlrReward):
         action_cost = np.sum(np.square(action))
         self.action_costs.append(action_cost)
 
-        self._is_collided = self.check_collision(self.env.sim) or self.env.check_traj_in_joint_limits()
+        self._is_collided = self.check_collision(self.env.sim) or self.env._check_traj_in_joint_limits()
 
         if self.env._steps == self.env.ep_length - 1 or self._is_collided:
             t_min_dist = np.argmin(self.dists)

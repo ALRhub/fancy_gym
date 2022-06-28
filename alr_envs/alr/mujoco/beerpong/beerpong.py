@@ -1,11 +1,11 @@
-import mujoco_py.builder
 import os
 
+import mujoco_py.builder
 import numpy as np
-from gym import utils, spaces
+from gym import utils
 from gym.envs.mujoco import MujocoEnv
-from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
+from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
 CUP_POS_MIN = np.array([-1.42, -4.05])
 CUP_POS_MAX = np.array([1.42, -1.25])
@@ -18,12 +18,14 @@ CUP_POS_MAX = np.array([1.42, -1.25])
 # CUP_POS_MIN = np.array([-0.16, -2.2])
 # CUP_POS_MAX = np.array([0.16, -1.7])
 
-
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False,
-                 rndm_goal=False, cup_goal_pos=None):
+    def __init__(
+            self, frame_skip=1, apply_gravity_comp=True, noisy=False,
+            rndm_goal=False, cup_goal_pos=None
+            ):
+
         cup_goal_pos = np.array(cup_goal_pos if cup_goal_pos is not None else [-0.3, -1.2, 0.840])
-        if cup_goal_pos.shape[0]==2:
+        if cup_goal_pos.shape[0] == 2:
             cup_goal_pos = np.insert(cup_goal_pos, 2, 0.840)
         self.cup_goal_pos = np.array(cup_goal_pos)
 
@@ -50,7 +52,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         # self._release_step = 130  # time step of ball release
         self.release_step = 100  # time step of ball release
 
-        self.ep_length = 600//frame_skip
+        self.ep_length = 600 // frame_skip
         self.cup_table_id = 10
 
         if noisy:
@@ -70,14 +72,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     @property
     def start_vel(self):
         return self._start_vel
-
-    @property
-    def current_pos(self):
-        return self.sim.data.qpos[0:7].copy()
-
-    @property
-    def current_vel(self):
-        return self.sim.data.qvel[0:7].copy()
 
     def reset(self):
         self.reward_function.reset(self.add_noise)
@@ -122,7 +116,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
                     self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
                     self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.ball_site_id, :].copy()
                 elif self._steps == self.release_step and self.add_noise:
-                     self.sim.data.qvel[7::] += self.noise_std * np.random.randn(3)
+                    self.sim.data.qvel[7::] += self.noise_std * np.random.randn(3)
                 crash = False
             except mujoco_py.builder.MujocoException:
                 crash = True
@@ -147,29 +141,32 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             ball_pos = np.zeros(3)
             ball_vel = np.zeros(3)
 
-        infos = dict(reward_dist=reward_dist,
-                     reward=reward,
-                     velocity=angular_vel,
-                     # traj=self._q_pos,
-                     action=a,
-                     q_pos=self.sim.data.qpos[0:7].ravel().copy(),
-                     q_vel=self.sim.data.qvel[0:7].ravel().copy(),
-                     ball_pos=ball_pos,
-                     ball_vel=ball_vel,
-                     success=success,
-                     is_collided=is_collided, sim_crash=crash,
-                     table_contact_first=int(not self.reward_function.ball_ground_contact_first))
+        infos = dict(
+            reward_dist=reward_dist,
+            reward=reward,
+            velocity=angular_vel,
+            # traj=self._q_pos,
+            action=a,
+            q_pos=self.sim.data.qpos[0:7].ravel().copy(),
+            q_vel=self.sim.data.qvel[0:7].ravel().copy(),
+            ball_pos=ball_pos,
+            ball_vel=ball_vel,
+            success=success,
+            is_collided=is_collided, sim_crash=crash,
+            table_contact_first=int(not self.reward_function.ball_ground_contact_first)
+            )
         infos.update(reward_infos)
         return ob, reward, done, infos
 
-    def check_traj_in_joint_limits(self):
+    def _check_traj_in_joint_limits(self):
         return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         theta_dot = self.sim.data.qvel.flat[:7]
         ball_pos = self.sim.data.body_xpos[self.sim.model._body_name2id["ball"]].copy()
-        cup_goal_diff_final = ball_pos - self.sim.data.site_xpos[self.sim.model._site_name2id["cup_goal_final_table"]].copy()
+        cup_goal_diff_final = ball_pos - self.sim.data.site_xpos[
+            self.sim.model._site_name2id["cup_goal_final_table"]].copy()
         cup_goal_diff_top = ball_pos - self.sim.data.site_xpos[self.sim.model._site_name2id["cup_goal_table"]].copy()
         return np.concatenate([
             np.cos(theta),
@@ -179,16 +176,20 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             cup_goal_diff_top,
             self.sim.model.body_pos[self.cup_table_id][:2].copy(),
             [self._steps],
-        ])
+            ])
+
+    def compute_reward(self):
 
     @property
     def dt(self):
-        return super(ALRBeerBongEnv, self).dt*self.repeat_action
+        return super(ALRBeerBongEnv, self).dt * self.repeat_action
+
 
 class ALRBeerBongEnvFixedReleaseStep(ALRBeerBongEnv):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
         self.release_step = 62  # empirically evaluated for frame_skip=2!
+
 
 class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
@@ -202,53 +203,20 @@ class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
             reward = 0
             done = False
             while not done:
-                sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(np.zeros(a.shape))
+                sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(
+                    np.zeros(a.shape))
                 reward += sub_reward
             infos = sub_infos
             ob = sub_ob
-            ob[-1] = self.release_step + 1     # Since we simulate until the end of the episode, PPO does not see the
-                                               # internal steps and thus, the observation also needs to be set correctly
+            ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
+            # internal steps and thus, the observation also needs to be set correctly
         return ob, reward, done, infos
-
-
-# class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
-#     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
-#         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
-#         self.release_step = 62  # empirically evaluated for frame_skip=2!
-#
-#     def step(self, a):
-#         if self._steps < self.release_step:
-#             return super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(a)
-#         else:
-#             sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(np.zeros(a.shape))
-#             reward = sub_reward
-#             infos = sub_infos
-#             ob = sub_ob
-#             ob[-1] = self.release_step + 1     # Since we simulate until the end of the episode, PPO does not see the
-#                                                # internal steps and thus, the observation also needs to be set correctly
-#         return ob, reward, done, infos
 
 
 class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
         self.release_step = 62  # empirically evaluated for frame_skip=2!
-
-    # def _set_action_space(self):
-    #     bounds = super(ALRBeerBongEnvStepBased, self)._set_action_space()
-    #     min_bound = np.concatenate(([-1], bounds.low), dtype=bounds.dtype)
-    #     max_bound = np.concatenate(([1], bounds.high), dtype=bounds.dtype)
-    #     self.action_space = spaces.Box(low=min_bound, high=max_bound, dtype=bounds.dtype)
-    #     return self.action_space
-
-    # def step(self, a):
-    #     self.release_step = self._steps if a[0]>=0 and self.release_step >= self._steps else self.release_step
-    #     return super(ALRBeerBongEnvStepBased, self).step(a[1:])
-    #
-    # def reset(self):
-    #     ob = super(ALRBeerBongEnvStepBased, self).reset()
-    #     self.release_step = self.ep_length + 1
-    #     return ob
 
     def step(self, a):
         if self._steps < self.release_step:
@@ -267,9 +235,9 @@ class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
                     cup_goal_dist_top = np.linalg.norm(ball_pos - self.sim.data.site_xpos[
                         self.sim.model._site_name2id["cup_goal_table"]].copy())
                     if sub_infos['success']:
-                        dist_rew = -cup_goal_dist_final**2
+                        dist_rew = -cup_goal_dist_final ** 2
                     else:
-                        dist_rew = -0.5*cup_goal_dist_final**2 - cup_goal_dist_top**2
+                        dist_rew = -0.5 * cup_goal_dist_final ** 2 - cup_goal_dist_top ** 2
                     reward = reward - sub_infos['action_cost'] + dist_rew
             infos = sub_infos
             ob = sub_ob
@@ -278,13 +246,13 @@ class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
         return ob, reward, done, infos
 
 
-
 if __name__ == "__main__":
     # env = ALRBeerBongEnv(rndm_goal=True)
     # env = ALRBeerBongEnvStepBased(frame_skip=2, rndm_goal=True)
     # env = ALRBeerBongEnvStepBasedEpisodicReward(frame_skip=2, rndm_goal=True)
     env = ALRBeerBongEnvFixedReleaseStep(frame_skip=2, rndm_goal=True)
     import time
+
     env.reset()
     env.render("human")
     for i in range(1500):

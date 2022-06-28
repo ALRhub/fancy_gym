@@ -4,10 +4,11 @@ import numpy as np
 from gym.envs.mujoco import MujocoEnv
 
 
-
 class ALRBallInACupEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self, n_substeps=4, apply_gravity_comp=True, simplified: bool = False,
-                 reward_type: str = None, context: np.ndarray = None):
+    def __init__(
+            self, n_substeps=4, apply_gravity_comp=True, simplified: bool = False,
+            reward_type: str = None, context: np.ndarray = None
+            ):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -23,9 +24,7 @@ class ALRBallInACupEnv(MujocoEnv, utils.EzPickle):
 
         self.context = context
 
-        alr_mujoco_env.AlrMujocoEnv.__init__(self,
-                                             self.xml_path,
-                                             apply_gravity_comp=apply_gravity_comp,
+        alr_mujoco_env.AlrMujocoEnv.__init__(self, self.xml_path, apply_gravity_comp=apply_gravity_comp,
                                              n_substeps=n_substeps)
         self._start_pos = np.array([0.0, 0.58760536, 0.0, 1.36004913, 0.0, -0.32072943, -1.57])
         self._start_vel = np.zeros(7)
@@ -129,7 +128,7 @@ class ALRBallInACupEnv(MujocoEnv, utils.EzPickle):
             np.sin(theta),
             # self.get_body_com("target"),  # only return target to make problem harder
             [self._steps],
-        ])
+            ])
 
     # TODO
     @property
@@ -139,7 +138,7 @@ class ALRBallInACupEnv(MujocoEnv, utils.EzPickle):
             [False] * 7,  # sin
             # [True] * 2,  # x-y coordinates of target distance
             [False]  # env steps
-        ])
+            ])
 
     # These functions are for the task with 3 joint actuations
     def extend_des_pos(self, des_pos):

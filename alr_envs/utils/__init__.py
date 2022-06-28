@@ -20,12 +20,13 @@ def make_dmc(
         environment_kwargs: dict = {},
         time_limit: Union[None, float] = None,
         channels_first: bool = True
-):
+        ):
     # Adopted from: https://github.com/denisyarats/dmc2gym/blob/master/dmc2gym/__init__.py
     # License: MIT
     # Copyright (c) 2020 Denis Yarats
 
-    assert re.match(r"\w+-\w+", id), "env_id does not have the following structure: 'domain_name-task_name'"
+    if not re.match(r"\w+-\w+", id):
+        raise ValueError("env_id does not have the following structure: 'domain_name-task_name'")
     domain_name, task_name = id.split("-")
 
     env_id = f'dmc_{domain_name}_{task_name}_{seed}-v1'
@@ -60,7 +61,7 @@ def make_dmc(
                 camera_id=camera_id,
                 frame_skip=frame_skip,
                 channels_first=channels_first,
-            ),
+                ),
             max_episode_steps=max_episode_steps,
-        )
+            )
     return gym.make(env_id)

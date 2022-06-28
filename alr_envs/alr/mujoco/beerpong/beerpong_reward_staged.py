@@ -29,52 +29,38 @@ class BeerPongReward:
                                       # "cup_base_table"
                                       ]
 
-
-        self.ball_traj = None
         self.dists = None
         self.dists_final = None
-        self.costs = None
         self.action_costs = None
-        self.angle_rewards = None
-        self.cup_angles = None
-        self.cup_z_axes = None
-        self.collision_penalty = 500
-        self.reset(None)
+        self.reset()
         self.is_initialized = False
 
-    def reset(self, noisy):
-        self.ball_traj = []
+    def reset(self):
         self.dists = []
         self.dists_final = []
-        self.costs = []
         self.action_costs = []
-        self.angle_rewards = []
-        self.cup_angles = []
-        self.cup_z_axes = []
         self.ball_ground_contact_first = False
         self.ball_table_contact = False
         self.ball_wall_contact = False
         self.ball_cup_contact = False
         self.ball_in_cup = False
-        self.dist_ground_cup = -1         # distance floor to cup if first floor contact
-        self.noisy_bp = noisy
-        self._t_min_final_dist = -1
+        self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
     def initialize(self, env):
 
         if not self.is_initialized:
             self.is_initialized = True
             self.ball_id = env.sim.model._body_name2id["ball"]
-            self.ball_collision_id = env.sim.model._geom_name2id["ball_geom"]
             self.goal_id = env.sim.model._site_name2id["cup_goal_table"]
             self.goal_final_id = env.sim.model._site_name2id["cup_goal_final_table"]
-            self.cup_collision_ids = [env.sim.model._geom_name2id[name] for name in self.cup_collision_objects]
             self.cup_table_id = env.sim.model._body_name2id["cup_table"]
+
+            self.ball_collision_id = env.sim.model._geom_name2id["ball_geom"]
             self.table_collision_id = env.sim.model._geom_name2id["table_contact_geom"]
             self.wall_collision_id = env.sim.model._geom_name2id["wall"]
             self.cup_table_collision_id = env.sim.model._geom_name2id["cup_base_table_contact"]
-            self.init_ball_pos_site_id = env.sim.model._site_name2id["init_ball_pos_site"]
             self.ground_collision_id = env.sim.model._geom_name2id["ground"]
+            self.cup_collision_ids = [env.sim.model._geom_name2id[name] for name in self.cup_collision_objects]
             self.robot_collision_ids = [env.sim.model._geom_name2id[name] for name in self.robot_collision_objects]
 
     def compute_reward(self, env, action):
@@ -87,7 +73,7 @@ class BeerPongReward:
         self.check_contacts(env.sim)
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
         self.dists_final.append(np.linalg.norm(goal_final_pos - ball_pos))
-        self.dist_ground_cup = np.linalg.norm(ball_pos-goal_pos) \
+        self.dist_ground_cup = np.linalg.norm(ball_pos - goal_pos) \
             if self.ball_ground_contact_first and self.dist_ground_cup == -1 else self.dist_ground_cup
         action_cost = np.sum(np.square(action))
         self.action_costs.append(np.copy(action_cost))
@@ -99,7 +85,7 @@ class BeerPongReward:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
             if self.ball_ground_contact_first:
-                min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 2, -4     # relative rew offset when first bounding on ground
+                min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 2, -4  # relative rew offset when first bounding on ground
                 # min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 0, -6     # absolute rew offset when first bouncing on ground
             else:
                 if not self.ball_in_cup:
@@ -108,18 +94,18 @@ class BeerPongReward:
                     else:
                         min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 0, -2
                 else:
-                    min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 0, 1, 0 ,0
+                    min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 0, 1, 0, 0
             # dist_ground_cup = 1 * self.dist_ground_cup
             action_cost = 1e-4 * np.mean(action_cost)
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
-                     action_cost - ground_contact_dist_coeff*self.dist_ground_cup ** 2
+                     action_cost - ground_contact_dist_coeff * self.dist_ground_cup ** 2
             # 1e-7*np.mean(action_cost)
             # release step punishment
             min_time_bound = 0.1
             max_time_bound = 1.0
-            release_time = env.release_step*env.dt
-            release_time_rew = int(release_time<min_time_bound)*(-30-10*(release_time-min_time_bound)**2) \
-                                +int(release_time>max_time_bound)*(-30-10*(release_time-max_time_bound)**2)
+            release_time = env.release_step * env.dt
+            release_time_rew = int(release_time < min_time_bound) * (-30 - 10 * (release_time - min_time_bound) ** 2) \
+                               + int(release_time > max_time_bound) * (-30 - 10 * (release_time - max_time_bound) ** 2)
             reward += release_time_rew
             success = self.ball_in_cup
             # print('release time :', release_time)
@@ -147,17 +133,17 @@ class BeerPongReward:
                                                                            self.table_collision_id)
         if not self.ball_cup_contact:
             self.ball_cup_contact = self._check_collision_with_set_of_objects(sim, self.ball_collision_id,
-                                                                            self.cup_collision_ids)
+                                                                              self.cup_collision_ids)
         if not self.ball_wall_contact:
             self.ball_wall_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                  self.wall_collision_id)
+                                                                          self.wall_collision_id)
         if not self.ball_in_cup:
             self.ball_in_cup = self._check_collision_single_objects(sim, self.ball_collision_id,
                                                                     self.cup_table_collision_id)
         if not self.ball_ground_contact_first:
             if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact and not self.ball_in_cup:
                 self.ball_ground_contact_first = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                    self.ground_collision_id)
+                                                                                      self.ground_collision_id)
 
     def _check_collision_single_objects(self, sim, id_1, id_2):
         for coni in range(0, sim.data.ncon):
