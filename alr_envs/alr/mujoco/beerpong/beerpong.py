@@ -178,8 +178,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             [self._steps],
             ])
 
-    def compute_reward(self):
-
     @property
     def dt(self):
         return super(ALRBeerBongEnv, self).dt * self.repeat_action
@@ -213,37 +211,37 @@ class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
         return ob, reward, done, infos
 
 
-class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
-    def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
-        super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
-        self.release_step = 62  # empirically evaluated for frame_skip=2!
-
-    def step(self, a):
-        if self._steps < self.release_step:
-            return super(ALRBeerBongEnvStepBased, self).step(a)
-        else:
-            reward = 0
-            done = False
-            while not done:
-                sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBased, self).step(np.zeros(a.shape))
-                if not done or sub_infos['sim_crash']:
-                    reward += sub_reward
-                else:
-                    ball_pos = self.sim.data.body_xpos[self.sim.model._body_name2id["ball"]].copy()
-                    cup_goal_dist_final = np.linalg.norm(ball_pos - self.sim.data.site_xpos[
-                        self.sim.model._site_name2id["cup_goal_final_table"]].copy())
-                    cup_goal_dist_top = np.linalg.norm(ball_pos - self.sim.data.site_xpos[
-                        self.sim.model._site_name2id["cup_goal_table"]].copy())
-                    if sub_infos['success']:
-                        dist_rew = -cup_goal_dist_final ** 2
-                    else:
-                        dist_rew = -0.5 * cup_goal_dist_final ** 2 - cup_goal_dist_top ** 2
-                    reward = reward - sub_infos['action_cost'] + dist_rew
-            infos = sub_infos
-            ob = sub_ob
-            ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
-            # internal steps and thus, the observation also needs to be set correctly
-        return ob, reward, done, infos
+# class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
+#     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
+#         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
+#         self.release_step = 62  # empirically evaluated for frame_skip=2!
+#
+#     def step(self, a):
+#         if self._steps < self.release_step:
+#             return super(ALRBeerBongEnvStepBased, self).step(a)
+#         else:
+#             reward = 0
+#             done = False
+#             while not done:
+#                 sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBased, self).step(np.zeros(a.shape))
+#                 if not done or sub_infos['sim_crash']:
+#                     reward += sub_reward
+#                 else:
+#                     ball_pos = self.sim.data.body_xpos[self.sim.model._body_name2id["ball"]].copy()
+#                     cup_goal_dist_final = np.linalg.norm(ball_pos - self.sim.data.site_xpos[
+#                         self.sim.model._site_name2id["cup_goal_final_table"]].copy())
+#                     cup_goal_dist_top = np.linalg.norm(ball_pos - self.sim.data.site_xpos[
+#                         self.sim.model._site_name2id["cup_goal_table"]].copy())
+#                     if sub_infos['success']:
+#                         dist_rew = -cup_goal_dist_final ** 2
+#                     else:
+#                         dist_rew = -0.5 * cup_goal_dist_final ** 2 - cup_goal_dist_top ** 2
+#                     reward = reward - sub_infos['action_cost'] + dist_rew
+#             infos = sub_infos
+#             ob = sub_ob
+#             ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
+#             # internal steps and thus, the observation also needs to be set correctly
+#         return ob, reward, done, infos
 
 
 if __name__ == "__main__":
