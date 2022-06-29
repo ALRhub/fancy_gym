@@ -1,5 +1,6 @@
 import numpy as np
 from gym import register
+from copy import deepcopy
 
 from . import classic_control, mujoco
 from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
@@ -368,7 +369,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_simple_reacher_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_simple_reacher_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_simple_reacher_promp['movement_primitives_kwargs']['action_dim'] = 2 if "long" not in _v.lower() else 5
     kwargs_dict_simple_reacher_promp['phase_generator_kwargs']['tau'] = 2
@@ -403,7 +404,7 @@ register(
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
 
-kwargs_dict_via_point_reacher_promp = dict(DEFAULT_MP_ENV_DICT)
+kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
 kwargs_dict_via_point_reacher_promp['wrappers'].append('TODO')  # TODO
 kwargs_dict_via_point_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5
 kwargs_dict_via_point_reacher_promp['phase_generator_kwargs']['tau'] = 2
@@ -444,7 +445,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hole_reacher_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_hole_reacher_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_hole_reacher_promp['ep_wrapper_kwargs']['weight_scale'] = 2
     kwargs_dict_hole_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5
@@ -489,7 +490,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_alr_reacher_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_alr_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_alr_reacher_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_alr_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5 if "long" not in _v.lower() else 7
     kwargs_dict_alr_reacher_promp['phase_generator_kwargs']['tau'] = 4
@@ -509,7 +510,7 @@ _versions = ['ALRBeerPong-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.NewMPWrapper)
     kwargs_dict_bp_promp['movement_primitives_kwargs']['action_dim'] = 7
     kwargs_dict_bp_promp['phase_generator_kwargs']['tau'] = 0.8
@@ -530,7 +531,7 @@ _versions = ["ALRBeerPongStepBased-v0", "ALRBeerPongFixedRelease-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.NewMPWrapper)
     kwargs_dict_bp_promp['movement_primitives_kwargs']['action_dim'] = 7
     kwargs_dict_bp_promp['phase_generator_kwargs']['tau'] = 0.62
@@ -555,7 +556,7 @@ _versions = ['ALRAntJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_ant_jump_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.NewMPWrapper)
     kwargs_dict_ant_jump_promp['movement_primitives_kwargs']['action_dim'] = 8
     kwargs_dict_ant_jump_promp['phase_generator_kwargs']['tau'] = 10
@@ -576,7 +577,7 @@ _versions = ['ALRHalfCheetahJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_halfcheetah_jump_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.ant_jump.NewMPWrapper)
     kwargs_dict_halfcheetah_jump_promp['movement_primitives_kwargs']['action_dim'] = 6
     kwargs_dict_halfcheetah_jump_promp['phase_generator_kwargs']['tau'] = 5
@@ -600,7 +601,7 @@ _versions = ['ALRHopperJump-v0', 'ALRHopperJumpRndmJointsDesPos-v0', 'ALRHopperJ
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hopper_jump_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_hopper_jump_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_hopper_jump_promp['movement_primitives_kwargs']['action_dim'] = 3
     kwargs_dict_hopper_jump_promp['phase_generator_kwargs']['tau'] = 2
@@ -622,7 +623,7 @@ _versions = ['ALRWalker2DJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_walker2d_jump_promp = dict(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_walker2d_jump_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_walker2d_jump_promp['movement_primitives_kwargs']['action_dim'] = 6
     kwargs_dict_walker2d_jump_promp['phase_generator_kwargs']['tau'] = 2.4
