@@ -21,7 +21,7 @@ register(
     kwargs={
         "name": "alr_envs:MountainCarContinuous-v1",
         "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
             "duration": 2,
@@ -43,7 +43,7 @@ register(
     kwargs={
         "name": "gym.envs.classic_control:MountainCarContinuous-v0",
         "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 4,
             "duration": 19.98,
@@ -65,7 +65,7 @@ register(
     kwargs={
         "name": "gym.envs.mujoco:Reacher-v2",
         "wrappers": [mujoco.reacher_v2.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 6,
             "duration": 1,
@@ -87,7 +87,7 @@ register(
     kwargs={
         "name": "gym.envs.robotics:FetchSlideDense-v1",
         "wrappers": [FlattenObservation, robotics.fetch.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
             "duration": 2,
@@ -105,7 +105,7 @@ register(
     kwargs={
         "name": "gym.envs.robotics:FetchSlide-v1",
         "wrappers": [FlattenObservation, robotics.fetch.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
             "duration": 2,
@@ -123,7 +123,7 @@ register(
     kwargs={
         "name": "gym.envs.robotics:FetchReachDense-v1",
         "wrappers": [FlattenObservation, robotics.fetch.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
             "duration": 2,
@@ -141,7 +141,7 @@ register(
     kwargs={
         "name": "gym.envs.robotics:FetchReach-v1",
         "wrappers": [FlattenObservation, robotics.fetch.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 4,
             "num_basis": 5,
             "duration": 2,

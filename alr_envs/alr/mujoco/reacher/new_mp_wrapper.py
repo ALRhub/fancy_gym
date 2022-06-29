@@ -1,9 +1,9 @@
-from alr_envs.mp.episodic_wrapper import EpisodicWrapper
+from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
 from typing import Union, Tuple
 import numpy as np
 
 
-class MPWrapper(EpisodicWrapper):
+class MPWrapper(BlackBoxWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
@@ -12,7 +12,7 @@ class MPWrapper(EpisodicWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qvel.flat[:self.env.n_links]
 
-    def set_active_obs(self):
+    def get_context_mask(self):
         return np.concatenate([
             [False] * self.env.n_links,  # cos
             [False] * self.env.n_links,  # sin

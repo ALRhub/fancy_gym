@@ -6,7 +6,7 @@ from alr_envs.mp.controllers.base_controller import BaseController
 class PDController(BaseController):
     """
     A PD-Controller. Using position and velocity information from a provided environment,
-    the controller calculates a response based on the desired position and velocity
+    the tracking_controller calculates a response based on the desired position and velocity
 
     :param env: A position environment
     :param p_gains: Factors for the proportional gains

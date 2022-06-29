@@ -198,8 +198,8 @@ wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
 mp_kwargs = {...}
 kwargs = {...}
 env = alr_envs.make_dmp_env(base_env_id, wrappers=wrappers, seed=1, mp_kwargs=mp_kwargs, **kwargs)
-# OR for a deterministic ProMP (other mp_kwargs are required):
-# env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+# OR for a deterministic ProMP (other traj_gen_kwargs are required):
+# env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=mp_args)
 
 rewards = 0
 obs = env.reset()

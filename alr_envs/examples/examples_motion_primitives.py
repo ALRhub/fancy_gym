@@ -57,7 +57,7 @@ def example_custom_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=
     Returns:
 
     """
-    # Changing the mp_kwargs is possible by providing them to gym.
+    # Changing the traj_gen_kwargs is possible by providing them to gym.
     # E.g. here by providing way to many basis functions
     mp_kwargs = {
         "num_dof": 5,
@@ -126,7 +126,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
     }
     env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
     # OR for a deterministic ProMP:
-    # env = make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
+    # env = make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=traj_gen_kwargs)
 
     if render:
         env.render(mode="human")

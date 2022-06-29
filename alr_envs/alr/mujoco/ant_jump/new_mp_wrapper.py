@@ -1,12 +1,13 @@
-from alr_envs.mp.episodic_wrapper import EpisodicWrapper
+from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
 from typing import Union, Tuple
 import numpy as np
 
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class NewMPWrapper(EpisodicWrapper):
+class NewMPWrapper(RawInterfaceWrapper):
 
-    def set_active_obs(self):
+    def get_context_mask(self):
         return np.hstack([
             [False] * 111, # ant has 111 dimensional observation space !!
             [True] # goal height

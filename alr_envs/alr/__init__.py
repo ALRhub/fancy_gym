@@ -346,7 +346,7 @@ for _v in _versions:
         kwargs={
             "name": f"alr_envs:{_v}",
             "wrappers": [classic_control.simple_reacher.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 2 if "long" not in _v.lower() else 5,
                 "num_basis": 5,
                 "duration": 2,
@@ -386,7 +386,7 @@ register(
     kwargs={
         "name": "alr_envs:ViaPointReacher-v0",
         "wrappers": [classic_control.viapoint_reacher.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 5,
             "num_basis": 5,
             "duration": 2,
@@ -424,7 +424,7 @@ for _v in _versions:
         kwargs={
             "name": f"alr_envs:HoleReacher-{_v}",
             "wrappers": [classic_control.hole_reacher.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 5,
                 "num_basis": 5,
                 "duration": 2,
@@ -467,7 +467,7 @@ for _v in _versions:
         kwargs={
             "name": f"alr_envs:{_v}",
             "wrappers": [mujoco.reacher.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 5 if "long" not in _v.lower() else 7,
                 "num_basis": 2,
                 "duration": 4,

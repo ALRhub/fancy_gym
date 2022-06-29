@@ -1,15 +1,11 @@
-from typing import Tuple, Union
+from typing import Union, Tuple
 
 import numpy as np
 
-from alr_envs.mp.episodic_wrapper import EpisodicWrapper
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class NewMPWrapper(EpisodicWrapper):
-
-    # def __init__(self, replanning_model):
-    #     self.replanning_model = replanning_model
-
+class NewMPWrapper(RawInterfaceWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qpos[0:7].copy()
@@ -18,7 +14,7 @@ class NewMPWrapper(EpisodicWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qvel[0:7].copy()
 
-    def set_active_obs(self):
+    def get_context_mask(self):
         return np.hstack([
             [False] * 7,  # cos
             [False] * 7,  # sin
@@ -27,12 +23,7 @@ class NewMPWrapper(EpisodicWrapper):
             [False] * 3,  # cup_goal_diff_top
             [True] * 2,  # xy position of cup
             [False]  # env steps
-            ])
-
-    def do_replanning(self, pos, vel, s, a, t, last_replan_step):
-        return False
-        # const = np.arange(0, 1000, 10)
-        # return bool(self.replanning_model(s))
+        ])
 
     def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         if self.mp.learn_tau:

@@ -6,8 +6,8 @@ from alr_envs.mp.controllers.base_controller import BaseController
 class MetaWorldController(BaseController):
     """
     A Metaworld Controller. Using position and velocity information from a provided environment,
-    the controller calculates a response based on the desired position and velocity.
-    Unlike the other Controllers, this is a special controller for MetaWorld environments.
+    the tracking_controller calculates a response based on the desired position and velocity.
+    Unlike the other Controllers, this is a special tracking_controller for MetaWorld environments.
     They use a position delta for the xyz coordinates and a raw position for the gripper opening.
 
     :param env: A position environment

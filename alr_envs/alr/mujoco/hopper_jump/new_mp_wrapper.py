@@ -1,9 +1,9 @@
-from alr_envs.mp.episodic_wrapper import EpisodicWrapper
+from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
 from typing import Union, Tuple
 import numpy as np
 
 
-class NewMPWrapper(EpisodicWrapper):
+class NewMPWrapper(BlackBoxWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qpos[3:6].copy()
@@ -21,7 +21,7 @@ class NewMPWrapper(EpisodicWrapper):
     #     ])
 
     # Random x goal + random init pos
-    def set_active_obs(self):
+    def get_context_mask(self):
         return np.hstack([
                 [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
                 [True] * 3,    # set to true if randomize initial pos
@@ -31,7 +31,7 @@ class NewMPWrapper(EpisodicWrapper):
 
 
 class NewHighCtxtMPWrapper(NewMPWrapper):
-    def set_active_obs(self):
+    def get_context_mask(self):
         return np.hstack([
             [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position
             [True] * 3,  # set to true if randomize initial pos

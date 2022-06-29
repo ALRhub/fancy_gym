@@ -8,7 +8,7 @@ from alr_envs.utils.make_env_helpers import make_promp_env
 
 def visualize(env):
     t = env.t
-    pos_features = env.mp.basis_generator.basis(t)
+    pos_features = env.trajectory_generator.basis_generator.basis(t)
     plt.plot(t, pos_features)
     plt.show()
 

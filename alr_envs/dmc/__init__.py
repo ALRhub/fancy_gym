@@ -15,7 +15,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.ball_in_cup.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -41,7 +41,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.ball_in_cup.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -65,7 +65,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.reacher.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -92,7 +92,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.reacher.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -117,7 +117,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.reacher.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -144,7 +144,7 @@ register(
         "time_limit": 20,
         "episode_length": 1000,
         "wrappers": [suite.reacher.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 2,
             "num_basis": 5,
             "duration": 20,
@@ -174,7 +174,7 @@ for _task in _dmc_cartpole_tasks:
             "camera_id": 0,
             "episode_length": 1000,
             "wrappers": [suite.cartpole.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 1,
                 "num_basis": 5,
                 "duration": 10,
@@ -203,7 +203,7 @@ for _task in _dmc_cartpole_tasks:
             "camera_id": 0,
             "episode_length": 1000,
             "wrappers": [suite.cartpole.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 1,
                 "num_basis": 5,
                 "duration": 10,
@@ -230,7 +230,7 @@ register(
         "camera_id": 0,
         "episode_length": 1000,
         "wrappers": [suite.cartpole.TwoPolesMPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
             "duration": 10,
@@ -259,7 +259,7 @@ register(
         "camera_id": 0,
         "episode_length": 1000,
         "wrappers": [suite.cartpole.TwoPolesMPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
             "duration": 10,
@@ -286,7 +286,7 @@ register(
         "camera_id": 0,
         "episode_length": 1000,
         "wrappers": [suite.cartpole.ThreePolesMPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
             "duration": 10,
@@ -315,7 +315,7 @@ register(
         "camera_id": 0,
         "episode_length": 1000,
         "wrappers": [suite.cartpole.ThreePolesMPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 1,
             "num_basis": 5,
             "duration": 10,
@@ -342,7 +342,7 @@ register(
         # "time_limit": 1,
         "episode_length": 250,
         "wrappers": [manipulation.reach_site.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 9,
             "num_basis": 5,
             "duration": 10,
@@ -365,7 +365,7 @@ register(
         # "time_limit": 1,
         "episode_length": 250,
         "wrappers": [manipulation.reach_site.MPWrapper],
-        "mp_kwargs": {
+        "traj_gen_kwargs": {
             "num_dof": 9,
             "num_basis": 5,
             "duration": 10,

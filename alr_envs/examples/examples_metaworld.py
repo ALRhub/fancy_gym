@@ -73,12 +73,12 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         "width": 0.025,  # width of the basis functions
         "zero_start": True,  # start from current environment position if True
         "weights_scale": 1,  # scaling of MP weights
-        "policy_type": "metaworld",  # custom controller type for metaworld environments
+        "policy_type": "metaworld",  # custom tracking_controller type for metaworld environments
     }
 
     env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
-    # OR for a DMP (other mp_kwargs are required, see dmc_examples):
-    # env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
+    # OR for a DMP (other traj_gen_kwargs are required, see dmc_examples):
+    # env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=traj_gen_kwargs, **kwargs)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.

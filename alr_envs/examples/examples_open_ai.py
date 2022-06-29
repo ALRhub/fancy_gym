@@ -4,7 +4,7 @@ import alr_envs
 def example_mp(env_name, seed=1):
     """
     Example for running a motion primitive based version of a OpenAI-gym environment, which is already registered.
-    For more information on motion primitive specific stuff, look at the mp examples.
+    For more information on motion primitive specific stuff, look at the trajectory_generator examples.
     Args:
         env_name: ProMP env_id
         seed: seed

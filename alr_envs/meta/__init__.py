@@ -19,7 +19,7 @@ for _task in _goal_change_envs:
         kwargs={
             "name": _task,
             "wrappers": [goal_change_mp_wrapper.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 4,
                 "num_basis": 5,
                 "duration": 6.25,
@@ -42,7 +42,7 @@ for _task in _object_change_envs:
         kwargs={
             "name": _task,
             "wrappers": [object_change_mp_wrapper.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 4,
                 "num_basis": 5,
                 "duration": 6.25,
@@ -75,7 +75,7 @@ for _task in _goal_and_object_change_envs:
         kwargs={
             "name": _task,
             "wrappers": [goal_object_change_mp_wrapper.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 4,
                 "num_basis": 5,
                 "duration": 6.25,
@@ -98,7 +98,7 @@ for _task in _goal_and_endeffector_change_envs:
         kwargs={
             "name": _task,
             "wrappers": [goal_endeffector_change_mp_wrapper.MPWrapper],
-            "mp_kwargs": {
+            "traj_gen_kwargs": {
                 "num_dof": 4,
                 "num_basis": 5,
                 "duration": 6.25,

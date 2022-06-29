@@ -69,7 +69,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         "learn_goal": True,  # learn the goal position (recommended)
         "alpha_phase": 2,
         "bandwidth_factor": 2,
-        "policy_type": "motor",  # controller type, 'velocity', 'position', and 'motor' (torque control)
+        "policy_type": "motor",  # tracking_controller type, 'velocity', 'position', and 'motor' (torque control)
         "weights_scale": 1,  # scaling of MP weights
         "goal_scale": 1,  # scaling of learned goal position
         "policy_kwargs": {  # only required for torque control/PD-Controller
@@ -83,8 +83,8 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         # "frame_skip": 1
     }
     env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
-    # OR for a deterministic ProMP (other mp_kwargs are required, see metaworld_examples):
-    # env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_args)
+    # OR for a deterministic ProMP (other traj_gen_kwargs are required, see metaworld_examples):
+    # env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=mp_args)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
