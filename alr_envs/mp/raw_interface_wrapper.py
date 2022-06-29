@@ -43,13 +43,13 @@ class RawInterfaceWrapper(gym.Wrapper):
         raise NotImplementedError()
 
     @property
-    @abstractmethod
     def dt(self) -> float:
         """
         Control frequency of the environment
         Returns: float
 
         """
+        return self.env.dt
 
     def do_replanning(self, pos, vel, s, a, t):
         # return t % 100 == 0

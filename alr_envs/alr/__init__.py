@@ -24,13 +24,17 @@ ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 DEFAULT_MP_ENV_DICT = {
     "name": 'EnvName',
     "wrappers": [],
+    # TODO move scale to traj_gen
     "ep_wrapper_kwargs": {
         "weight_scale": 1
     },
+    # TODO traj_gen_kwargs
+    # TODO remove action_dim
     "movement_primitives_kwargs": {
         'movement_primitives_type': 'promp',
         'action_dim': 7
     },
+    # TODO remove tau
     "phase_generator_kwargs": {
         'phase_generator_type': 'linear',
         'delay': 0,
@@ -40,13 +44,13 @@ DEFAULT_MP_ENV_DICT = {
     },
     "controller_kwargs": {
         'controller_type': 'motor',
-        "p_gains": np.ones(7),
-        "d_gains": np.ones(7) * 0.1,
+        "p_gains": 1.0,
+        "d_gains": 0.1,
     },
     "basis_generator_kwargs": {
         'basis_generator_type': 'zero_rbf',
         'num_basis': 5,
-        'num_basis_zero_start': 2
+        'num_basis_zero_start': 2  # TODO: Change to 1
     }
 }
 
