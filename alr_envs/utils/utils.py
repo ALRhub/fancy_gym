@@ -1,4 +1,5 @@
 import numpy as np
+import torch as ch
 
 
 def angle_normalize(x, type="deg"):
@@ -19,3 +20,7 @@ def angle_normalize(x, type="deg"):
 
     two_pi = 2 * np.pi
     return x - two_pi * np.floor((x + np.pi) / two_pi)
+
+
+def get_numpy(x: ch.Tensor):
+    return x.detach().cpu().numpy()
