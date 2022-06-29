@@ -537,7 +537,7 @@ for _v in _versions:
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
-        kwargs=kwargs_dict_bp_promp_fixed_release
+        kwargs=kwargs_dict_bp_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 ########################################################################################################################
