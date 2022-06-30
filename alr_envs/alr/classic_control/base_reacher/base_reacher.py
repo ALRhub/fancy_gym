@@ -1,10 +1,11 @@
-from typing import Iterable, Union
 from abc import ABC, abstractmethod
+from typing import Union
+
 import gym
-import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
 from gym.utils import seeding
+
 from alr_envs.alr.classic_control.utils import intersect
 
 

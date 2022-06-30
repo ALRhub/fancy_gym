@@ -11,7 +11,7 @@ from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 from alr_envs.utils.utils import get_numpy
 
 
-class BlackBoxWrapper(gym.ObservationWrapper, ABC):
+class BlackBoxWrapper(gym.ObservationWrapper):
 
     def __init__(self,
                  env: RawInterfaceWrapper,
@@ -34,9 +34,8 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
             reward_aggregation: function that takes the np.ndarray of step rewards as input and returns the trajectory
                 reward, default summation over all values.
         """
-        super().__init__()
+        super().__init__(env)
 
-        self.env = env
         self.duration = duration
         self.learn_sub_trajectories = learn_sub_trajectories
         self.replanning_schedule = replanning_schedule
