@@ -24,7 +24,7 @@ ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 DEFAULT_BB_DICT = {
     "name": 'EnvName',
     "wrappers": [],
-    "traj_gen_kwargs": {
+    "trajectory_generator_kwargs": {
         'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
@@ -231,7 +231,6 @@ register(
     entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvStepBased',
     max_episode_steps=300,
     kwargs={
-        "rndm_goal": True,
         "cup_goal_pos": [-0.3, -1.2],
         "frame_skip": 2
     }
@@ -243,7 +242,6 @@ register(
     entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvFixedReleaseStep',
     max_episode_steps=300,
     kwargs={
-        "rndm_goal": True,
         "cup_goal_pos": [-0.3, -1.2],
         "frame_skip": 2
     }
@@ -355,7 +353,7 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_hole_reacher_promp['wrappers'].append(classic_control.hole_reacher.MPWrapper)
-    kwargs_dict_hole_reacher_promp['traj_gen_kwargs']['weight_scale'] = 2
+    kwargs_dict_hole_reacher_promp['trajectory_generator_kwargs']['weight_scale'] = 2
     kwargs_dict_hole_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
     kwargs_dict_hole_reacher_promp['name'] = f"alr_envs:{_v}"
     register(

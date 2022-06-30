@@ -32,6 +32,21 @@ class BeerPongReward:
         self.dists = None
         self.dists_final = None
         self.action_costs = None
+        self.ball_ground_contact_first = False
+        self.ball_table_contact = False
+        self.ball_wall_contact = False
+        self.ball_cup_contact = False
+        self.ball_in_cup = False
+        self.dist_ground_cup = -1  # distance floor to cup if first floor contact
+
+        ### IDs
+        self.ball_collision_id = None
+        self.table_collision_id = None
+        self.wall_collision_id = None
+        self.cup_table_collision_id = None
+        self.ground_collision_id = None
+        self.cup_collision_ids = None
+        self.robot_collision_ids = None
         self.reset()
         self.is_initialized = False
 
@@ -50,25 +65,27 @@ class BeerPongReward:
 
         if not self.is_initialized:
             self.is_initialized = True
-            self.ball_id = env.sim.model._body_name2id["ball"]
-            self.goal_id = env.sim.model._site_name2id["cup_goal_table"]
-            self.goal_final_id = env.sim.model._site_name2id["cup_goal_final_table"]
-            self.cup_table_id = env.sim.model._body_name2id["cup_table"]
-
-            self.ball_collision_id = env.sim.model._geom_name2id["ball_geom"]
-            self.table_collision_id = env.sim.model._geom_name2id["table_contact_geom"]
-            self.wall_collision_id = env.sim.model._geom_name2id["wall"]
-            self.cup_table_collision_id = env.sim.model._geom_name2id["cup_base_table_contact"]
-            self.ground_collision_id = env.sim.model._geom_name2id["ground"]
-            self.cup_collision_ids = [env.sim.model._geom_name2id[name] for name in self.cup_collision_objects]
-            self.robot_collision_ids = [env.sim.model._geom_name2id[name] for name in self.robot_collision_objects]
+            # TODO: Find a more elegant way to acces to the geom ids in each step -> less code
+            self.ball_collision_id = {env.model.geom_name2id("ball_geom")}
+            # self.ball_collision_id = env.model.geom_name2id("ball_geom")
+            self.table_collision_id = {env.model.geom_name2id("table_contact_geom")}
+            # self.table_collision_id = env.model.geom_name2id("table_contact_geom")
+            self.wall_collision_id = {env.model.geom_name2id("wall")}
+            # self.wall_collision_id = env.model.geom_name2id("wall")
+            self.cup_table_collision_id = {env.model.geom_name2id("cup_base_table_contact")}
+            # self.cup_table_collision_id = env.model.geom_name2id("cup_base_table_contact")
+            self.ground_collision_id = {env.model.geom_name2id("ground")}
+            # self.ground_collision_id = env.model.geom_name2id("ground")
+            self.cup_collision_ids = set(env.model.geom_name2id(name) for name in self.cup_collision_objects)
+            # self.cup_collision_ids = [env.model.geom_name2id(name) for name in self.cup_collision_objects]
+            self.robot_collision_ids = [env.model.geom_name2id(name) for name in self.robot_collision_objects]
 
     def compute_reward(self, env, action):
 
-        goal_pos = env.sim.data.site_xpos[self.goal_id]
-        ball_pos = env.sim.data.body_xpos[self.ball_id]
-        ball_vel = env.sim.data.body_xvelp[self.ball_id]
-        goal_final_pos = env.sim.data.site_xpos[self.goal_final_id]
+        goal_pos = env.data.get_site_xpos("cup_goal_table")
+        ball_pos = env.data.get_body_xpos("ball")
+        ball_vel = env.data.get_body_xvelp("ball")
+        goal_final_pos = env.data.get_site_xpos("cup_goal_final_table")
 
         self.check_contacts(env.sim)
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
@@ -77,16 +94,16 @@ class BeerPongReward:
             if self.ball_ground_contact_first and self.dist_ground_cup == -1 else self.dist_ground_cup
         action_cost = np.sum(np.square(action))
         self.action_costs.append(np.copy(action_cost))
-        # # ##################### Reward function which does not force to bounce once on the table (quad dist) ############
+        # # ##################### Reward function which does not force to bounce once on the table (quad dist) #########
 
-        self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
+        # Comment Onur: Is this needed?
+        # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
 
-        if env._steps == env.ep_length - 1 or self._is_collided:
+        if env._steps == env.ep_length - 1:#  or self._is_collided:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
             if self.ball_ground_contact_first:
-                min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 2, -4  # relative rew offset when first bounding on ground
-                # min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 0, -6     # absolute rew offset when first bouncing on ground
+                min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 2, -4
             else:
                 if not self.ball_in_cup:
                     if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact:
@@ -95,85 +112,74 @@ class BeerPongReward:
                         min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 1, 0.5, 0, -2
                 else:
                     min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 0, 1, 0, 0
-            # dist_ground_cup = 1 * self.dist_ground_cup
             action_cost = 1e-4 * np.mean(action_cost)
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
                      action_cost - ground_contact_dist_coeff * self.dist_ground_cup ** 2
-            # 1e-7*np.mean(action_cost)
             # release step punishment
             min_time_bound = 0.1
             max_time_bound = 1.0
             release_time = env.release_step * env.dt
-            release_time_rew = int(release_time < min_time_bound) * (-30 - 10 * (release_time - min_time_bound) ** 2) \
-                               + int(release_time > max_time_bound) * (-30 - 10 * (release_time - max_time_bound) ** 2)
+            release_time_rew = int(release_time < min_time_bound) * (-30 - 10 * (release_time - min_time_bound) ** 2) + \
+                               int(release_time > max_time_bound) * (-30 - 10 * (release_time - max_time_bound) ** 2)
             reward += release_time_rew
             success = self.ball_in_cup
-            # print('release time :', release_time)
-            # print('dist_ground_cup :', dist_ground_cup)
         else:
             action_cost = 1e-2 * action_cost
             reward = - action_cost
-            # reward = - 1e-4 * action_cost
-            # reward = 0
             success = False
-        # ################################################################################################################
-        infos = {}
-        infos["success"] = success
-        infos["is_collided"] = self._is_collided
-        infos["ball_pos"] = ball_pos.copy()
-        infos["ball_vel"] = ball_vel.copy()
-        infos["action_cost"] = action_cost
-        infos["task_reward"] = reward
+        # ##############################################################################################################
+        infos = {"success": success,  "ball_pos": ball_pos.copy(),
+                 "ball_vel": ball_vel.copy(), "action_cost": action_cost, "task_reward": reward, "is_collided": False} # TODO: Check if is collided is needed
 
         return reward, infos
 
     def check_contacts(self, sim):
         if not self.ball_table_contact:
-            self.ball_table_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                           self.table_collision_id)
+            self.ball_table_contact = self._check_collision(sim, self.ball_collision_id, self.table_collision_id)
         if not self.ball_cup_contact:
-            self.ball_cup_contact = self._check_collision_with_set_of_objects(sim, self.ball_collision_id,
-                                                                              self.cup_collision_ids)
+            self.ball_cup_contact = self._check_collision(sim, self.ball_collision_id, self.cup_collision_ids)
         if not self.ball_wall_contact:
-            self.ball_wall_contact = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                          self.wall_collision_id)
+            self.ball_wall_contact = self._check_collision(sim, self.ball_collision_id, self.wall_collision_id)
         if not self.ball_in_cup:
-            self.ball_in_cup = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                    self.cup_table_collision_id)
+            self.ball_in_cup = self._check_collision(sim, self.ball_collision_id, self.cup_table_collision_id)
         if not self.ball_ground_contact_first:
-            if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact and not self.ball_in_cup:
-                self.ball_ground_contact_first = self._check_collision_single_objects(sim, self.ball_collision_id,
-                                                                                      self.ground_collision_id)
+            if not self.ball_table_contact and not self.ball_cup_contact and not self.ball_wall_contact \
+                    and not self.ball_in_cup:
+                self.ball_ground_contact_first = self._check_collision(sim, self.ball_collision_id,
+                                                                       self.ground_collision_id)
 
-    def _check_collision_single_objects(self, sim, id_1, id_2):
-        for coni in range(0, sim.data.ncon):
+    # Checks if id_set1 has a collision with id_set2
+    def _check_collision(self, sim, id_set_1, id_set_2):
+        """
+        If id_set_2 is set to None, it will check for a collision with itself (id_set_1).
+        """
+        collision_id_set = id_set_2 - id_set_1 if id_set_2 is not None else id_set_1
+        for coni in range(sim.data.ncon):
             con = sim.data.contact[coni]
-
-            collision = con.geom1 == id_1 and con.geom2 == id_2
-            collision_trans = con.geom1 == id_2 and con.geom2 == id_1
-
-            if collision or collision_trans:
+            if ((con.geom1 in id_set_1 and con.geom2 in collision_id_set) or
+                    (con.geom2 in id_set_1 and con.geom1 in collision_id_set)):
                 return True
         return False
 
-    def _check_collision_with_itself(self, sim, collision_ids):
-        col_1, col_2 = False, False
-        for j, id in enumerate(collision_ids):
-            col_1 = self._check_collision_with_set_of_objects(sim, id, collision_ids[:j])
-            if j != len(collision_ids) - 1:
-                col_2 = self._check_collision_with_set_of_objects(sim, id, collision_ids[j + 1:])
-            else:
-                col_2 = False
-        collision = True if col_1 or col_2 else False
-        return collision
+    # def _check_collision_with_itself(self, sim, collision_ids):
+    #     col_1, col_2 = False, False
+    #     for j, id in enumerate(collision_ids):
+    #         col_1 = self._check_collision_with_set_of_objects(sim, id, collision_ids[:j])
+    #         if j != len(collision_ids) - 1:
+    #             col_2 = self._check_collision_with_set_of_objects(sim, id, collision_ids[j + 1:])
+    #         else:
+    #             col_2 = False
+    #     collision = True if col_1 or col_2 else False
+    #     return collision
 
-    def _check_collision_with_set_of_objects(self, sim, id_1, id_list):
-        for coni in range(0, sim.data.ncon):
-            con = sim.data.contact[coni]
-
-            collision = con.geom1 in id_list and con.geom2 == id_1
-            collision_trans = con.geom1 == id_1 and con.geom2 in id_list
-
-            if collision or collision_trans:
-                return True
-        return False
+    ### This function will not be needed if we really do not need to check for collision with itself
+    # def _check_collision_with_set_of_objects(self, sim, id_1, id_list):
+    #     for coni in range(0, sim.data.ncon):
+    #         con = sim.data.contact[coni]
+    #
+    #         collision = con.geom1 in id_list and con.geom2 == id_1
+    #         collision_trans = con.geom1 == id_1 and con.geom2 in id_list
+    #
+    #         if collision or collision_trans:
+    #             return True
+    #     return False
