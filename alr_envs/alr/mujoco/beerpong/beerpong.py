@@ -144,16 +144,15 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         infos.update(reward_infos)
         return ob, reward, done, infos
 
-    def _check_traj_in_joint_limits(self):
-        return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
+    # def _check_traj_in_joint_limits(self):
+    #     return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         theta_dot = self.sim.data.qvel.flat[:7]
-        ball_pos = self.sim.data.body_xpos[self.sim.model._body_name2id["ball"]].copy()
-        cup_goal_diff_final = ball_pos - self.sim.data.site_xpos[
-            self.sim.model._site_name2id["cup_goal_final_table"]].copy()
-        cup_goal_diff_top = ball_pos - self.sim.data.site_xpos[self.sim.model._site_name2id["cup_goal_table"]].copy()
+        ball_pos = self.data.get_body_xpos("ball").copy()
+        cup_goal_diff_final = ball_pos - self.data.get_site_xpos("cup_goal_final_table").copy()
+        cup_goal_diff_top = ball_pos - self.data.get_site_xpos("cup_goal_table").copy()
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
