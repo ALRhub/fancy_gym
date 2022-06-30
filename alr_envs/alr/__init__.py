@@ -406,8 +406,6 @@ ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
 
 kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
 kwargs_dict_via_point_reacher_promp['wrappers'].append('TODO')  # TODO
-kwargs_dict_via_point_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5
-kwargs_dict_via_point_reacher_promp['phase_generator_kwargs']['tau'] = 2
 kwargs_dict_via_point_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
 kwargs_dict_via_point_reacher_promp['name'] = "ViaPointReacherProMP-v0"
 register(
@@ -448,10 +446,10 @@ for _v in _versions:
     kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
     kwargs_dict_hole_reacher_promp['wrappers'].append('TODO')  # TODO
     kwargs_dict_hole_reacher_promp['ep_wrapper_kwargs']['weight_scale'] = 2
-    kwargs_dict_hole_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5
-    kwargs_dict_hole_reacher_promp['phase_generator_kwargs']['tau'] = 2
+    # kwargs_dict_hole_reacher_promp['movement_primitives_kwargs']['action_dim'] = 5
+    # kwargs_dict_hole_reacher_promp['phase_generator_kwargs']['tau'] = 2
     kwargs_dict_hole_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
-    kwargs_dict_hole_reacher_promp['basis_generator_kwargs']['num_basis'] = 5
+    # kwargs_dict_hole_reacher_promp['basis_generator_kwargs']['num_basis'] = 5
     kwargs_dict_hole_reacher_promp['name'] = f"alr_envs:{_v}"
     register(
         id=_env_id,

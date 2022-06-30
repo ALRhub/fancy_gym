@@ -1,18 +1,19 @@
 import warnings
-from typing import Iterable, Type, Union, Mapping, MutableMapping
+from copy import deepcopy
+from typing import Iterable, Type, Union, MutableMapping
 
 import gym
 import numpy as np
-from gym.envs.registration import EnvSpec
-from mp_pytorch import MPInterface
+from gym.envs.registration import EnvSpec, registry
+from gym.wrappers import TimeAwareObservation
 
 from alr_envs.mp.basis_generator_factory import get_basis_generator
 from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
-from alr_envs.mp.controllers.base_controller import BaseController
 from alr_envs.mp.controllers.controller_factory import get_controller
 from alr_envs.mp.mp_factory import get_trajectory_generator
 from alr_envs.mp.phase_generator_factory import get_phase_generator
 from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.utils.utils import nested_update
 
 
 def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
@@ -41,7 +42,15 @@ def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwa
     return f if return_callable else f()
 
 
-def make(env_id: str, seed, **kwargs):
+def make(env_id, seed, **kwargs):
+    spec = registry.get(env_id)
+    # This access is required to allow for nested dict updates
+    all_kwargs = deepcopy(spec._kwargs)
+    nested_update(all_kwargs, **kwargs)
+    return _make(env_id, seed, **all_kwargs)
+
+
+def _make(env_id: str, seed, **kwargs):
     """
     Converts an env_id to an environment with the gym API.
     This also works for DeepMind Control Suite interface_wrappers
@@ -102,12 +111,12 @@ def _make_wrapped_env(
 ):
     """
     Helper function for creating a wrapped gym environment using MPs.
-    It adds all provided wrappers to the specified environment and verifies at least one MPEnvWrapper is
+    It adds all provided wrappers to the specified environment and verifies at least one RawInterfaceWrapper is
     provided to expose the interface for MPs.
 
     Args:
         env_id: name of the environment
-        wrappers: list of wrappers (at least an MPEnvWrapper),
+        wrappers: list of wrappers (at least an RawInterfaceWrapper),
         seed: seed of environment
 
     Returns: gym environment with all specified wrappers applied
@@ -126,22 +135,20 @@ def _make_wrapped_env(
     return _env
 
 
-def make_bb_env(
-        env_id: str, wrappers: Iterable, black_box_wrapper_kwargs: MutableMapping, traj_gen_kwargs: MutableMapping,
+def make_bb(
+        env_id: str, wrappers: Iterable, black_box_kwargs: MutableMapping, traj_gen_kwargs: MutableMapping,
         controller_kwargs: MutableMapping, phase_kwargs: MutableMapping, basis_kwargs: MutableMapping, seed=1,
-        sequenced=False, **kwargs):
+        **kwargs):
     """
     This can also be used standalone for manually building a custom DMP environment.
     Args:
-        black_box_wrapper_kwargs: kwargs for the black-box wrapper
+        black_box_kwargs: kwargs for the black-box wrapper
         basis_kwargs: kwargs for the basis generator
         phase_kwargs: kwargs for the phase generator
         controller_kwargs: kwargs for the tracking controller
         env_id: base_env_name,
         wrappers: list of wrappers (at least an BlackBoxWrapper),
         seed: seed of environment
-        sequenced: When true, this allows to sequence multiple ProMPs by specifying the duration of each sub-trajectory,
-                this behavior is much closer to step based learning.
         traj_gen_kwargs: dict of at least {num_dof: int, num_basis: int} for DMP
 
     Returns: DMP wrapped gym env
@@ -150,11 +157,25 @@ def make_bb_env(
     _verify_time_limit(traj_gen_kwargs.get("duration", None), kwargs.get("time_limit", None))
     _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 
-    if black_box_wrapper_kwargs.get('duration', None) is None:
-        black_box_wrapper_kwargs['duration'] = _env.spec.max_episode_steps * _env.dt
-    if phase_kwargs.get('tau', None) is None:
-        phase_kwargs['tau'] = black_box_wrapper_kwargs['duration']
+    learn_sub_trajs = black_box_kwargs.get('learn_sub_trajectories')
+    do_replanning = black_box_kwargs.get('replanning_schedule')
+    if learn_sub_trajs and do_replanning:
+        raise ValueError('Cannot used sub-trajectory learning and replanning together.')
+
+    if learn_sub_trajs or do_replanning:
+        # add time_step observation when replanning
+        kwargs['wrappers'].append(TimeAwareObservation)
+
     traj_gen_kwargs['action_dim'] = traj_gen_kwargs.get('action_dim', np.prod(_env.action_space.shape).item())
+
+    if black_box_kwargs.get('duration') is None:
+        black_box_kwargs['duration'] = _env.spec.max_episode_steps * _env.dt
+    if phase_kwargs.get('tau') is None:
+        phase_kwargs['tau'] = black_box_kwargs['duration']
+
+    if learn_sub_trajs is not None:
+        # We have to learn the length when learning sub_trajectories trajectories
+        phase_kwargs['learn_tau'] = True
 
     phase_gen = get_phase_generator(**phase_kwargs)
     basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)
@@ -162,7 +183,7 @@ def make_bb_env(
     traj_gen = get_trajectory_generator(basis_generator=basis_gen, **traj_gen_kwargs)
 
     bb_env = BlackBoxWrapper(_env, trajectory_generator=traj_gen, tracking_controller=controller,
-                             **black_box_wrapper_kwargs)
+                             **black_box_kwargs)
 
     return bb_env
 
@@ -204,16 +225,16 @@ def make_bb_env_helper(**kwargs):
     wrappers = kwargs.pop("wrappers")
 
     traj_gen_kwargs = kwargs.pop("traj_gen_kwargs", {})
-    black_box_kwargs = kwargs.pop('black_box_wrapper_kwargs', {})
+    black_box_kwargs = kwargs.pop('black_box_kwargs', {})
     contr_kwargs = kwargs.pop("controller_kwargs", {})
     phase_kwargs = kwargs.pop("phase_generator_kwargs", {})
     basis_kwargs = kwargs.pop("basis_generator_kwargs", {})
 
-    return make_bb_env(env_id=kwargs.pop("name"), wrappers=wrappers,
-                       black_box_wrapper_kwargs=black_box_kwargs,
-                       traj_gen_kwargs=traj_gen_kwargs, controller_kwargs=contr_kwargs,
-                       phase_kwargs=phase_kwargs,
-                       basis_kwargs=basis_kwargs, **kwargs, seed=seed)
+    return make_bb(env_id=kwargs.pop("name"), wrappers=wrappers,
+                   black_box_kwargs=black_box_kwargs,
+                   traj_gen_kwargs=traj_gen_kwargs, controller_kwargs=contr_kwargs,
+                   phase_kwargs=phase_kwargs,
+                   basis_kwargs=basis_kwargs, **kwargs, seed=seed)
 
 
 def _verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):
@@ -224,7 +245,7 @@ def _verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[
     It can be found in the BaseMP class.
 
     Args:
-        mp_time_limit: max trajectory length of trajectory_generator in seconds
+        mp_time_limit: max trajectory length of traj_gen in seconds
         env_time_limit: max trajectory length of DMC environment in seconds
 
     Returns:

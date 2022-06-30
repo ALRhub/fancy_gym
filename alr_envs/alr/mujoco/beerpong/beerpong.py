@@ -22,7 +22,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(
             self, frame_skip=1, apply_gravity_comp=True, noisy=False,
             rndm_goal=False, cup_goal_pos=None
-            ):
+    ):
 
         cup_goal_pos = np.array(cup_goal_pos if cup_goal_pos is not None else [-0.3, -1.2, 0.840])
         if cup_goal_pos.shape[0] == 2:
@@ -154,7 +154,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             success=success,
             is_collided=is_collided, sim_crash=crash,
             table_contact_first=int(not self.reward_function.ball_ground_contact_first)
-            )
+        )
         infos.update(reward_infos)
         return ob, reward, done, infos
 
@@ -176,7 +176,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             cup_goal_diff_top,
             self.sim.model.body_pos[self.cup_table_id][:2].copy(),
             [self._steps],
-            ])
+        ])
 
     @property
     def dt(self):

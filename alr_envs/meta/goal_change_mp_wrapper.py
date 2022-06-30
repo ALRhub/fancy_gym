@@ -2,10 +2,10 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api import MPEnvWrapper
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
     """
     This Wrapper is for environments where merely the goal changes in the beginning
     and no secondary objects or end effectors are altered at the start of an episode.
@@ -27,7 +27,7 @@ class MPWrapper(MPEnvWrapper):
     """
 
     @property
-    def active_obs(self):
+    def context_mask(self) -> np.ndarray:
         # This structure is the same for all metaworld environments.
         # Only the observations which change could differ
         return np.hstack([

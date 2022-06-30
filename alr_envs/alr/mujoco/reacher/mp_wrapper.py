@@ -1,13 +1,14 @@
 from typing import Union
 
 import numpy as np
-from mp_env_api import MPEnvWrapper
+
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     @property
-    def active_obs(self):
+    def context_mask(self) -> np.ndarray:
         return np.concatenate([
             [False] * self.n_links,  # cos
             [False] * self.n_links,  # sin

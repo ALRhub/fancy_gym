@@ -62,7 +62,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # Base MetaWorld name, according to structure of above example
     base_env = "button-press-v2"
 
-    # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
+    # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
     wrappers = [alr_envs.meta.goal_and_object_change.MPWrapper]
     mp_kwargs = {

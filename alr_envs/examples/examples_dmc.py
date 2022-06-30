@@ -59,7 +59,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # Base DMC name, according to structure of above example
     base_env = "ball_in_cup-catch"
 
-    # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
+    # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
     wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
     mp_kwargs = {

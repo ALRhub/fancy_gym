@@ -1,6 +1,6 @@
 from alr_envs import dmc, meta, open_ai
-from alr_envs.utils.make_env_helpers import make, make_dmp_env, make_promp_env, make_rank
 from alr_envs.utils import make_dmc
+from alr_envs.utils.make_env_helpers import make, make_bb, make_rank
 
 # Convenience function for all MP environments
 from .alr import ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS

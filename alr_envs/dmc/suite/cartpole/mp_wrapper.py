@@ -2,18 +2,17 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api import MPEnvWrapper
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     def __init__(self, env, n_poles: int = 1):
         self.n_poles = n_poles
         super().__init__(env)
 
-
     @property
-    def active_obs(self):
+    def context_mask(self) -> np.ndarray:
         # Besides the ball position, the environment is always set to 0.
         return np.hstack([
             [True],  # slider position

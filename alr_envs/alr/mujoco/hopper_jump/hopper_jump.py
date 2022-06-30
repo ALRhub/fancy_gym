@@ -54,7 +54,8 @@ class ALRHopperJumpEnv(HopperEnv):
         self.current_step += 1
         self.do_simulation(action, self.frame_skip)
         height_after = self.get_body_com("torso")[2]
-        site_pos_after = self.sim.data.site_xpos[self.model.site_name2id('foot_site')].copy()
+        # site_pos_after = self.sim.data.site_xpos[self.model.site_name2id('foot_site')].copy()
+        site_pos_after = self.get_body_com('foot_site')
         self.max_height = max(height_after, self.max_height)
 
         ctrl_cost = self.control_cost(action)

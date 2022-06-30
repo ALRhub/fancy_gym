@@ -1,3 +1,5 @@
+from collections import Mapping, MutableMapping
+
 import numpy as np
 import torch as ch
 
@@ -23,4 +25,24 @@ def angle_normalize(x, type="deg"):
 
 
 def get_numpy(x: ch.Tensor):
+    """
+    Returns numpy array from torch tensor
+    Args:
+        x:
+
+    Returns:
+
+    """
     return x.detach().cpu().numpy()
+
+
+def nested_update(base: MutableMapping, update):
+    """
+    Updated method for nested Mappings
+    Args:
+        base: main Mapping to be updated
+        update: updated values for base Mapping
+
+    """
+    for k, v in update.items():
+        base[k] = nested_update(base.get(k, {}), v) if isinstance(v, Mapping) else v

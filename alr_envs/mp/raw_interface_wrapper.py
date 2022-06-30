@@ -62,8 +62,8 @@ class RawInterfaceWrapper(gym.Wrapper):
         include other actions like ball releasing time for the beer pong environment.
         This only needs to be overwritten if the action space is modified.
         Args:
-            action: a vector instance of the whole action space, includes trajectory_generator parameters and additional parameters if
-            specified, else only trajectory_generator parameters
+            action: a vector instance of the whole action space, includes traj_gen parameters and additional parameters if
+            specified, else only traj_gen parameters
 
         Returns:
             Tuple: mp_arguments and other arguments

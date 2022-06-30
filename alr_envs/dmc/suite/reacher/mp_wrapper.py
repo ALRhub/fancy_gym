@@ -2,13 +2,13 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api import MPEnvWrapper
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     @property
-    def active_obs(self):
+    def context_mask(self) -> np.ndarray:
         # Joint and target positions are randomized, velocities are always set to 0.
         return np.hstack([
             [True] * 2,  # joint position

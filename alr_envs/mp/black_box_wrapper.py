@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Tuple
+from typing import Tuple, Union
 
 import gym
 import numpy as np
@@ -16,7 +16,9 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
     def __init__(self,
                  env: RawInterfaceWrapper,
                  trajectory_generator: MPInterface, tracking_controller: BaseController,
-                 duration: float, verbose: int = 1, sequencing: bool = True, reward_aggregation: callable = np.sum):
+                 duration: float, verbose: int = 1, learn_sub_trajectories: bool = False,
+                 replanning_schedule: Union[None, callable] = None,
+                 reward_aggregation: callable = np.sum):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
 
@@ -26,6 +28,9 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
             tracking_controller: Translates the desired trajectory to raw action sequences
             duration: Length of the trajectory of the movement primitive in seconds
             verbose: level of detail for returned values in info dict.
+            learn_sub_trajectories: Transforms full episode learning into learning sub-trajectories, similar to
+                step-based learning
+            replanning_schedule: callable that receives
             reward_aggregation: function that takes the np.ndarray of step rewards as input and returns the trajectory
                 reward, default summation over all values.
         """
@@ -33,21 +38,22 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
 
         self.env = env
         self.duration = duration
-        self.sequencing = sequencing
+        self.learn_sub_trajectories = learn_sub_trajectories
+        self.replanning_schedule = replanning_schedule
         self.current_traj_steps = 0
 
         # trajectory generation
-        self.trajectory_generator = trajectory_generator
+        self.traj_gen = trajectory_generator
         self.tracking_controller = tracking_controller
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
-        # self.trajectory_generator.set_mp_times(self.time_steps)
-        self.trajectory_generator.set_duration(np.array([self.duration]), np.array([self.dt]))
+        # self.traj_gen.set_mp_times(self.time_steps)
+        self.traj_gen.set_duration(np.array([self.duration]), np.array([self.dt]))
 
         # reward computation
         self.reward_aggregation = reward_aggregation
 
         # spaces
-        self.return_context_observation = not (self.sequencing)  # TODO or we_do_replanning?)
+        self.return_context_observation = not (self.learn_sub_trajectories or replanning_schedule)
         self.traj_gen_action_space = self.get_traj_gen_action_space()
         self.action_space = self.get_action_space()
         self.observation_space = spaces.Box(low=self.env.observation_space.low[self.env.context_mask],
@@ -60,26 +66,26 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
 
     def observation(self, observation):
         # return context space if we are
-        return observation[self.context_mask] if self.return_context_observation else observation
+        return observation[self.env.context_mask] if self.return_context_observation else observation
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
         clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
-        self.trajectory_generator.set_params(clipped_params)
-        # if self.trajectory_generator.learn_tau:
-        #     self.trajectory_generator.set_mp_duration(self.trajectory_generator.tau, np.array([self.dt]))
-        # TODO: Bruce said DMP, ProMP, ProDMP can have 0 bc_time
-        self.trajectory_generator.set_boundary_conditions(bc_time=np.zeros((1,)), bc_pos=self.current_pos,
-                                                          bc_vel=self.current_vel)
+        self.traj_gen.set_params(clipped_params)
+        # TODO: Bruce said DMP, ProMP, ProDMP can have 0 bc_time for sequencing
+        # TODO Check with Bruce for replanning
+        self.traj_gen.set_boundary_conditions(
+            bc_time=np.zeros((1,)) if not self.replanning_schedule else self.current_traj_steps * self.dt,
+            bc_pos=self.current_pos, bc_vel=self.current_vel)
         # TODO: is this correct for replanning? Do we need to adjust anything here?
-        self.trajectory_generator.set_duration(None if self.sequencing else self.duration, np.array([self.dt]))
-        traj_dict = self.trajectory_generator.get_trajs(get_pos=True, get_vel=True)
+        self.traj_gen.set_duration(None if self.learn_sub_trajectories else self.duration, np.array([self.dt]))
+        traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
         return get_numpy(trajectory_tensor), get_numpy(velocity_tensor)
 
     def get_traj_gen_action_space(self):
-        """This function can be used to set up an individual space for the parameters of the trajectory_generator."""
-        min_action_bounds, max_action_bounds = self.trajectory_generator.get_param_bounds()
+        """This function can be used to set up an individual space for the parameters of the traj_gen."""
+        min_action_bounds, max_action_bounds = self.traj_gen.get_param_bounds()
         mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
                                          dtype=np.float32)
         return mp_action_space
@@ -134,8 +140,11 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
             if self.render_kwargs:
                 self.render(**self.render_kwargs)
 
-            if done or self.env.do_replanning(self.current_pos, self.current_vel, obs, c_action,
-                                              t + 1 + self.current_traj_steps):
+            if done:
+                break
+
+            if self.replanning_schedule and self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                                     t + 1 + self.current_traj_steps):
                 break
 
         infos.update({k: v[:t + 1] for k, v in infos.items()})
@@ -160,6 +169,7 @@ class BlackBoxWrapper(gym.ObservationWrapper, ABC):
 
     def reset(self, **kwargs):
         self.current_traj_steps = 0
+        super(BlackBoxWrapper, self).reset(**kwargs)
 
     def plot_trajs(self, des_trajs, des_vels):
         import matplotlib.pyplot as plt

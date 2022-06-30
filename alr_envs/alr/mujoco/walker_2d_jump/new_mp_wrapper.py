@@ -2,8 +2,6 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api import MPEnvWrapper
-
 from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 

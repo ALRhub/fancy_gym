@@ -1,10 +1,11 @@
 from typing import Union
 
 import numpy as np
-from mp_env_api import MPEnvWrapper
+
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray]:
@@ -13,7 +14,3 @@ class MPWrapper(MPEnvWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray]:
         return self.sim.data.qpos[:2]
-
-    @property
-    def dt(self) -> Union[float, int]:
-        return self.env.dt

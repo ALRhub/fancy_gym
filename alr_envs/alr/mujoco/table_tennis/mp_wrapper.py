@@ -2,13 +2,13 @@ from typing import Tuple, Union
 
 import numpy as np
 
-from mp_env_api.interface_wrappers.mp_env_wrapper import MPEnvWrapper
+from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(MPEnvWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     @property
-    def active_obs(self):
+    def context_mask(self) -> np.ndarray:
         # TODO: @Max Filter observations correctly
         return np.hstack([
             [False] * 7,  # Joint Pos
