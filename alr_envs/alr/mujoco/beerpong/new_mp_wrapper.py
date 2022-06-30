@@ -5,7 +5,7 @@ import numpy as np
 from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class NewMPWrapper(RawInterfaceWrapper):
+class MPWrapper(RawInterfaceWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qpos[0:7].copy()

@@ -3,7 +3,7 @@ from typing import Union, Tuple
 import numpy as np
 
 
-class NewMPWrapper(BlackBoxWrapper):
+class MPWrapper(BlackBoxWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.sim.data.qpos[3:6].copy()
@@ -30,7 +30,7 @@ class NewMPWrapper(BlackBoxWrapper):
             ])
 
 
-class NewHighCtxtMPWrapper(NewMPWrapper):
+class NewHighCtxtMPWrapper(MPWrapper):
     def get_context_mask(self):
         return np.hstack([
             [False] * (2 + int(not self.env.exclude_current_positions_from_observation)),  # position

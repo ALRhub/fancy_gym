@@ -5,7 +5,7 @@ import numpy as np
 from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class NewMPWrapper(RawInterfaceWrapper):
+class MPWrapper(RawInterfaceWrapper):
 
     def get_context_mask(self):
         return np.hstack([
