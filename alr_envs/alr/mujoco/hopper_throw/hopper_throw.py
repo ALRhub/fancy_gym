@@ -67,7 +67,7 @@ class ALRHopperThrowEnv(HopperEnv):
         info = {
             'ball_pos': ball_pos_after,
             'ball_pos_y': ball_pos_after_y,
-            'current_step' : self.current_step,
+            '_steps' : self.current_step,
             'goal' : self.goal,
         }
 

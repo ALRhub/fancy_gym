@@ -1,8 +1,8 @@
-from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
+from alr_envs.black_box.black_box_wrapper import BlackBoxWrapper
 from typing import Union, Tuple
 import numpy as np
 
-from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
 class MPWrapper(RawInterfaceWrapper):

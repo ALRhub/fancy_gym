@@ -1,1 +1,1 @@
-from .new_mp_wrapper import MPWrapper
+from .mp_wrapper import MPWrapper

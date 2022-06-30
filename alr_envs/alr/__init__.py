@@ -1,33 +1,31 @@
-import numpy as np
-from gym import register
 from copy import deepcopy
 
+import numpy as np
+from gym import register
+
+from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
 from . import classic_control, mujoco
 from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
 from .classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacherEnv
+from .mujoco.ant_jump.ant_jump import MAX_EPISODE_STEPS_ANTJUMP
 from .mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
 from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
-from .mujoco.reacher.alr_reacher import ALRReacherEnv
-from .mujoco.reacher.balancing import BalancingEnv
-
-from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
-from .mujoco.ant_jump.ant_jump import MAX_EPISODE_STEPS_ANTJUMP
 from .mujoco.half_cheetah_jump.half_cheetah_jump import MAX_EPISODE_STEPS_HALFCHEETAHJUMP
 from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
 from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
 from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
+from .mujoco.reacher.reacher import ReacherEnv
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
-DEFAULT_MP_ENV_DICT = {
+DEFAULT_BB_DICT = {
     "name": 'EnvName',
     "wrappers": [],
     "traj_gen_kwargs": {
-        "weight_scale": 1,
-        'movement_primitives_type': 'promp'
+        'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'linear',
@@ -100,80 +98,47 @@ register(
 # Mujoco
 
 ## Reacher
+for _dims in [5, 7]:
+    register(
+        id=f'Reacher{_dims}d-v0',
+        entry_point='alr_envs.alr.mujoco:ReacherEnv',
+        max_episode_steps=200,
+        kwargs={
+            "n_links": _dims,
+        }
+    )
+
+    register(
+        id=f'Reacher{_dims}dSparse-v0',
+        entry_point='alr_envs.alr.mujoco:ReacherEnv',
+        max_episode_steps=200,
+        kwargs={
+            "sparse": True,
+            "n_links": _dims,
+        }
+    )
+
+## Hopper Jump random joints and desired position
 register(
-    id='ALRReacher-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
+    id='HopperJumpSparse-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
-        "steps_before_reward": 0,
-        "n_links": 5,
-        "balance": False,
+        # "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
+        "sparse": True,
+        # "healthy_reward": 1.0
     }
 )
 
+## Hopper Jump random joints and desired position step based reward
 register(
-    id='ALRReacherSparse-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
+    id='HopperJump-v0',
+    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnvStepBased',
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
-        "steps_before_reward": 200,
-        "n_links": 5,
-        "balance": False,
-    }
-)
-
-register(
-    id='ALRReacherSparseOptCtrl-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherOptCtrlEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 200,
-        "n_links": 5,
-        "balance": False,
-    }
-)
-
-register(
-    id='ALRReacherSparseBalanced-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 200,
-        "n_links": 5,
-        "balance": True,
-    }
-)
-
-register(
-    id='ALRLongReacher-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 0,
-        "n_links": 7,
-        "balance": False,
-    }
-)
-
-register(
-    id='ALRLongReacherSparse-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 200,
-        "n_links": 7,
-        "balance": False,
-    }
-)
-
-register(
-    id='ALRLongReacherSparseBalanced-v0',
-    entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
-    max_episode_steps=200,
-    kwargs={
-        "steps_before_reward": 200,
-        "n_links": 7,
-        "balance": True,
+        # "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
+        "sparse": False,
+        # "healthy_reward": 1.0
     }
 )
 
@@ -198,41 +163,7 @@ register(
 )
 
 register(
-    id='ALRHopperJump-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperJumpEnv',
-    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
-        "context": True
-    }
-)
-
-#### Hopper Jump random joints and des position
-register(
-    id='ALRHopperJumpRndmJointsDesPos-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnv',
-    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
-        "context": True,
-        "healthy_reward": 1.0
-    }
-)
-
-##### Hopper Jump random joints and des position step based reward
-register(
-    id='ALRHopperJumpRndmJointsDesPosStepBased-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnvStepBased',
-    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
-        "context": True,
-        "healthy_reward": 1.0
-    }
-)
-
-register(
-    id='ALRHopperJumpOnBox-v0',
+    id='HopperJumpOnBox-v0',
     entry_point='alr_envs.alr.mujoco:ALRHopperJumpOnBoxEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
     kwargs={
@@ -268,17 +199,6 @@ register(
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_WALKERJUMP,
         "context": True
-    }
-)
-
-## Balancing Reacher
-
-register(
-    id='Balancing-v0',
-    entry_point='alr_envs.alr.mujoco:BalancingEnv',
-    max_episode_steps=200,
-    kwargs={
-        "n_links": 5,
     }
 )
 
@@ -361,7 +281,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_simple_reacher_promp['wrappers'].append(classic_control.simple_reacher.MPWrapper)
     kwargs_dict_simple_reacher_promp['controller_kwargs']['p_gains'] = 0.6
     kwargs_dict_simple_reacher_promp['controller_kwargs']['d_gains'] = 0.075
@@ -394,7 +314,7 @@ register(
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
 
-kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_BB_DICT)
 kwargs_dict_via_point_reacher_promp['wrappers'].append(classic_control.viapoint_reacher.MPWrapper)
 kwargs_dict_via_point_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
 kwargs_dict_via_point_reacher_promp['name'] = "ViaPointReacherProMP-v0"
@@ -433,7 +353,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_hole_reacher_promp['wrappers'].append(classic_control.hole_reacher.MPWrapper)
     kwargs_dict_hole_reacher_promp['traj_gen_kwargs']['weight_scale'] = 2
     kwargs_dict_hole_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
@@ -475,7 +395,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_alr_reacher_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_alr_reacher_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_alr_reacher_promp['wrappers'].append(mujoco.reacher.MPWrapper)
     kwargs_dict_alr_reacher_promp['controller_kwargs']['p_gains'] = 1
     kwargs_dict_alr_reacher_promp['controller_kwargs']['d_gains'] = 0.1
@@ -493,7 +413,7 @@ _versions = ['ALRBeerPong-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.MPWrapper)
     kwargs_dict_bp_promp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_bp_promp['controller_kwargs']['p_gains'] = np.array([1.5, 5, 2.55, 3, 2., 2, 1.25])
@@ -513,7 +433,7 @@ _versions = ["ALRBeerPongStepBased-v0", "ALRBeerPongFixedRelease-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.MPWrapper)
     kwargs_dict_bp_promp['phase_generator_kwargs']['tau'] = 0.62
     kwargs_dict_bp_promp['controller_kwargs']['p_gains'] = np.array([1.5, 5, 2.55, 3, 2., 2, 1.25])
@@ -538,7 +458,7 @@ _versions = ['ALRAntJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.MPWrapper)
     kwargs_dict_ant_jump_promp['name'] = f"alr_envs:{_v}"
     register(
@@ -555,7 +475,7 @@ _versions = ['ALRHalfCheetahJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.half_cheetah_jump.MPWrapper)
     kwargs_dict_halfcheetah_jump_promp['name'] = f"alr_envs:{_v}"
     register(
@@ -575,7 +495,7 @@ _versions = ['ALRHopperJump-v0', 'ALRHopperJumpRndmJointsDesPos-v0', 'ALRHopperJ
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_hopper_jump_promp['wrappers'].append(mujoco.hopper_jump.MPWrapper)
     kwargs_dict_hopper_jump_promp['name'] = f"alr_envs:{_v}"
     register(
@@ -593,7 +513,7 @@ _versions = ['ALRWalker2DJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_MP_ENV_DICT)
+    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_walker2d_jump_promp['wrappers'].append(mujoco.walker_2d_jump.MPWrapper)
     kwargs_dict_walker2d_jump_promp['name'] = f"alr_envs:{_v}"
     register(
@@ -695,7 +615,7 @@ for i in _vs:
     _env_id = f'ALRReacher{i}-v0'
     register(
         id=_env_id,
-        entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
+        entry_point='alr_envs.alr.mujoco:ReacherEnv',
         max_episode_steps=200,
         kwargs={
             "steps_before_reward": 0,
@@ -708,7 +628,7 @@ for i in _vs:
     _env_id = f'ALRReacherSparse{i}-v0'
     register(
         id=_env_id,
-        entry_point='alr_envs.alr.mujoco:ALRReacherEnv',
+        entry_point='alr_envs.alr.mujoco:ReacherEnv',
         max_episode_steps=200,
         kwargs={
             "steps_before_reward": 200,

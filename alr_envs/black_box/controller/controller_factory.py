@@ -1,7 +1,7 @@
-from alr_envs.mp.controllers.meta_world_controller import MetaWorldController
-from alr_envs.mp.controllers.pd_controller import PDController
-from alr_envs.mp.controllers.vel_controller import VelController
-from alr_envs.mp.controllers.pos_controller import PosController
+from alr_envs.black_box.controller.meta_world_controller import MetaWorldController
+from alr_envs.black_box.controller.pd_controller import PDController
+from alr_envs.black_box.controller.vel_controller import VelController
+from alr_envs.black_box.controller.pos_controller import PosController
 
 ALL_TYPES = ["motor", "velocity", "position", "metaworld"]
 

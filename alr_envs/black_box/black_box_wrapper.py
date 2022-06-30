@@ -6,8 +6,8 @@ import numpy as np
 from gym import spaces
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
-from alr_envs.mp.controllers.base_controller import BaseController
-from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.black_box.controller.base_controller import BaseController
+from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from alr_envs.utils.utils import get_numpy
 
 
@@ -15,10 +15,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def __init__(self,
                  env: RawInterfaceWrapper,
-                 trajectory_generator: MPInterface, tracking_controller: BaseController,
-                 duration: float, verbose: int = 1, learn_sub_trajectories: bool = False,
+                 trajectory_generator: MPInterface,
+                 tracking_controller: BaseController,
+                 duration: float,
+                 verbose: int = 1,
+                 learn_sub_trajectories: bool = False,
                  replanning_schedule: Union[None, callable] = None,
-                 reward_aggregation: callable = np.sum):
+                 reward_aggregation: callable = np.sum
+                 ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
 

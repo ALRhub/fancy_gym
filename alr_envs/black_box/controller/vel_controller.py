@@ -1,4 +1,4 @@
-from alr_envs.mp.controllers.base_controller import BaseController
+from alr_envs.black_box.controller.base_controller import BaseController
 
 
 class VelController(BaseController):

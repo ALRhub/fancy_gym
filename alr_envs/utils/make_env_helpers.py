@@ -7,12 +7,12 @@ import numpy as np
 from gym.envs.registration import EnvSpec, registry
 from gym.wrappers import TimeAwareObservation
 
-from alr_envs.mp.basis_generator_factory import get_basis_generator
-from alr_envs.mp.black_box_wrapper import BlackBoxWrapper
-from alr_envs.mp.controllers.controller_factory import get_controller
-from alr_envs.mp.mp_factory import get_trajectory_generator
-from alr_envs.mp.phase_generator_factory import get_phase_generator
-from alr_envs.mp.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.black_box.factory.basis_generator_factory import get_basis_generator
+from alr_envs.black_box.black_box_wrapper import BlackBoxWrapper
+from alr_envs.black_box.controller.controller_factory import get_controller
+from alr_envs.black_box.factory.trajectory_generator_factory import get_trajectory_generator
+from alr_envs.black_box.factory.phase_generator_factory import get_phase_generator
+from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from alr_envs.utils.utils import nested_update
 
 
@@ -46,6 +46,7 @@ def make(env_id, seed, **kwargs):
     spec = registry.get(env_id)
     # This access is required to allow for nested dict updates
     all_kwargs = deepcopy(spec._kwargs)
+    # TODO append wrapper here
     nested_update(all_kwargs, **kwargs)
     return _make(env_id, seed, **all_kwargs)
 
@@ -224,8 +225,8 @@ def make_bb_env_helper(**kwargs):
     seed = kwargs.pop("seed", None)
     wrappers = kwargs.pop("wrappers")
 
-    traj_gen_kwargs = kwargs.pop("traj_gen_kwargs", {})
     black_box_kwargs = kwargs.pop('black_box_kwargs', {})
+    traj_gen_kwargs = kwargs.pop("traj_gen_kwargs", {})
     contr_kwargs = kwargs.pop("controller_kwargs", {})
     phase_kwargs = kwargs.pop("phase_generator_kwargs", {})
     basis_kwargs = kwargs.pop("basis_generator_kwargs", {})

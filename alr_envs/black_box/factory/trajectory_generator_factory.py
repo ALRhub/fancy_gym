@@ -9,7 +9,7 @@ ALL_TYPES = ["promp", "dmp", "idmp"]
 
 def get_trajectory_generator(
         trajectory_generator_type: str, action_dim: int, basis_generator: BasisGenerator, **kwargs
-        ):
+):
     trajectory_generator_type = trajectory_generator_type.lower()
     if trajectory_generator_type == "promp":
         return ProMP(basis_generator, action_dim, **kwargs)
