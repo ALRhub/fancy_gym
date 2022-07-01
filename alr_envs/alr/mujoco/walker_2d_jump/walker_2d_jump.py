@@ -4,6 +4,10 @@ import numpy as np
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
 
+# TODO: Right now this environment only considers jumping to a specific height, which is not nice. It should be extended
+#  to the same structure as the Hopper, where the angles are randomized (->contexts) and the agent should jump as height
+#  as possible, while landing at a specific target position
+
 
 class ALRWalker2dJumpEnv(Walker2dEnv):
     """
@@ -21,14 +25,12 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
                  healthy_angle_range=(-1.0, 1.0),
                  reset_noise_scale=5e-3,
                  penalty=0,
-                 context=True,
                  exclude_current_positions_from_observation=True,
                  max_episode_steps=300):
         self.current_step = 0
         self.max_episode_steps = max_episode_steps
         self.max_height = 0
         self._penalty = penalty
-        self.context = context
         self.goal = 0
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
         super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
@@ -43,31 +45,24 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
 
         self.max_height = max(height, self.max_height)
 
-        fell_over = height < 0.2
-        done = fell_over
+        done = height < 0.2
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
-
+        rewards = 0
         if self.current_step >= self.max_episode_steps or done:
             done = True
-            height_goal_distance = -10 * (np.linalg.norm(self.max_height - self.goal)) if self.context else self.max_height
+            height_goal_distance = -10 * (np.linalg.norm(self.max_height - self.goal))
             healthy_reward = self.healthy_reward * self.current_step
 
             rewards = height_goal_distance + healthy_reward
-        else:
-            # penalty not needed
-            rewards = 0
-            rewards += ((action[:2] > 0) * self._penalty).sum() if self.current_step < 4 else 0
-            rewards += ((action[3:5] > 0) * self._penalty).sum() if self.current_step < 4 else 0
-
 
         observation = self._get_obs()
         reward = rewards - costs
         info = {
             'height': height,
             'max_height': self.max_height,
-            'goal' : self.goal,
+            'goal': self.goal,
         }
 
         return observation, reward, done, info
@@ -78,7 +73,7 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
     def reset(self):
         self.current_step = 0
         self.max_height = 0
-        self.goal = np.random.uniform(1.5, 2.5, 1) # 1.5 3.0
+        self.goal = np.random.uniform(1.5, 2.5, 1)  # 1.5 3.0
         return super().reset()
 
     # overwrite reset_model to make it deterministic
@@ -99,8 +94,7 @@ if __name__ == '__main__':
     env = ALRWalker2dJumpEnv()
     obs = env.reset()
 
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
+    for i in range(6000):
         # test with random actions
         ac = env.action_space.sample()
         obs, rew, d, info = env.step(ac)

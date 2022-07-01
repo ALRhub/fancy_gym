@@ -7,6 +7,5 @@ from .hopper_jump.hopper_jump_on_box import ALRHopperJumpOnBoxEnv
 from .hopper_throw.hopper_throw import ALRHopperThrowEnv
 from .hopper_throw.hopper_throw_in_basket import ALRHopperThrowInBasketEnv
 from .reacher.reacher import ReacherEnv
-from .reacher.balancing import BalancingEnv
 from .table_tennis.tt_gym import TTEnvGym
 from .walker_2d_jump.walker_2d_jump import ALRWalker2dJumpEnv

@@ -218,8 +218,15 @@ register(
     entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
     max_episode_steps=300,
     kwargs={
-        "rndm_goal": True,
-        "cup_goal_pos": [-0.3, -1.2],
+        "frame_skip": 2
+    }
+)
+
+register(
+    id='ALRBeerPong-v1',
+    entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+    max_episode_steps=300,
+    kwargs={
         "frame_skip": 2
     }
 )

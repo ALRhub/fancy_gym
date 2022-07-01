@@ -21,12 +21,9 @@ class BeerPongReward:
 
         self.cup_collision_objects = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "cup_geom_table6",
                                       "cup_geom_table7", "cup_geom_table8", "cup_geom_table9", "cup_geom_table10",
-                                      # "cup_base_table", "cup_base_table_contact",
                                       "cup_geom_table15",
                                       "cup_geom_table16",
                                       "cup_geom_table17", "cup_geom1_table8",
-                                      # "cup_base_table_contact",
-                                      # "cup_base_table"
                                       ]
 
         self.dists = None
@@ -39,7 +36,7 @@ class BeerPongReward:
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
-        ### IDs
+        # IDs
         self.ball_collision_id = None
         self.table_collision_id = None
         self.wall_collision_id = None
@@ -96,10 +93,10 @@ class BeerPongReward:
         self.action_costs.append(np.copy(action_cost))
         # # ##################### Reward function which does not force to bounce once on the table (quad dist) #########
 
-        # Comment Onur: Is this needed?
+        # Is this needed?
         # self._is_collided = self._check_collision_with_itself(env.sim, self.robot_collision_ids)
 
-        if env._steps == env.ep_length - 1:#  or self._is_collided:
+        if env._steps == env.ep_length - 1:  # or self._is_collided:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
             if self.ball_ground_contact_first:
@@ -128,9 +125,10 @@ class BeerPongReward:
             reward = - action_cost
             success = False
         # ##############################################################################################################
-        infos = {"success": success,  "ball_pos": ball_pos.copy(),
-                 "ball_vel": ball_vel.copy(), "action_cost": action_cost, "task_reward": reward, "is_collided": False} # TODO: Check if is collided is needed
-
+        infos = {"success": success, "ball_pos": ball_pos.copy(),
+                 "ball_vel": ball_vel.copy(), "action_cost": action_cost, "task_reward": reward,
+                 "table_contact_first": int(not self.ball_ground_contact_first),
+                 "is_collided": False}  # TODO: Check if is collided is needed
         return reward, infos
 
     def check_contacts(self, sim):

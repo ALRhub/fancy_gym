@@ -7,16 +7,6 @@ from gym.envs.mujoco import MujocoEnv
 
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
-CUP_POS_MIN = np.array([-1.42, -4.05])
-CUP_POS_MAX = np.array([1.42, -1.25])
-
-
-# CUP_POS_MIN = np.array([-0.32, -2.2])
-# CUP_POS_MAX = np.array([0.32, -1.2])
-
-# smaller context space -> Easier task
-# CUP_POS_MIN = np.array([-0.16, -2.2])
-# CUP_POS_MAX = np.array([0.16, -1.7])
 
 class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=2, apply_gravity_comp=True):
@@ -27,10 +17,16 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.cup_goal_pos = np.array(cup_goal_pos)
 
         self._steps = 0
+        # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
         #                              "beerpong_wo_cup" + ".xml")
+        # self.cup_pos_min = np.array([-0.32, -2.2])
+        # self.cup_pos_max = np.array([0.32, -1.2])
+
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "beerpong_wo_cup_big_table" + ".xml")
+        self.cup_pos_min = np.array([-1.42, -4.05])
+        self.cup_pos_max = np.array([1.42, -1.25])
 
         self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
         self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
@@ -49,9 +45,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.cup_table_id = 10
 
         self.add_noise = False
-
-        reward_function = BeerPongReward
-        self.reward_function = reward_function()
+        self.reward_function = BeerPongReward()
         self.repeat_action = frame_skip
         MujocoEnv.__init__(self, self.xml_path, frame_skip=1)
         utils.EzPickle.__init__(self)
@@ -78,10 +72,11 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         start_pos = init_pos_all
         start_pos[0:7] = init_pos_robot
 
+        # TODO: Ask Max why we need to set the state twice.
         self.set_state(start_pos, init_vel)
         start_pos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
         self.set_state(start_pos, init_vel)
-        xy = self.np_random.uniform(CUP_POS_MIN, CUP_POS_MAX)
+        xy = self.np_random.uniform(self.cup_pos_min, self.cup_pos_max)
         xyz = np.zeros(3)
         xyz[:2] = xy
         xyz[-1] = 0.840
@@ -89,9 +84,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def step(self, a):
-        reward_dist = 0.0
-        angular_vel = 0.0
-
+        crash = False
         for _ in range(self.repeat_action):
             if self.apply_gravity_comp:
                 applied_action = a + self.sim.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
@@ -100,7 +93,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
             try:
                 self.do_simulation(applied_action, self.frame_skip)
                 self.reward_function.initialize(self)
-                self.reward_function.check_contacts(self.sim)
+                # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
                 if self._steps < self.release_step:
                     self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
                     self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.ball_site_id, :].copy()
@@ -112,34 +105,19 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
         if not crash:
             reward, reward_infos = self.reward_function.compute_reward(self, applied_action)
-            success = reward_infos['success']
             is_collided = reward_infos['is_collided']
-            ball_pos = reward_infos['ball_pos']
-            ball_vel = reward_infos['ball_vel']
             done = is_collided or self._steps == self.ep_length - 1
             self._steps += 1
         else:
             reward = -30
-            reward_infos = dict()
-            success = False
-            is_collided = False
             done = True
-            ball_pos = np.zeros(3)
-            ball_vel = np.zeros(3)
+            reward_infos = {"success": False,  "ball_pos": np.zeros(3), "ball_vel": np.zeros(3), "is_collided": False}
 
         infos = dict(
-            reward_dist=reward_dist,
             reward=reward,
-            velocity=angular_vel,
-            # traj=self._q_pos,
             action=a,
             q_pos=self.sim.data.qpos[0:7].ravel().copy(),
-            q_vel=self.sim.data.qvel[0:7].ravel().copy(),
-            ball_pos=ball_pos,
-            ball_vel=ball_vel,
-            success=success,
-            is_collided=is_collided, sim_crash=crash,
-            table_contact_first=int(not self.reward_function.ball_ground_contact_first)
+            q_vel=self.sim.data.qvel[0:7].ravel().copy(), sim_crash=crash,
         )
         infos.update(reward_infos)
         return ob, reward, done, infos
@@ -239,14 +217,7 @@ if __name__ == "__main__":
     env.reset()
     env.render("human")
     for i in range(1500):
-        # ac = 10 * env.action_space.sample()
-        ac = np.ones(7)
-        # ac = np.zeros(7)
-        # ac[0] = 0
-        # ac[1] = -0.01
-        # ac[3] = -0.01
-        # if env._steps > 150:
-        #     ac[0] = 1
+        ac = 10 * env.action_space.sample()
         obs, rew, d, info = env.step(ac)
         env.render("human")
         print(env.dt)
