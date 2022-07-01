@@ -428,7 +428,7 @@ for _v in _versions:
     kwargs_dict_bp_promp['name'] = f"alr_envs:{_v}"
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_bp_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)

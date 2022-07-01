@@ -1,8 +1,9 @@
 from typing import Union, Tuple
+from mp_pytorch.mp.mp_interfaces import MPInterface
+from abc import abstractmethod
 
 import gym
 import numpy as np
-from abc import abstractmethod
 
 
 class RawInterfaceWrapper(gym.Wrapper):
@@ -56,7 +57,7 @@ class RawInterfaceWrapper(gym.Wrapper):
         # return bool(self.replanning_model(s))
         return False
 
-    def _episode_callback(self, action: np.ndarray) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
+    def _episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         """
         Used to extract the parameters for the motion primitive and other parameters from an action array which might
         include other actions like ball releasing time for the beer pong environment.

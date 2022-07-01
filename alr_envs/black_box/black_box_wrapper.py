@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Tuple, Union
 
 import gym
@@ -80,7 +79,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             bc_time=np.zeros((1,)) if not self.replanning_schedule else self.current_traj_steps * self.dt,
             bc_pos=self.current_pos, bc_vel=self.current_vel)
         # TODO: is this correct for replanning? Do we need to adjust anything here?
-        self.traj_gen.set_duration(None if self.learn_sub_trajectories else self.duration, np.array([self.dt]))
+        self.traj_gen.set_duration(None if self.learn_sub_trajectories else np.array([self.duration]), np.array([self.dt]))
         traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
@@ -109,7 +108,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
         # agent to learn when to release the ball
-        mp_params, env_spec_params = self._episode_callback(action)
+        mp_params, env_spec_params = self.env._episode_callback(action, self.traj_gen)
         trajectory, velocity = self.get_trajectory(mp_params)
 
         trajectory_length = len(trajectory)

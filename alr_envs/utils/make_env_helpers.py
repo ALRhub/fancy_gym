@@ -43,10 +43,11 @@ def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwa
 
 
 def make(env_id, seed, **kwargs):
-    spec = registry.get(env_id)
+    # spec = registry.get(env_id) # TODO: This doesn't work with gym ==0.21.0
+    spec = registry.spec(env_id)
     # This access is required to allow for nested dict updates
     all_kwargs = deepcopy(spec._kwargs)
-    nested_update(all_kwargs, **kwargs)
+    nested_update(all_kwargs, kwargs)
     return _make(env_id, seed, **all_kwargs)
 
 
@@ -224,7 +225,7 @@ def make_bb_env_helper(**kwargs):
     seed = kwargs.pop("seed", None)
     wrappers = kwargs.pop("wrappers")
 
-    traj_gen_kwargs = kwargs.pop("traj_gen_kwargs", {})
+    traj_gen_kwargs = kwargs.pop("trajectory_generator_kwargs", {})
     black_box_kwargs = kwargs.pop('black_box_kwargs', {})
     contr_kwargs = kwargs.pop("controller_kwargs", {})
     phase_kwargs = kwargs.pop("phase_generator_kwargs", {})
