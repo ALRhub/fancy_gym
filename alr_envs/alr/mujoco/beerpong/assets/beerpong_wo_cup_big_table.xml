@@ -123,7 +123,7 @@
                                         <joint name="wam/palm_yaw_joint" pos="0 0 0" axis="0 0 1" range="-2.7 2.7" />
                                         <geom class="viz" pos="0 0 -0.06" mesh="wrist_palm_link_fine" />
                                         <geom class="col" pos="0 0 -0.06" mesh="wrist_palm_link_convex" name="wrist_palm_link_convex_geom" />
-                                        <site name="init_ball_pos_site" size="0.025 0.025 0.025" pos="0.0 0.0 0.035" rgba="0 1 0 1"/>
+                                        <site name="init_ball_pos" size="0.025 0.025 0.025" pos="0.0 0.0 0.035" rgba="0 1 0 1"/>
                                     </body>
                                 </body>
                             </body>

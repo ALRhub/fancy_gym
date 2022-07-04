@@ -46,3 +46,4 @@ def nested_update(base: MutableMapping, update):
     """
     for k, v in update.items():
         base[k] = nested_update(base.get(k, {}), v) if isinstance(v, Mapping) else v
+
