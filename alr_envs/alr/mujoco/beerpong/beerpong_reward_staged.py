@@ -73,7 +73,7 @@ class BeerPongReward:
             # self.cup_table_collision_id = env.model.geom_name2id("cup_base_table_contact")
             self.ground_collision_id = {env.model.geom_name2id("ground")}
             # self.ground_collision_id = env.model.geom_name2id("ground")
-            self.cup_collision_ids = set(env.model.geom_name2id(name) for name in self.cup_collision_objects)
+            self.cup_collision_ids = {env.model.geom_name2id(name) for name in self.cup_collision_objects}
             # self.cup_collision_ids = [env.model.geom_name2id(name) for name in self.cup_collision_objects]
             self.robot_collision_ids = [env.model.geom_name2id(name) for name in self.robot_collision_objects]
 

@@ -8,14 +8,9 @@ from gym.envs.mujoco import MujocoEnv
 from alr_envs.alr.mujoco.beerpong.beerpong_reward_staged import BeerPongReward
 
 
-class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
+class BeerPongEnv(MujocoEnv, utils.EzPickle):
+    # TODO: always use gravity compensation
     def __init__(self, frame_skip=2, apply_gravity_comp=True):
-
-        cup_goal_pos = np.array([-0.3, -1.2, 0.840])
-        if cup_goal_pos.shape[0] == 2:
-            cup_goal_pos = np.insert(cup_goal_pos, 2, 0.840)
-        self.cup_goal_pos = np.array(cup_goal_pos)
-
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
@@ -25,26 +20,22 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "beerpong_wo_cup_big_table" + ".xml")
-        self.cup_pos_min = np.array([-1.42, -4.05])
-        self.cup_pos_max = np.array([1.42, -1.25])
-
-        self.j_min = np.array([-2.6, -1.985, -2.8, -0.9, -4.55, -1.5707, -2.7])
-        self.j_max = np.array([2.6, 1.985, 2.8, 3.14159, 1.25, 1.5707, 2.7])
+        self._cup_pos_min = np.array([-1.42, -4.05])
+        self._cup_pos_max = np.array([1.42, -1.25])
 
         self.apply_gravity_comp = apply_gravity_comp
 
         self._start_pos = np.array([0.0, 1.35, 0.0, 1.18, 0.0, -0.786, -1.59])
         self._start_vel = np.zeros(7)
 
+        # TODO: check if we need to define that in the constructor?
         self.ball_site_id = 0
         self.ball_id = 11
-
-        self.release_step = 100  # time step of ball release
-
-        self.ep_length = 600 // frame_skip
         self.cup_table_id = 10
 
-        self.add_noise = False
+        self.release_step = 100  # time step of ball release
+        self.ep_length = 600 // frame_skip
+
         self.reward_function = BeerPongReward()
         self.repeat_action = frame_skip
         MujocoEnv.__init__(self, self.xml_path, frame_skip=1)
@@ -76,7 +67,7 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         self.set_state(start_pos, init_vel)
         start_pos[7::] = self.sim.data.site_xpos[self.ball_site_id, :].copy()
         self.set_state(start_pos, init_vel)
-        xy = self.np_random.uniform(self.cup_pos_min, self.cup_pos_max)
+        xy = self.np_random.uniform(self._cup_pos_min, self._cup_pos_max)
         xyz = np.zeros(3)
         xyz[:2] = xy
         xyz[-1] = 0.840
@@ -122,9 +113,6 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
         infos.update(reward_infos)
         return ob, reward, done, infos
 
-    # def _check_traj_in_joint_limits(self):
-    #     return any(self.current_pos > self.j_max) or any(self.current_pos < self.j_min)
-
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
         theta_dot = self.sim.data.qvel.flat[:7]
@@ -143,28 +131,28 @@ class ALRBeerBongEnv(MujocoEnv, utils.EzPickle):
 
     @property
     def dt(self):
-        return super(ALRBeerBongEnv, self).dt * self.repeat_action
+        return super(BeerPongEnv, self).dt * self.repeat_action
 
 
-class ALRBeerBongEnvFixedReleaseStep(ALRBeerBongEnv):
+class BeerPongEnvFixedReleaseStep(BeerPongEnv):
     def __init__(self, frame_skip=2, apply_gravity_comp=True):
         super().__init__(frame_skip, apply_gravity_comp)
         self.release_step = 62  # empirically evaluated for frame_skip=2!
 
 
-class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
+class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
     def __init__(self, frame_skip=2, apply_gravity_comp=True):
         super().__init__(frame_skip, apply_gravity_comp)
         self.release_step = 62  # empirically evaluated for frame_skip=2!
 
     def step(self, a):
         if self._steps < self.release_step:
-            return super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(a)
+            return super(BeerPongEnvStepBasedEpisodicReward, self).step(a)
         else:
             reward = 0
             done = False
             while not done:
-                sub_ob, sub_reward, done, sub_infos = super(ALRBeerBongEnvStepBasedEpisodicReward, self).step(
+                sub_ob, sub_reward, done, sub_infos = super(BeerPongEnvStepBasedEpisodicReward, self).step(
                     np.zeros(a.shape))
                 reward += sub_reward
             infos = sub_infos
@@ -208,7 +196,7 @@ class ALRBeerBongEnvStepBasedEpisodicReward(ALRBeerBongEnv):
 
 
 if __name__ == "__main__":
-    env = ALRBeerBongEnv(frame_skip=2)
+    env = BeerPongEnv(frame_skip=2)
     # env = ALRBeerBongEnvStepBased(frame_skip=2)
     # env = ALRBeerBongEnvStepBasedEpisodicReward(frame_skip=2)
     # env = ALRBeerBongEnvFixedReleaseStep(frame_skip=2)
