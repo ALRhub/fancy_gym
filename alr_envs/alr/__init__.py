@@ -214,8 +214,8 @@ register(id='TableTennis4DCtxt-v0',
          kwargs={'ctxt_dim': 4})
 
 register(
-    id='ALRBeerPong-v0',
-    entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+    id='BeerPong-v0',
+    entry_point='alr_envs.alr.mujoco:BeerBongEnv',
     max_episode_steps=300,
     kwargs={
         "frame_skip": 2
@@ -223,8 +223,8 @@ register(
 )
 
 register(
-    id='ALRBeerPong-v1',
-    entry_point='alr_envs.alr.mujoco:ALRBeerBongEnv',
+    id='BeerPong-v1',
+    entry_point='alr_envs.alr.mujoco:BeerBongEnv',
     max_episode_steps=300,
     kwargs={
         "frame_skip": 2
@@ -234,8 +234,8 @@ register(
 # Here we use the same reward as in ALRBeerPong-v0, but now consider after the release,
 # only one time step, i.e. we simulate until the end of th episode
 register(
-    id='ALRBeerPongStepBased-v0',
-    entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvStepBased',
+    id='BeerPongStepBased-v0',
+    entry_point='alr_envs.alr.mujoco:BeerBongEnvStepBased',
     max_episode_steps=300,
     kwargs={
         "cup_goal_pos": [-0.3, -1.2],
@@ -245,8 +245,8 @@ register(
 
 # Beerpong with episodic reward, but fixed release time step
 register(
-    id='ALRBeerPongFixedRelease-v0',
-    entry_point='alr_envs.alr.mujoco:ALRBeerBongEnvFixedReleaseStep',
+    id='BeerPongFixedRelease-v0',
+    entry_point='alr_envs.alr.mujoco:BeerBongEnvFixedReleaseStep',
     max_episode_steps=300,
     kwargs={
         "cup_goal_pos": [-0.3, -1.2],
@@ -414,7 +414,7 @@ for _v in _versions:
 
 ########################################################################################################################
 ## Beerpong ProMP
-_versions = ['ALRBeerPong-v0']
+_versions = ['BeerPong-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
@@ -434,7 +434,7 @@ for _v in _versions:
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ### BP with Fixed release
-_versions = ["ALRBeerPongStepBased-v0", "ALRBeerPongFixedRelease-v0"]
+_versions = ["BeerPongStepBased-v0", "BeerPongFixedRelease-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
