@@ -5,7 +5,7 @@ from setuptools import setup
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     "dmc": ["dm_control"],
-    "meta": ["mujoco_py<2.2,>=2.1, git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld"],
+    "meta": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld"],
     "mujoco": ["mujoco==2.2.0", "imageio>=2.14.1"],
 }
 
@@ -20,13 +20,7 @@ setup(
     packages=['alr_envs', 'alr_envs.alr', 'alr_envs.open_ai', 'alr_envs.dmc', 'alr_envs.meta', 'alr_envs.utils'],
     install_requires=[
         'gym',
-        'PyQt5',
-        # 'matplotlib',
-        # 'mp_env_api @ git+https://github.com/ALRhub/motion_primitive_env_api.git',
-        #         'mp_env_api @ git+ssh://git@github.com/ALRhub/motion_primitive_env_api.git',
-        'mujoco-py<2.1,>=2.0',
-        'dm_control',
-        'metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld',
+        "mujoco_py<2.2,>=2.1",
     ],
     url='https://github.com/ALRhub/alr_envs/',
     # license='AGPL-3.0 license',
