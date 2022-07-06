@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import gym
 import numpy as np
@@ -19,7 +19,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  duration: float,
                  verbose: int = 1,
                  learn_sub_trajectories: bool = False,
-                 replanning_schedule: Union[None, callable] = None,
+                 replanning_schedule: Optional[callable] = None,
                  reward_aggregation: callable = np.sum
                  ):
         """
@@ -41,7 +41,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         self.duration = duration
         self.learn_sub_trajectories = learn_sub_trajectories
-        self.replanning_schedule = replanning_schedule
+        self.do_replanning = replanning_schedule is not None
+        self.replanning_schedule = replanning_schedule or (lambda *x: False)
         self.current_traj_steps = 0
 
         # trajectory generation
@@ -55,12 +56,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.reward_aggregation = reward_aggregation
 
         # spaces
-        self.return_context_observation = not (self.learn_sub_trajectories or replanning_schedule)
-        self.traj_gen_action_space = self.get_traj_gen_action_space()
-        self.action_space = self.get_action_space()
-        self.observation_space = spaces.Box(low=self.env.observation_space.low[self.env.context_mask],
-                                            high=self.env.observation_space.high[self.env.context_mask],
-                                            dtype=self.env.observation_space.dtype)
+        self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
+        self.traj_gen_action_space = self._get_traj_gen_action_space()
+        self.action_space = self._get_action_space()
+        self.observation_space = self._get_observation_space()
 
         # rendering
         self.render_kwargs = {}
@@ -76,23 +75,24 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # TODO: Bruce said DMP, ProMP, ProDMP can have 0 bc_time for sequencing
         # TODO Check with Bruce for replanning
         self.traj_gen.set_boundary_conditions(
-            bc_time=np.zeros((1,)) if not self.replanning_schedule else self.current_traj_steps * self.dt,
+            bc_time=np.zeros((1,)) if not self.do_replanning else np.array([self.current_traj_steps * self.dt]),
             bc_pos=self.current_pos, bc_vel=self.current_vel)
         # TODO: is this correct for replanning? Do we need to adjust anything here?
-        self.traj_gen.set_duration(None if self.learn_sub_trajectories else np.array([self.duration]), np.array([self.dt]))
+        self.traj_gen.set_duration(None if self.learn_sub_trajectories else np.array([self.duration]),
+                                   np.array([self.dt]))
         traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
         return get_numpy(trajectory_tensor), get_numpy(velocity_tensor)
 
-    def get_traj_gen_action_space(self):
+    def _get_traj_gen_action_space(self):
         """This function can be used to set up an individual space for the parameters of the traj_gen."""
         min_action_bounds, max_action_bounds = self.traj_gen.get_param_bounds()
-        mp_action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
-                                         dtype=np.float32)
-        return mp_action_space
+        action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
+                                      dtype=self.env.action_space.dtype)
+        return action_space
 
-    def get_action_space(self):
+    def _get_action_space(self):
         """
         This function can be used to modify the action space for considering actions which are not learned via motion
         primitives. E.g. ball releasing time for the beer pong task. By default, it is the parameter space of the
@@ -102,12 +102,21 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         try:
             return self.traj_gen_action_space
         except AttributeError:
-            return self.get_traj_gen_action_space()
+            return self._get_traj_gen_action_space()
+
+    def _get_observation_space(self):
+        mask = self.env.context_mask
+        if not self.return_context_observation:
+            # return full observation
+            mask = np.ones_like(mask, dtype=bool)
+        min_obs_bound = self.env.observation_space.low[mask]
+        max_obs_bound = self.env.observation_space.high[mask]
+        return spaces.Box(low=min_obs_bound, high=max_obs_bound, dtype=self.env.observation_space.dtype)
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
-        # agent to learn when to release the ball
+        # TODO remove this part, right now only needed for beer pong
         mp_params, env_spec_params = self.env._episode_callback(action, self.traj_gen)
         trajectory, velocity = self.get_trajectory(mp_params)
 
@@ -121,10 +130,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        for t, pos_vel in enumerate(zip(trajectory, velocity)):
-            step_action = self.tracking_controller.get_action(pos_vel[0], pos_vel[1], self.current_pos,
-                                                              self.current_vel)
-            step_action = self._step_callback(t, env_spec_params, step_action)  # include possible callback info
+        for t, (pos, vel) in enumerate(zip(trajectory, velocity)):
+            step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
             # print('step/clipped action ratio: ', step_action/c_action)
             obs, c_reward, done, info = self.env.step(c_action)
@@ -142,36 +149,34 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.render(**self.render_kwargs)
 
-            if done:
-                break
-
-            if self.replanning_schedule and self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                                     t + 1 + self.current_traj_steps):
+            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                t + 1 + self.current_traj_steps):
                 break
 
         infos.update({k: v[:t + 1] for k, v in infos.items()})
         self.current_traj_steps += t + 1
 
         if self.verbose >= 2:
-            infos['trajectory'] = trajectory
+            infos['positions'] = trajectory
+            infos['velocities'] = velocity
             infos['step_actions'] = actions[:t + 1]
             infos['step_observations'] = observations[:t + 1]
             infos['step_rewards'] = rewards[:t + 1]
 
         infos['trajectory_length'] = t + 1
         trajectory_return = self.reward_aggregation(rewards[:t + 1])
-        return obs, trajectory_return, done, infos
+        return self.observation(obs), trajectory_return, done, infos
 
     def render(self, **kwargs):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""
-        self.render_kwargs = kwargs
+        self.render_kwargs = kwargs or self.render_kwargs
         # self.env.render(mode=self.render_mode, **self.render_kwargs)
-        self.env.render(**kwargs)
+        self.env.render(**self.render_kwargs)
 
-    def reset(self, **kwargs):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
-        super(BlackBoxWrapper, self).reset(**kwargs)
+        return super(BlackBoxWrapper, self).reset(seed=seed, return_info=return_info, options=options)
 
     def plot_trajs(self, des_trajs, des_vels):
         import matplotlib.pyplot as plt

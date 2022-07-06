@@ -118,33 +118,30 @@ for _dims in [5, 7]:
         }
     )
 
-## Hopper Jump random joints and desired position
 register(
     id='HopperJumpSparse-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnv',
+    entry_point='alr_envs.alr.mujoco:HopperJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
-        # "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
         "sparse": True,
-        # "healthy_reward": 1.0
     }
 )
 
-## Hopper Jump random joints and desired position step based reward
 register(
     id='HopperJump-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperXYJumpEnvStepBased',
+    entry_point='alr_envs.alr.mujoco:HopperJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
-        # "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
         "sparse": False,
-        # "healthy_reward": 1.0
+        "healthy_reward": 1.0,
+        "contact_weight": 0.0,
+        "height_weight": 3.0,
     }
 )
 
 register(
     id='ALRAntJump-v0',
-    entry_point='alr_envs.alr.mujoco:ALRAntJumpEnv',
+    entry_point='alr_envs.alr.mujoco:AntJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_ANTJUMP,
@@ -266,7 +263,7 @@ for _v in _versions:
         entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
         # max_episode_steps=1,
         kwargs={
-            "name": f"alr_envs:{_v}",
+            "name": f"{_v}",
             "wrappers": [classic_control.simple_reacher.MPWrapper],
             "traj_gen_kwargs": {
                 "num_dof": 2 if "long" not in _v.lower() else 5,
@@ -304,7 +301,7 @@ register(
     entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
     # max_episode_steps=1,
     kwargs={
-        "name": "alr_envs:ViaPointReacher-v0",
+        "name": "ViaPointReacher-v0",
         "wrappers": [classic_control.viapoint_reacher.MPWrapper],
         "traj_gen_kwargs": {
             "num_dof": 5,
@@ -340,7 +337,7 @@ for _v in _versions:
         entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
         # max_episode_steps=1,
         kwargs={
-            "name": f"alr_envs:HoleReacher-{_v}",
+            "name": f"HoleReacher-{_v}",
             "wrappers": [classic_control.hole_reacher.MPWrapper],
             "traj_gen_kwargs": {
                 "num_dof": 5,
@@ -362,7 +359,7 @@ for _v in _versions:
     kwargs_dict_hole_reacher_promp['wrappers'].append(classic_control.hole_reacher.MPWrapper)
     kwargs_dict_hole_reacher_promp['trajectory_generator_kwargs']['weight_scale'] = 2
     kwargs_dict_hole_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
-    kwargs_dict_hole_reacher_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_hole_reacher_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
@@ -370,8 +367,8 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
-## ALRReacher
-_versions = ["ALRReacher-v0", "ALRLongReacher-v0", "ALRReacherSparse-v0", "ALRLongReacherSparse-v0"]
+## ReacherNd
+_versions = ["Reacher5d-v0", "Reacher7d-v0", "Reacher5dSparse-v0", "Reacher7dSparse-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}DMP-{_name[1]}'
@@ -380,7 +377,7 @@ for _v in _versions:
         entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
         # max_episode_steps=1,
         kwargs={
-            "name": f"alr_envs:{_v}",
+            "name": f"{_v}",
             "wrappers": [mujoco.reacher.MPWrapper],
             "traj_gen_kwargs": {
                 "num_dof": 5 if "long" not in _v.lower() else 7,
@@ -404,10 +401,10 @@ for _v in _versions:
     kwargs_dict_alr_reacher_promp['wrappers'].append(mujoco.reacher.MPWrapper)
     kwargs_dict_alr_reacher_promp['controller_kwargs']['p_gains'] = 1
     kwargs_dict_alr_reacher_promp['controller_kwargs']['d_gains'] = 0.1
-    kwargs_dict_alr_reacher_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_alr_reacher_promp['name'] = f"{_v}"
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_alr_reacher_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -425,7 +422,7 @@ for _v in _versions:
     kwargs_dict_bp_promp['controller_kwargs']['d_gains'] = np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
-    kwargs_dict_bp_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_bp_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
@@ -445,7 +442,7 @@ for _v in _versions:
     kwargs_dict_bp_promp['controller_kwargs']['d_gains'] = np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
-    kwargs_dict_bp_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_bp_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
@@ -465,7 +462,7 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.MPWrapper)
-    kwargs_dict_ant_jump_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_ant_jump_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
@@ -482,7 +479,7 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.half_cheetah_jump.MPWrapper)
-    kwargs_dict_halfcheetah_jump_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_halfcheetah_jump_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
@@ -502,7 +499,7 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_hopper_jump_promp['wrappers'].append(mujoco.hopper_jump.MPWrapper)
-    kwargs_dict_hopper_jump_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_hopper_jump_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
@@ -520,7 +517,7 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT)
     kwargs_dict_walker2d_jump_promp['wrappers'].append(mujoco.walker_2d_jump.MPWrapper)
-    kwargs_dict_walker2d_jump_promp['name'] = f"alr_envs:{_v}"
+    kwargs_dict_walker2d_jump_promp['name'] = f"{_v}"
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
@@ -583,7 +580,7 @@ register(
 # CtxtFree are v0, Contextual are v1
 register(
     id='ALRAntJump-v0',
-    entry_point='alr_envs.alr.mujoco:ALRAntJumpEnv',
+    entry_point='alr_envs.alr.mujoco:AntJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_ANTJUMP,
@@ -602,7 +599,7 @@ register(
 )
 register(
     id='ALRHopperJump-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperJumpEnv',
+    entry_point='alr_envs.alr.mujoco:HopperJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMP,
@@ -649,7 +646,7 @@ for i in _vs:
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
         kwargs={
-            "name": f"alr_envs:{_env_id.replace('ProMP', '')}",
+            "name": f"{_env_id.replace('ProMP', '')}",
             "wrappers": [mujoco.reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,
@@ -672,7 +669,7 @@ for i in _vs:
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
         kwargs={
-            "name": f"alr_envs:{_env_id.replace('ProMP', '')}",
+            "name": f"{_env_id.replace('ProMP', '')}",
             "wrappers": [mujoco.reacher.MPWrapper],
             "mp_kwargs": {
                 "num_dof": 5,

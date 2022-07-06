@@ -1,8 +1,9 @@
-from typing import Iterable, Union
+from typing import Iterable, Union, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 from gym import spaces
+from gym.core import ObsType
 
 from alr_envs.alr.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
 
@@ -15,7 +16,7 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     """
 
     def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True,
-                 allow_self_collision: bool = False,):
+                 allow_self_collision: bool = False, ):
         super().__init__(n_links, random_start, allow_self_collision)
 
         # provided initial parameters
@@ -41,7 +42,8 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     # def start_pos(self):
     #     return self._start_pos
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self._generate_goal()
 
         return super().reset()

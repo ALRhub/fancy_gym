@@ -1,11 +1,10 @@
 import os
+from typing import Optional
 
 import mujoco_py.builder
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
-
-from alr_envs.alr.mujoco.beerpong.deprecated.beerpong_reward_staged import BeerPongReward
 
 # XML Variables
 ROBOT_COLLISION_OBJ = ["wrist_palm_link_convex_geom",
@@ -76,7 +75,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
     def start_vel(self):
         return self._start_vel
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.dists = []
         self.dists_final = []
         self.action_costs = []

@@ -1,8 +1,9 @@
-from typing import Iterable, Union
+from typing import Iterable, Union, Tuple, Optional
 
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
+from gym.core import ObsType
 from gym.utils import seeding
 
 from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
@@ -40,7 +41,8 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
     # def start_pos(self):
     #     return self._start_pos
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self._generate_goal()
         return super().reset()
 
@@ -183,8 +185,10 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
 
                 plt.pause(0.01)
 
+
 if __name__ == "__main__":
     import time
+
     env = ViaPointReacherEnv(5)
     env.reset()
 

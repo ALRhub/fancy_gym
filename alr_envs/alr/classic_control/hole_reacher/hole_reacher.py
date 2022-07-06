@@ -1,8 +1,9 @@
-from typing import Union
+from typing import Union, Optional, Tuple
 
 import gym
 import matplotlib.pyplot as plt
 import numpy as np
+from gym.core import ObsType
 from matplotlib import patches
 
 from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
@@ -51,7 +52,8 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         else:
             raise ValueError("Unknown reward function {}".format(rew_fct))
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self._generate_hole()
         self._set_patches()
         self.reward_function.reset()
@@ -223,6 +225,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
 if __name__ == "__main__":
     import time
+
     env = HoleReacherEnv(5)
     env.reset()
 

@@ -57,7 +57,8 @@ class RawInterfaceWrapper(gym.Wrapper):
         # return bool(self.replanning_model(s))
         return False
 
-    def _episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
+    def _episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[
+        np.ndarray, Union[np.ndarray, None]]:
         """
         Used to extract the parameters for the motion primitive and other parameters from an action array which might
         include other actions like ball releasing time for the beer pong environment.
@@ -70,20 +71,3 @@ class RawInterfaceWrapper(gym.Wrapper):
             Tuple: mp_arguments and other arguments
         """
         return action, None
-
-    def _step_callback(self, t: int, env_spec_params: Union[np.ndarray, None], step_action: np.ndarray) -> Union[
-        np.ndarray]:
-        """
-        This function can be used to modify the step_action with additional parameters e.g. releasing the ball in the
-        Beerpong env. The parameters used should not be part of the motion primitive parameters.
-        Returns step_action by default, can be overwritten in individual mp_wrappers.
-        Args:
-            t: the current time step of the episode
-            env_spec_params: the environment specific parameter, as defined in function _episode_callback
-            (e.g. ball release time in Beer Pong)
-            step_action: the current step-based action
-
-        Returns:
-            modified step action
-        """
-        return step_action

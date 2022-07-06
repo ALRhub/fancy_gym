@@ -94,12 +94,12 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         return self._get_obs()
 
     def _get_obs(self):
-        theta = self.sim.data.qpos.flat[:self.n_links]
+        theta = self.data.qpos.flat[:self.n_links]
         target = self.get_body_com("target")
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
             target[:2],  # x-y of goal position
-            self.sim.data.qvel.flat[:self.n_links],  # angular velocity
+            self.data.qvel.flat[:self.n_links],  # angular velocity
             self.get_body_com("fingertip") - target,  # goal distance
         ])

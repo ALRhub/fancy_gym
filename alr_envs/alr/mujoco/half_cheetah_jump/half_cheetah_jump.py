@@ -1,4 +1,7 @@
 import os
+from typing import Tuple, Union, Optional
+
+from gym.core import ObsType
 from gym.envs.mujoco.half_cheetah_v3 import HalfCheetahEnv
 import numpy as np
 
@@ -20,7 +23,7 @@ class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
                  max_episode_steps=100):
         self.current_step = 0
         self.max_height = 0
-        self.max_episode_steps = max_episode_steps
+        # self.max_episode_steps = max_episode_steps
         self.goal = 0
         self.context = context
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
@@ -37,15 +40,15 @@ class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
 
         ## Didnt use fell_over, because base env also has no done condition - Paul and Marc
         # fell_over = abs(self.sim.data.qpos[2]) > 2.5  # how to figure out if the cheetah fell over? -> 2.5 oke?
-        # TODO: Should a fall over be checked herE?
+        # TODO: Should a fall over be checked here?
         done = False
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
 
-        if self.current_step == self.max_episode_steps:
-            height_goal_distance = -10*np.linalg.norm(self.max_height - self.goal) + 1e-8 if self.context \
-                                                                                       else self.max_height
+        if self.current_step == MAX_EPISODE_STEPS_HALFCHEETAHJUMP:
+            height_goal_distance = -10 * np.linalg.norm(self.max_height - self.goal) + 1e-8 if self.context \
+                else self.max_height
             rewards = self._forward_reward_weight * height_goal_distance
         else:
             rewards = 0
@@ -62,7 +65,8 @@ class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self.max_height = 0
         self.current_step = 0
         self.goal = np.random.uniform(1.1, 1.6, 1)  # 1.1 1.6
@@ -80,21 +84,3 @@ class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
 
         observation = self._get_obs()
         return observation
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRHalfCheetahJumpEnv()
-    obs = env.reset()
-
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

@@ -8,6 +8,7 @@ from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 class MPWrapper(RawInterfaceWrapper):
 
     # Random x goal + random init pos
+    @property
     def context_mask(self):
         return np.hstack([
             [False] * (2 + int(not self.exclude_current_positions_from_observation)),  # position

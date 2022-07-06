@@ -87,10 +87,10 @@ if __name__ == '__main__':
     render = True
 
     # Basic gym task
-    example_general("Pendulum-v0", seed=10, iterations=200, render=render)
+    example_general("Reacher5d-v0", seed=10, iterations=200, render=render)
 
     # # Basis task from framework
-    example_general("alr_envs:HoleReacher-v0", seed=10, iterations=200, render=render)
+    example_general("Reacher-v0", seed=10, iterations=200, render=render)
 
     # # OpenAI Mujoco task
     example_general("HalfCheetah-v2", seed=10, render=render)

@@ -1,4 +1,4 @@
-from .ant_jump.ant_jump import ALRAntJumpEnv
+from .ant_jump.ant_jump import AntJumpEnv
 from .ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
 from .ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from alr_envs.alr.mujoco.beerpong.beerpong import BeerPongEnv

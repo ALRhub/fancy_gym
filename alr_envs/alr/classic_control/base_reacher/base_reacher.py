@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Union
+from typing import Union, Tuple, Optional
 
 import gym
 import numpy as np
 from gym import spaces
+from gym.core import ObsType
 from gym.utils import seeding
 
 from alr_envs.alr.classic_control.utils import intersect
@@ -14,8 +15,7 @@ class BaseReacherEnv(gym.Env, ABC):
     Base class for all reaching environments.
     """
 
-    def __init__(self, n_links: int, random_start: bool = True,
-                 allow_self_collision: bool = False):
+    def __init__(self, n_links: int, random_start: bool = True, allow_self_collision: bool = False):
         super().__init__()
         self.link_lengths = np.ones(n_links)
         self.n_links = n_links
@@ -70,7 +70,8 @@ class BaseReacherEnv(gym.Env, ABC):
     def current_vel(self):
         return self._angle_velocity.copy()
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         # Sample only orientation of first link, i.e. the arm is always straight.
         if self.random_start:
             first_joint = self.np_random.uniform(np.pi / 4, 3 * np.pi / 4)

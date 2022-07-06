@@ -1,5 +1,5 @@
 import numpy as np
-from alr_envs.alr.mujoco import alr_reward_fct
+from alr_envs.alr.mujoco.ball_in_a_cup import alr_reward_fct
 
 
 class BallInACupReward(alr_reward_fct.AlrReward):

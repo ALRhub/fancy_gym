@@ -1,4 +1,4 @@
-from collections import Mapping, MutableMapping
+from collections.abc import Mapping, MutableMapping
 
 import numpy as np
 import torch as ch
@@ -46,4 +46,5 @@ def nested_update(base: MutableMapping, update):
     """
     for k, v in update.items():
         base[k] = nested_update(base.get(k, {}), v) if isinstance(v, Mapping) else v
+    return base
 

@@ -1,14 +1,19 @@
+from typing import Tuple, Union, Optional
+
 import numpy as np
+from gym.core import ObsType
 from gym.envs.mujoco.ant_v3 import AntEnv
 
 MAX_EPISODE_STEPS_ANTJUMP = 200
-# TODO: This environment was not testet yet. Do the following todos and test it.
+
+
+# TODO: This environment was not tested yet. Do the following todos and test it.
 # TODO: Right now this environment only considers jumping to a specific height, which is not nice. It should be extended
 #  to the same structure as the Hopper, where the angles are randomized (->contexts) and the agent should jump as heigh
 #  as possible, while landing at a specific target position
 
 
-class ALRAntJumpEnv(AntEnv):
+class AntJumpEnv(AntEnv):
     """
     Initialization changes to normal Ant:
     - healthy_reward: 1.0 -> 0.01 -> 0.0 no healthy reward needed - Paul and Marc
@@ -27,17 +32,15 @@ class ALRAntJumpEnv(AntEnv):
                  contact_force_range=(-1.0, 1.0),
                  reset_noise_scale=0.1,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=200):
+                 ):
         self.current_step = 0
         self.max_height = 0
-        self.max_episode_steps = max_episode_steps
         self.goal = 0
         super().__init__(xml_file, ctrl_cost_weight, contact_cost_weight, healthy_reward, terminate_when_unhealthy,
                          healthy_z_range, contact_force_range, reset_noise_scale,
                          exclude_current_positions_from_observation)
 
     def step(self, action):
-
         self.current_step += 1
         self.do_simulation(action, self.frame_skip)
 
@@ -52,12 +55,12 @@ class ALRAntJumpEnv(AntEnv):
 
         costs = ctrl_cost + contact_cost
 
-        done = height < 0.3 # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
+        done = height < 0.3  # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
 
-        if self.current_step == self.max_episode_steps or done:
+        if self.current_step == MAX_EPISODE_STEPS_ANTJUMP or done:
             # -10 for scaling the value of the distance between the max_height and the goal height; only used when context is enabled
             # height_reward = -10 * (np.linalg.norm(self.max_height - self.goal))
-            height_reward = -10*np.linalg.norm(self.max_height - self.goal)
+            height_reward = -10 * np.linalg.norm(self.max_height - self.goal)
             # no healthy reward when using context, because we optimize a negative value
             healthy_reward = 0
 
@@ -77,7 +80,8 @@ class ALRAntJumpEnv(AntEnv):
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self.current_step = 0
         self.max_height = 0
         self.goal = np.random.uniform(1.0, 2.5,
@@ -96,19 +100,3 @@ class ALRAntJumpEnv(AntEnv):
 
         observation = self._get_obs()
         return observation
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRAntJumpEnv()
-    obs = env.reset()
-
-    for i in range(2000):
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            env.reset()
-
-    env.close()

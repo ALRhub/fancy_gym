@@ -7,6 +7,7 @@ from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 class MPWrapper(RawInterfaceWrapper):
 
+    @property
     def context_mask(self):
         return np.hstack([
             [self.env.random_start] * self.env.n_links,  # cos
@@ -23,7 +24,3 @@ class MPWrapper(RawInterfaceWrapper):
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.env.current_vel
-
-    @property
-    def dt(self) -> Union[float, int]:
-        return self.env.dt

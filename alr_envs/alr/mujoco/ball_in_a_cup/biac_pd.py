@@ -6,17 +6,6 @@ import mujoco_py.builder
 import numpy as np
 from gym import utils
 
-from mp_env_api.mp_wrappers.detpmp_wrapper import DetPMPWrapper
-from mp_env_api.utils.policies import PDControllerExtend
-
-
-def make_detpmp_env(**kwargs):
-    name = kwargs.pop("name")
-    _env = gym.make(name)
-    policy = PDControllerExtend(_env, p_gains=kwargs.pop('p_gains'), d_gains=kwargs.pop('d_gains'))
-    kwargs['policy_type'] = policy
-    return DetPMPWrapper(_env, **kwargs)
-
 
 class ALRBallInACupPDEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self, frame_skip=4, apply_gravity_comp=True, simplified: bool = False,

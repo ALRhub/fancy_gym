@@ -45,7 +45,7 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, rend
             obs = env.reset()
 
 
-def example_custom_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, render=True):
+def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render=True):
     """
     Example for running a motion primitive based environment, which is already registered
     Args:
@@ -57,31 +57,11 @@ def example_custom_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=
     Returns:
 
     """
-    # Changing the traj_gen_kwargs is possible by providing them to gym.
-    # E.g. here by providing way to many basis functions
-    # mp_dict = alr_envs.from_default_config('ALRReacher-v0', {'basis_generator_kwargs': {'num_basis': 10}})
-    # mp_dict.update({'basis_generator_kwargs': {'num_basis': 10}})
+    # Changing the arguments of the black box env is possible by providing them to gym as with all kwargs.
+    # E.g. here for way to many basis functions
+    env = alr_envs.make(env_name, seed, basis_generator_kwargs={'num_basis': 1000})
     # mp_dict.update({'black_box_kwargs': {'learn_sub_trajectories': True}})
     # mp_dict.update({'black_box_kwargs': {'do_replanning': lambda pos, vel, t: lambda t: t % 100}})
-
-    # default env with promp and no learn_sub_trajectories and replanning
-    # env = alr_envs.make('ALRReacherProMP-v0', 1, n_links=7)
-    env = alr_envs.make('ALRReacherProMP-v0', 1, basis_generator_kwargs={'num_basis': 10}, n_links=7)
-    # env = alr_envs.make('ALRReacher-v0', seed=1, bb_kwargs=mp_dict, n_links=1)
-    # env = alr_envs.make_bb('ALRReacher-v0', **mp_dict)
-
-    mp_kwargs = {
-        "num_dof": 5,
-        "num_basis": 1000,
-        "duration": 2,
-        "learn_goal": True,
-        "alpha_phase": 2,
-        "bandwidth_factor": 2,
-        "policy_type": "velocity",
-        "weights_scale": 50,
-        "goal_scale": 0.1
-    }
-    env = alr_envs.make(env_name, seed, mp_kwargs=mp_kwargs)
 
     # This time rendering every trajectory
     if render:
@@ -100,6 +80,7 @@ def example_custom_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=
             print(rewards)
             rewards = 0
             obs = env.reset()
+            print(obs)
 
 
 def example_fully_custom_mp(seed=1, iterations=1, render=True):
@@ -169,7 +150,7 @@ if __name__ == '__main__':
     # example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
 
     # Altered basis functions
-    example_custom_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
+    example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=10, render=render)
 
     # Custom MP
-    example_fully_custom_mp(seed=10, iterations=1, render=render)
+    # example_fully_custom_mp(seed=10, iterations=1, render=render)
