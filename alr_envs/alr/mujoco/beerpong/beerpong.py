@@ -48,6 +48,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ep_length = 600 // frame_skip
 
         self.repeat_action = frame_skip
+        # TODO: If accessing IDs is easier in the (new) official mujoco bindings, remove this
         self.model = None
         self.site_id = lambda x: self.model.site_name2id(x)
         self.body_id = lambda x: self.model.body_name2id(x)
@@ -64,7 +65,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
-        MujocoEnv.__init__(self, self.xml_path, frame_skip=1)
+        MujocoEnv.__init__(self, self.xml_path, frame_skip=1, mujoco_bindings="mujoco_py")
         utils.EzPickle.__init__(self)
 
     @property
@@ -99,25 +100,25 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         # TODO: Ask Max why we need to set the state twice.
         self.set_state(start_pos, init_vel)
-        start_pos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
+        start_pos[7::] = self.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
         self.set_state(start_pos, init_vel)
         xy = self.np_random.uniform(self._cup_pos_min, self._cup_pos_max)
         xyz = np.zeros(3)
         xyz[:2] = xy
         xyz[-1] = 0.840
-        self.sim.model.body_pos[self.body_id("cup_table")] = xyz
+        self.model.body_pos[self.body_id("cup_table")] = xyz
         return self._get_obs()
 
     def step(self, a):
         crash = False
         for _ in range(self.repeat_action):
-            applied_action = a + self.sim.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
+            applied_action = a + self.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
             try:
                 self.do_simulation(applied_action, self.frame_skip)
                 # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
                 if self._steps < self.release_step:
-                    self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
-                    self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
+                    self.data.qpos[7::] = self.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
+                    self.data.qvel[7::] = self.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
                 crash = False
             except mujoco_py.builder.MujocoException:
                 crash = True
@@ -137,15 +138,15 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         infos = dict(
             reward=reward,
             action=a,
-            q_pos=self.sim.data.qpos[0:7].ravel().copy(),
-            q_vel=self.sim.data.qvel[0:7].ravel().copy(), sim_crash=crash,
+            q_pos=self.data.qpos[0:7].ravel().copy(),
+            q_vel=self.data.qvel[0:7].ravel().copy(), sim_crash=crash,
         )
         infos.update(reward_infos)
         return ob, reward, done, infos
 
     def _get_obs(self):
-        theta = self.sim.data.qpos.flat[:7]
-        theta_dot = self.sim.data.qvel.flat[:7]
+        theta = self.data.qpos.flat[:7]
+        theta_dot = self.data.qvel.flat[:7]
         ball_pos = self.data.get_body_xpos("ball").copy()
         cup_goal_diff_final = ball_pos - self.data.get_site_xpos("cup_goal_final_table").copy()
         cup_goal_diff_top = ball_pos - self.data.get_site_xpos("cup_goal_table").copy()
@@ -155,7 +156,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             theta_dot,
             cup_goal_diff_final,
             cup_goal_diff_top,
-            self.sim.model.body_pos[self.body_id("cup_table")][:2].copy(),
+            self.model.body_pos[self.body_id("cup_table")][:2].copy(),
             # [self._steps],  # Use TimeAwareObservation Wrapper instead ....
         ])
 
@@ -181,7 +182,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         # Is this needed?
         # self._is_collided = self._check_collision_with_itself([self.geom_id(name) for name in CUP_COLLISION_OBJ])
 
-        if self._steps == self.ep_length - 1:# or self._is_collided:
+        if self._steps == self.ep_length - 1:  # or self._is_collided:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
             if self.ball_ground_contact_first:
@@ -241,8 +242,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         If id_set_2 is set to None, it will check for a collision with itself (id_set_1).
         """
         collision_id_set = id_set_2 - id_set_1 if id_set_2 is not None else id_set_1
-        for coni in range(self.sim.data.ncon):
-            con = self.sim.data.contact[coni]
+        for coni in range(self.data.ncon):
+            con = self.data.contact[coni]
             if ((con.geom1 in id_set_1 and con.geom2 in collision_id_set) or
                     (con.geom2 in id_set_1 and con.geom1 in collision_id_set)):
                 return True

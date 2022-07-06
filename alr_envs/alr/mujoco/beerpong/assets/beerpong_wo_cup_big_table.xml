@@ -1,5 +1,5 @@
 <mujoco model="wam(v1.31)">
-    <compiler angle="radian" meshdir="../../meshes/wam/" />
+    <compiler angle="radian" meshdir="./meshes/wam/" />
     <option timestep="0.005" integrator="Euler" />
     <size njmax="500" nconmax="100" />
     <default class="main">

@@ -1,11 +1,8 @@
+from .beerpong.beerpong import BeerPongEnv, BeerPongEnvFixedReleaseStep, BeerPongEnvStepBasedEpisodicReward
 from .ant_jump.ant_jump import AntJumpEnv
-from .ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
-from .ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
-from alr_envs.alr.mujoco.beerpong.beerpong import BeerPongEnv
 from .half_cheetah_jump.half_cheetah_jump import ALRHalfCheetahJumpEnv
 from .hopper_jump.hopper_jump_on_box import ALRHopperJumpOnBoxEnv
 from .hopper_throw.hopper_throw import ALRHopperThrowEnv
 from .hopper_throw.hopper_throw_in_basket import ALRHopperThrowInBasketEnv
 from .reacher.reacher import ReacherEnv
-from .table_tennis.tt_gym import TTEnvGym
 from .walker_2d_jump.walker_2d_jump import ALRWalker2dJumpEnv

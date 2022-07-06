@@ -75,7 +75,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # TODO: Bruce said DMP, ProMP, ProDMP can have 0 bc_time for sequencing
         # TODO Check with Bruce for replanning
         self.traj_gen.set_boundary_conditions(
-            bc_time=np.zeros((1,)) if not self.do_replanning else np.array([self.current_traj_steps * self.dt]),
+            bc_time=np.array(0) if not self.do_replanning else np.array([self.current_traj_steps * self.dt]),
             bc_pos=self.current_pos, bc_vel=self.current_vel)
         # TODO: is this correct for replanning? Do we need to adjust anything here?
         self.traj_gen.set_duration(None if self.learn_sub_trajectories else np.array([self.duration]),

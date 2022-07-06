@@ -43,7 +43,6 @@ def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwa
 
 
 def make(env_id, seed, **kwargs):
-    # TODO: This doesn't work with gym ==0.21.0
     # This access is required to allow for nested dict updates
     spec = registry.get(env_id)
     all_kwargs = deepcopy(spec.kwargs)

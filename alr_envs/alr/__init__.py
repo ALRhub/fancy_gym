@@ -3,14 +3,11 @@ from copy import deepcopy
 import numpy as np
 from gym import register
 
-from alr_envs.alr.mujoco.table_tennis.tt_gym import MAX_EPISODE_STEPS
 from . import classic_control, mujoco
 from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
 from .classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacherEnv
 from .mujoco.ant_jump.ant_jump import MAX_EPISODE_STEPS_ANTJUMP
-from .mujoco.ball_in_a_cup.ball_in_a_cup import ALRBallInACupEnv
-from .mujoco.ball_in_a_cup.biac_pd import ALRBallInACupPDEnv
 from .mujoco.half_cheetah_jump.half_cheetah_jump import MAX_EPISODE_STEPS_HALFCHEETAHJUMP
 from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
 from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
@@ -21,17 +18,14 @@ from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
-DEFAULT_BB_DICT = {
+DEFAULT_BB_DICT_ProMP = {
     "name": 'EnvName',
     "wrappers": [],
     "trajectory_generator_kwargs": {
         'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
-        'phase_generator_type': 'linear',
-        'delay': 0,
-        'learn_tau': False,
-        'learn_delay': False
+        'phase_generator_type': 'linear'
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -42,6 +36,26 @@ DEFAULT_BB_DICT = {
         'basis_generator_type': 'zero_rbf',
         'num_basis': 5,
         'num_basis_zero_start': 1
+    }
+}
+
+DEFAULT_BB_DICT_DMP = {
+    "name": 'EnvName',
+    "wrappers": [],
+    "trajectory_generator_kwargs": {
+        'trajectory_generator_type': 'dmp'
+    },
+    "phase_generator_kwargs": {
+        'phase_generator_type': 'exp'
+    },
+    "controller_kwargs": {
+        'controller_type': 'motor',
+        "p_gains": 1.0,
+        "d_gains": 0.1,
+    },
+    "basis_generator_kwargs": {
+        'basis_generator_type': 'rbf',
+        'num_basis': 5
     }
 }
 
@@ -199,130 +213,83 @@ register(
     }
 )
 
-## Table Tennis
-register(id='TableTennis2DCtxt-v0',
-         entry_point='alr_envs.alr.mujoco:TTEnvGym',
-         max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim': 2})
-
-register(id='TableTennis4DCtxt-v0',
-         entry_point='alr_envs.alr.mujocco:TTEnvGym',
-         max_episode_steps=MAX_EPISODE_STEPS,
-         kwargs={'ctxt_dim': 4})
-
 register(
     id='BeerPong-v0',
-    entry_point='alr_envs.alr.mujoco:BeerBongEnv',
+    entry_point='alr_envs.alr.mujoco:BeerPongEnv',
     max_episode_steps=300,
-    kwargs={
-        "frame_skip": 2
-    }
 )
 
-register(
-    id='BeerPong-v1',
-    entry_point='alr_envs.alr.mujoco:BeerBongEnv',
-    max_episode_steps=300,
-    kwargs={
-        "frame_skip": 2
-    }
-)
-
-# Here we use the same reward as in ALRBeerPong-v0, but now consider after the release,
+# Here we use the same reward as in BeerPong-v0, but now consider after the release,
 # only one time step, i.e. we simulate until the end of th episode
 register(
     id='BeerPongStepBased-v0',
-    entry_point='alr_envs.alr.mujoco:BeerBongEnvStepBased',
+    entry_point='alr_envs.alr.mujoco:BeerPongEnvStepBasedEpisodicReward',
     max_episode_steps=300,
-    kwargs={
-        "cup_goal_pos": [-0.3, -1.2],
-        "frame_skip": 2
-    }
 )
 
 # Beerpong with episodic reward, but fixed release time step
 register(
     id='BeerPongFixedRelease-v0',
-    entry_point='alr_envs.alr.mujoco:BeerBongEnvFixedReleaseStep',
+    entry_point='alr_envs.alr.mujoco:BeerPongEnvFixedReleaseStep',
     max_episode_steps=300,
-    kwargs={
-        "cup_goal_pos": [-0.3, -1.2],
-        "frame_skip": 2
-    }
 )
 
 # Motion Primitive Environments
 
 ## Simple Reacher
-_versions = ["SimpleReacher-v0", "SimpleReacher-v1", "LongSimpleReacher-v0", "LongSimpleReacher-v1"]
+_versions = ["SimpleReacher-v0", "LongSimpleReacher-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}DMP-{_name[1]}'
+    kwargs_dict_simple_reacher_dmp = deepcopy(DEFAULT_BB_DICT_DMP)
+    kwargs_dict_simple_reacher_dmp['wrappers'].append(classic_control.simple_reacher.MPWrapper)
+    kwargs_dict_simple_reacher_dmp['controller_kwargs']['p_gains'] = 0.6
+    kwargs_dict_simple_reacher_dmp['controller_kwargs']['d_gains'] = 0.075
+    kwargs_dict_simple_reacher_dmp['trajectory_generator_kwargs']['weight_scale'] = 50
+    kwargs_dict_simple_reacher_dmp['phase_generator_kwargs']['alpha_phase'] = 2
+    kwargs_dict_simple_reacher_dmp['name'] = f"{_v}"
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
-        # max_episode_steps=1,
-        kwargs={
-            "name": f"{_v}",
-            "wrappers": [classic_control.simple_reacher.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 2 if "long" not in _v.lower() else 5,
-                "num_basis": 5,
-                "duration": 2,
-                "alpha_phase": 2,
-                "learn_goal": True,
-                "policy_type": "motor",
-                "weights_scale": 50,
-                "policy_kwargs": {
-                    "p_gains": .6,
-                    "d_gains": .075
-                }
-            }
-        }
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_simple_reacher_dmp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_simple_reacher_promp['wrappers'].append(classic_control.simple_reacher.MPWrapper)
     kwargs_dict_simple_reacher_promp['controller_kwargs']['p_gains'] = 0.6
     kwargs_dict_simple_reacher_promp['controller_kwargs']['d_gains'] = 0.075
-    kwargs_dict_simple_reacher_promp['name'] = _env_id
+    kwargs_dict_simple_reacher_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_simple_reacher_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # Viapoint reacher
+kwargs_dict_via_point_reacher_dmp = deepcopy(DEFAULT_BB_DICT_DMP)
+kwargs_dict_via_point_reacher_dmp['wrappers'].append(classic_control.viapoint_reacher.MPWrapper)
+kwargs_dict_via_point_reacher_dmp['controller_kwargs']['controller_type'] = 'velocity'
+kwargs_dict_via_point_reacher_dmp['trajectory_generator_kwargs']['weight_scale'] = 50
+kwargs_dict_via_point_reacher_dmp['phase_generator_kwargs']['alpha_phase'] = 2
+kwargs_dict_via_point_reacher_dmp['name'] = "ViaPointReacher-v0"
 register(
     id='ViaPointReacherDMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
+    entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
     # max_episode_steps=1,
-    kwargs={
-        "name": "ViaPointReacher-v0",
-        "wrappers": [classic_control.viapoint_reacher.MPWrapper],
-        "traj_gen_kwargs": {
-            "num_dof": 5,
-            "num_basis": 5,
-            "duration": 2,
-            "learn_goal": True,
-            "alpha_phase": 2,
-            "policy_type": "velocity",
-            "weights_scale": 50,
-        }
-    }
+    kwargs=kwargs_dict_via_point_reacher_dmp
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
 
-kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_BB_DICT)
+kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
 kwargs_dict_via_point_reacher_promp['wrappers'].append(classic_control.viapoint_reacher.MPWrapper)
 kwargs_dict_via_point_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
-kwargs_dict_via_point_reacher_promp['name'] = "ViaPointReacherProMP-v0"
+kwargs_dict_via_point_reacher_promp['name'] = "ViaPointReacher-v0"
 register(
     id="ViaPointReacherProMP-v0",
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+    entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
     kwargs=kwargs_dict_via_point_reacher_promp
 )
 ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
@@ -332,37 +299,30 @@ _versions = ["HoleReacher-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}DMP-{_name[1]}'
+    kwargs_dict_hole_reacher_dmp = deepcopy(DEFAULT_BB_DICT_DMP)
+    kwargs_dict_hole_reacher_dmp['wrappers'].append(classic_control.hole_reacher.MPWrapper)
+    kwargs_dict_hole_reacher_dmp['controller_kwargs']['controller_type'] = 'velocity'
+    # TODO: Before it was weight scale 50 and goal scale 0.1. We now only have weight scale and thus set it to 500. Check
+    kwargs_dict_hole_reacher_dmp['trajectory_generator_kwargs']['weight_scale'] = 500
+    kwargs_dict_hole_reacher_dmp['phase_generator_kwargs']['alpha_phase'] = 2.5
+    kwargs_dict_hole_reacher_dmp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         # max_episode_steps=1,
-        kwargs={
-            "name": f"HoleReacher-{_v}",
-            "wrappers": [classic_control.hole_reacher.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 5,
-                "num_basis": 5,
-                "duration": 2,
-                "learn_goal": True,
-                "alpha_phase": 2.5,
-                "bandwidth_factor": 2,
-                "policy_type": "velocity",
-                "weights_scale": 50,
-                "goal_scale": 0.1
-            }
-        }
+        kwargs=kwargs_dict_hole_reacher_dmp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_hole_reacher_promp['wrappers'].append(classic_control.hole_reacher.MPWrapper)
     kwargs_dict_hole_reacher_promp['trajectory_generator_kwargs']['weight_scale'] = 2
     kwargs_dict_hole_reacher_promp['controller_kwargs']['controller_type'] = 'velocity'
     kwargs_dict_hole_reacher_promp['name'] = f"{_v}"
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_hole_reacher_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -372,36 +332,26 @@ _versions = ["Reacher5d-v0", "Reacher7d-v0", "Reacher5dSparse-v0", "Reacher7dSpa
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}DMP-{_name[1]}'
+    kwargs_dict_reacherNd_dmp = deepcopy(DEFAULT_BB_DICT_DMP)
+    kwargs_dict_reacherNd_dmp['wrappers'].append(mujoco.reacher.MPWrapper)
+    kwargs_dict_reacherNd_dmp['trajectory_generator_kwargs']['weight_scale'] = 5
+    kwargs_dict_reacherNd_dmp['phase_generator_kwargs']['alpha_phase'] = 2
+    kwargs_dict_reacherNd_dmp['basis_generator_kwargs']['num_basis'] = 2
+    kwargs_dict_reacherNd_dmp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_dmp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         # max_episode_steps=1,
-        kwargs={
-            "name": f"{_v}",
-            "wrappers": [mujoco.reacher.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 5 if "long" not in _v.lower() else 7,
-                "num_basis": 2,
-                "duration": 4,
-                "alpha_phase": 2,
-                "learn_goal": True,
-                "policy_type": "motor",
-                "weights_scale": 5,
-                "policy_kwargs": {
-                    "p_gains": 1,
-                    "d_gains": 0.1
-                }
-            }
-        }
+        kwargs=kwargs_dict_reacherNd_dmp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_alr_reacher_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_alr_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_alr_reacher_promp['wrappers'].append(mujoco.reacher.MPWrapper)
     kwargs_dict_alr_reacher_promp['controller_kwargs']['p_gains'] = 1
     kwargs_dict_alr_reacher_promp['controller_kwargs']['d_gains'] = 0.1
-    kwargs_dict_alr_reacher_promp['name'] = f"{_v}"
+    kwargs_dict_alr_reacher_promp['name'] = _v
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
@@ -415,14 +365,14 @@ _versions = ['BeerPong-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.MPWrapper)
     kwargs_dict_bp_promp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_bp_promp['controller_kwargs']['p_gains'] = np.array([1.5, 5, 2.55, 3, 2., 2, 1.25])
     kwargs_dict_bp_promp['controller_kwargs']['d_gains'] = np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
-    kwargs_dict_bp_promp['name'] = f"{_v}"
+    kwargs_dict_bp_promp['name'] = _v
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
@@ -435,17 +385,17 @@ _versions = ["BeerPongStepBased-v0", "BeerPongFixedRelease-v0"]
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.MPWrapper)
     kwargs_dict_bp_promp['phase_generator_kwargs']['tau'] = 0.62
     kwargs_dict_bp_promp['controller_kwargs']['p_gains'] = np.array([1.5, 5, 2.55, 3, 2., 2, 1.25])
     kwargs_dict_bp_promp['controller_kwargs']['d_gains'] = np.array([0.02333333, 0.1, 0.0625, 0.08, 0.03, 0.03, 0.0125])
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_bp_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
-    kwargs_dict_bp_promp['name'] = f"{_v}"
+    kwargs_dict_bp_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_bp_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -460,12 +410,12 @@ _versions = ['ALRAntJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.MPWrapper)
-    kwargs_dict_ant_jump_promp['name'] = f"{_v}"
+    kwargs_dict_ant_jump_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_ant_jump_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -477,12 +427,12 @@ _versions = ['ALRHalfCheetahJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.half_cheetah_jump.MPWrapper)
-    kwargs_dict_halfcheetah_jump_promp['name'] = f"{_v}"
+    kwargs_dict_halfcheetah_jump_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_halfcheetah_jump_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -491,18 +441,18 @@ for _v in _versions:
 
 
 ## HopperJump
-_versions = ['ALRHopperJump-v0', 'ALRHopperJumpRndmJointsDesPos-v0', 'ALRHopperJumpRndmJointsDesPosStepBased-v0',
-             'ALRHopperJumpOnBox-v0', 'ALRHopperThrow-v0', 'ALRHopperThrowInBasket-v0']
+_versions = ['HopperJump-v0', 'HopperJumpSparse-v0', 'ALRHopperJumpOnBox-v0', 'ALRHopperThrow-v0',
+             'ALRHopperThrowInBasket-v0']
 # TODO: Check if all environments work with the same MPWrapper
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_hopper_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_hopper_jump_promp['wrappers'].append(mujoco.hopper_jump.MPWrapper)
-    kwargs_dict_hopper_jump_promp['name'] = f"{_v}"
+    kwargs_dict_hopper_jump_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_hopper_jump_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
@@ -515,12 +465,12 @@ _versions = ['ALRWalker2DJump-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT)
+    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_walker2d_jump_promp['wrappers'].append(mujoco.walker_2d_jump.MPWrapper)
-    kwargs_dict_walker2d_jump_promp['name'] = f"{_v}"
+    kwargs_dict_walker2d_jump_promp['name'] = _v
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_walker2d_jump_promp
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
