@@ -14,3 +14,13 @@ class MPWrapper(RawInterfaceWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray]:
         return self.sim.data.qpos[:2]
+
+    @property
+    def context_mask(self):
+        return np.concatenate([
+            [False] * 2,  # cos of two links
+            [False] * 2,  # sin of two links
+            [True] * 2,  # goal position
+            [False] * 2,  # angular velocity
+            [False] * 3,  # goal distance
+        ])

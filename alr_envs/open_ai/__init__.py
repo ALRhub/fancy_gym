@@ -1,85 +1,48 @@
 from gym import register
-from gym.wrappers import FlattenObservation
+from copy import deepcopy
 
-from . import classic_control, mujoco, robotics
+from . import mujoco
+from .deprecated_needs_gym_robotics import robotics
 
 ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
-# Short Continuous Mountain Car
-register(
-    id="MountainCarContinuous-v1",
-    entry_point="gym.envs.classic_control:Continuous_MountainCarEnv",
-    max_episode_steps=100,
-    reward_threshold=90.0,
-)
-
-# Open AI
-# Classic Control
-register(
-    id='ContinuousMountainCarProMP-v1',
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-    kwargs={
-        "name": "alr_envs:MountainCarContinuous-v1",
-        "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
-        "traj_gen_kwargs": {
-            "num_dof": 1,
-            "num_basis": 4,
-            "duration": 2,
-            "post_traj_time": 0,
-            "zero_start": True,
-            "policy_type": "motor",
-            "policy_kwargs": {
-                "p_gains": 1.,
-                "d_gains": 1.
-            }
-        }
+DEFAULT_BB_DICT_ProMP = {
+    "name": 'EnvName',
+    "wrappers": [],
+    "trajectory_generator_kwargs": {
+        'trajectory_generator_type': 'promp'
+    },
+    "phase_generator_kwargs": {
+        'phase_generator_type': 'linear'
+    },
+    "controller_kwargs": {
+        'controller_type': 'motor',
+        "p_gains": 1.0,
+        "d_gains": 0.1,
+    },
+    "basis_generator_kwargs": {
+        'basis_generator_type': 'zero_rbf',
+        'num_basis': 5,
+        'num_basis_zero_start': 1
     }
-)
-ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ContinuousMountainCarProMP-v1")
+}
 
-register(
-    id='ContinuousMountainCarProMP-v0',
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-    kwargs={
-        "name": "gym.envs.classic_control:MountainCarContinuous-v0",
-        "wrappers": [classic_control.continuous_mountain_car.MPWrapper],
-        "traj_gen_kwargs": {
-            "num_dof": 1,
-            "num_basis": 4,
-            "duration": 19.98,
-            "post_traj_time": 0,
-            "zero_start": True,
-            "policy_type": "motor",
-            "policy_kwargs": {
-                "p_gains": 1.,
-                "d_gains": 1.
-            }
-        }
-    }
-)
-ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ContinuousMountainCarProMP-v0")
 
+kwargs_dict_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+kwargs_dict_reacher_promp['controller_kwargs']['p_gains'] = 0.6
+kwargs_dict_reacher_promp['controller_kwargs']['d_gains'] = 0.075
+kwargs_dict_reacher_promp['basis_generator_kwargs']['num_basis'] = 6
+kwargs_dict_reacher_promp['name'] = "Reacher-v2"
+kwargs_dict_reacher_promp['wrappers'].append(mujoco.reacher_v2.MPWrapper)
 register(
-    id='ReacherProMP-v2',
-    entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-    kwargs={
-        "name": "gym.envs.mujoco:Reacher-v2",
-        "wrappers": [mujoco.reacher_v2.MPWrapper],
-        "traj_gen_kwargs": {
-            "num_dof": 2,
-            "num_basis": 6,
-            "duration": 1,
-            "post_traj_time": 0,
-            "zero_start": True,
-            "policy_type": "motor",
-            "policy_kwargs": {
-                "p_gains": .6,
-                "d_gains": .075
-            }
-        }
-    }
+    id='Reacher2dProMP-v2',
+    entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+    kwargs=kwargs_dict_reacher_promp
 )
 ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ReacherProMP-v2")
+"""
+The Fetch environments are not supported by gym anymore. A new repository (gym_robotics) is supporting the environments.
+However, the usage and so on needs to be checked
 
 register(
     id='FetchSlideDenseProMP-v1',
@@ -152,3 +115,4 @@ register(
     }
 )
 ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append("FetchReachProMP-v1")
+"""
