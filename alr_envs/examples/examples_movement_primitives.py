@@ -63,16 +63,16 @@ def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render
     # mp_dict.update({'black_box_kwargs': {'learn_sub_trajectories': True}})
     # mp_dict.update({'black_box_kwargs': {'do_replanning': lambda pos, vel, t: lambda t: t % 100}})
 
+    rewards = 0
+    obs = env.reset()
+
     # This time rendering every trajectory
     if render:
         env.render(mode="human")
 
-    rewards = 0
-    obs = env.reset()
-
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
-        ac = env.action_space.sample()
+        ac = env.action_space.sample() * 1000
         obs, reward, done, info = env.step(ac)
         rewards += reward
 
@@ -139,7 +139,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = False
+    render = True
     # # DMP
     # example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
     #
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     # example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
 
     # Altered basis functions
-    example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=10, render=render)
+    example_custom_mp("HopperJumpSparseProMP-v0", seed=10, iterations=10, render=render)
 
     # Custom MP
     # example_fully_custom_mp(seed=10, iterations=1, render=render)

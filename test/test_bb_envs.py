@@ -34,12 +34,7 @@ class TestMPEnvironments(unittest.TestCase):
         obs = env.reset()
         self._verify_observations(obs, env.observation_space, "reset()")
 
-        length = env.spec.max_episode_steps
-        if iterations is None:
-            if length is None:
-                iterations = 1
-            else:
-                iterations = length
+        iterations = iterations or (env.spec.max_episode_steps or 1)
 
         # number of samples(multiple environment steps)
         for i in range(iterations):
@@ -76,7 +71,7 @@ class TestMPEnvironments(unittest.TestCase):
                 traj2 = self._run_env(env_id, seed=seed)
                 for i, time_step in enumerate(zip(*traj1, *traj2)):
                     obs1, rwd1, done1, obs2, rwd2, done2 = time_step
-                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
+                    self.assertTrue(np.allclose(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
                     self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 

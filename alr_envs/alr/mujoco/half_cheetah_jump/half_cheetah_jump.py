@@ -69,7 +69,7 @@ class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
               options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self.max_height = 0
         self.current_step = 0
-        self.goal = np.random.uniform(1.1, 1.6, 1)  # 1.1 1.6
+        self.goal = self.np_random.uniform(1.1, 1.6, 1)  # 1.1 1.6
         return super().reset()
 
     # overwrite reset_model to make it deterministic

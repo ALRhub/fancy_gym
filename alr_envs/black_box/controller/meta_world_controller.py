@@ -10,13 +10,12 @@ class MetaWorldController(BaseController):
     Unlike the other Controllers, this is a special tracking_controller for MetaWorld environments.
     They use a position delta for the xyz coordinates and a raw position for the gripper opening.
 
-    :param env: A position environment
     """
 
     def get_action(self, des_pos, des_vel, c_pos, c_vel):
         gripper_pos = des_pos[-1]
 
-        cur_pos = env.current_pos[:-1]
+        cur_pos = c_pos[:-1]
         xyz_pos = des_pos[:-1]
 
         assert xyz_pos.shape == cur_pos.shape, \

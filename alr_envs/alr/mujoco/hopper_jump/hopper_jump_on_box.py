@@ -6,7 +6,7 @@ import os
 MAX_EPISODE_STEPS_HOPPERJUMPONBOX = 250
 
 
-class ALRHopperJumpOnBoxEnv(HopperEnv):
+class HopperJumpOnBoxEnv(HopperEnv):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.01 -> 0.001
@@ -153,7 +153,7 @@ class ALRHopperJumpOnBoxEnv(HopperEnv):
 
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRHopperJumpOnBoxEnv()
+    env = HopperJumpOnBoxEnv()
     obs = env.reset()
 
     for i in range(2000):

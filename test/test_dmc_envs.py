@@ -36,12 +36,7 @@ class TestStepDMCEnvironments(unittest.TestCase):
         obs = env.reset()
         self._verify_observations(obs, env.observation_space, "reset()")
 
-        length = env.spec.max_episode_steps
-        if iterations is None:
-            if length is None:
-                iterations = 1
-            else:
-                iterations = length
+        iterations = iterations or (env.spec.max_episode_steps or 1)
 
         # number of samples(multiple environment steps)
         for i in range(iterations):

@@ -1,9 +1,8 @@
 import copy
-from typing import Optional
-
-from gym.envs.mujoco.hopper_v3 import HopperEnv
-import numpy as np
 import os
+
+import numpy as np
+from gym.envs.mujoco.hopper_v3 import HopperEnv
 
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
@@ -23,10 +22,10 @@ class HopperJumpEnv(HopperEnv):
             xml_file='hopper_jump.xml',
             forward_reward_weight=1.0,
             ctrl_cost_weight=1e-3,
-            healthy_reward=2.0,  # 1 step
-            contact_weight=2.0,  # 0 step
-            height_weight=10.0,  # 3 step
-            dist_weight=3.0,  # 3 step
+            healthy_reward=2.0,
+            contact_weight=2.0,
+            height_weight=10.0,
+            dist_weight=3.0,
             terminate_when_unhealthy=False,
             healthy_state_range=(-100.0, 100.0),
             healthy_z_range=(0.5, float('inf')),
@@ -42,7 +41,7 @@ class HopperJumpEnv(HopperEnv):
         self._contact_weight = contact_weight
 
         self.max_height = 0
-        self.goal = 0
+        self.goal = np.zeros(3, )
 
         self._steps = 0
         self.contact_with_floor = False
@@ -57,6 +56,10 @@ class HopperJumpEnv(HopperEnv):
 
         # increase initial height
         self.init_qpos[1] = 1.5
+
+    @property
+    def exclude_current_positions_from_observation(self):
+        return self._exclude_current_positions_from_observation
 
     def step(self, action):
         self._steps += 1
@@ -80,7 +83,7 @@ class HopperJumpEnv(HopperEnv):
         costs = ctrl_cost
         done = False
 
-        goal_dist = np.linalg.norm(site_pos_after - np.array([self.goal, 0, 0]))
+        goal_dist = np.linalg.norm(site_pos_after - self.goal)
         if self.contact_dist is None and self.contact_with_floor:
             self.contact_dist = goal_dist
 
@@ -99,7 +102,7 @@ class HopperJumpEnv(HopperEnv):
             height=height_after,
             x_pos=site_pos_after,
             max_height=self.max_height,
-            goal=self.goal,
+            goal=self.goal[:1],
             goal_dist=goal_dist,
             height_rew=self.max_height,
             healthy_reward=self.healthy_reward * 2,
@@ -109,14 +112,15 @@ class HopperJumpEnv(HopperEnv):
         return observation, reward, done, info
 
     def _get_obs(self):
-        goal_dist = self.data.get_site_xpos('foot_site') - np.array([self.goal, 0, 0])
-        return np.concatenate((super(HopperJumpEnv, self)._get_obs(), goal_dist.copy(), self.goal.copy()))
+        goal_dist = self.data.get_site_xpos('foot_site') - self.goal
+        return np.concatenate((super(HopperJumpEnv, self)._get_obs(), goal_dist.copy(), self.goal[:1]))
 
     def reset_model(self):
         super(HopperJumpEnv, self).reset_model()
 
-        self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
-        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = np.array([self.goal, 0, 0])
+        # self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
+        self.goal = np.concatenate([self.np_random.uniform(0.3, 1.35, 1), np.zeros(2, )])
+        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = self.goal
         self.max_height = 0
         self._steps = 0
 

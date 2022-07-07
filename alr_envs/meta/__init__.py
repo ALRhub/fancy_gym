@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from gym import register
 
 from . import goal_object_change_mp_wrapper, goal_change_mp_wrapper, goal_endeffector_change_mp_wrapper, \
@@ -7,27 +9,39 @@ ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
 # MetaWorld
 
+DEFAULT_BB_DICT_ProMP = {
+    "name": 'EnvName',
+    "wrappers": [],
+    "trajectory_generator_kwargs": {
+        'trajectory_generator_type': 'promp'
+    },
+    "phase_generator_kwargs": {
+        'phase_generator_type': 'linear'
+    },
+    "controller_kwargs": {
+        'controller_type': 'metaworld',
+    },
+    "basis_generator_kwargs": {
+        'basis_generator_type': 'zero_rbf',
+        'num_basis': 5,
+        'num_basis_zero_start': 1
+    }
+}
+
 _goal_change_envs = ["assembly-v2", "pick-out-of-hole-v2", "plate-slide-v2", "plate-slide-back-v2",
                      "plate-slide-side-v2", "plate-slide-back-side-v2"]
 for _task in _goal_change_envs:
     task_id_split = _task.split("-")
     name = "".join([s.capitalize() for s in task_id_split[:-1]])
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
+    kwargs_dict_goal_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_goal_change_promp['wrappers'].append(goal_change_mp_wrapper.MPWrapper)
+    kwargs_dict_goal_change_promp['name'] = _task
+
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-        kwargs={
-            "name": _task,
-            "wrappers": [goal_change_mp_wrapper.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 4,
-                "num_basis": 5,
-                "duration": 6.25,
-                "post_traj_time": 0,
-                "zero_start": True,
-                "policy_type": "metaworld",
-            }
-        }
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_goal_change_promp
     )
     ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
@@ -36,21 +50,13 @@ for _task in _object_change_envs:
     task_id_split = _task.split("-")
     name = "".join([s.capitalize() for s in task_id_split[:-1]])
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
+    kwargs_dict_object_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_object_change_promp['wrappers'].append(object_change_mp_wrapper.MPWrapper)
+    kwargs_dict_object_change_promp['name'] = _task
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-        kwargs={
-            "name": _task,
-            "wrappers": [object_change_mp_wrapper.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 4,
-                "num_basis": 5,
-                "duration": 6.25,
-                "post_traj_time": 0,
-                "zero_start": True,
-                "policy_type": "metaworld",
-            }
-        }
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_object_change_promp
     )
     ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
@@ -69,21 +75,14 @@ for _task in _goal_and_object_change_envs:
     task_id_split = _task.split("-")
     name = "".join([s.capitalize() for s in task_id_split[:-1]])
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
+    kwargs_dict_goal_and_object_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_goal_and_object_change_promp['wrappers'].append(goal_object_change_mp_wrapper.MPWrapper)
+    kwargs_dict_goal_and_object_change_promp['name'] = _task
+
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-        kwargs={
-            "name": _task,
-            "wrappers": [goal_object_change_mp_wrapper.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 4,
-                "num_basis": 5,
-                "duration": 6.25,
-                "post_traj_time": 0,
-                "zero_start": True,
-                "policy_type": "metaworld",
-            }
-        }
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_goal_and_object_change_promp
     )
     ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
@@ -92,20 +91,13 @@ for _task in _goal_and_endeffector_change_envs:
     task_id_split = _task.split("-")
     name = "".join([s.capitalize() for s in task_id_split[:-1]])
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
+    kwargs_dict_goal_and_endeffector_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_goal_and_endeffector_change_promp['wrappers'].append(goal_endeffector_change_mp_wrapper.MPWrapper)
+    kwargs_dict_goal_and_endeffector_change_promp['name'] = _task
+
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
-        kwargs={
-            "name": _task,
-            "wrappers": [goal_endeffector_change_mp_wrapper.MPWrapper],
-            "traj_gen_kwargs": {
-                "num_dof": 4,
-                "num_basis": 5,
-                "duration": 6.25,
-                "post_traj_time": 0,
-                "zero_start": True,
-                "policy_type": "metaworld",
-            }
-        }
+        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_goal_and_endeffector_change_promp
     )
     ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)

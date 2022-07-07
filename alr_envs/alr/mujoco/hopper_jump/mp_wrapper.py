@@ -14,7 +14,8 @@ class MPWrapper(RawInterfaceWrapper):
             [False] * (2 + int(not self.exclude_current_positions_from_observation)),  # position
             [True] * 3,  # set to true if randomize initial pos
             [False] * 6,  # velocity
-            [True]
+            [True] * 3,  # goal distance
+            [True]  # goal
         ])
 
     @property

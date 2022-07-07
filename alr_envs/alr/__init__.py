@@ -157,60 +157,36 @@ register(
     id='ALRAntJump-v0',
     entry_point='alr_envs.alr.mujoco:AntJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_ANTJUMP,
-        "context": True
-    }
 )
 
 register(
     id='ALRHalfCheetahJump-v0',
     entry_point='alr_envs.alr.mujoco:ALRHalfCheetahJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
-        "context": True
-    }
 )
 
 register(
     id='HopperJumpOnBox-v0',
-    entry_point='alr_envs.alr.mujoco:ALRHopperJumpOnBoxEnv',
+    entry_point='alr_envs.alr.mujoco:HopperJumpOnBoxEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
-        "context": True
-    }
 )
 
 register(
     id='ALRHopperThrow-v0',
     entry_point='alr_envs.alr.mujoco:ALRHopperThrowEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROW,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROW,
-        "context": True
-    }
 )
 
 register(
     id='ALRHopperThrowInBasket-v0',
     entry_point='alr_envs.alr.mujoco:ALRHopperThrowInBasketEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
-        "context": True
-    }
 )
 
 register(
     id='ALRWalker2DJump-v0',
     entry_point='alr_envs.alr.mujoco:ALRWalker2dJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_WALKERJUMP,
-    kwargs={
-        "max_episode_steps": MAX_EPISODE_STEPS_WALKERJUMP,
-        "context": True
-    }
 )
 
 register(
@@ -403,46 +379,48 @@ for _v in _versions:
 
 ## Table Tennis needs to be fixed according to Zhou's implementation
 
-########################################################################################################################
-
-## AntJump
-_versions = ['ALRAntJump-v0']
-for _v in _versions:
-    _name = _v.split("-")
-    _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.MPWrapper)
-    kwargs_dict_ant_jump_promp['name'] = _v
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
-        kwargs=kwargs_dict_ant_jump_promp
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-########################################################################################################################
-
-## HalfCheetahJump
-_versions = ['ALRHalfCheetahJump-v0']
-for _v in _versions:
-    _name = _v.split("-")
-    _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.half_cheetah_jump.MPWrapper)
-    kwargs_dict_halfcheetah_jump_promp['name'] = _v
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
-        kwargs=kwargs_dict_halfcheetah_jump_promp
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
-
-########################################################################################################################
+# TODO: Add later when finished
+# ########################################################################################################################
+#
+# ## AntJump
+# _versions = ['ALRAntJump-v0']
+# for _v in _versions:
+#     _name = _v.split("-")
+#     _env_id = f'{_name[0]}ProMP-{_name[1]}'
+#     kwargs_dict_ant_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+#     kwargs_dict_ant_jump_promp['wrappers'].append(mujoco.ant_jump.MPWrapper)
+#     kwargs_dict_ant_jump_promp['name'] = _v
+#     register(
+#         id=_env_id,
+#         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+#         kwargs=kwargs_dict_ant_jump_promp
+#     )
+#     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+#
+# ########################################################################################################################
+#
+# ## HalfCheetahJump
+# _versions = ['ALRHalfCheetahJump-v0']
+# for _v in _versions:
+#     _name = _v.split("-")
+#     _env_id = f'{_name[0]}ProMP-{_name[1]}'
+#     kwargs_dict_halfcheetah_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+#     kwargs_dict_halfcheetah_jump_promp['wrappers'].append(mujoco.half_cheetah_jump.MPWrapper)
+#     kwargs_dict_halfcheetah_jump_promp['name'] = _v
+#     register(
+#         id=_env_id,
+#         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+#         kwargs=kwargs_dict_halfcheetah_jump_promp
+#     )
+#     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+#
+# ########################################################################################################################
 
 
 ## HopperJump
-_versions = ['HopperJump-v0', 'HopperJumpSparse-v0', 'ALRHopperJumpOnBox-v0', 'ALRHopperThrow-v0',
-             'ALRHopperThrowInBasket-v0']
+_versions = ['HopperJump-v0', 'HopperJumpSparse-v0',
+             # 'ALRHopperJumpOnBox-v0', 'ALRHopperThrow-v0', 'ALRHopperThrowInBasket-v0'
+             ]
 # TODO: Check if all environments work with the same MPWrapper
 for _v in _versions:
     _name = _v.split("-")
@@ -457,23 +435,23 @@ for _v in _versions:
     )
     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
-########################################################################################################################
-
-
-## Walker2DJump
-_versions = ['ALRWalker2DJump-v0']
-for _v in _versions:
-    _name = _v.split("-")
-    _env_id = f'{_name[0]}ProMP-{_name[1]}'
-    kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_walker2d_jump_promp['wrappers'].append(mujoco.walker_2d_jump.MPWrapper)
-    kwargs_dict_walker2d_jump_promp['name'] = _v
-    register(
-        id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
-        kwargs=kwargs_dict_walker2d_jump_promp
-    )
-    ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+# ########################################################################################################################
+#
+#
+# ## Walker2DJump
+# _versions = ['ALRWalker2DJump-v0']
+# for _v in _versions:
+#     _name = _v.split("-")
+#     _env_id = f'{_name[0]}ProMP-{_name[1]}'
+#     kwargs_dict_walker2d_jump_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+#     kwargs_dict_walker2d_jump_promp['wrappers'].append(mujoco.walker_2d_jump.MPWrapper)
+#     kwargs_dict_walker2d_jump_promp['name'] = _v
+#     register(
+#         id=_env_id,
+#         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
+#         kwargs=kwargs_dict_walker2d_jump_promp
+#     )
+#     ALL_ALR_MOTION_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ### Depricated, we will not provide non random starts anymore
 """
@@ -639,7 +617,7 @@ for i in _vs:
     
     register(
         id='ALRHopperJumpOnBox-v0',
-        entry_point='alr_envs.alr.mujoco:ALRHopperJumpOnBoxEnv',
+        entry_point='alr_envs.alr.mujoco:HopperJumpOnBoxEnv',
         max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
         kwargs={
             "max_episode_steps": MAX_EPISODE_STEPS_HOPPERJUMPONBOX,

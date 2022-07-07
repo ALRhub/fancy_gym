@@ -1,11 +1,9 @@
-from typing import Tuple, Union
-
 import numpy as np
 
-from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.meta.base_metaworld_mp_wrapper import BaseMetaworldMPWrapper
 
 
-class MPWrapper(RawInterfaceWrapper):
+class MPWrapper(BaseMetaworldMPWrapper):
     """
     This Wrapper is for environments where merely the goal changes in the beginning
     and no secondary objects or end effectors are altered at the start of an episode.
@@ -49,20 +47,3 @@ class MPWrapper(RawInterfaceWrapper):
             # Goal
             [True] * 3,  # goal position
         ])
-
-    @property
-    def current_pos(self) -> Union[float, int, np.ndarray]:
-        r_close = self.env.data.get_joint_qpos("r_close")
-        return np.hstack([self.env.data.mocap_pos.flatten() / self.env.action_scale, r_close])
-
-    @property
-    def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        raise NotImplementedError("Velocity cannot be retrieved.")
-
-    @property
-    def goal_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        raise ValueError("Goal position is not available and has to be learnt based on the environment.")
-
-    @property
-    def dt(self) -> Union[float, int]:
-        return self.env.dt
