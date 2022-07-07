@@ -90,10 +90,9 @@ class HopperJumpEnv(HopperEnv):
         rewards = 0
         if not self.sparse or (self.sparse and self._steps >= MAX_EPISODE_STEPS_HOPPERJUMP):
             healthy_reward = self.healthy_reward
-            distance_reward = goal_dist * self._dist_weight
+            distance_reward = -goal_dist * self._dist_weight
             height_reward = (self.max_height if self.sparse else self.get_body_com("torso")[2]) * self._height_weight
-            contact_reward = (self.contact_dist or 5) * self._contact_weight
-            # dist_reward = self._forward_reward_weight * (-3 * goal_dist + 10 * self.max_height - 2 * contact_dist)
+            contact_reward = -(self.contact_dist or 5) * self._contact_weight
             rewards = self._forward_reward_weight * (distance_reward + height_reward + contact_reward + healthy_reward)
 
         observation = self._get_obs()
