@@ -668,21 +668,33 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     register(
         id=_env_id,
-        entry_point='alr_envs.utils.make_env_helpers:make_promp_env_helper',
+        entry_point='alr_envs.utils.make_env_helpers:make_mp_env_helper',
         kwargs={
             "name": f"alr_envs:{_v}",
-            "wrappers": [mujoco.reacher.MPWrapper],
-            "mp_kwargs": {
-                "num_dof": 5 if "long" not in _v.lower() else 7,
-                "num_basis": 2,
-                "duration": 4,
-                "policy_type": "motor",
-                "weights_scale": 5,
-                "zero_start": True,
-                "policy_kwargs": {
-                    "p_gains": 1,
-                    "d_gains": 0.1
-                }
+            "wrappers": [mujoco.reacher.NewMPWrapper],
+            "ep_wrapper_kwargs": {
+                "weight_scale": 1
+            },
+            "movement_primitives_kwargs": {
+                'movement_primitives_type': 'promp',
+                'action_dim': 5 if "long" not in _v.lower() else 7
+            },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear',
+                'delay': 0,
+                'tau': 4,  # initial value
+                'learn_tau': False,
+                'learn_delay': False
+            },
+            "controller_kwargs": {
+                'controller_type': 'motor',
+                "p_gains": 1,
+                "d_gains": 0.1
+            },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 2,
+                'num_basis_zero_start': 1
             }
         }
     )

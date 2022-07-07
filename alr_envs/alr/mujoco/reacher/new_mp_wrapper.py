@@ -3,7 +3,7 @@ from typing import Union, Tuple
 import numpy as np
 
 
-class MPWrapper(EpisodicWrapper):
+class NewMPWrapper(EpisodicWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
