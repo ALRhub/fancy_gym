@@ -7,8 +7,8 @@ from dm_control import suite, manipulation
 
 from alr_envs import make
 
-DMC_ENVS = [f'{env}-{task}' for env, task in suite.ALL_TASKS if env != "lqr"]
-MANIPULATION_SPECS = [f'manipulation-{task}' for task in manipulation.ALL if task.endswith('_features')]
+DMC_ENVS = [f'dmc:{env}-{task}' for env, task in suite.ALL_TASKS if env != "lqr"]
+MANIPULATION_SPECS = [f'dmc:manipulation-{task}' for task in manipulation.ALL if task.endswith('_features')]
 SEED = 1
 
 
@@ -29,9 +29,11 @@ class TestStepDMCEnvironments(unittest.TestCase):
         Returns:
 
         """
+        print(env_id)
         env: gym.Env = make(env_id, seed=seed)
         rewards = []
         observations = []
+        actions = []
         dones = []
         obs = env.reset()
         self._verify_observations(obs, env.observation_space, "reset()")
@@ -43,6 +45,7 @@ class TestStepDMCEnvironments(unittest.TestCase):
             observations.append(obs)
 
             ac = env.action_space.sample()
+            actions.append(ac)
             # ac = np.random.uniform(env.action_space.low, env.action_space.high, env.action_space.shape)
             obs, reward, done, info = env.step(ac)
 
@@ -57,13 +60,13 @@ class TestStepDMCEnvironments(unittest.TestCase):
                 env.render("human")
 
             if done:
-                obs = env.reset()
+                break
 
-        assert done, "Done flag is not True after max episode length."
+        assert done, "Done flag is not True after end of episode."
         observations.append(obs)
         env.close()
         del env
-        return np.array(observations), np.array(rewards), np.array(dones)
+        return np.array(observations), np.array(rewards), np.array(dones), np.array(actions)
 
     def _verify_observations(self, obs, observation_space, obs_type="reset()"):
         self.assertTrue(observation_space.contains(obs),
@@ -71,7 +74,7 @@ class TestStepDMCEnvironments(unittest.TestCase):
                         f"not contained in observation space {observation_space}.")
 
     def _verify_reward(self, reward):
-        self.assertIsInstance(reward, float, f"Returned {reward} as reward, expected float.")
+        self.assertIsInstance(reward, (float, int), f"Returned type {type(reward)} as reward, expected float or int.")
 
     def _verify_done(self, done):
         self.assertIsInstance(done, bool, f"Returned {done} as done flag, expected bool.")
@@ -91,8 +94,9 @@ class TestStepDMCEnvironments(unittest.TestCase):
                 traj1 = self._run_env(env_id, seed=seed)
                 traj2 = self._run_env(env_id, seed=seed)
                 for i, time_step in enumerate(zip(*traj1, *traj2)):
-                    obs1, rwd1, done1, obs2, rwd2, done2 = time_step
-                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
+                    obs1, rwd1, done1, ac1, obs2, rwd2, done2, ac2 = time_step
+                    self.assertTrue(np.array_equal(ac1, ac2), f"Actions [{i}] delta {ac1 - ac2} is not zero.")
+                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] delta {obs1 - obs2} is not zero.")
                     self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 
@@ -111,10 +115,10 @@ class TestStepDMCEnvironments(unittest.TestCase):
                 traj1 = self._run_env(env_id, seed=seed)
                 traj2 = self._run_env(env_id, seed=seed)
                 for i, time_step in enumerate(zip(*traj1, *traj2)):
-                    obs1, rwd1, done1, obs2, rwd2, done2 = time_step
-                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] {obs1} and {obs2} do not match.")
+                    obs1, rwd1, done1, ac1, obs2, rwd2, done2, ac2 = time_step
+                    self.assertTrue(np.array_equal(ac1, ac2), f"Actions [{i}] delta {ac1 - ac2} is not zero.")
+                    self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] delta {obs1 - obs2} is not zero.")
                     self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
-                    self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 
 

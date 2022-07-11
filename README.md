@@ -113,7 +113,7 @@ print("OpenAI Gym MP tasks:")
 print(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS)
 
 print("Deepmind Control MP tasks:")
-print(alr_envs.ALL_DEEPMIND_MOTION_PRIMITIVE_ENVIRONMENTS)
+print(alr_envs.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("MetaWorld MP tasks:")
 print(alr_envs.ALL_METAWORLD_MOTION_PRIMITIVE_ENVIRONMENTS)

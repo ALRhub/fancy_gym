@@ -1,3 +1,5 @@
+import numpy as np
+
 import alr_envs
 
 
@@ -59,7 +61,8 @@ def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render
     """
     # Changing the arguments of the black box env is possible by providing them to gym as with all kwargs.
     # E.g. here for way to many basis functions
-    env = alr_envs.make(env_name, seed, basis_generator_kwargs={'num_basis': 1000})
+    # env = alr_envs.make(env_name, seed, basis_generator_kwargs={'num_basis': 1000})
+    env = alr_envs.make(env_name, seed)
     # mp_dict.update({'black_box_kwargs': {'learn_sub_trajectories': True}})
     # mp_dict.update({'black_box_kwargs': {'do_replanning': lambda pos, vel, t: lambda t: t % 100}})
 
@@ -72,15 +75,16 @@ def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
-        ac = env.action_space.sample() * 1000
+        ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         rewards += reward
 
         if done:
-            print(rewards)
+            print(i, rewards)
             rewards = 0
             obs = env.reset()
-            print(obs)
+
+    return obs
 
 
 def example_fully_custom_mp(seed=1, iterations=1, render=True):
@@ -139,7 +143,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = True
+    render = False
     # # DMP
     # example_mp("alr_envs:HoleReacherDMP-v1", seed=10, iterations=1, render=render)
     #
@@ -150,7 +154,7 @@ if __name__ == '__main__':
     # example_mp("alr_envs:HoleReacherDetPMP-v1", seed=10, iterations=1, render=render)
 
     # Altered basis functions
-    example_custom_mp("HopperJumpSparseProMP-v0", seed=10, iterations=10, render=render)
+    obs1 = example_custom_mp("dmc:manipulation-stack_2_bricks_features", seed=10, iterations=250, render=render)
 
     # Custom MP
     # example_fully_custom_mp(seed=10, iterations=1, render=render)

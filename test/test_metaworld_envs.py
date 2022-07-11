@@ -6,7 +6,7 @@ import numpy as np
 from alr_envs import make
 from metaworld.envs import ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE
 
-ALL_ENVS = [env.split("-goal-observable")[0] for env, _ in ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE.items()]
+ALL_ENVS = [f'metaworld:{env.split("-goal-observable")[0]}' for env, _ in ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE.items()]
 SEED = 1
 
 
@@ -57,9 +57,9 @@ class TestStepMetaWorlEnvironments(unittest.TestCase):
                 env.render("human")
 
             if done:
-                obs = env.reset()
+                break
 
-        assert done, "Done flag is not True after max episode length."
+        assert done, "Done flag is not True after end of episode."
         observations.append(obs)
         env.close()
         del env
@@ -71,7 +71,7 @@ class TestStepMetaWorlEnvironments(unittest.TestCase):
                         f"not contained in observation space {observation_space}.")
 
     def _verify_reward(self, reward):
-        self.assertIsInstance(reward, float, f"Returned {reward} as reward, expected float.")
+        self.assertIsInstance(reward, (float, int), f"Returned type {type(reward)} as reward, expected float or int.")
 
     def _verify_done(self, done):
         self.assertIsInstance(done, bool, f"Returned {done} as done flag, expected bool.")
@@ -94,7 +94,7 @@ class TestStepMetaWorlEnvironments(unittest.TestCase):
                     obs1, rwd1, done1, ac1, obs2, rwd2, done2, ac2 = time_step
                     self.assertTrue(np.array_equal(ac1, ac2), f"Actions [{i}] delta {ac1 - ac2} is not zero.")
                     self.assertTrue(np.array_equal(obs1, obs2), f"Observations [{i}] delta {obs1 - obs2} is not zero.")
-                    self.assertAlmostEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
+                    self.assertEqual(rwd1, rwd2, f"Rewards [{i}] {rwd1} and {rwd2} do not match.")
                     self.assertEqual(done1, done2, f"Dones [{i}] {done1} and {done2} do not match.")
 
 

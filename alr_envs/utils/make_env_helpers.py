@@ -1,19 +1,40 @@
-import warnings
+import re
+import uuid
+from collections.abc import MutableMapping
 from copy import deepcopy
-from typing import Iterable, Type, Union, MutableMapping
+from math import ceil
+from typing import Iterable, Type, Union
 
 import gym
 import numpy as np
-from gym.envs.registration import EnvSpec, registry
+
+import alr_envs
+
+try:
+    from dm_control import suite, manipulation, composer
+    from dm_control.rl import control
+except ImportError:
+    pass
+
+try:
+    import metaworld
+except Exception:
+    # catch Exception due to Mujoco-py
+    pass
+
+from gym.envs.registration import registry
+from gym.envs.registration import register
 from gym.wrappers import TimeAwareObservation
 
 from alr_envs.black_box.black_box_wrapper import BlackBoxWrapper
-from alr_envs.black_box.factory.controller_factory import get_controller
 from alr_envs.black_box.factory.basis_generator_factory import get_basis_generator
+from alr_envs.black_box.factory.controller_factory import get_controller
 from alr_envs.black_box.factory.phase_generator_factory import get_phase_generator
 from alr_envs.black_box.factory.trajectory_generator_factory import get_trajectory_generator
 from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from alr_envs.utils.utils import nested_update
+
+ALL_FRAMEWORK_TYPES = ['meta', 'dmc', 'gym']
 
 
 def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
@@ -70,57 +91,25 @@ def _make(env_id: str, seed, **kwargs):
     # env_id.split(':')
     # if 'dmc' :
 
-    try:
-        # This access is required to allow for nested dict updates for BB envs
-        spec = registry.get(env_id)
-        all_kwargs = deepcopy(spec.kwargs)
-        nested_update(all_kwargs, kwargs)
-        kwargs = all_kwargs
+    if ':' in env_id:
+        split_id = env_id.split(':')
+        framework, env_id = split_id[-2:]
+    else:
+        framework = None
 
-        # Add seed to kwargs in case it is a predefined gym+dmc hybrid environment.
-        if env_id.startswith("dmc"):
-            kwargs.update({"seed": seed})
-
-        # Gym
-        env = gym.make(env_id, **kwargs)
-        env.seed(seed)
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
-    except (gym.error.Error, AttributeError):
-
+    if framework == 'metaworld':
         # MetaWorld env
-        import metaworld
-        if env_id in metaworld.ML1.ENV_NAMES:
-            env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[env_id + "-goal-observable"](seed=seed, **kwargs)
-
-            # setting this avoids generating the same initialization after each reset
-            env._freeze_rand_vec = False
-            env.seeded_rand_vec = True
-
-            # Manually set spec, as metaworld environments are not registered via gym
-            env.unwrapped.spec = EnvSpec(env_id)
-            # Set Timelimit based on the maximum allowed path length of the environment
-            env = gym.wrappers.TimeLimit(env, max_episode_steps=env.max_path_length)
-            # env.seed(seed)
-            # env.action_space.seed(seed)
-            # env.observation_space.seed(seed)
-            # env.goal_space.seed(seed)
-
-        else:
-            # DMC
-            from alr_envs import make_dmc
-            env = make_dmc(env_id, seed=seed, **kwargs)
-
-            if not env.base_step_limit == env.spec.max_episode_steps:
-                raise ValueError(f"The specified 'episode_length' of {env.spec.max_episode_steps} steps for gym "
-                                 f"is different from the DMC environment specification of {env.base_step_limit} steps.")
+        env = make_metaworld(env_id, seed=seed, **kwargs)
+    elif framework == 'dmc':
+        # DeepMind Controlp
+        env = make_dmc(env_id, seed=seed, **kwargs)
+    else:
+        env = make_gym(env_id, seed=seed, **kwargs)
 
     return env
 
 
-def _make_wrapped_env(
-        env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1, **kwargs
-):
+def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1, **kwargs):
     """
     Helper function for creating a wrapped gym environment using MPs.
     It adds all provided wrappers to the specified environment and verifies at least one RawInterfaceWrapper is
@@ -149,7 +138,7 @@ def _make_wrapped_env(
 
 def make_bb(
         env_id: str, wrappers: Iterable, black_box_kwargs: MutableMapping, traj_gen_kwargs: MutableMapping,
-        controller_kwargs: MutableMapping, phase_kwargs: MutableMapping, basis_kwargs: MutableMapping, seed=1,
+        controller_kwargs: MutableMapping, phase_kwargs: MutableMapping, basis_kwargs: MutableMapping, seed: int = 1,
         **kwargs):
     """
     This can also be used standalone for manually building a custom DMP environment.
@@ -167,7 +156,6 @@ def make_bb(
 
     """
     _verify_time_limit(traj_gen_kwargs.get("duration", None), kwargs.get("time_limit", None))
-    _env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 
     learn_sub_trajs = black_box_kwargs.get('learn_sub_trajectories')
     do_replanning = black_box_kwargs.get('replanning_schedule')
@@ -176,12 +164,16 @@ def make_bb(
 
     if learn_sub_trajs or do_replanning:
         # add time_step observation when replanning
-        kwargs['wrappers'].append(TimeAwareObservation)
+        if not any(issubclass(w, TimeAwareObservation) for w in kwargs['wrappers']):
+            # Add as first wrapper in order to alter observation
+            kwargs['wrappers'].insert(0, TimeAwareObservation)
 
-    traj_gen_kwargs['action_dim'] = traj_gen_kwargs.get('action_dim', np.prod(_env.action_space.shape).item())
+    env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
+
+    traj_gen_kwargs['action_dim'] = traj_gen_kwargs.get('action_dim', np.prod(env.action_space.shape).item())
 
     if black_box_kwargs.get('duration') is None:
-        black_box_kwargs['duration'] = _env.spec.max_episode_steps * _env.dt
+        black_box_kwargs['duration'] = env.spec.max_episode_steps * env.dt
     if phase_kwargs.get('tau') is None:
         phase_kwargs['tau'] = black_box_kwargs['duration']
 
@@ -194,7 +186,7 @@ def make_bb(
     controller = get_controller(**controller_kwargs)
     traj_gen = get_trajectory_generator(basis_generator=basis_gen, **traj_gen_kwargs)
 
-    bb_env = BlackBoxWrapper(_env, trajectory_generator=traj_gen, tracking_controller=controller,
+    bb_env = BlackBoxWrapper(env, trajectory_generator=traj_gen, tracking_controller=controller,
                              **black_box_kwargs)
 
     return bb_env
@@ -247,6 +239,109 @@ def make_bb_env_helper(**kwargs):
                    traj_gen_kwargs=traj_gen_kwargs, controller_kwargs=contr_kwargs,
                    phase_kwargs=phase_kwargs,
                    basis_kwargs=basis_kwargs, **kwargs, seed=seed)
+
+
+def make_dmc(
+        env_id: Union[str, composer.Environment, control.Environment],
+        seed: int = None,
+        visualize_reward: bool = True,
+        time_limit: Union[None, float] = None,
+        **kwargs
+):
+    if not re.match(r"\w+-\w+", env_id):
+        raise ValueError("env_id does not have the following structure: 'domain_name-task_name'")
+    domain_name, task_name = env_id.split("-")
+
+    if task_name.endswith("_vision"):
+        # TODO
+        raise ValueError("The vision interface for manipulation tasks is currently not supported.")
+
+    if (domain_name, task_name) not in suite.ALL_TASKS and task_name not in manipulation.ALL:
+        raise ValueError(f'Specified domain "{domain_name}" and task "{task_name}" combination does not exist.')
+
+    # env_id = f'dmc_{domain_name}_{task_name}_{seed}-v1'
+    gym_id = uuid.uuid4().hex + '-v1'
+
+    task_kwargs = {'random': seed}
+    if time_limit is not None:
+        task_kwargs['time_limit'] = time_limit
+
+    # create task
+    # Accessing private attribute because DMC does not expose time_limit or step_limit.
+    # Only the current time_step/time as well as the control_timestep can be accessed.
+    if domain_name == "manipulation":
+        env = manipulation.load(environment_name=task_name, seed=seed)
+        max_episode_steps = ceil(env._time_limit / env.control_timestep())
+    else:
+        env = suite.load(domain_name=domain_name, task_name=task_name, task_kwargs=task_kwargs,
+                         visualize_reward=visualize_reward, environment_kwargs=kwargs)
+        max_episode_steps = int(env._step_limit)
+
+    register(
+        id=gym_id,
+        entry_point='alr_envs.dmc.dmc_wrapper:DMCWrapper',
+        kwargs={'env': lambda: env},
+        max_episode_steps=max_episode_steps,
+    )
+
+    env = gym.make(gym_id)
+    env.seed(seed=seed)
+    return env
+
+
+def make_metaworld(env_id, seed, **kwargs):
+    if env_id not in metaworld.ML1.ENV_NAMES:
+        raise ValueError(f'Specified environment "{env_id}" not present in metaworld ML1.')
+
+    _env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[env_id + "-goal-observable"](seed=seed, **kwargs)
+
+    # setting this avoids generating the same initialization after each reset
+    _env._freeze_rand_vec = False
+    # New argument to use global seeding
+    _env.seeded_rand_vec = True
+
+    # Manually set spec, as metaworld environments are not registered via gym
+    # _env.unwrapped.spec = EnvSpec(env_id)
+    # Set Timelimit based on the maximum allowed path length of the environment
+    # _env = gym.wrappers.TimeLimit(_env, max_episode_steps=_env.max_path_length)
+    # _env.seed(seed)
+    # _env.action_space.seed(seed)
+    # _env.observation_space.seed(seed)
+    # _env.goal_space.seed(seed)
+
+    gym_id = uuid.uuid4().hex + '-v1'
+
+    register(
+        id=gym_id,
+        entry_point=lambda: _env,
+        max_episode_steps=_env.max_path_length,
+    )
+
+    # TODO enable checker when the incorrect dtype of obs and observation space are fixed by metaworld
+    env = gym.make(gym_id, disable_env_checker=True)
+    env.seed(seed=seed)
+    return env
+
+
+def make_gym(env_id, seed, **kwargs):
+    # This access is required to allow for nested dict updates for BB envs
+    spec = registry.get(env_id)
+    all_kwargs = deepcopy(spec.kwargs)
+    nested_update(all_kwargs, kwargs)
+    kwargs = all_kwargs
+
+    # Add seed to kwargs in case it is a predefined gym+dmc hybrid environment.
+    # if env_id.startswith("dmc") or any(s in env_id.lower() for s in ['promp', 'dmp', 'prodmp']):
+    all_bb_envs = sum(alr_envs.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values(), [])
+    if env_id.startswith("dmc") or env_id in all_bb_envs:
+        kwargs.update({"seed": seed})
+
+    # Gym
+    env = gym.make(env_id, **kwargs)
+    env.seed(seed)
+    env.action_space.seed(seed)
+    env.observation_space.seed(seed)
+    return env
 
 
 def _verify_time_limit(mp_time_limit: Union[None, float], env_time_limit: Union[None, float]):

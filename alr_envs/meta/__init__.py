@@ -36,7 +36,7 @@ for _task in _goal_change_envs:
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
     kwargs_dict_goal_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_goal_change_promp['wrappers'].append(goal_change_mp_wrapper.MPWrapper)
-    kwargs_dict_goal_change_promp['name'] = _task
+    kwargs_dict_goal_change_promp['name'] = f'metaworld:{_task}'
 
     register(
         id=_env_id,
@@ -52,7 +52,7 @@ for _task in _object_change_envs:
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
     kwargs_dict_object_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_object_change_promp['wrappers'].append(object_change_mp_wrapper.MPWrapper)
-    kwargs_dict_object_change_promp['name'] = _task
+    kwargs_dict_object_change_promp['name'] = f'metaworld:{_task}'
     register(
         id=_env_id,
         entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
@@ -77,7 +77,7 @@ for _task in _goal_and_object_change_envs:
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
     kwargs_dict_goal_and_object_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_goal_and_object_change_promp['wrappers'].append(goal_object_change_mp_wrapper.MPWrapper)
-    kwargs_dict_goal_and_object_change_promp['name'] = _task
+    kwargs_dict_goal_and_object_change_promp['name'] = f'metaworld:{_task}'
 
     register(
         id=_env_id,
@@ -93,7 +93,7 @@ for _task in _goal_and_endeffector_change_envs:
     _env_id = f'{name}ProMP-{task_id_split[-1]}'
     kwargs_dict_goal_and_endeffector_change_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_goal_and_endeffector_change_promp['wrappers'].append(goal_endeffector_change_mp_wrapper.MPWrapper)
-    kwargs_dict_goal_and_endeffector_change_promp['name'] = _task
+    kwargs_dict_goal_and_endeffector_change_promp['name'] = f'metaworld:{_task}'
 
     register(
         id=_env_id,

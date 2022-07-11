@@ -27,7 +27,6 @@ DEFAULT_BB_DICT_ProMP = {
     }
 }
 
-
 kwargs_dict_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
 kwargs_dict_reacher_promp['controller_kwargs']['p_gains'] = 0.6
 kwargs_dict_reacher_promp['controller_kwargs']['d_gains'] = 0.075
@@ -35,7 +34,7 @@ kwargs_dict_reacher_promp['basis_generator_kwargs']['num_basis'] = 6
 kwargs_dict_reacher_promp['name'] = "Reacher-v2"
 kwargs_dict_reacher_promp['wrappers'].append(mujoco.reacher_v2.MPWrapper)
 register(
-    id='Reacher2dProMP-v2',
+    id='ReacherProMP-v2',
     entry_point='alr_envs.utils.make_env_helpers:make_bb_env_helper',
     kwargs=kwargs_dict_reacher_promp
 )

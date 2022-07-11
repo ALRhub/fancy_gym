@@ -2,17 +2,22 @@
 # License: MIT
 # Copyright (c) 2020 Denis Yarats
 import collections
-from typing import Any, Dict, Tuple
+from collections.abc import MutableMapping
+from typing import Any, Dict, Tuple, Optional, Union, Callable
 
+from dm_control import composer
+import gym
 import numpy as np
-from dm_control import manipulation, suite
+from dm_control.rl import control
 from dm_env import specs
-from gym import core, spaces
+from gym import spaces
+from gym.core import ObsType
 
 
 def _spec_to_box(spec):
     def extract_min_max(s):
-        assert s.dtype == np.float64 or s.dtype == np.float32, f"Only float64 and float32 types are allowed, instead {s.dtype} was found"
+        assert s.dtype == np.float64 or s.dtype == np.float32, \
+            f"Only float64 and float32 types are allowed, instead {s.dtype} was found"
         dim = int(np.prod(s.shape))
         if type(s) == specs.Array:
             bound = np.inf * np.ones(dim, dtype=s.dtype)
@@ -32,7 +37,7 @@ def _spec_to_box(spec):
     return spaces.Box(low, high, dtype=s.dtype)
 
 
-def _flatten_obs(obs: collections.MutableMapping):
+def _flatten_obs(obs: MutableMapping):
     """
     Flattens an observation of type MutableMapping, e.g. a dict to a 1D array.
     Args:
@@ -42,7 +47,7 @@ def _flatten_obs(obs: collections.MutableMapping):
 
     """
 
-    if not isinstance(obs, collections.MutableMapping):
+    if not isinstance(obs, MutableMapping):
         raise ValueError(f'Requires dict-like observations structure. {type(obs)} found.')
 
     # Keep key order consistent for non OrderedDicts
@@ -52,47 +57,19 @@ def _flatten_obs(obs: collections.MutableMapping):
     return np.concatenate(obs_vals)
 
 
-class DMCWrapper(core.Env):
-    def __init__(
-            self,
-            domain_name: str,
-            task_name: str,
-            task_kwargs: dict = {},
-            visualize_reward: bool = True,
-            from_pixels: bool = False,
-            height: int = 84,
-            width: int = 84,
-            camera_id: int = 0,
-            frame_skip: int = 1,
-            environment_kwargs: dict = None,
-            channels_first: bool = True
-    ):
-        assert 'random' in task_kwargs, 'Please specify a seed for deterministic behavior.'
-        self._from_pixels = from_pixels
-        self._height = height
-        self._width = width
-        self._camera_id = camera_id
-        self._frame_skip = frame_skip
-        self._channels_first = channels_first
+class DMCWrapper(gym.Env):
+    def __init__(self,
+                 env: Callable[[], Union[composer.Environment, control.Environment]],
+                 ):
 
-        # create task
-        if domain_name == "manipulation":
-            assert not from_pixels and not task_name.endswith("_vision"), \
-                "TODO: Vision interface for manipulation is different to suite and needs to be implemented"
-            self._env = manipulation.load(environment_name=task_name, seed=task_kwargs['random'])
-        else:
-            self._env = suite.load(domain_name=domain_name, task_name=task_name, task_kwargs=task_kwargs,
-                                   visualize_reward=visualize_reward, environment_kwargs=environment_kwargs)
+        # TODO: Currently this is required to be a function because dmc does not allow to copy composers environments
+        self._env = env()
 
         # action and observation space
         self._action_space = _spec_to_box([self._env.action_spec()])
         self._observation_space = _spec_to_box(self._env.observation_spec().values())
 
-        self._last_state = None
-        self.viewer = None
-
-        # set seed
-        self.seed(seed=task_kwargs.get('random', 1))
+        self._window = None
 
     def __getattr__(self, item):
         """Propagate only non-existent properties to wrapped env."""
@@ -103,17 +80,7 @@ class DMCWrapper(core.Env):
         return getattr(self._env, item)
 
     def _get_obs(self, time_step):
-        if self._from_pixels:
-            obs = self.render(
-                mode="rgb_array",
-                height=self._height,
-                width=self._width,
-                camera_id=self._camera_id
-            )
-            if self._channels_first:
-                obs = obs.transpose(2, 0, 1).copy()
-        else:
-            obs = _flatten_obs(time_step.observation).astype(self.observation_space.dtype)
+        obs = _flatten_obs(time_step.observation).astype(self.observation_space.dtype)
         return obs
 
     @property
@@ -126,20 +93,7 @@ class DMCWrapper(core.Env):
 
     @property
     def dt(self):
-        return self._env.control_timestep() * self._frame_skip
-
-    @property
-    def base_step_limit(self):
-        """
-        Returns: max_episode_steps of the underlying DMC env
-
-        """
-        # Accessing private attribute because DMC does not expose time_limit or step_limit.
-        # Only the current time_step/time as well as the control_timestep can be accessed.
-        try:
-            return (self._env._step_limit + self._frame_skip - 1) // self._frame_skip
-        except AttributeError as e:
-            return self._env._time_limit / self.dt
+        return self._env.control_timestep()
 
     def seed(self, seed=None):
         self._action_space.seed(seed)
@@ -147,56 +101,71 @@ class DMCWrapper(core.Env):
 
     def step(self, action) -> Tuple[np.ndarray, float, bool, Dict[str, Any]]:
         assert self._action_space.contains(action)
-        reward = 0
         extra = {'internal_state': self._env.physics.get_state().copy()}
 
-        for _ in range(self._frame_skip):
-            time_step = self._env.step(action)
-            reward += time_step.reward or 0.
-            done = time_step.last()
-            if done:
-                break
-
-        self._last_state = _flatten_obs(time_step.observation)
+        time_step = self._env.step(action)
+        reward = time_step.reward or 0.
+        done = time_step.last()
         obs = self._get_obs(time_step)
         extra['discount'] = time_step.discount
+
         return obs, reward, done, extra
 
-    def reset(self) -> np.ndarray:
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
+              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         time_step = self._env.reset()
-        self._last_state = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
         return obs
 
-    def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
-        if self._last_state is None:
-            raise ValueError('Environment not ready to render. Call reset() first.')
-
-        camera_id = camera_id or self._camera_id
+    def render(self, mode='rgb_array', height=240, width=320, camera_id=-1, overlays=(), depth=False,
+               segmentation=False, scene_option=None, render_flag_overrides=None):
 
         # assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
         if mode == "rgb_array":
-            height = height or self._height
-            width = width or self._width
-            return self._env.physics.render(height=height, width=width, camera_id=camera_id)
+            return self._env.physics.render(height=height, width=width, camera_id=camera_id, overlays=overlays,
+                                            depth=depth, segmentation=segmentation, scene_option=scene_option,
+                                            render_flag_overrides=render_flag_overrides)
 
-        elif mode == 'human':
-            if self.viewer is None:
-                # pylint: disable=import-outside-toplevel
-                # pylint: disable=g-import-not-at-top
-                from gym.envs.classic_control import rendering
-                self.viewer = rendering.SimpleImageViewer()
-            # Render max available buffer size. Larger is only possible by altering the XML.
-            img = self._env.physics.render(height=self._env.physics.model.vis.global_.offheight,
-                                           width=self._env.physics.model.vis.global_.offwidth,
-                                           camera_id=camera_id)
-            self.viewer.imshow(img)
-            return self.viewer.isopen
+        # Render max available buffer size. Larger is only possible by altering the XML.
+        img = self._env.physics.render(height=self._env.physics.model.vis.global_.offheight,
+                                       width=self._env.physics.model.vis.global_.offwidth,
+                                       camera_id=camera_id, overlays=overlays, depth=depth, segmentation=segmentation,
+                                       scene_option=scene_option, render_flag_overrides=render_flag_overrides)
+
+        if depth:
+            img = np.dstack([img.astype(np.uint8)] * 3)
+
+        if mode == 'human':
+            try:
+                import cv2
+                if self._window is None:
+                    self._window = cv2.namedWindow(self.id, cv2.WINDOW_AUTOSIZE)
+
+                cv2.imshow(self.id, img[..., ::-1])  # Image in BGR
+                cv2.waitKey(1)
+            except ImportError:
+                import pygame
+                img = img.transpose((1, 0, 2))
+                if self._window is None:
+                    pygame.init()
+                    pygame.display.init()
+                    self._window = pygame.display.set_mode(img.shape[:2])
+
+                self._window.blit(pygame.surfarray.make_surface(img), (0, 0))
+                pygame.event.pump()
+                pygame.display.flip()
 
     def close(self):
         super().close()
-        if self.viewer is not None and self.viewer.isopen:
-            self.viewer.close()
+        if self._window is not None:
+            try:
+                import cv2
+                cv2.destroyWindow(self.id)
+            except ImportError:
+                import pygame
+
+                pygame.display.quit()
+                pygame.quit()
 
     @property
     def reward_range(self) -> Tuple[float, float]:
@@ -204,3 +173,8 @@ class DMCWrapper(core.Env):
         if isinstance(reward_spec, specs.BoundedArray):
             return reward_spec.minimum, reward_spec.maximum
         return -float('inf'), float('inf')
+
+    @property
+    def metadata(self):
+        return {'render.modes': ['human', 'rgb_array'],
+                'video.frames_per_second': round(1.0 / self._env.control_timestep())}

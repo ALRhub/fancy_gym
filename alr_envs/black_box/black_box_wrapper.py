@@ -1,4 +1,7 @@
-from typing import Tuple, Union, Optional
+import os
+os.environ["MUJOCO_GL"] = "egl"
+
+from typing import Tuple, Optional
 
 import gym
 import numpy as np
@@ -67,7 +70,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def observation(self, observation):
         # return context space if we are
-        obs = observation[self.env.context_mask] if self.return_context_observation else observation
+        mask = self.env.context_mask
+        if self.is_time_aware:
+            mask = np.append(mask, False)
+        obs = observation[mask] if self.return_context_observation else observation
         # cast dtype because metaworld returns incorrect that throws gym error
         return obs.astype(self.observation_space.dtype)
 
