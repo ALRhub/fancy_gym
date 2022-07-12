@@ -1,13 +1,11 @@
-import numpy as np
-
 import alr_envs
 
 
-def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, render=True):
+def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True):
     """
-    Example for running a motion primitive based environment, which is already registered
+    Example for running a black box based environment, which is already registered
     Args:
-        env_name: DMP env_id
+        env_name: Black box env_id
         seed: seed for deterministic behaviour
         iterations: Number of rollout steps to run
         render: Render the episode
@@ -15,8 +13,8 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, rend
     Returns:
 
     """
-    # While in this case gym.make() is possible to use as well, we recommend our custom make env function.
-    # First, it already takes care of seeding and second enables the use of DMC tasks within the gym interface.
+    # Equivalent to gym, we have make function which can be used to create environments.
+    # It takes care of seeding and enables the use of a variety of external environments using the gym interface.
     env = alr_envs.make(env_name, seed)
 
     rewards = 0
@@ -37,8 +35,12 @@ def example_mp(env_name="alr_envs:HoleReacherDMP-v1", seed=1, iterations=1, rend
         else:
             env.render(mode=None)
 
+        # Now the action space is not the raw action but the parametrization of the trajectory generator,
+        # such as a ProMP
         ac = env.action_space.sample()
+        # This executes a full trajectory
         obs, reward, done, info = env.step(ac)
+        # Aggregated reward
         rewards += reward
 
         if done:
