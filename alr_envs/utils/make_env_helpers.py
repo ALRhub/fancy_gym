@@ -118,7 +118,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
             has_black_box_wrapper = True
         _env = w(_env)
     if not has_black_box_wrapper:
-        raise ValueError("An RawInterfaceWrapper is required in order to leverage movement primitive environments.")
+        raise ValueError("A RawInterfaceWrapper is required in order to leverage movement primitive environments.")
     return _env
 
 

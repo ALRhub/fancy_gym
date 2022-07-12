@@ -25,14 +25,12 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
 
     for i in range(iterations):
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
-        rewards += reward
-
         if render:
             # THIS NEEDS TO BE SET TO FALSE FOR NOW, BECAUSE THE INTERFACE FOR RENDERING IS DIFFERENT TO BASIC GYM
             # TODO: Remove this, when Metaworld fixes its interface.
             env.render(False)
-
+        obs, reward, done, info = env.step(ac)
+        rewards += reward
         if done:
             print(env_id, rewards)
             rewards = 0
@@ -60,25 +58,32 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     """
 
     # Base MetaWorld name, according to structure of above example
-    base_env = "button-press-v2"
+    base_env_id = "metaworld:button-press-v2"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [alr_envs.meta.goal_and_object_change.MPWrapper]
-    mp_kwargs = {
-        "num_dof": 4,  # degrees of fredom a.k.a. the old action space dimensionality
-        "num_basis": 5,  # number of basis functions, the new action space has size num_dof x num_basis
-        "duration": 6.25,  # length of trajectory in s, number of steps = duration / dt
-        "post_traj_time": 0,  # pad trajectory with additional zeros at the end (recommended: 0)
-        "width": 0.025,  # width of the basis functions
-        "zero_start": True,  # start from current environment position if True
-        "weights_scale": 1,  # scaling of MP weights
-        "policy_type": "metaworld",  # custom tracking_controller type for metaworld environments
-    }
+    wrappers = [alr_envs.meta.goal_object_change_mp_wrapper.MPWrapper]
+    # # For a ProMP
+    # trajectory_generator_kwargs = {'trajectory_generator_type': 'promp'}
+    # phase_generator_kwargs = {'phase_generator_type': 'linear'}
+    # controller_kwargs = {'controller_type': 'metaworld'}
+    # basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
+    #                           'num_basis': 5,
+    #                           'num_basis_zero_start': 1
+    #                           }
 
-    env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs)
-    # OR for a DMP (other traj_gen_kwargs are required, see dmc_examples):
-    # env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=traj_gen_kwargs, **kwargs)
+    # For a DMP
+    trajectory_generator_kwargs = {'trajectory_generator_type': 'dmp'}
+    phase_generator_kwargs = {'phase_generator_type': 'exp',
+                              'alpha_phase': 2}
+    controller_kwargs = {'controller_type': 'metaworld'}
+    basis_generator_kwargs = {'basis_generator_type': 'rbf',
+                              'num_basis': 5
+                              }
+    env = alr_envs.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+                           traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
+                           phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
+                           seed=seed)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
@@ -102,7 +107,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         rewards += reward
 
         if done:
-            print(base_env, rewards)
+            print(base_env_id, rewards)
             rewards = 0
             obs = env.reset()
 
@@ -118,11 +123,12 @@ if __name__ == '__main__':
     # export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
     render = False
 
-    # # Standard DMC Suite tasks
-    example_dmc("button-press-v2", seed=10, iterations=500, render=render)
+    # # Standard Meta world tasks
+    example_dmc("metaworld:button-press-v2", seed=10, iterations=500, render=render)
 
-    # MP + MetaWorld hybrid task provided in the our framework
+    # # MP + MetaWorld hybrid task provided in the our framework
     example_dmc("ButtonPressProMP-v2", seed=10, iterations=1, render=render)
-
-    # Custom MetaWorld task
+    #
+    # # Custom MetaWorld task
     example_custom_dmc_and_mp(seed=10, iterations=1, render=render)
+

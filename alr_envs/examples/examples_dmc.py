@@ -1,11 +1,11 @@
 import alr_envs
 
 
-def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
+def example_dmc(env_id="dmc:fish-swim", seed=1, iterations=1000, render=True):
     """
     Example for running a DMC based env in the step based setting.
-    The env_id has to be specified as `domain_name-task_name` or
-    for manipulation tasks as `manipulation-environment_name`
+    The env_id has to be specified as `domain_name:task_name` or
+    for manipulation tasks as `domain_name:manipulation-environment_name`
 
     Args:
         env_id: Either `domain_name-task_name` or `manipulation-environment_name`
@@ -24,11 +24,10 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
 
     for i in range(iterations):
         ac = env.action_space.sample()
+        if render:
+            env.render(mode="human")
         obs, reward, done, info = env.step(ac)
         rewards += reward
-
-        if render:
-            env.render("human")
 
         if done:
             print(env_id, rewards)
@@ -57,34 +56,37 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     """
 
     # Base DMC name, according to structure of above example
-    base_env = "ball_in_cup-catch"
+    base_env_id = "dmc:ball_in_cup-catch"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
     wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
-    mp_kwargs = {
-        "num_dof": 2,  # degrees of fredom a.k.a. the old action space dimensionality
-        "num_basis": 5,  # number of basis functions, the new action space has size num_dof x num_basis
-        "duration": 20,  # length of trajectory in s, number of steps = duration / dt
-        "learn_goal": True,  # learn the goal position (recommended)
-        "alpha_phase": 2,
-        "bandwidth_factor": 2,
-        "policy_type": "motor",  # tracking_controller type, 'velocity', 'position', and 'motor' (torque control)
-        "weights_scale": 1,  # scaling of MP weights
-        "goal_scale": 1,  # scaling of learned goal position
-        "policy_kwargs": {  # only required for torque control/PD-Controller
-            "p_gains": 0.2,
-            "d_gains": 0.05
-        }
-    }
-    kwargs = {
-        "time_limit": 20,  # same as duration value but as max horizon for underlying DMC environment
-        "episode_length": 1000,  # corresponding number of episode steps
-        # "frame_skip": 1
-    }
-    env = alr_envs.make_dmp_env(base_env, wrappers=wrappers, seed=seed, mp_kwargs=mp_kwargs, **kwargs)
-    # OR for a deterministic ProMP (other traj_gen_kwargs are required, see metaworld_examples):
-    # env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=mp_args)
+    # # For a ProMP
+    trajectory_generator_kwargs = {'trajectory_generator_type': 'promp'}
+    phase_generator_kwargs = {'phase_generator_type': 'linear'}
+    controller_kwargs = {'controller_type': 'motor',
+                          "p_gains": 1.0,
+                          "d_gains": 0.1,}
+    basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
+                              'num_basis': 5,
+                              'num_basis_zero_start': 1
+                              }
+
+    # For a DMP
+    # trajectory_generator_kwargs = {'trajectory_generator_type': 'dmp'}
+    # phase_generator_kwargs = {'phase_generator_type': 'exp',
+    #                           'alpha_phase': 2}
+    # controller_kwargs = {'controller_type': 'motor',
+    #                      "p_gains": 1.0,
+    #                      "d_gains": 0.1,
+    #                      }
+    # basis_generator_kwargs = {'basis_generator_type': 'rbf',
+    #                           'num_basis': 5
+    #                           }
+    env = alr_envs.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+                           traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
+                           phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
+                           seed=seed)
 
     # This renders the full MP trajectory
     # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
@@ -104,7 +106,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
         rewards += reward
 
         if done:
-            print(base_env, rewards)
+            print(base_env_id, rewards)
             rewards = 0
             obs = env.reset()
 
@@ -118,18 +120,18 @@ if __name__ == '__main__':
 
     # For rendering DMC
     # export MUJOCO_GL="osmesa"
-    render = False
+    render = True
 
     # # Standard DMC Suite tasks
-    example_dmc("fish-swim", seed=10, iterations=1000, render=render)
-
-    # Manipulation tasks
-    # Disclaimer: The vision versions are currently not integrated and yield an error
-    example_dmc("manipulation-reach_site_features", seed=10, iterations=250, render=render)
-
-    # Gym + DMC hybrid task provided in the MP framework
+    example_dmc("dmc:fish-swim", seed=10, iterations=1000, render=render)
+    #
+    # # Manipulation tasks
+    # # Disclaimer: The vision versions are currently not integrated and yield an error
+    example_dmc("dmc:manipulation-reach_site_features", seed=10, iterations=250, render=render)
+    #
+    # # Gym + DMC hybrid task provided in the MP framework
     example_dmc("dmc_ball_in_cup-catch_promp-v0", seed=10, iterations=1, render=render)
 
-    # Custom DMC task
-    # Different seed, because the episode is longer for this example and the name+seed combo is already registered above
+    # Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is
+    # already registered above
     example_custom_dmc_and_mp(seed=11, iterations=1, render=render)
