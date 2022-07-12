@@ -2,6 +2,7 @@
 # License: MIT
 # Copyright (c) 2020 Denis Yarats
 import collections
+import cv2
 from collections.abc import MutableMapping
 from typing import Any, Dict, Tuple, Optional, Union, Callable
 
@@ -70,6 +71,7 @@ class DMCWrapper(gym.Env):
         self._observation_space = _spec_to_box(self._env.observation_spec().values())
 
         self._window = None
+        self.id = 'dmc'
 
     def __getattr__(self, item):
         """Propagate only non-existent properties to wrapped env."""
@@ -136,24 +138,26 @@ class DMCWrapper(gym.Env):
             img = np.dstack([img.astype(np.uint8)] * 3)
 
         if mode == 'human':
-            try:
-                import cv2
-                if self._window is None:
-                    self._window = cv2.namedWindow(self.id, cv2.WINDOW_AUTOSIZE)
+            if self._window is None:
+                self._window = cv2.namedWindow(self.id, cv2.WINDOW_AUTOSIZE)
 
-                cv2.imshow(self.id, img[..., ::-1])  # Image in BGR
-                cv2.waitKey(1)
-            except ImportError:
-                import pygame
-                img = img.transpose((1, 0, 2))
-                if self._window is None:
-                    pygame.init()
-                    pygame.display.init()
-                    self._window = pygame.display.set_mode(img.shape[:2])
-
-                self._window.blit(pygame.surfarray.make_surface(img), (0, 0))
-                pygame.event.pump()
-                pygame.display.flip()
+            cv2.imshow(self.id, img[..., ::-1])  # Image in BGR
+            cv2.waitKey(1)
+            # PYGAME seems to destroy some global rendering configs from the physics render
+            # except ImportError:
+            #     import pygame
+            #     img_copy = img.copy().transpose((1, 0, 2))
+            #     if self._window is None:
+            #         pygame.init()
+            #         pygame.display.init()
+            #         self._window = pygame.display.set_mode(img_copy.shape[:2])
+            #         self.clock = pygame.time.Clock()
+            #
+            #     surf = pygame.surfarray.make_surface(img_copy)
+            #     self._window.blit(surf, (0, 0))
+            #     pygame.event.pump()
+            #     self.clock.tick(30)
+            #     pygame.display.flip()
 
     def close(self):
         super().close()
