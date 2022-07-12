@@ -27,7 +27,7 @@ class ALRHopperThrowEnv(HopperEnv):
                  healthy_z_range=(0.7, float('inf')),
                  healthy_angle_range=(-float('inf'), float('inf')),
                  reset_noise_scale=5e-3,
-                 context = True,
+                 context=True,
                  exclude_current_positions_from_observation=True,
                  max_episode_steps=250):
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
@@ -40,10 +40,10 @@ class ALRHopperThrowEnv(HopperEnv):
                          exclude_current_positions_from_observation)
 
     def step(self, action):
-
         self.current_step += 1
         self.do_simulation(action, self.frame_skip)
-        ball_pos_after = self.get_body_com("ball")[0] #abs(self.get_body_com("ball")[0]) # use x and y to get point and use euclid distance as reward?
+        ball_pos_after = self.get_body_com("ball")[
+            0]  # abs(self.get_body_com("ball")[0]) # use x and y to get point and use euclid distance as reward?
         ball_pos_after_y = self.get_body_com("ball")[2]
 
         # done = self.done TODO We should use this, not sure why there is no other termination; ball_landed should be enough, because we only look at the throw itself? - Paul and Marc
@@ -57,7 +57,7 @@ class ALRHopperThrowEnv(HopperEnv):
 
         if self.current_step >= self.max_episode_steps or done:
             distance_reward = -np.linalg.norm(ball_pos_after - self.goal) if self.context else \
-                                                                            self._forward_reward_weight * ball_pos_after
+                self._forward_reward_weight * ball_pos_after
             healthy_reward = 0 if self.context else self.healthy_reward * self.current_step
 
             rewards = distance_reward + healthy_reward
@@ -67,8 +67,8 @@ class ALRHopperThrowEnv(HopperEnv):
         info = {
             'ball_pos': ball_pos_after,
             'ball_pos_y': ball_pos_after_y,
-            '_steps' : self.current_step,
-            'goal' : self.goal,
+            '_steps': self.current_step,
+            'goal': self.goal,
         }
 
         return observation, reward, done, info
@@ -78,7 +78,7 @@ class ALRHopperThrowEnv(HopperEnv):
 
     def reset(self):
         self.current_step = 0
-        self.goal = self.goal = np.random.uniform(2.0, 6.0, 1) # 0.5 8.0
+        self.goal = self.goal = self.np_random.uniform(2.0, 6.0, 1)  # 0.5 8.0
         return super().reset()
 
     # overwrite reset_model to make it deterministic
@@ -86,13 +86,14 @@ class ALRHopperThrowEnv(HopperEnv):
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 
-        qpos = self.init_qpos # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
-        qvel = self.init_qvel # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
+        qpos = self.init_qpos  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        qvel = self.init_qvel  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
 
         self.set_state(qpos, qvel)
 
         observation = self._get_obs()
         return observation
+
 
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"

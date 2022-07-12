@@ -3,7 +3,6 @@ from gym.envs.mujoco.hopper_v3 import HopperEnv
 
 import numpy as np
 
-
 MAX_EPISODE_STEPS_HOPPERTHROWINBASKET = 250
 
 
@@ -33,7 +32,7 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
                  context=True,
                  penalty=0.0,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps = 250):
+                 max_episode_steps=250):
         self.hit_basket_reward = hit_basket_reward
         self.current_step = 0
         self.max_episode_steps = max_episode_steps
@@ -57,7 +56,8 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
         basket_center = (basket_pos[0] + 0.5, basket_pos[1], basket_pos[2])
 
         is_in_basket_x = ball_pos[0] >= basket_pos[0] and ball_pos[0] <= basket_pos[0] + self.basket_size
-        is_in_basket_y = ball_pos[1] >= basket_pos[1] - (self.basket_size/2) and ball_pos[1] <= basket_pos[1] + (self.basket_size/2)
+        is_in_basket_y = ball_pos[1] >= basket_pos[1] - (self.basket_size / 2) and ball_pos[1] <= basket_pos[1] + (
+                    self.basket_size / 2)
         is_in_basket_z = ball_pos[2] < 0.1
         is_in_basket = is_in_basket_x and is_in_basket_y and is_in_basket_z
         if is_in_basket: self.ball_in_basket = True
@@ -77,15 +77,16 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
                 if not self.context:
                     rewards += self.hit_basket_reward
             else:
-                dist = np.linalg.norm(ball_pos-basket_center)
+                dist = np.linalg.norm(ball_pos - basket_center)
                 if self.context:
                     rewards = -10 * dist
                 else:
-                    rewards -= (dist*dist)
+                    rewards -= (dist * dist)
         else:
             # penalty not needed
-            rewards += ((action[:2] > 0) * self.penalty).sum() if self.current_step < 10 else 0 #too much of a penalty?
-            
+            rewards += ((action[
+                         :2] > 0) * self.penalty).sum() if self.current_step < 10 else 0  # too much of a penalty?
+
         observation = self._get_obs()
         reward = rewards - costs
         info = {
@@ -106,7 +107,7 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
         self.ball_in_basket = False
         if self.context:
             basket_id = self.sim.model.body_name2id("basket_ground")
-            self.basket_x = np.random.uniform(3, 7, 1)
+            self.basket_x = self.np_random.uniform(3, 7, 1)
             self.sim.model.body_pos[basket_id] = [self.basket_x, 0, 0]
         return super().reset()
 
@@ -115,8 +116,8 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 
-        qpos = self.init_qpos # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
-        qvel = self.init_qvel # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
+        qpos = self.init_qpos  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        qvel = self.init_qvel  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
 
         self.set_state(qpos, qvel)
 
