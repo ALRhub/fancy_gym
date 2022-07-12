@@ -84,7 +84,7 @@ class AntJumpEnv(AntEnv):
               options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self.current_step = 0
         self.max_height = 0
-        self.goal = np.random.uniform(1.0, 2.5,
+        self.goal = self.np_random.uniform(1.0, 2.5,
                                       1)  # goal heights from 1.0 to 2.5; can be increased, but didnt work well with CMORE
         return super().reset()
 
