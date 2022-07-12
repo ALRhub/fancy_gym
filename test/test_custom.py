@@ -7,7 +7,7 @@ import alr_envs  # noqa
 from alr_envs.utils.make_env_helpers import make
 
 CUSTOM_IDS = [spec.id for spec in gym.envs.registry.all() if
-              "alr_envs" in spec.entry_point and not 'make_bb_env_helper' in spec.entry_point]
+              "alr_envs" in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
 SEED = 1
 
 

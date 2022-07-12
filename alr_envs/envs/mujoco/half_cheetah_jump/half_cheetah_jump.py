@@ -8,7 +8,7 @@ import numpy as np
 MAX_EPISODE_STEPS_HALFCHEETAHJUMP = 100
 
 
-class ALRHalfCheetahJumpEnv(HalfCheetahEnv):
+class HalfCheetahJumpEnv(HalfCheetahEnv):
     """
     ctrl_cost_weight 0.1 -> 0.0
     """

@@ -7,7 +7,7 @@ import numpy as np
 MAX_EPISODE_STEPS_HOPPERTHROW = 250
 
 
-class ALRHopperThrowEnv(HopperEnv):
+class HopperThrowEnv(HopperEnv):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.0 -> 0.1
@@ -98,7 +98,7 @@ class ALRHopperThrowEnv(HopperEnv):
 
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRHopperThrowEnv()
+    env = HopperThrowEnv()
     obs = env.reset()
 
     for i in range(2000):

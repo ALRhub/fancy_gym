@@ -154,14 +154,14 @@ register(
 )
 
 register(
-    id='ALRAntJump-v0',
+    id='AntJump-v0',
     entry_point='alr_envs.envs.mujoco:AntJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
 )
 
 register(
-    id='ALRHalfCheetahJump-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHalfCheetahJumpEnv',
+    id='HalfCheetahJump-v0',
+    entry_point='alr_envs.envs.mujoco:HalfCheetahJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
 )
 
@@ -173,19 +173,19 @@ register(
 
 register(
     id='ALRHopperThrow-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHopperThrowEnv',
+    entry_point='alr_envs.envs.mujoco:HopperThrowEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROW,
 )
 
 register(
     id='ALRHopperThrowInBasket-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHopperThrowInBasketEnv',
+    entry_point='alr_envs.envs.mujoco:HopperThrowInBasketEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
 )
 
 register(
     id='ALRWalker2DJump-v0',
-    entry_point='alr_envs.envs.mujoco:ALRWalker2dJumpEnv',
+    entry_point='alr_envs.envs.mujoco:Walker2dJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_WALKERJUMP,
 )
 
@@ -518,7 +518,7 @@ register(
 # CtxtFree are v0, Contextual are v1
 register(
     id='ALRHalfCheetahJump-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHalfCheetahJumpEnv',
+    entry_point='alr_envs.envs.mujoco:HalfCheetahJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
@@ -626,7 +626,7 @@ for i in _vs:
     )
     register(
     id='ALRHopperThrow-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHopperThrowEnv',
+    entry_point='alr_envs.envs.mujoco:HopperThrowEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROW,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROW,
@@ -635,7 +635,7 @@ for i in _vs:
     )   
     register(
     id='ALRHopperThrowInBasket-v0',
-    entry_point='alr_envs.envs.mujoco:ALRHopperThrowInBasketEnv',
+    entry_point='alr_envs.envs.mujoco:HopperThrowInBasketEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
@@ -644,7 +644,7 @@ for i in _vs:
     )
     register(
     id='ALRWalker2DJump-v0',
-    entry_point='alr_envs.envs.mujoco:ALRWalker2dJumpEnv',
+    entry_point='alr_envs.envs.mujoco:Walker2dJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_WALKERJUMP,
     kwargs={
         "max_episode_steps": MAX_EPISODE_STEPS_WALKERJUMP,

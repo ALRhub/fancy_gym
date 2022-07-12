@@ -155,7 +155,7 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
         return ob, reward, done, infos
 
 
-# class ALRBeerBongEnvStepBased(ALRBeerBongEnv):
+# class BeerBongEnvStepBased(ALRBeerBongEnv):
 #     def __init__(self, frame_skip=1, apply_gravity_comp=True, noisy=False, rndm_goal=False, cup_goal_pos=None):
 #         super().__init__(frame_skip, apply_gravity_comp, noisy, rndm_goal, cup_goal_pos)
 #         self.release_step = 62  # empirically evaluated for frame_skip=2!

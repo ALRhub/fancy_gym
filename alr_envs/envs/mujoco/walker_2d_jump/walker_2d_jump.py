@@ -12,7 +12,7 @@ MAX_EPISODE_STEPS_WALKERJUMP = 300
 #  as possible, while landing at a specific target position
 
 
-class ALRWalker2dJumpEnv(Walker2dEnv):
+class Walker2dJumpEnv(Walker2dEnv):
     """
     healthy reward 1.0 -> 0.005 -> 0.0025 not from alex
     penalty 10 -> 0 not from alex
@@ -95,7 +95,7 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
 
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"
-    env = ALRWalker2dJumpEnv()
+    env = Walker2dJumpEnv()
     obs = env.reset()
 
     for i in range(6000):

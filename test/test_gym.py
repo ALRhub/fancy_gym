@@ -6,7 +6,8 @@ import numpy as np
 import alr_envs
 from alr_envs import make
 
-METAWORLD_IDS = []
+GYM_IDS = [spec.id for spec in gym.envs.registry.all() if
+           "alr_envs" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
 SEED = 1
 
 
@@ -58,7 +59,7 @@ class TestGymEnvironments(unittest.TestCase):
             if done:
                 break
 
-        assert done, "Done flag is not True after end of episode."
+        assert done or env.spec.max_episode_steps is None, "Done flag is not True after end of episode."
         observations.append(obs)
         env.close()
         del env
