@@ -1,4 +1,6 @@
 import os
+from typing import Optional
+
 from gym.envs.mujoco.hopper_v3 import HopperEnv
 
 import numpy as np
@@ -57,13 +59,14 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
 
         is_in_basket_x = ball_pos[0] >= basket_pos[0] and ball_pos[0] <= basket_pos[0] + self.basket_size
         is_in_basket_y = ball_pos[1] >= basket_pos[1] - (self.basket_size / 2) and ball_pos[1] <= basket_pos[1] + (
-                    self.basket_size / 2)
+                self.basket_size / 2)
         is_in_basket_z = ball_pos[2] < 0.1
         is_in_basket = is_in_basket_x and is_in_basket_y and is_in_basket_z
-        if is_in_basket: self.ball_in_basket = True
+        if is_in_basket:
+            self.ball_in_basket = True
 
         ball_landed = self.get_body_com("ball")[2] <= 0.05
-        done = ball_landed or is_in_basket
+        done = bool(ball_landed or is_in_basket)
 
         rewards = 0
 
@@ -98,7 +101,7 @@ class ALRHopperThrowInBasketEnv(HopperEnv):
     def _get_obs(self):
         return np.append(super()._get_obs(), self.basket_x)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         if self.max_episode_steps == 10:
             # We have to initialize this here, because the spec is only added after creating the env.
             self.max_episode_steps = self.spec.max_episode_steps

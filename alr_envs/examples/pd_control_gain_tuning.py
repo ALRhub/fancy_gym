@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from alr_envs import dmc, meta
-from alr_envs.alr import mujoco
+from alr_envs.envs import mujoco
 from alr_envs.utils.make_env_helpers import make_promp_env
 
 

@@ -5,7 +5,7 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
 
-from alr_envs.alr.mujoco.beerpong.deprecated.beerpong_reward_staged import BeerPongReward
+from alr_envs.envs.mujoco.beerpong.deprecated.beerpong_reward_staged import BeerPongReward
 
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):

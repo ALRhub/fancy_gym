@@ -55,7 +55,7 @@ class AntJumpEnv(AntEnv):
 
         costs = ctrl_cost + contact_cost
 
-        done = height < 0.3  # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
+        done = bool(height < 0.3)  # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
 
         if self.current_step == MAX_EPISODE_STEPS_ANTJUMP or done:
             # -10 for scaling the value of the distance between the max_height and the goal height; only used when context is enabled
@@ -84,8 +84,8 @@ class AntJumpEnv(AntEnv):
               options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
         self.current_step = 0
         self.max_height = 0
-        self.goal = self.np_random.uniform(1.0, 2.5,
-                                      1)  # goal heights from 1.0 to 2.5; can be increased, but didnt work well with CMORE
+        # goal heights from 1.0 to 2.5; can be increased, but didnt work well with CMORE
+        self.goal = self.np_random.uniform(1.0, 2.5, 1)
         return super().reset()
 
     # reset_model had to be implemented in every env to make it deterministic

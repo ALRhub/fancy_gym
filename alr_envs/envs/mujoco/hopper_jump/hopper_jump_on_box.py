@@ -134,7 +134,7 @@ class HopperJumpOnBoxEnv(HopperEnv):
         self.hopper_on_box = False
         if self.context:
             box_id = self.sim.model.body_name2id("box")
-            self.box_x = np.random.uniform(1, 3, 1)
+            self.box_x = self.np_random.uniform(1, 3, 1)
             self.sim.model.body_pos[box_id] = [self.box_x, 0, 0]
         return super().reset()
 

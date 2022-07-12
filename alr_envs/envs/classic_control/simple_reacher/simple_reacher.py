@@ -5,7 +5,7 @@ import numpy as np
 from gym import spaces
 from gym.core import ObsType
 
-from alr_envs.alr.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
+from alr_envs.envs.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
 
 
 class SimpleReacherEnv(BaseReacherTorqueEnv):

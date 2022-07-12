@@ -6,7 +6,7 @@ import numpy as np
 from gym.core import ObsType
 from matplotlib import patches
 
-from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from alr_envs.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
 
 
 class HoleReacherEnv(BaseReacherDirectEnv):
@@ -41,13 +41,13 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
         if rew_fct == "simple":
-            from alr_envs.alr.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
+            from alr_envs.envs.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
         elif rew_fct == "vel_acc":
-            from alr_envs.alr.classic_control.hole_reacher.hr_dist_vel_acc_reward import HolereacherReward
+            from alr_envs.envs.classic_control.hole_reacher.hr_dist_vel_acc_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision, collision_penalty)
         elif rew_fct == "unbounded":
-            from alr_envs.alr.classic_control.hole_reacher.hr_unbounded_reward import HolereacherReward
+            from alr_envs.envs.classic_control.hole_reacher.hr_unbounded_reward import HolereacherReward
             self.reward_function = HolereacherReward(allow_self_collision, allow_wall_collision)
         else:
             raise ValueError("Unknown reward function {}".format(rew_fct))

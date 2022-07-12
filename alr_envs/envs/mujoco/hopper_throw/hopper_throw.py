@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 from gym.envs.mujoco.hopper_v3 import HopperEnv
 import numpy as np
@@ -47,7 +48,7 @@ class ALRHopperThrowEnv(HopperEnv):
         ball_pos_after_y = self.get_body_com("ball")[2]
 
         # done = self.done TODO We should use this, not sure why there is no other termination; ball_landed should be enough, because we only look at the throw itself? - Paul and Marc
-        ball_landed = self.get_body_com("ball")[2] <= 0.05
+        ball_landed = bool(self.get_body_com("ball")[2] <= 0.05)
         done = ball_landed
 
         ctrl_cost = self.control_cost(action)
@@ -76,7 +77,7 @@ class ALRHopperThrowEnv(HopperEnv):
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_step = 0
         self.goal = self.goal = self.np_random.uniform(2.0, 6.0, 1)  # 0.5 8.0
         return super().reset()

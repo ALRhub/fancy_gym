@@ -1,8 +1,11 @@
 import os
+from typing import Optional
+
 from gym.envs.mujoco.walker2d_v3 import Walker2dEnv
 import numpy as np
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
+
 
 # TODO: Right now this environment only considers jumping to a specific height, which is not nice. It should be extended
 #  to the same structure as the Hopper, where the angles are randomized (->contexts) and the agent should jump as height
@@ -36,16 +39,16 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
         super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
                          healthy_z_range, healthy_angle_range, reset_noise_scale,
                          exclude_current_positions_from_observation)
-        
+
     def step(self, action):
         self.current_step += 1
         self.do_simulation(action, self.frame_skip)
-        #pos_after = self.get_body_com("torso")[0]
+        # pos_after = self.get_body_com("torso")[0]
         height = self.get_body_com("torso")[2]
 
         self.max_height = max(height, self.max_height)
 
-        done = height < 0.2
+        done = bool(height < 0.2)
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
@@ -70,10 +73,10 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_step = 0
         self.max_height = 0
-        self.goal = np.random.uniform(1.5, 2.5, 1)  # 1.5 3.0
+        self.goal = self.np_random.uniform(1.5, 2.5, 1)  # 1.5 3.0
         return super().reset()
 
     # overwrite reset_model to make it deterministic
@@ -81,13 +84,14 @@ class ALRWalker2dJumpEnv(Walker2dEnv):
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 
-        qpos = self.init_qpos # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
-        qvel = self.init_qvel # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
+        qpos = self.init_qpos  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq)
+        qvel = self.init_qvel  # + self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv)
 
         self.set_state(qpos, qvel)
 
         observation = self._get_obs()
         return observation
+
 
 if __name__ == '__main__':
     render_mode = "human"  # "human" or "partial" or "final"

@@ -7,7 +7,7 @@ from gym import spaces
 from gym.core import ObsType
 from gym.utils import seeding
 
-from alr_envs.alr.classic_control.utils import intersect
+from alr_envs.envs.classic_control.utils import intersect
 
 
 class BaseReacherEnv(gym.Env, ABC):

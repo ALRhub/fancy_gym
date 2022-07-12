@@ -6,7 +6,7 @@ import numpy as np
 from gym.core import ObsType
 from gym.utils import seeding
 
-from alr_envs.alr.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from alr_envs.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
 
 
 class ViaPointReacherEnv(BaseReacherDirectEnv):
