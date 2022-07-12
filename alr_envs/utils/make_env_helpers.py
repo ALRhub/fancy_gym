@@ -7,8 +7,7 @@ from typing import Iterable, Type, Union
 
 import gym
 import numpy as np
-
-import alr_envs
+from gym.envs.registration import register, registry
 
 try:
     from dm_control import suite, manipulation, composer
@@ -22,19 +21,15 @@ except Exception:
     # catch Exception due to Mujoco-py
     pass
 
-from gym.envs.registration import registry
-from gym.envs.registration import register
-from gym.wrappers import TimeAwareObservation
-
+import alr_envs
 from alr_envs.black_box.black_box_wrapper import BlackBoxWrapper
 from alr_envs.black_box.factory.basis_generator_factory import get_basis_generator
 from alr_envs.black_box.factory.controller_factory import get_controller
 from alr_envs.black_box.factory.phase_generator_factory import get_phase_generator
 from alr_envs.black_box.factory.trajectory_generator_factory import get_trajectory_generator
 from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
+from alr_envs.black_box.time_aware_observation import TimeAwareObservation
 from alr_envs.utils.utils import nested_update
-
-ALL_FRAMEWORK_TYPES = ['meta', 'dmc', 'gym']
 
 
 def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwargs):
@@ -63,33 +58,20 @@ def make_rank(env_id: str, seed: int, rank: int = 0, return_callable=True, **kwa
     return f if return_callable else f()
 
 
-def make(env_id, seed, **kwargs):
-    return _make(env_id, seed, **kwargs)
-
-
-def _make(env_id: str, seed, **kwargs):
+def make(env_id: str, seed: int, **kwargs):
     """
     Converts an env_id to an environment with the gym API.
-    This also works for DeepMind Control Suite interface_wrappers
-    for which domain name and task name are expected to be separated by "-".
+    This also works for DeepMind Control Suite environments that are wrapped using the DMCWrapper, they can be
+    specified with "dmc:domain_name-task_name"
+    Analogously, metaworld tasks can be created as "metaworld:env_id-v2".
+
     Args:
-        env_id: gym name or env_id of the form "domain_name-task_name" for DMC tasks
+        env_id: spec or env_id for gym tasks, external environments require a domain specification
         **kwargs: Additional kwargs for the constructor such as pixel observations, etc.
 
     Returns: Gym environment
 
     """
-
-    # 'dmc:domain-task'
-    # 'gym:name-vX'
-    # 'meta:name-vX'
-    # 'meta:bb:name-vX'
-    # 'hand:name-vX'
-    # 'name-vX'
-    # 'bb:name-vX'
-    #
-    # env_id.split(':')
-    # if 'dmc' :
 
     if ':' in env_id:
         split_id = env_id.split(':')
@@ -98,13 +80,17 @@ def _make(env_id: str, seed, **kwargs):
         framework = None
 
     if framework == 'metaworld':
-        # MetaWorld env
-        env = make_metaworld(env_id, seed=seed, **kwargs)
+        # MetaWorld environment
+        env = make_metaworld(env_id, seed, **kwargs)
     elif framework == 'dmc':
-        # DeepMind Controlp
-        env = make_dmc(env_id, seed=seed, **kwargs)
+        # DeepMind Control environment
+        env = make_dmc(env_id, seed, **kwargs)
     else:
-        env = make_gym(env_id, seed=seed, **kwargs)
+        env = make_gym(env_id, seed, **kwargs)
+
+    env.seed(seed)
+    env.action_space.seed(seed)
+    env.observation_space.seed(seed)
 
     return env
 
@@ -285,7 +271,7 @@ def make_dmc(
     )
 
     env = gym.make(gym_id)
-    env.seed(seed=seed)
+    env.seed(seed)
     return env
 
 
@@ -300,15 +286,6 @@ def make_metaworld(env_id, seed, **kwargs):
     # New argument to use global seeding
     _env.seeded_rand_vec = True
 
-    # Manually set spec, as metaworld environments are not registered via gym
-    # _env.unwrapped.spec = EnvSpec(env_id)
-    # Set Timelimit based on the maximum allowed path length of the environment
-    # _env = gym.wrappers.TimeLimit(_env, max_episode_steps=_env.max_path_length)
-    # _env.seed(seed)
-    # _env.action_space.seed(seed)
-    # _env.observation_space.seed(seed)
-    # _env.goal_space.seed(seed)
-
     gym_id = uuid.uuid4().hex + '-v1'
 
     register(
@@ -319,28 +296,33 @@ def make_metaworld(env_id, seed, **kwargs):
 
     # TODO enable checker when the incorrect dtype of obs and observation space are fixed by metaworld
     env = gym.make(gym_id, disable_env_checker=True)
-    env.seed(seed=seed)
     return env
 
 
 def make_gym(env_id, seed, **kwargs):
-    # This access is required to allow for nested dict updates for BB envs
-    spec = registry.get(env_id)
-    all_kwargs = deepcopy(spec.kwargs)
+    """
+    Create
+    Args:
+        env_id:
+        seed:
+        **kwargs:
+
+    Returns:
+
+    """
+    # Getting the existing keywords to allow for nested dict updates for BB envs
+    # gym only allows for non nested updates.
+    all_kwargs = deepcopy(registry.get(env_id).kwargs)
     nested_update(all_kwargs, kwargs)
     kwargs = all_kwargs
 
-    # Add seed to kwargs in case it is a predefined gym+dmc hybrid environment.
-    # if env_id.startswith("dmc") or any(s in env_id.lower() for s in ['promp', 'dmp', 'prodmp']):
+    # Add seed to kwargs for bb environments to pass seed to step environments
     all_bb_envs = sum(alr_envs.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values(), [])
-    if env_id.startswith("dmc") or env_id in all_bb_envs:
+    if env_id in all_bb_envs:
         kwargs.update({"seed": seed})
 
     # Gym
     env = gym.make(env_id, **kwargs)
-    env.seed(seed)
-    env.action_space.seed(seed)
-    env.observation_space.seed(seed)
     return env
 
 
