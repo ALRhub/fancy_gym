@@ -31,10 +31,10 @@ setup(
         "mujoco_py<2.2,>=2.1",
     ],
     packages=[package for package in find_packages() if package.startswith("alr_envs")],
-    # packages=['alr_envs', 'alr_envs.alr', 'alr_envs.open_ai', 'alr_envs.dmc', 'alr_envs.meta', 'alr_envs.utils'],
+    # packages=['alr_envs', 'alr_envs.envs', 'alr_envs.open_ai', 'alr_envs.dmc', 'alr_envs.meta', 'alr_envs.utils'],
     package_data={
         "alr_envs": [
-            "alr/mujoco/*/assets/*.xml",
+            "envs/mujoco/*/assets/*.xml",
         ]
     },
     python_requires=">=3.6",

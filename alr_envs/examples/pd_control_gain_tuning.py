@@ -1,9 +1,10 @@
+from collections import OrderedDict
+
 import numpy as np
 from matplotlib import pyplot as plt
 
-from alr_envs import dmc, meta
-from alr_envs.alr import mujoco
-from alr_envs.utils.make_env_helpers import make_promp_env
+from alr_envs import make_bb, dmc, meta
+from alr_envs.envs import mujoco
 
 
 def visualize(env):
@@ -16,11 +17,12 @@ def visualize(env):
 # This might work for some environments, however, please verify either way the correct trajectory information
 # for your environment are extracted below
 SEED = 1
-# env_id = "ball_in_cup-catch"
-env_id = "ALRReacherSparse-v0"
-env_id = "button-press-v2"
+# env_id = "dmc:ball_in_cup-catch"
+# wrappers = [dmc.suite.ball_in_cup.MPWrapper]
+env_id = "Reacher5dSparse-v0"
 wrappers = [mujoco.reacher.MPWrapper]
-wrappers = [meta.goal_object_change_mp_wrapper.MPWrapper]
+# env_id = "metaworld:button-press-v2"
+# wrappers = [meta.goal_object_change_mp_wrapper.MPWrapper]
 
 mp_kwargs = {
     "num_dof": 4,
@@ -38,7 +40,7 @@ mp_kwargs = {
 # kwargs = dict(time_limit=4, episode_length=200)
 kwargs = {}
 
-env = make_promp_env(env_id, wrappers, seed=SEED, mp_kwargs=mp_kwargs, **kwargs)
+env = make_bb(env_id, wrappers, seed=SEED, mp_kwargs=mp_kwargs, **kwargs)
 env.action_space.seed(SEED)
 
 # Plot difference between real trajectory and target MP trajectory
@@ -59,7 +61,7 @@ img = ax.imshow(env.env.render("rgb_array"))
 fig.show()
 
 for t, pos_vel in enumerate(zip(pos, vel)):
-    actions = env.policy.get_action(pos_vel[0], pos_vel[1],, self.current_vel, self.current_pos
+    actions = env.policy.get_action(pos_vel[0], pos_vel[1], env.current_vel, env.current_pos)
     actions = np.clip(actions, env.full_action_space.low, env.full_action_space.high)
     _, _, _, _ = env.env.step(actions)
     if t % 15 == 0:
@@ -81,7 +83,6 @@ p2 = plt.plot(pos, c='C1', label="MP")  # , label=["MP" if i == 0 else None for 
 plt.xlabel("Episode steps")
 # plt.legend()
 handles, labels = plt.gca().get_legend_handles_labels()
-from collections import OrderedDict
 
 by_label = OrderedDict(zip(labels, handles))
 plt.legend(by_label.values(), by_label.keys())
