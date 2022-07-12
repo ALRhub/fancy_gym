@@ -70,10 +70,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def observation(self, observation):
         # return context space if we are
-        mask = self.env.context_mask
-        # if self.is_time_aware:
-        #     mask = np.append(mask, False)
-        obs = observation[mask] if self.return_context_observation else observation
+        obs = observation[self.env.context_mask] if self.return_context_observation else observation
         # cast dtype because metaworld returns incorrect that throws gym error
         return obs.astype(self.observation_space.dtype)
 

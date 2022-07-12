@@ -28,7 +28,7 @@ from alr_envs.black_box.factory.controller_factory import get_controller
 from alr_envs.black_box.factory.phase_generator_factory import get_phase_generator
 from alr_envs.black_box.factory.trajectory_generator_factory import get_trajectory_generator
 from alr_envs.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from alr_envs.black_box.time_aware_observation import TimeAwareObservation
+from alr_envs.utils.time_aware_observation import TimeAwareObservation
 from alr_envs.utils.utils import nested_update
 
 
@@ -148,11 +148,10 @@ def make_bb(
     if learn_sub_trajs and do_replanning:
         raise ValueError('Cannot used sub-trajectory learning and replanning together.')
 
-    if learn_sub_trajs or do_replanning:
-        # add time_step observation when replanning
-        if not any(issubclass(w, TimeAwareObservation) for w in kwargs['wrappers']):
-            # Add as first wrapper in order to alter observation
-            kwargs['wrappers'].insert(0, TimeAwareObservation)
+    # add time_step observation when replanning
+    if (learn_sub_trajs or do_replanning) and not any(issubclass(w, TimeAwareObservation) for w in kwargs['wrappers']):
+        # Add as first wrapper in order to alter observation
+        kwargs['wrappers'].insert(0, TimeAwareObservation)
 
     env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 

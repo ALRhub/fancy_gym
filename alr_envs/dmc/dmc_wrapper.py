@@ -2,7 +2,6 @@
 # License: MIT
 # Copyright (c) 2020 Denis Yarats
 import collections
-import cv2
 from collections.abc import MutableMapping
 from typing import Any, Dict, Tuple, Optional, Union, Callable
 
@@ -138,11 +137,14 @@ class DMCWrapper(gym.Env):
             img = np.dstack([img.astype(np.uint8)] * 3)
 
         if mode == 'human':
-            if self._window is None:
-                self._window = cv2.namedWindow(self.id, cv2.WINDOW_AUTOSIZE)
-
-            cv2.imshow(self.id, img[..., ::-1])  # Image in BGR
-            cv2.waitKey(1)
+            try:
+                import cv2
+                if self._window is None:
+                    self._window = cv2.namedWindow(self.id, cv2.WINDOW_AUTOSIZE)
+                cv2.imshow(self.id, img[..., ::-1])  # Image in BGR
+                cv2.waitKey(1)
+            except ImportError:
+                raise gym.error.DependencyNotInstalled("Rendering requires opencv. Run `pip install opencv-python`")
             # PYGAME seems to destroy some global rendering configs from the physics render
             # except ImportError:
             #     import pygame
