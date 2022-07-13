@@ -10,18 +10,18 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def context_mask(self):
-        return np.concatenate([[False] * self.env.n_links,  # cos
-                               [False] * self.env.n_links,  # sin
+        return np.concatenate([[False] * self.n_links,  # cos
+                               [False] * self.n_links,  # sin
                                [True] * 2,  # goal position
-                               [False] * self.env.n_links,  # angular velocity
+                               [False] * self.n_links,  # angular velocity
                                [False] * 3,  # goal distance
                                # [False],  # step
                                ])
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.data.qpos.flat[:self.env.n_links]
+        return self.data.qpos.flat[:self.n_links]
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.data.qvel.flat[:self.env.n_links]
+        return self.data.qvel.flat[:self.n_links]

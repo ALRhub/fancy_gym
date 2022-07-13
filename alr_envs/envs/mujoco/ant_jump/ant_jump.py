@@ -2,7 +2,7 @@ from typing import Tuple, Union, Optional
 
 import numpy as np
 from gym.core import ObsType
-from gym.envs.mujoco.ant_v3 import AntEnv
+from gym.envs.mujoco.ant_v4 import AntEnv
 
 MAX_EPISODE_STEPS_ANTJUMP = 200
 
@@ -36,9 +36,15 @@ class AntJumpEnv(AntEnv):
         self.current_step = 0
         self.max_height = 0
         self.goal = 0
-        super().__init__(xml_file, ctrl_cost_weight, contact_cost_weight, healthy_reward, terminate_when_unhealthy,
-                         healthy_z_range, contact_force_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         contact_cost_weight=contact_cost_weight,
+                         healthy_reward=healthy_reward,
+                         terminate_when_unhealthy=terminate_when_unhealthy,
+                         healthy_z_range=healthy_z_range,
+                         contact_force_range=contact_force_range,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
     def step(self, action):
         self.current_step += 1
@@ -90,6 +96,7 @@ class AntJumpEnv(AntEnv):
 
     # reset_model had to be implemented in every env to make it deterministic
     def reset_model(self):
+        # Todo remove if not needed
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 

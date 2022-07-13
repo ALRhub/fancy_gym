@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 
-from gym.envs.mujoco.hopper_v3 import HopperEnv
+from gym.envs.mujoco.hopper_v4 import HopperEnv
 
 import numpy as np
 
@@ -44,9 +44,16 @@ class HopperThrowInBasketEnv(HopperEnv):
         self.penalty = penalty
         self.basket_x = 5
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
-        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
-                         healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         forward_reward_weight=forward_reward_weight,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         healthy_reward=healthy_reward,
+                         terminate_when_unhealthy=terminate_when_unhealthy,
+                         healthy_state_range=healthy_state_range,
+                         healthy_z_range=healthy_z_range,
+                         healthy_angle_range=healthy_angle_range,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
     def step(self, action):
 
@@ -109,13 +116,13 @@ class HopperThrowInBasketEnv(HopperEnv):
         self.current_step = 0
         self.ball_in_basket = False
         if self.context:
-            basket_id = self.sim.model.body_name2id("basket_ground")
-            self.basket_x = self.np_random.uniform(3, 7, 1)
-            self.sim.model.body_pos[basket_id] = [self.basket_x, 0, 0]
+            self.basket_x = self.np_random.uniform(low=3, high=7, size=1)
+            self.model.body("basket_ground").pos[:] = [self.basket_x[0], 0, 0]
         return super().reset()
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
+        # Todo remove if not needed!
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 

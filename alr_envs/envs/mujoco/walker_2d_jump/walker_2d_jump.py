@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 
-from gym.envs.mujoco.walker2d_v3 import Walker2dEnv
+from gym.envs.mujoco.walker2d_v4 import Walker2dEnv
 import numpy as np
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
@@ -36,9 +36,15 @@ class Walker2dJumpEnv(Walker2dEnv):
         self._penalty = penalty
         self.goal = 0
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
-        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
-                         healthy_z_range, healthy_angle_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         forward_reward_weight=forward_reward_weight,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         healthy_reward=healthy_reward,
+                         terminate_when_unhealthy=terminate_when_unhealthy,
+                         healthy_z_range=healthy_z_range,
+                         healthy_angle_range=healthy_angle_range,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
     def step(self, action):
         self.current_step += 1

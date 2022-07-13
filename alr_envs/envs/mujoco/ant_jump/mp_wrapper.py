@@ -16,8 +16,8 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray]:
-        return self.env.sim.data.qpos[7:15].copy()
+        return self.data.qpos[7:15].copy()
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.env.sim.data.qvel[6:14].copy()
+        return self.data.qvel[6:14].copy()

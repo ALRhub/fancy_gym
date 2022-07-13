@@ -1,7 +1,6 @@
 import os
 from typing import Optional
 
-import mujoco_py.builder
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
@@ -50,9 +49,9 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.repeat_action = frame_skip
         # TODO: If accessing IDs is easier in the (new) official mujoco bindings, remove this
         self.model = None
-        self.site_id = lambda x: self.model.site_name2id(x)
-        self.body_id = lambda x: self.model.body_name2id(x)
-        self.geom_id = lambda x: self.model.geom_name2id(x)
+        self.geom_id = lambda x: self._mujoco_bindings.mj_name2id(self.model,
+                                                                  self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
+                                                                  x)
 
         # for reward calculation
         self.dists = []
@@ -65,7 +64,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
-        MujocoEnv.__init__(self, self.xml_path, frame_skip=1, mujoco_bindings="mujoco_py")
+        MujocoEnv.__init__(self, model_path=self.xml_path, frame_skip=1, mujoco_bindings="mujoco")
         utils.EzPickle.__init__(self)
 
     @property
@@ -100,13 +99,13 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         # TODO: Ask Max why we need to set the state twice.
         self.set_state(start_pos, init_vel)
-        start_pos[7::] = self.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
+        start_pos[7::] = self.data.site("init_ball_pos").xpos.copy()
         self.set_state(start_pos, init_vel)
         xy = self.np_random.uniform(self._cup_pos_min, self._cup_pos_max)
         xyz = np.zeros(3)
         xyz[:2] = xy
         xyz[-1] = 0.840
-        self.model.body_pos[self.body_id("cup_table")] = xyz
+        self.model.body("cup_table").pos[:] = xyz
         return self._get_obs()
 
     def step(self, a):
@@ -117,10 +116,10 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
                 self.do_simulation(applied_action, self.frame_skip)
                 # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
                 if self._steps < self.release_step:
-                    self.data.qpos[7::] = self.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
-                    self.data.qvel[7::] = self.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
+                    self.data.qpos[7::] = self.data.site('init_ball_pos').xpos.copy()
+                    self.data.qvel[7::] = self.data.sensor('init_ball_vel').data.copy()
                 crash = False
-            except mujoco_py.builder.MujocoException:
+            except Exception as e:
                 crash = True
 
         ob = self._get_obs()
@@ -145,18 +144,18 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         return ob, reward, done, infos
 
     def _get_obs(self):
-        theta = self.data.qpos.flat[:7]
-        theta_dot = self.data.qvel.flat[:7]
-        ball_pos = self.data.get_body_xpos("ball").copy()
-        cup_goal_diff_final = ball_pos - self.data.get_site_xpos("cup_goal_final_table").copy()
-        cup_goal_diff_top = ball_pos - self.data.get_site_xpos("cup_goal_table").copy()
+        theta = self.data.qpos.flat[:7].copy()
+        theta_dot = self.data.qvel.flat[:7].copy()
+        ball_pos = self.data.qpos.flat[7:].copy()
+        cup_goal_diff_final = ball_pos - self.data.site("cup_goal_final_table").xpos.copy()
+        cup_goal_diff_top = ball_pos - self.data.site("cup_goal_table").xpos.copy()
         return np.concatenate([
             np.cos(theta),
             np.sin(theta),
             theta_dot,
             cup_goal_diff_final,
             cup_goal_diff_top,
-            self.model.body_pos[self.body_id("cup_table")][:2].copy(),
+            self.model.body("cup_table").pos[:2].copy(),
             # [self._steps],  # Use TimeAwareObservation Wrapper instead ....
         ])
 
@@ -165,10 +164,10 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         return super(BeerPongEnv, self).dt * self.repeat_action
 
     def _get_reward(self, action):
-        goal_pos = self.data.get_site_xpos("cup_goal_table")
-        ball_pos = self.data.get_body_xpos("ball")
-        ball_vel = self.data.get_body_xvelp("ball")
-        goal_final_pos = self.data.get_site_xpos("cup_goal_final_table")
+        goal_pos = self.data.site("cup_goal_table").xpos
+        goal_final_pos = self.data.site("cup_goal_final_table").xpos
+        ball_pos = self.data.qpos.flat[7:].copy()
+        ball_vel = self.data.qvel.flat[7:].copy()
 
         self._check_contacts()
         self.dists.append(np.linalg.norm(goal_pos - ball_pos))
