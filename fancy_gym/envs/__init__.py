@@ -8,7 +8,7 @@ from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
 from .classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacherEnv
 from .mujoco.ant_jump.ant_jump import MAX_EPISODE_STEPS_ANTJUMP
-from .mujoco.beerpong.beerpong import MAX_EPISODE_STEPS_BEERPONG
+from .mujoco.beerpong.beerpong import MAX_EPISODE_STEPS_BEERPONG, FIXED_RELEASE_STEP
 from .mujoco.half_cheetah_jump.half_cheetah_jump import MAX_EPISODE_STEPS_HALFCHEETAHJUMP
 from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
 from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
@@ -202,15 +202,9 @@ register(
 register(
     id='BeerPongStepBased-v0',
     entry_point='fancy_gym.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
-    max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
+    max_episode_steps=FIXED_RELEASE_STEP,
 )
 
-# Beerpong with episodic reward, but fixed release time step
-register(
-    id='BeerPongFixedRelease-v0',
-    entry_point='fancy_gym.envs.mujoco:BeerPongEnvFixedReleaseStep',
-    max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
-)
 
 # movement Primitive Environments
 
@@ -355,10 +349,13 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ### BP with Fixed release
-_versions = ["BeerPongStepBased-v0", "BeerPongFixedRelease-v0"]
+_versions = ["BeerPongStepBased-v0", 'BeerPong-v0']
 for _v in _versions:
-    _name = _v.split("-")
-    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    if _v != 'BeerPong-v0':
+        _name = _v.split("-")
+        _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    else:
+        _env_id = 'BeerPongFixedReleaseProMP-v0'
     kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_bp_promp['wrappers'].append(mujoco.beerpong.MPWrapper)
     kwargs_dict_bp_promp['phase_generator_kwargs']['tau'] = 0.62

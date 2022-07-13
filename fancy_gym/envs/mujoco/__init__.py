@@ -1,5 +1,5 @@
 from .ant_jump.ant_jump import AntJumpEnv
-from .beerpong.beerpong import BeerPongEnv, BeerPongEnvFixedReleaseStep, BeerPongEnvStepBasedEpisodicReward
+from .beerpong.beerpong import BeerPongEnv, BeerPongEnvStepBasedEpisodicReward
 from .half_cheetah_jump.half_cheetah_jump import HalfCheetahJumpEnv
 from .hopper_jump.hopper_jump import HopperJumpEnv
 from .hopper_jump.hopper_jump_on_box import HopperJumpOnBoxEnv
