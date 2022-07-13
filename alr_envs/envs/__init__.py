@@ -13,6 +13,7 @@ from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
 from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
 from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
+from .mujoco.beerpong.beerpong import MAX_EPISODE_STEPS_BEERPONG
 from .mujoco.reacher.reacher import ReacherEnv
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
@@ -192,7 +193,7 @@ register(
 register(
     id='BeerPong-v0',
     entry_point='alr_envs.envs.mujoco:BeerPongEnv',
-    max_episode_steps=300,
+    max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
 )
 
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
@@ -200,14 +201,14 @@ register(
 register(
     id='BeerPongStepBased-v0',
     entry_point='alr_envs.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
-    max_episode_steps=300,
+    max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
 )
 
 # Beerpong with episodic reward, but fixed release time step
 register(
     id='BeerPongFixedRelease-v0',
     entry_point='alr_envs.envs.mujoco:BeerPongEnvFixedReleaseStep',
-    max_episode_steps=300,
+    max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
 )
 
 # Motion Primitive Environments

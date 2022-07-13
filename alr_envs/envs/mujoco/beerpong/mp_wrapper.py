@@ -28,7 +28,7 @@ class MPWrapper(RawInterfaceWrapper):
         return self.env.data.qvel[0:7].copy()
 
     # TODO: Fix this
-    def _episode_callback(self, action: np.ndarray, mp) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
+    def episode_callback(self, action: np.ndarray, mp) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         if mp.learn_tau:
             self.env.env.release_step = action[0] / self.env.dt  # Tau value
             return action, None

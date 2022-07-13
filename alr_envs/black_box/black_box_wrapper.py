@@ -122,7 +122,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
         # TODO remove this part, right now only needed for beer pong
-        mp_params, env_spec_params = self.env._episode_callback(action, self.traj_gen)
+        mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
         trajectory, velocity = self.get_trajectory(mp_params)
 
         trajectory_length = len(trajectory)

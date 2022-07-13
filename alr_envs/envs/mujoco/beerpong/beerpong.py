@@ -6,6 +6,8 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
 
+MAX_EPISODE_STEPS_BEERPONG = 300
+
 # XML Variables
 ROBOT_COLLISION_OBJ = ["wrist_palm_link_convex_geom",
                        "wrist_pitch_link_convex_decomposition_p1_geom",
@@ -28,7 +30,7 @@ CUP_COLLISION_OBJ = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "c
 
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self, frame_skip=2):
+    def __init__(self):
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
@@ -45,9 +47,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self._start_vel = np.zeros(7)
 
         self.release_step = 100  # time step of ball release
-        self.ep_length = 600 // frame_skip
 
-        self.repeat_action = frame_skip
+        self.repeat_action = 2
         # TODO: If accessing IDs is easier in the (new) official mujoco bindings, remove this
         self.model = None
         self.site_id = lambda x: self.model.site_name2id(x)
@@ -127,8 +128,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         if not crash:
             reward, reward_infos = self._get_reward(applied_action)
-            is_collided = reward_infos['is_collided']
-            done = is_collided or self._steps == self.ep_length - 1
+            is_collided = reward_infos['is_collided']   # TODO: Remove if self collision does not make a difference
+            done = is_collided
             self._steps += 1
         else:
             reward = -30
@@ -182,7 +183,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         # Is this needed?
         # self._is_collided = self._check_collision_with_itself([self.geom_id(name) for name in CUP_COLLISION_OBJ])
 
-        if self._steps == self.ep_length - 1:  # or self._is_collided:
+        if self._steps == MAX_EPISODE_STEPS_BEERPONG-1:  # or self._is_collided:
             min_dist = np.min(self.dists)
             final_dist = self.dists_final[-1]
             if self.ball_ground_contact_first:
@@ -251,14 +252,14 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
 
 class BeerPongEnvFixedReleaseStep(BeerPongEnv):
-    def __init__(self, frame_skip=2):
-        super().__init__(frame_skip)
+    def __init__(self):
+        super().__init__()
         self.release_step = 62  # empirically evaluated for frame_skip=2!
 
 
 class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
-    def __init__(self, frame_skip=2):
-        super().__init__(frame_skip)
+    def __init__(self):
+        super().__init__()
         self.release_step = 62  # empirically evaluated for frame_skip=2!
 
     def step(self, a):
@@ -312,7 +313,7 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
 
 
 if __name__ == "__main__":
-    env = BeerPongEnv(frame_skip=2)
+    env = BeerPongEnv()
     env.seed(0)
     # env = ALRBeerBongEnvStepBased(frame_skip=2)
     # env = ALRBeerBongEnvStepBasedEpisodicReward(frame_skip=2)

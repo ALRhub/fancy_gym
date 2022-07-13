@@ -52,12 +52,7 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return self.env.dt
 
-    def do_replanning(self, pos, vel, s, a, t):
-        # return t % 100 == 0
-        # return bool(self.replanning_model(s))
-        return False
-
-    def _episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[
+    def episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[
         np.ndarray, Union[np.ndarray, None]]:
         """
         Used to extract the parameters for the motion primitive and other parameters from an action array which might
