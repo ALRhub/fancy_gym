@@ -1,4 +1,4 @@
-from gym.envs.mujoco.hopper_v3 import HopperEnv
+from gym.envs.mujoco.hopper_v4 import HopperEnv
 
 import numpy as np
 import os
@@ -46,7 +46,7 @@ class HopperJumpOnBoxEnv(HopperEnv):
         foot_pos = self.get_body_com("foot")
         self.max_height = max(height_after, self.max_height)
 
-        vx, vz, vangle = self.sim.data.qvel[0:3]
+        vx, vz, vangle = self.data.qvel[0:3]
 
         s = self.state_vector()
         fell_over = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and (height_after > .7))
@@ -67,7 +67,8 @@ class HopperJumpOnBoxEnv(HopperEnv):
         is_on_box_y = True  # is y always true because he can only move in x and z direction?
         is_on_box_z = box_height - 0.02 <= foot_pos[2] <= box_height + 0.02
         is_on_box = is_on_box_x and is_on_box_y and is_on_box_z
-        if is_on_box: self.hopper_on_box = True
+        if is_on_box:
+            self.hopper_on_box = True
 
         ctrl_cost = self.control_cost(action)
 
@@ -133,9 +134,8 @@ class HopperJumpOnBoxEnv(HopperEnv):
         self.current_step = 0
         self.hopper_on_box = False
         if self.context:
-            box_id = self.sim.model.body_name2id("box")
             self.box_x = self.np_random.uniform(1, 3, 1)
-            self.sim.model.body_pos[box_id] = [self.box_x, 0, 0]
+            self.model.body("box").pos = [self.box_x[0], 0, 0]
         return super().reset()
 
     # overwrite reset_model to make it deterministic

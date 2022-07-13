@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 
-from gym.envs.mujoco.hopper_v3 import HopperEnv
+from gym.envs.mujoco.hopper_v4 import HopperEnv
 import numpy as np
 
 MAX_EPISODE_STEPS_HOPPERTHROW = 250
@@ -36,9 +36,16 @@ class HopperThrowEnv(HopperEnv):
         self.max_episode_steps = max_episode_steps
         self.context = context
         self.goal = 0
-        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
-                         healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         forward_reward_weight=forward_reward_weight,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         healthy_reward=healthy_reward,
+                         terminate_when_unhealthy=terminate_when_unhealthy,
+                         healthy_angle_range=healthy_state_range,
+                         healthy_z_range=healthy_z_range,
+                         healthy_state_range=healthy_angle_range,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
     def step(self, action):
         self.current_step += 1

@@ -23,7 +23,10 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
 
         file_name = f'reacher_{n_links}links.xml'
 
-        MujocoEnv.__init__(self, os.path.join(os.path.dirname(__file__), "assets", file_name), 2)
+        MujocoEnv.__init__(self,
+                           model_path=os.path.join(os.path.dirname(__file__), "assets", file_name),
+                           frame_skip=2,
+                           mujoco_bindings="mujoco")
 
     def step(self, action):
         self._steps += 1

@@ -2,8 +2,7 @@ import copy
 import os
 
 import numpy as np
-from gym.envs.mujoco.hopper_v3 import HopperEnv
-
+from gym.envs.mujoco.hopper_v4 import HopperEnv
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
 
@@ -50,9 +49,16 @@ class HopperJumpEnv(HopperEnv):
         self.contact_dist = None
 
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
-        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
-                         healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         forward_reward_weight=forward_reward_weight,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         healthy_reward=healthy_reward,
+                         terminate_when_unhealthy=terminate_when_unhealthy,
+                         healthy_state_range=healthy_state_range,
+                         healthy_z_range=healthy_z_range,
+                         healthy_angle_range=healthy_angle_range,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
         # increase initial height
         self.init_qpos[1] = 1.5
@@ -67,7 +73,8 @@ class HopperJumpEnv(HopperEnv):
         self.do_simulation(action, self.frame_skip)
 
         height_after = self.get_body_com("torso")[2]
-        site_pos_after = self.data.get_site_xpos('foot_site')
+        #site_pos_after = self.data.get_site_xpos('foot_site')
+        site_pos_after = self.data.site('foot_site').xpos
         self.max_height = max(height_after, self.max_height)
 
         has_floor_contact = self._is_floor_foot_contact() if not self.contact_with_floor else False
@@ -111,7 +118,8 @@ class HopperJumpEnv(HopperEnv):
         return observation, reward, done, info
 
     def _get_obs(self):
-        goal_dist = self.data.get_site_xpos('foot_site') - self.goal
+        # goal_dist = self.data.get_site_xpos('foot_site') - self.goal
+        goal_dist = self.data.site('foot_site').xpos - self.goal
         return np.concatenate((super(HopperJumpEnv, self)._get_obs(), goal_dist.copy(), self.goal[:1]))
 
     def reset_model(self):
@@ -119,7 +127,8 @@ class HopperJumpEnv(HopperEnv):
 
         # self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
         self.goal = np.concatenate([self.np_random.uniform(0.3, 1.35, 1), np.zeros(2, )])
-        self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = self.goal
+        # self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = self.goal
+        self.data.body('goal_site_body').xpos[:] = np.copy(self.goal)
         self.max_height = 0
         self._steps = 0
 
@@ -153,8 +162,15 @@ class HopperJumpEnv(HopperEnv):
         return observation
 
     def _is_floor_foot_contact(self):
-        floor_geom_id = self.model.geom_name2id('floor')
-        foot_geom_id = self.model.geom_name2id('foot_geom')
+        # floor_geom_id = self.model.geom_name2id('floor')
+        # foot_geom_id = self.model.geom_name2id('foot_geom')
+        # TODO: do this properly over a sensor in the xml file, see dmc hopper
+        floor_geom_id = self._mujoco_bindings.mj_name2id(self.model,
+                                                         self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
+                                                         'floor')
+        foot_geom_id = self._mujoco_bindings.mj_name2id(self.model,
+                                                        self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
+                                                        'foot_geom')
         for i in range(self.data.ncon):
             contact = self.data.contact[i]
             collision = contact.geom1 == floor_geom_id and contact.geom2 == foot_geom_id
@@ -163,7 +179,7 @@ class HopperJumpEnv(HopperEnv):
                 return True
         return False
 
-
+# TODO is that needed? if so test it
 class HopperJumpStepEnv(HopperJumpEnv):
 
     def __init__(self,
@@ -193,7 +209,7 @@ class HopperJumpStepEnv(HopperJumpEnv):
         self.do_simulation(action, self.frame_skip)
 
         height_after = self.get_body_com("torso")[2]
-        site_pos_after = self.data.get_site_xpos('foot_site')
+        site_pos_after = self.data.site('foot_site').xpos.copy()
         self.max_height = max(height_after, self.max_height)
 
         ctrl_cost = self.control_cost(action)

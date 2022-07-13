@@ -185,4 +185,9 @@
         <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="2.0" joint="wam/palm_yaw_joint"/>
     </actuator>
 
+    <sensor>
+        <framelinvel name="init_ball_vel" objtype="site" objname="init_ball_pos" />
+    </sensor>
+
+
 </mujoco>

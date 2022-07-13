@@ -2,7 +2,7 @@ import os
 from typing import Tuple, Union, Optional
 
 from gym.core import ObsType
-from gym.envs.mujoco.half_cheetah_v3 import HalfCheetahEnv
+from gym.envs.mujoco.half_cheetah_v4 import HalfCheetahEnv
 import numpy as np
 
 MAX_EPISODE_STEPS_HALFCHEETAHJUMP = 100
@@ -27,8 +27,11 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
         self.goal = 0
         self.context = context
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
-        super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+        super().__init__(xml_file=xml_file,
+                         forward_reward_weight=forward_reward_weight,
+                         ctrl_cost_weight=ctrl_cost_weight,
+                         reset_noise_scale=reset_noise_scale,
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
 
     def step(self, action):
 
@@ -74,6 +77,7 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
+        # TODO remove if not needed!
         noise_low = -self._reset_noise_scale
         noise_high = self._reset_noise_scale
 
