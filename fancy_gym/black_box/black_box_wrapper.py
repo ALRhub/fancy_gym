@@ -1,7 +1,3 @@
-import os
-
-os.environ["MUJOCO_GL"] = "egl"
-
 from typing import Tuple, Optional
 
 import gym

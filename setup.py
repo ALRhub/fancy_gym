@@ -5,8 +5,8 @@ from setuptools import setup, find_packages
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     "dmc": ["dm_control==1.0.1"],
-    "meta": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld"],
-    "mujoco": ["mujoco==2.2.0", "imageio>=2.14.1"],
+    "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld",
+                  'mujoco-py<2.2,>=2.1'],
 }
 
 # All dependencies
@@ -28,6 +28,7 @@ setup(
     extras_require=extras,
     install_requires=[
         'gym>=0.24.0',
+        'mujoco==2.2.0',
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],
     # packages=['fancy_gym', 'fancy_gym.envs', 'fancy_gym.open_ai', 'fancy_gym.dmc', 'fancy_gym.meta', 'fancy_gym.utils'],

@@ -9,10 +9,13 @@ from mp_pytorch.mp.mp_interfaces import MPInterface
 class RawInterfaceWrapper(gym.Wrapper):
 
     @property
-    @abstractmethod
     def context_mask(self) -> np.ndarray:
         """
-        This function defines the contexts. The contexts are defined as specific observations.
+        Returns boolean mask of the same shape as the observation space.
+        It determines whether the observation is returned for the contextual case or not.
+        This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
+        E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the
+        context/part of the first observation, the velocities are not necessary in the observation for the task.
         Returns:
             bool array representing the indices of the observations
 
