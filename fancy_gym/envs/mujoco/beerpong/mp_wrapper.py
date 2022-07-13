@@ -31,9 +31,7 @@ class MPWrapper(RawInterfaceWrapper):
     def episode_callback(self, action: np.ndarray, mp) -> Tuple[np.ndarray, Union[np.ndarray, None]]:
         if mp.learn_tau:
             self.release_step = action[0] / self.dt  # Tau value
-            return action, None
-        else:
-            return action, None
+        return action, None
 
     def set_context(self, context):
         xyz = np.zeros(3)

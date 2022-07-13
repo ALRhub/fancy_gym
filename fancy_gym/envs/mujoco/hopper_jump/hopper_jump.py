@@ -156,8 +156,6 @@ class HopperJumpEnv(HopperEnv):
         self.init_floor_contact = False
         self.contact_dist = None
 
-        self.data.geom()
-
         return observation
 
     def _is_floor_foot_contact(self):

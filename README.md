@@ -1,4 +1,4 @@
-## Fancy Gym
+# Fancy Gym
 
 Fancy gym offers a large variety of reinforcement learning environments under the unifying interface
 of [OpenAI gym](https://gym.openai.com/). We provide support (under the OpenAI interface) for the benchmark suites
@@ -65,7 +65,7 @@ We prepared [multiple examples](fancy_gym/examples/), please have a look there f
 ```python
 import fancy_gym
 
-env = fancy_gym.make('HoleReacher-v0', seed=1)
+env = fancy_gym.make('Reacher5d-v0', seed=1)
 state = env.reset()
 
 for i in range(1000):
@@ -106,7 +106,7 @@ keys `DMP` and `ProMP` that store a list of available environment names.
 import fancy_gym
 
 print("Custom MP tasks:")
-print(fancy_gym.ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
+print(fancy_gym.ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("OpenAI Gym MP tasks:")
 print(fancy_gym.ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS)

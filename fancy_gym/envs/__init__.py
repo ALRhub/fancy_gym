@@ -17,7 +17,7 @@ from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPER
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
-ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
+ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
 DEFAULT_BB_DICT_ProMP = {
     "name": 'EnvName',
@@ -231,7 +231,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_simple_reacher_dmp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_simple_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -244,7 +244,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_simple_reacher_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # Viapoint reacher
 kwargs_dict_via_point_reacher_dmp = deepcopy(DEFAULT_BB_DICT_DMP)
@@ -259,7 +259,7 @@ register(
     # max_episode_steps=1,
     kwargs=kwargs_dict_via_point_reacher_dmp
 )
-ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
+ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append("ViaPointReacherDMP-v0")
 
 kwargs_dict_via_point_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
 kwargs_dict_via_point_reacher_promp['wrappers'].append(classic_control.viapoint_reacher.MPWrapper)
@@ -270,7 +270,7 @@ register(
     entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
     kwargs=kwargs_dict_via_point_reacher_promp
 )
-ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
+ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append("ViaPointReacherProMP-v0")
 
 ## Hole Reacher
 _versions = ["HoleReacher-v0"]
@@ -290,7 +290,7 @@ for _v in _versions:
         # max_episode_steps=1,
         kwargs=kwargs_dict_hole_reacher_dmp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_hole_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -303,7 +303,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_hole_reacher_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ## ReacherNd
 _versions = ["Reacher5d-v0", "Reacher7d-v0", "Reacher5dSparse-v0", "Reacher7dSparse-v0"]
@@ -320,7 +320,7 @@ for _v in _versions:
         # max_episode_steps=1,
         kwargs=kwargs_dict_reacher_dmp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["DMP"].append(_env_id)
 
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_reacher_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -331,7 +331,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_reacher_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ########################################################################################################################
 ## Beerpong ProMP
@@ -352,7 +352,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_bp_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ### BP with Fixed release
 _versions = ["BeerPongStepBased-v0", "BeerPongFixedRelease-v0"]
@@ -372,7 +372,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_bp_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 ########################################################################################################################
 
 ## Table Tennis needs to be fixed according to Zhou's implementation
@@ -393,7 +393,7 @@ for _v in _versions:
 #         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
 #         kwargs=kwargs_dict_ant_jump_promp
 #     )
-#     ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+#     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 #
 # ########################################################################################################################
 #
@@ -410,7 +410,7 @@ for _v in _versions:
 #         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
 #         kwargs=kwargs_dict_halfcheetah_jump_promp
 #     )
-#     ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+#     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 #
 # ########################################################################################################################
 
@@ -431,7 +431,7 @@ for _v in _versions:
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_hopper_jump_promp
     )
-    ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # ########################################################################################################################
 #
@@ -449,7 +449,7 @@ for _v in _versions:
 #         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
 #         kwargs=kwargs_dict_walker2d_jump_promp
 #     )
-#     ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+#     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 ### Depricated, we will not provide non random starts anymore
 """
