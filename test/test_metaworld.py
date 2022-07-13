@@ -2,10 +2,10 @@ import unittest
 
 import gym
 import numpy as np
-
-import alr_envs
-from alr_envs import make
 from metaworld.envs import ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE
+
+import fancy_gym
+from fancy_gym import make
 
 METAWORLD_IDS = [f'metaworld:{env.split("-goal-observable")[0]}' for env, _ in
                  ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE.items()]
@@ -102,7 +102,7 @@ class TestMetaWorldEnvironments(unittest.TestCase):
 
     def test_bb_functionality(self):
         """Tests that black box environments run without errors using random actions."""
-        for traj_gen, env_ids in alr_envs.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 for id in env_ids:
                     with self.subTest(msg=id):
@@ -110,7 +110,7 @@ class TestMetaWorldEnvironments(unittest.TestCase):
 
     def test_bb_determinism(self):
         """Tests that for black box environment identical seeds produce identical trajectories."""
-        for traj_gen, env_ids in alr_envs.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 self._run_env_determinism(env_ids)
 

@@ -3,11 +3,11 @@ import unittest
 import gym
 import numpy as np
 
-import alr_envs
-from alr_envs import make
+import fancy_gym
+from fancy_gym import make
 
 GYM_IDS = [spec.id for spec in gym.envs.registry.all() if
-           "alr_envs" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
+           "fancy_gym" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
 SEED = 1
 
 
@@ -101,7 +101,7 @@ class TestGymEnvironments(unittest.TestCase):
 
     def test_bb_functionality(self):
         """Tests that black box environments run without errors using random actions."""
-        for traj_gen, env_ids in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 for id in env_ids:
                     with self.subTest(msg=id):
@@ -109,7 +109,7 @@ class TestGymEnvironments(unittest.TestCase):
 
     def test_bb_determinism(self):
         """Tests that for black box environment identical seeds produce identical trajectories."""
-        for traj_gen, env_ids in alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 self._run_env_determinism(env_ids)
 

@@ -2,11 +2,10 @@ import unittest
 
 import gym
 import numpy as np
-
 from dm_control import suite, manipulation
 
-import alr_envs
-from alr_envs import make
+import fancy_gym
+from fancy_gym import make
 
 SUITE_IDS = [f'dmc:{env}-{task}' for env, task in suite.ALL_TASKS if env != "lqr"]
 MANIPULATION_IDS = [f'dmc:manipulation-{task}' for task in manipulation.ALL if task.endswith('_features')]
@@ -114,7 +113,7 @@ class TestDMCEnvironments(unittest.TestCase):
 
     def test_bb_functionality(self):
         """Tests that black box environments run without errors using random actions."""
-        for traj_gen, env_ids in alr_envs.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 for id in env_ids:
                     with self.subTest(msg=id):
@@ -122,7 +121,7 @@ class TestDMCEnvironments(unittest.TestCase):
 
     def test_bb_determinism(self):
         """Tests that for black box environment identical seeds produce identical trajectories."""
-        for traj_gen, env_ids in alr_envs.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
+        for traj_gen, env_ids in fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.items():
             with self.subTest(msg=traj_gen):
                 self._run_env_determinism(env_ids)
 

@@ -1,13 +1,12 @@
-## ALR Robotics Control Environments
+## Fancy Gym
 
-This project offers a large variety of reinforcement learning environments under the unifying interface of [OpenAI gym](https://gym.openai.com/).
-We provide support (under the OpenAI interface) for the benchmark suites
+Fancy gym offers a large variety of reinforcement learning environments under the unifying interface
+of [OpenAI gym](https://gym.openai.com/). We provide support (under the OpenAI interface) for the benchmark suites
 [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control)
-(DMC) and [Metaworld](https://meta-world.github.io/). 
-Custom (Mujoco) gym environments can be created according
-to [this guide](https://www.gymlibrary.ml/content/environment_creation/). 
-Unlike existing libraries, we additionally support to control agents with movement primitives, such as 
-Dynamic Movement Primitives (DMPs) and Probabilistic Movement Primitives (ProMP, we only consider the mean usually).
+(DMC) and [Metaworld](https://meta-world.github.io/). Custom (Mujoco) gym environments can be created according
+to [this guide](https://www.gymlibrary.ml/content/environment_creation/). Unlike existing libraries, we additionally
+support to control agents with movement primitives, such as Dynamic Movement Primitives (DMPs) and Probabilistic
+Movement Primitives (ProMP, we only consider the mean usually).
 
 ## Movement Primitive Environments (Episode-Based/Black-Box Environments)
 
@@ -59,14 +58,14 @@ pip install -e .
 
 ## Using the framework
 
-We prepared [multiple examples](alr_envs/examples/), please have a look there for more specific examples.
+We prepared [multiple examples](fancy_gym/examples/), please have a look there for more specific examples.
 
 ### Step-wise environments
 
 ```python
-import alr_envs
+import fancy_gym
 
-env = alr_envs.make('HoleReacher-v0', seed=1)
+env = fancy_gym.make('HoleReacher-v0', seed=1)
 state = env.reset()
 
 for i in range(1000):
@@ -85,9 +84,9 @@ Existing MP tasks can be created the same way as above. Just keep in mind, calli
 trajectory.
 
 ```python
-import alr_envs
+import fancy_gym
 
-env = alr_envs.make('HoleReacherProMP-v0', seed=1)
+env = fancy_gym.make('HoleReacherProMP-v0', seed=1)
 # render() can be called once in the beginning with all necessary arguments. To turn it of again just call render(None). 
 env.render()
 
@@ -104,19 +103,19 @@ To show all available environments, we provide some additional convenience. Each
 keys `DMP` and `ProMP` that store a list of available environment names.
 
 ```python
-import alr_envs
+import fancy_gym
 
 print("Custom MP tasks:")
-print(alr_envs.ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
+print(fancy_gym.ALL_ALR_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("OpenAI Gym MP tasks:")
-print(alr_envs.ALL_GYM_MOTION_PRIMITIVE_ENVIRONMENTS)
+print(fancy_gym.ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("Deepmind Control MP tasks:")
-print(alr_envs.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
+print(fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("MetaWorld MP tasks:")
-print(alr_envs.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
+print(fancy_gym.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 ```
 
 ### How to create a new MP task
@@ -181,12 +180,12 @@ class MPWrapper(MPEnvWrapper):
 
 ```
 
-If you created a new task wrapper, feel free to open a PR, so we can integrate it for others to use as well. 
-Without the integration the task can still be used. A rough outline can be shown here, for more details we recommend 
-having a look at the [examples](alr_envs/examples/).
+If you created a new task wrapper, feel free to open a PR, so we can integrate it for others to use as well. Without the
+integration the task can still be used. A rough outline can be shown here, for more details we recommend having a look
+at the [examples](fancy_gym/examples/).
 
 ```python
-import alr_envs
+import fancy_gym
 
 # Base environment name, according to structure of above example
 base_env_id = "ball_in_cup-catch"
@@ -194,12 +193,12 @@ base_env_id = "ball_in_cup-catch"
 # Replace this wrapper with the custom wrapper for your environment by inheriting from the MPEnvWrapper.
 # You can also add other gym.Wrappers in case they are needed, 
 # e.g. gym.wrappers.FlattenObservation for dict observations
-wrappers = [alr_envs.dmc.suite.ball_in_cup.MPWrapper]
+wrappers = [fancy_gym.dmc.suite.ball_in_cup.MPWrapper]
 mp_kwargs = {...}
 kwargs = {...}
-env = alr_envs.make_dmp_env(base_env_id, wrappers=wrappers, seed=1, mp_kwargs=mp_kwargs, **kwargs)
+env = fancy_gym.make_dmp_env(base_env_id, wrappers=wrappers, seed=1, mp_kwargs=mp_kwargs, **kwargs)
 # OR for a deterministic ProMP (other traj_gen_kwargs are required):
-# env = alr_envs.make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=mp_args)
+# env = fancy_gym.make_promp_env(base_env, wrappers=wrappers, seed=seed, traj_gen_kwargs=mp_args)
 
 rewards = 0
 obs = env.reset()

@@ -29,15 +29,15 @@ setup(
     install_requires=[
         'gym>=0.24.0',
     ],
-    packages=[package for package in find_packages() if package.startswith("alr_envs")],
-    # packages=['alr_envs', 'alr_envs.envs', 'alr_envs.open_ai', 'alr_envs.dmc', 'alr_envs.meta', 'alr_envs.utils'],
+    packages=[package for package in find_packages() if package.startswith("fancy_gym")],
+    # packages=['fancy_gym', 'fancy_gym.envs', 'fancy_gym.open_ai', 'fancy_gym.dmc', 'fancy_gym.meta', 'fancy_gym.utils'],
     package_data={
-        "alr_envs": [
+        "fancy_gym": [
             "envs/mujoco/*/assets/*.xml",
         ]
     },
     python_requires=">=3.6",
-    url='https://github.com/ALRhub/alr_envs/',
+    url='https://github.com/ALRhub/fancy_gym/',
     # license='AGPL-3.0 license',
     author_email='',
     description='Simple Gym: Aggregating interface for various RL environments with support for Black Box approaches.'
