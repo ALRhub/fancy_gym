@@ -217,6 +217,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         return reward, infos
 
     def _check_contacts(self):
+        #TODO proper contact detection using sensors?
         if not self.ball_table_contact:
             self.ball_table_contact = self._check_collision({self.geom_id("ball_geom")},
                                                             {self.geom_id("table_contact_geom")})
