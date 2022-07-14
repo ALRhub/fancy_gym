@@ -126,7 +126,7 @@ for _dims in [5, 7]:
     register(
         id=f'Reacher{_dims}dSparse-v0',
         entry_point='fancy_gym.envs.mujoco:ReacherEnv',
-        max_episode_steps=MAX_EPISODE_STEPS_REACHER,
+        max_episode_steps=5,
         kwargs={
             "sparse": True,
             'reward_weight': 200,

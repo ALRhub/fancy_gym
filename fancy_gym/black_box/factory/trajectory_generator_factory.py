@@ -12,7 +12,9 @@ def get_trajectory_generator(
         return ProMP(basis_generator, action_dim, **kwargs)
     elif trajectory_generator_type == "dmp":
         return DMP(basis_generator, action_dim, **kwargs)
-    elif trajectory_generator_type == 'idmp':
+    elif trajectory_generator_type == 'prodmp':
+        from mp_pytorch.basis_gn import ProDMPBasisGenerator
+        assert isinstance(basis_generator, ProDMPBasisGenerator)
         return ProDMP(basis_generator, action_dim, **kwargs)
     else:
         raise ValueError(f"Specified movement primitive type {trajectory_generator_type} not supported, "
