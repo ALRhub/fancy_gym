@@ -37,9 +37,9 @@ setup(
             "envs/mujoco/*/assets/*.xml",
         ]
     },
-    python_requires=">=3.6",
+    python_requires=">=3.7",
     url='https://github.com/ALRhub/fancy_gym/',
     # license='AGPL-3.0 license',
     author_email='',
-    description='Simple Gym: Aggregating interface for various RL environments with support for Black Box approaches.'
+    description='Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.'
 )
