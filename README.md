@@ -28,13 +28,13 @@ episode. This requires to predict a new action/MP parametrization for each conte
 1. Clone the repository
 
 ```bash 
-git clone git@github.com:ALRhub/alr_envs.git
+git clone git@github.com:ALRhub/fancy_gym.git
 ```
 
 2. Go to the folder
 
 ```bash 
-cd alr_envs
+cd fancy_gym
 ```
 
 3. Install with
