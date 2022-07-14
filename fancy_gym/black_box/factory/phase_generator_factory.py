@@ -1,6 +1,7 @@
-from mp_pytorch import LinearPhaseGenerator, ExpDecayPhaseGenerator
-from mp_pytorch.phase_gn.rhythmic_phase_generator import RhythmicPhaseGenerator
-from mp_pytorch.phase_gn.smooth_phase_generator import SmoothPhaseGenerator
+from mp_pytorch.phase_gn import LinearPhaseGenerator, ExpDecayPhaseGenerator
+
+# from mp_pytorch.phase_gn.rhythmic_phase_generator import RhythmicPhaseGenerator
+# from mp_pytorch.phase_gn.smooth_phase_generator import SmoothPhaseGenerator
 
 ALL_TYPES = ["linear", "exp", "rhythmic", "smooth"]
 
@@ -12,9 +13,11 @@ def get_phase_generator(phase_generator_type, **kwargs):
     elif phase_generator_type == "exp":
         return ExpDecayPhaseGenerator(**kwargs)
     elif phase_generator_type == "rhythmic":
-        return RhythmicPhaseGenerator(**kwargs)
+        raise NotImplementedError()
+        # return RhythmicPhaseGenerator(**kwargs)
     elif phase_generator_type == "smooth":
-        return SmoothPhaseGenerator(**kwargs)
+        raise NotImplementedError()
+        # return SmoothPhaseGenerator(**kwargs)
     else:
         raise ValueError(f"Specified phase generator type {phase_generator_type} not supported, "
                          f"please choose one of {ALL_TYPES}.")
