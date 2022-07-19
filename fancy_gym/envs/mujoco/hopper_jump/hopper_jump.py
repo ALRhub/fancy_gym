@@ -128,7 +128,7 @@ class HopperJumpEnv(HopperEnv):
         # self.goal = self.np_random.uniform(0.3, 1.35, 1)[0]
         self.goal = np.concatenate([self.np_random.uniform(0.3, 1.35, 1), np.zeros(2, )])
         # self.sim.model.body_pos[self.sim.model.body_name2id('goal_site_body')] = self.goal
-        self.data.body('goal_site_body').xpos[:] = np.copy(self.goal)
+        self.model.body('goal_site_body').pos[:] = np.copy(self.goal)
         self.max_height = 0
         self._steps = 0
 
