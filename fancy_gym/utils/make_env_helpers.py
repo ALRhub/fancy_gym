@@ -10,15 +10,14 @@ import numpy as np
 from gym.envs.registration import register, registry
 
 try:
-    from dm_control import suite, manipulation, composer
-    from dm_control.rl import control
+    from dm_control import suite, manipulation
 except ImportError:
     pass
 
 try:
     import metaworld
 except Exception:
-    # catch Exception due to Mujoco-py
+    # catch Exception as Import error does not catch missing mujoco-py
     pass
 
 import fancy_gym
@@ -227,7 +226,7 @@ def make_bb_env_helper(**kwargs):
 
 
 def make_dmc(
-        env_id: Union[str, composer.Environment, control.Environment],
+        env_id: str,
         seed: int = None,
         visualize_reward: bool = True,
         time_limit: Union[None, float] = None,
@@ -274,7 +273,7 @@ def make_dmc(
     return env
 
 
-def make_metaworld(env_id, seed, **kwargs):
+def make_metaworld(env_id: str, seed: int, **kwargs):
     if env_id not in metaworld.ML1.ENV_NAMES:
         raise ValueError(f'Specified environment "{env_id}" not present in metaworld ML1.')
 

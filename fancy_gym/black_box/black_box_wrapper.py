@@ -50,7 +50,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.tracking_controller = tracking_controller
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         # self.traj_gen.set_mp_times(self.time_steps)
-        self.traj_gen.set_duration(np.array([self.duration]), np.array([self.dt]))
+        self.traj_gen.set_duration(self.duration - self.dt, self.dt)
 
         # reward computation
         self.reward_aggregation = reward_aggregation
@@ -78,8 +78,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.traj_gen.set_boundary_conditions(
             bc_time=np.array(0) if not self.do_replanning else np.array([self.current_traj_steps * self.dt]),
             bc_pos=self.current_pos, bc_vel=self.current_vel)
-        self.traj_gen.set_duration(None if self.learn_sub_trajectories else np.array([self.duration]),
-                                   np.array([self.dt]))
+        # TODO remove the - self.dt after Bruces fix.
+        self.traj_gen.set_duration(None if self.learn_sub_trajectories else self.duration - self.dt, self.dt)
         traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         trajectory_tensor, velocity_tensor = traj_dict['pos'], traj_dict['vel']
 
@@ -87,7 +87,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def _get_traj_gen_action_space(self):
         """This function can be used to set up an individual space for the parameters of the traj_gen."""
-        min_action_bounds, max_action_bounds = self.traj_gen.get_param_bounds()
+        min_action_bounds, max_action_bounds = self.traj_gen.get_params_bounds().t()
         action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
                                       dtype=self.env.action_space.dtype)
         return action_space
