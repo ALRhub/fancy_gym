@@ -158,12 +158,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         if self.verbose >= 2:
             infos['positions'] = trajectory
             infos['velocities'] = velocity
-            infos['step_actions'] = actions[:t + 1]
+            infos['step_actions'] = actions[:t]
             infos['step_observations'] = observations[:t + 1]
-            infos['step_rewards'] = rewards[:t + 1]
+            infos['step_rewards'] = rewards[:t]
 
         infos['trajectory_length'] = t + 1
-        trajectory_return = self.reward_aggregation(rewards[:t + 1])
+        trajectory_return = self.reward_aggregation(rewards[:t])
         return self.observation(obs), trajectory_return, done, infos
 
     def render(self, **kwargs):

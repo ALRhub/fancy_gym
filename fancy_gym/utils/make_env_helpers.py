@@ -148,9 +148,9 @@ def make_bb(
         raise ValueError('Cannot used sub-trajectory learning and replanning together.')
 
     # add time_step observation when replanning
-    if (learn_sub_trajs or do_replanning) and not any(issubclass(w, TimeAwareObservation) for w in kwargs['wrappers']):
+    if (learn_sub_trajs or do_replanning) and not any(issubclass(w, TimeAwareObservation) for w in wrappers):
         # Add as first wrapper in order to alter observation
-        kwargs['wrappers'].insert(0, TimeAwareObservation)
+        wrappers.insert(0, TimeAwareObservation)
 
     env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
 
