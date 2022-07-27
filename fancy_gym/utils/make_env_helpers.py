@@ -1,3 +1,4 @@
+import logging
 import re
 import uuid
 from collections.abc import MutableMapping
@@ -310,7 +311,11 @@ def make_gym(env_id, seed, **kwargs):
     """
     # Getting the existing keywords to allow for nested dict updates for BB envs
     # gym only allows for non nested updates.
-    all_kwargs = deepcopy(registry.get(env_id).kwargs)
+    try:
+        all_kwargs = deepcopy(registry.get(env_id).kwargs)
+    except AttributeError as e:
+        logging.error(f'The gym environment with id {env_id} could not been found.')
+        raise e
     nested_update(all_kwargs, kwargs)
     kwargs = all_kwargs
 
