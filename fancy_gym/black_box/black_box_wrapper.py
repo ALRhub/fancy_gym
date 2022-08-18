@@ -86,8 +86,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         velocity = get_numpy(self.traj_gen.get_traj_vel())
 
         # Remove first element of trajectory as this is the current position and velocity
-        trajectory = trajectory[1:]
-        velocity = velocity[1:]
+        # trajectory = trajectory[1:]
+        # velocity = velocity[1:]
 
         return trajectory, velocity
 

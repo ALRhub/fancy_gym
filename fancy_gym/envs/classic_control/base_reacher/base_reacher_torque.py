@@ -1,12 +1,10 @@
-from abc import ABC
-
 import numpy as np
 from gym import spaces
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher import BaseReacherEnv
 
 
-class BaseReacherTorqueEnv(BaseReacherEnv, ABC):
+class BaseReacherTorqueEnv(BaseReacherEnv):
     """
     Base class for torque controlled reaching environments
     """
