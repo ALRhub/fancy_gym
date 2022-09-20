@@ -50,7 +50,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.tracking_controller = tracking_controller
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         # self.traj_gen.set_mp_times(self.time_steps)
-        self.traj_gen.set_duration(self.duration - self.dt, self.dt)
+        self.traj_gen.set_duration(self.duration, self.dt)
 
         # reward computation
         self.reward_aggregation = reward_aggregation
@@ -78,10 +78,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         self.traj_gen.set_boundary_conditions(bc_time, self.current_pos, self.current_vel)
         # TODO: remove the - self.dt after Bruces fix.
-        self.traj_gen.set_duration(None if self.learn_sub_trajectories else self.duration - self.dt, self.dt)
+        self.traj_gen.set_duration(None if self.learn_sub_trajectories else self.duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         trajectory = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
+
+        print(len(trajectory))
 
         if self.do_replanning:
             # Remove first part of trajectory as this is already over
