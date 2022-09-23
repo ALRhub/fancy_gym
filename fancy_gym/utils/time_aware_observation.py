@@ -40,9 +40,10 @@ class TimeAwareObservation(gym.ObservationWrapper):
         high = np.append(self.observation_space.high, 1.0)
         self.observation_space = Box(low, high, dtype=self.observation_space.dtype)
         self.t = 0
+        self._max_episode_steps = env.spec.max_episode_steps
 
     def observation(self, observation):
-        """Adds to the observation with the current time step.
+        """Adds to the observation with the current time step normalized with max steps.
 
         Args:
             observation: The observation to add the time step to
@@ -50,7 +51,7 @@ class TimeAwareObservation(gym.ObservationWrapper):
         Returns:
             The observation with the time step appended to
         """
-        return np.append(observation, self.t/self.env.spec.max_episode_steps)
+        return np.append(observation, self.t / self._max_episode_steps)
 
     def step(self, action):
         """Steps through the environment, incrementing the time step.

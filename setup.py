@@ -6,7 +6,9 @@ from setuptools import setup, find_packages
 extras = {
     "dmc": ["dm_control>=1.0.1"],
     "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld",
-                  'mujoco-py<2.2,>=2.1'],
+                  'mujoco-py<2.2,>=2.1',
+                  'scipy'
+                  ],
 }
 
 # All dependencies

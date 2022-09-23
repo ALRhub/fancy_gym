@@ -1,4 +1,3 @@
-from abc import ABC
 from typing import Tuple, Union
 
 import numpy as np
@@ -6,7 +5,7 @@ import numpy as np
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class BaseMetaworldMPWrapper(RawInterfaceWrapper, ABC):
+class BaseMetaworldMPWrapper(RawInterfaceWrapper):
     @property
     def current_pos(self) -> Union[float, int, np.ndarray]:
         r_close = self.env.data.get_joint_qpos("r_close")
