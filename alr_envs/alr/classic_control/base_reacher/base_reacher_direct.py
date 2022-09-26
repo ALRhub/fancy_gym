@@ -34,4 +34,4 @@ class BaseReacherDirectEnv(BaseReacherEnv, ABC):
         self._steps += 1
         done = self._terminate(info)
 
-        return self._get_obs().copy(), reward, done, info
+        return self._get_obs().copy(), reward, done, False, info

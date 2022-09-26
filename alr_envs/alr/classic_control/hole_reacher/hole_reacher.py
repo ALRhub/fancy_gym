@@ -63,7 +63,7 @@ class HoleReacherBaseEnv(BaseReacherEnv, ABC):
         self._set_patches()
         self.reward_function.reset()
 
-        return super().reset()
+        return super().reset(), {}
 
     def _get_reward(self, action: np.ndarray) -> (float, dict):
         return self.reward_function.get_reward(self)
