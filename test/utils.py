@@ -69,7 +69,7 @@ def run_env_determinism(env_id: str, seed: int):
         assert np.array_equal(done1, done2), f"Dones [{i}] {done1} and {done2} do not match."
 
 
-def verify_observations(obs, observation_space, obs_type="reset()"):
+def verify_observations(obs, observation_space: gym.Space, obs_type="reset()"):
     assert observation_space.contains(obs), \
         f"Observation {obs} received from {obs_type} not contained in observation space {observation_space}."
 
