@@ -50,7 +50,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.tracking_controller = tracking_controller
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         # self.traj_gen.set_mp_times(self.time_steps)
-        self.traj_gen.set_duration(self.duration - self.dt, self.dt)
+        self.traj_gen.set_duration(self.duration, self.dt)
 
         # reward computation
         self.reward_aggregation = reward_aggregation
@@ -85,9 +85,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         trajectory = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
 
-        # Remove first element of trajectory as this is the current position and velocity
-        # trajectory = trajectory[1:]
-        # velocity = velocity[1:]
+        if self.do_replanning:
+            # Remove first part of trajectory as this is already over
+            trajectory = trajectory[self.current_traj_steps:]
+            velocity = velocity[self.current_traj_steps:]
 
         return trajectory, velocity
 

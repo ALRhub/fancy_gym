@@ -106,31 +106,31 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     """
 
-    base_env_id = "HoleReacher-v0"
+    base_env_id = "Reacher5d-v0"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
-    wrappers = [fancy_gym.envs.classic_control.hole_reacher.MPWrapper]
+    wrappers = [fancy_gym.envs.mujoco.reacher.MPWrapper]
 
-    # # For a ProMP
-    # trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
-    #                                'weight_scale': 2}
-    # phase_generator_kwargs = {'phase_generator_type': 'linear'}
-    # controller_kwargs = {'controller_type': 'velocity'}
-    # basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
-    #                           'num_basis': 5,
-    #                           'num_basis_zero_start': 1
-    #                           }
-
-    # For a DMP
-    trajectory_generator_kwargs = {'trajectory_generator_type': 'dmp',
-                                   'weight_scale': 500}
-    phase_generator_kwargs = {'phase_generator_type': 'exp',
-                              'alpha_phase': 2.5}
+    # For a ProMP
+    trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
+                                   'weight_scale': 2}
+    phase_generator_kwargs = {'phase_generator_type': 'linear'}
     controller_kwargs = {'controller_type': 'velocity'}
-    basis_generator_kwargs = {'basis_generator_type': 'rbf',
-                              'num_basis': 5
+    basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
+                              'num_basis': 5,
+                              'num_basis_zero_start': 1
                               }
+
+    # # For a DMP
+    # trajectory_generator_kwargs = {'trajectory_generator_type': 'dmp',
+    #                                'weight_scale': 500}
+    # phase_generator_kwargs = {'phase_generator_type': 'exp',
+    #                           'alpha_phase': 2.5}
+    # controller_kwargs = {'controller_type': 'velocity'}
+    # basis_generator_kwargs = {'basis_generator_type': 'rbf',
+    #                           'num_basis': 5
+    #                           }
     env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
@@ -155,15 +155,15 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
 
 if __name__ == '__main__':
-    render = True
+    render = False
     # DMP
     example_mp("HoleReacherDMP-v0", seed=10, iterations=5, render=render)
-    #
-    # # ProMP
+
+    # ProMP
     example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
 
     # Altered basis functions
-    obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=5, render=render)
+    obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=1, render=render)
 
     # Custom MP
     example_fully_custom_mp(seed=10, iterations=1, render=render)
