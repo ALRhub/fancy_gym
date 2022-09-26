@@ -141,7 +141,7 @@ def make_bb(
     Returns: DMP wrapped gym env
 
     """
-    _verify_time_limit(traj_gen_kwargs.get("duration", None), kwargs.get("time_limit", None))
+    _verify_time_limit(traj_gen_kwargs.get("duration"), kwargs.get("time_limit"))
 
     learn_sub_trajs = black_box_kwargs.get('learn_sub_trajectories')
     do_replanning = black_box_kwargs.get('replanning_schedule')
