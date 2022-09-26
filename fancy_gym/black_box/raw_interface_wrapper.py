@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import Union, Tuple
 
 import gym
@@ -23,7 +22,6 @@ class RawInterfaceWrapper(gym.Wrapper):
         return np.ones(self.env.observation_space.shape[0], dtype=bool)
 
     @property
-    @abstractmethod
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
         """
             Returns the current position of the action/control dimension.
@@ -32,10 +30,9 @@ class RawInterfaceWrapper(gym.Wrapper):
             it should, however, be implemented regardless.
             E.g. The joint positions that are directly or indirectly controlled by the action.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
-    @abstractmethod
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         """
             Returns the current velocity of the action/control dimension.
@@ -44,7 +41,7 @@ class RawInterfaceWrapper(gym.Wrapper):
             it should, however, be implemented regardless.
             E.g. The joint velocities that are directly or indirectly controlled by the action.
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @property
     def dt(self) -> float:

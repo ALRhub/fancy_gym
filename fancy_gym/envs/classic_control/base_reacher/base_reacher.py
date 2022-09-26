@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import Union, Tuple, Optional
 
 import gym
@@ -10,7 +9,7 @@ from gym.utils import seeding
 from fancy_gym.envs.classic_control.utils import intersect
 
 
-class BaseReacherEnv(gym.Env, ABC):
+class BaseReacherEnv(gym.Env):
     """
     Base class for all reaching environments.
     """
@@ -87,13 +86,6 @@ class BaseReacherEnv(gym.Env, ABC):
 
         return self._get_obs().copy()
 
-    @abstractmethod
-    def step(self, action: np.ndarray):
-        """
-        A single step with action in angular velocity space
-        """
-        raise NotImplementedError
-
     def _update_joints(self):
         """
         update joints to get new end-effector position. The other links are only required for rendering.
@@ -120,27 +112,24 @@ class BaseReacherEnv(gym.Env, ABC):
                     return True
         return False
 
-    @abstractmethod
     def _get_reward(self, action: np.ndarray) -> (float, dict):
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def _get_obs(self) -> np.ndarray:
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def _check_collisions(self) -> bool:
-        pass
+        raise NotImplementedError
 
-    @abstractmethod
     def _terminate(self, info) -> bool:
-        return False
+        raise NotImplementedError
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
     def close(self):
+        super(BaseReacherEnv, self).close()
         del self.fig
 
     @property
