@@ -1,0 +1,187 @@
+<mujoco model="wam(v1.31)">
+    <compiler angle="radian" meshdir="../../meshes/wam/" />
+    <option timestep="0.005" integrator="Euler" />
+    <size njmax="500" nconmax="100" />
+    <default class="main">
+        <joint limited="true" frictionloss="0.001" damping="0.07"/>
+        <default class="viz">
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="0.7 0.7 0.7 1" />
+        </default>
+        <default class="col">
+            <geom type="mesh" contype="0" rgba="0.5 0.6 0.7 1" />
+        </default>
+    </default>
+    <asset>
+        <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.25 0.26 0.25" rgb2="0.22 0.22 0.22" markrgb="0.3 0.3 0.3" width="100" height="100" />
+        <material name="MatGnd" texture="groundplane" texrepeat="5 5" specular="1" shininess="0.3" reflectance="1e-05" />
+        <mesh name="base_link_fine" file="base_link_fine.stl" />
+        <mesh name="base_link_convex" file="base_link_convex.stl" />
+        <mesh name="shoulder_link_fine" file="shoulder_link_fine.stl" />
+        <mesh name="shoulder_link_convex_decomposition_p1" file="shoulder_link_convex_decomposition_p1.stl" />
+        <mesh name="shoulder_link_convex_decomposition_p2" file="shoulder_link_convex_decomposition_p2.stl" />
+        <mesh name="shoulder_link_convex_decomposition_p3" file="shoulder_link_convex_decomposition_p3.stl" />
+        <mesh name="shoulder_pitch_link_fine" file="shoulder_pitch_link_fine.stl" />
+        <mesh name="shoulder_pitch_link_convex" file="shoulder_pitch_link_convex.stl" />
+        <mesh name="upper_arm_link_fine" file="upper_arm_link_fine.stl" />
+        <mesh name="upper_arm_link_convex_decomposition_p1" file="upper_arm_link_convex_decomposition_p1.stl" />
+        <mesh name="upper_arm_link_convex_decomposition_p2" file="upper_arm_link_convex_decomposition_p2.stl" />
+        <mesh name="elbow_link_fine" file="elbow_link_fine.stl" />
+        <mesh name="elbow_link_convex" file="elbow_link_convex.stl" />
+        <mesh name="forearm_link_fine" file="forearm_link_fine.stl" />
+        <mesh name="forearm_link_convex_decomposition_p1" file="forearm_link_convex_decomposition_p1.stl" />
+        <mesh name="forearm_link_convex_decomposition_p2" file="forearm_link_convex_decomposition_p2.stl" />
+        <mesh name="wrist_yaw_link_fine" file="wrist_yaw_link_fine.stl" />
+        <mesh name="wrist_yaw_link_convex_decomposition_p1" file="wrist_yaw_link_convex_decomposition_p1.stl" />
+        <mesh name="wrist_yaw_link_convex_decomposition_p2" file="wrist_yaw_link_convex_decomposition_p2.stl" />
+        <mesh name="wrist_pitch_link_fine" file="wrist_pitch_link_fine.stl" />
+        <mesh name="wrist_pitch_link_convex_decomposition_p1" file="wrist_pitch_link_convex_decomposition_p1.stl" />
+        <mesh name="wrist_pitch_link_convex_decomposition_p2" file="wrist_pitch_link_convex_decomposition_p2.stl" />
+        <mesh name="wrist_pitch_link_convex_decomposition_p3" file="wrist_pitch_link_convex_decomposition_p3.stl" />
+        <mesh name="wrist_palm_link_fine" file="wrist_palm_link_fine.stl" />
+        <mesh name="wrist_palm_link_convex" file="wrist_palm_link_convex.stl" />
+        <mesh name="cup1" file="cup_split1.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup2" file="cup_split2.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup3" file="cup_split3.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup4" file="cup_split4.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup5" file="cup_split5.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup6" file="cup_split6.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup7" file="cup_split7.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup8" file="cup_split8.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup9" file="cup_split9.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup10" file="cup_split10.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup11" file="cup_split11.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup12" file="cup_split12.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup13" file="cup_split13.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup14" file="cup_split14.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup15" file="cup_split15.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup16" file="cup_split16.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup17" file="cup_split17.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup18" file="cup_split18.stl" scale="0.001 0.001 0.001" />
+        <mesh name="cup3_table" file="cup_split3.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup4_table" file="cup_split4.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup5_table" file="cup_split5.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup6_table" file="cup_split6.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup7_table" file="cup_split7.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup8_table" file="cup_split8.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup9_table" file="cup_split9.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup10_table" file="cup_split10.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup15_table" file="cup_split15.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup16_table" file="cup_split16.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup17_table" file="cup_split17.stl" scale="0.00211 0.00211 0.01" />
+        <mesh name="cup18_table" file="cup_split18.stl" scale="0.00211 0.00211 0.01" />
+    </asset>
+
+    <worldbody>
+        <geom name="ground" size="5 5 1" type="plane" material="MatGnd" />
+        <light pos="0.1 0.2 1.3" dir="-0.0758098 -0.32162 -0.985527" directional="true" cutoff="60" exponent="1" diffuse="1 1 1" specular="0.1 0.1 0.1" />
+
+        <body name="wam/base_link" pos="0 0 0.6">
+            <inertial pos="6.93764e-06 0.0542887 0.076438" quat="0.496481 0.503509 -0.503703 0.496255" mass="27.5544" diaginertia="0.432537 0.318732 0.219528" />
+            <geom class="viz" quat="0.707107 0 0 -0.707107" mesh="base_link_fine" />
+            <geom class="col" quat="0.707107 0 0 -0.707107" mesh="base_link_convex" name="base_link_convex_geom"/>
+            <body name="wam/shoulder_yaw_link" pos="0 0 0.16" quat="0.707107 0 0 -0.707107">
+                <inertial pos="-0.00443422 -0.00066489 -0.12189" quat="0.999995 0.000984795 0.00270132 0.00136071" mass="10.7677" diaginertia="0.507411 0.462983 0.113271" />
+                <joint name="wam/base_yaw_joint" pos="0 0 0" axis="0 0 1" range="-2.6 2.6" />
+                <geom class="viz" pos="0 0 0.186" mesh="shoulder_link_fine" />
+                <geom class="col" pos="0 0 0.186" mesh="shoulder_link_convex_decomposition_p1" name="shoulder_link_convex_decomposition_p1_geom"/>
+                <geom class="col" pos="0 0 0.186" mesh="shoulder_link_convex_decomposition_p2" name="shoulder_link_convex_decomposition_p2_geom"/>
+                <geom class="col" pos="0 0 0.186" mesh="shoulder_link_convex_decomposition_p3" name="shoulder_link_convex_decomposition_p3_geom"/>
+                <body name="wam/shoulder_pitch_link" pos="0 0 0.184" quat="0.707107 -0.707107 0 0">
+                    <inertial pos="-0.00236983 -0.0154211 0.0310561" quat="0.961781 -0.272983 0.0167269 0.0133385" mass="3.87494" diaginertia="0.0214207 0.0167101 0.0126465" />
+                    <joint name="wam/shoulder_pitch_joint" pos="0 0 0" axis="0 0 1" range="-1.985 1.985" />
+                    <geom class="viz" mesh="shoulder_pitch_link_fine" />
+                    <geom class="col" mesh="shoulder_pitch_link_convex" />
+                    <body name="wam/upper_arm_link" pos="0 -0.505 0" quat="0.707107 0.707107 0 0">
+                        <inertial pos="-0.0382586 3.309e-05 -0.207508" quat="0.705455 0.0381914 0.0383402 0.706686" mass="1.80228" diaginertia="0.0665697 0.0634285 0.00622701" />
+                        <joint name="wam/shoulder_yaw_joint" pos="0 0 0" axis="0 0 1" range="-2.8 2.8" />
+                        <geom class="viz" pos="0 0 -0.505" mesh="upper_arm_link_fine" />
+                        <geom class="col" pos="0 0 -0.505" mesh="upper_arm_link_convex_decomposition_p1" name="upper_arm_link_convex_decomposition_p1_geom"/>
+                        <geom class="col" pos="0 0 -0.505" mesh="upper_arm_link_convex_decomposition_p2" name="upper_arm_link_convex_decomposition_p2_geom"/>
+                        <body name="wam/forearm_link" pos="0.045 0 0.045" quat="0.707107 -0.707107 0 0">
+                            <inertial pos="0.00498512 -0.132717 -0.00022942" quat="0.546303 0.447151 -0.548676 0.447842" mass="2.40017" diaginertia="0.0196896 0.0152225 0.00749914" />
+                            <joint name="wam/elbow_pitch_joint" pos="0 0 0" axis="0 0 1" range="-0.9 3.14159" />
+                            <geom class="viz" mesh="elbow_link_fine" />
+                            <geom class="col" mesh="elbow_link_convex" />
+                            <geom class="viz" pos="-0.045 -0.073 0" quat="0.707388 0.706825 0 0" mesh="forearm_link_fine" />
+                            <geom class="col" pos="-0.045 -0.073 0" quat="0.707388 0.706825 0 0" mesh="forearm_link_convex_decomposition_p1" name="forearm_link_convex_decomposition_p1_geom" />
+                            <geom class="col" pos="-0.045 -0.073 0" quat="0.707388 0.706825 0 0" mesh="forearm_link_convex_decomposition_p2" name="forearm_link_convex_decomposition_p2_geom" />
+                            <body name="wam/wrist_yaw_link" pos="-0.045 0 0" quat="0.707107 0.707107 0 0">
+                                <inertial pos="8.921e-05 0.00435824 -0.00511217" quat="0.708528 -0.000120667 0.000107481 0.705683" mass="0.12376" diaginertia="0.0112011 0.0111887 7.58188e-05" />
+                                <joint name="wam/wrist_yaw_joint" pos="0 0 0" axis="0 0 1" range="-4.55 1.25" />
+                                <geom class="viz" pos="0 0 0.3" mesh="wrist_yaw_link_fine" />
+                                <geom class="col" pos="0 0 0.3" mesh="wrist_yaw_link_convex_decomposition_p1" name="wrist_yaw_link_convex_decomposition_p1_geom" />
+                                <geom class="col" pos="0 0 0.3" mesh="wrist_yaw_link_convex_decomposition_p2" name="wrist_yaw_link_convex_decomposition_p2_geom" />
+                                <body name="wam/wrist_pitch_link" pos="0 0 0.3" quat="0.707107 -0.707107 0 0">
+                                    <inertial pos="-0.00012262 -0.0246834 -0.0170319" quat="0.994687 -0.102891 0.000824211 -0.00336105" mass="0.417974" diaginertia="0.000555166 0.000463174 0.00023407" />
+                                    <joint name="wam/wrist_pitch_joint" pos="0 0 0" axis="0 0 1" range="-1.5707 1.5707" />
+                                    <geom class="viz" mesh="wrist_pitch_link_fine" />
+                                    <geom class="col" mesh="wrist_pitch_link_convex_decomposition_p1" name="wrist_pitch_link_convex_decomposition_p1_geom" />
+                                    <geom class="col" mesh="wrist_pitch_link_convex_decomposition_p2" name="wrist_pitch_link_convex_decomposition_p2_geom" />
+                                    <geom class="col" mesh="wrist_pitch_link_convex_decomposition_p3" name="wrist_pitch_link_convex_decomposition_p3_geom" />
+                                    <body name="wam/wrist_palm_link" pos="0 -0.06 0" quat="0.707107 0.707107 0 0">
+                                        <inertial pos="-7.974e-05 -0.00323552 -0.00016313" quat="0.594752 0.382453 0.382453 0.594752" mass="0.0686475" diaginertia="7.408e-05 3.81466e-05 3.76434e-05" />
+                                        <joint name="wam/palm_yaw_joint" pos="0 0 0" axis="0 0 1" range="-2.7 2.7" />
+                                        <geom class="viz" pos="0 0 -0.06" mesh="wrist_palm_link_fine" />
+                                        <geom class="col" pos="0 0 -0.06" mesh="wrist_palm_link_convex" name="wrist_palm_link_convex_geom" />
+                                        <site name="init_ball_pos" size="0.025 0.025 0.025" pos="0.0 0.0 0.035" rgba="0 1 0 1"/>
+                                    </body>
+                                </body>
+                            </body>
+                        </body>
+                    </body>
+                </body>
+            </body>
+        </body>
+        <body name="table_body" pos="0 -1.85 0.4025">
+            <geom name="table" type="box" size="0.4 0.6 0.4" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+                  solref="-10000 -100"/>
+            <geom name="table_contact_geom" type="box" size="0.4 0.6 0.1" pos="0 0 0.31" rgba="1.4 0.8 0.45 1" solimp="0.999 0.999 0.001"
+                  solref="-10000 -100"/>
+        </body>
+        <geom name="table_robot" type="box" size="0.1 0.1 0.3" pos="0 0.00 0.3025" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+                  solref="-10000 -100"/>
+        <geom name="wall" type="box" quat="1 0 0 0" size="0.4 0.04 1.1" pos="0. -2.45 1.1" rgba="0.8 0.655 0.45 1" solimp="0.999 0.999 0.001"
+                  solref="-10000 -100"/>
+
+        <body name="cup_table" pos="0.32 -1.55 0.84" quat="0.7071068 0.7071068 0 0">
+            <inertial pos="-3.75236e-10 8.27811e-05 0.0947015" quat="0.999945 -0.0104888 0 0" mass="10.132" diaginertia="0.000285643 0.000270485 9.65696e-05" />
+            <geom priority= "1" name="cup_geom_table3" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup3_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table4" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup4_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table5" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup5_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table6" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup6_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table7" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup7_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup8_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table9" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup9_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table10" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -010" type="mesh" mesh="cup10_table" mass="10"/>
+            <geom priority= "1" name="cup_base_table" pos="0 -0.035 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.08 0.045" solref="-10000 -100" mass="10"/>
+            <geom priority= "1" name="cup_base_table_contact" pos="0 0.015 0.1337249" euler="-1.57 0 0" type="cylinder" size="0.07 0.01" solref="-10000 -100" rgba="0 0 255 1" mass="10"/>
+            <geom priority= "1" name="cup_geom_table15" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup15_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table16" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup16_table" mass="10"/>
+            <geom priority= "1" name="cup_geom_table17" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup17_table" mass="10"/>
+            <geom priority= "1" name="cup_geom1_table8" pos="0 0.1 0.001" euler="-1.57 0 0" solref="-10000 -100" type="mesh" mesh="cup18_table" mass="10"/>
+            <site name="cup_goal_table" pos="0 0.11 0.1337249" rgba="255 0 0 1"/>
+            <site name="cup_goal_final_table" pos="0.0 0.025 0.1337249" rgba="0 255 0 1"/>
+        </body>
+        <body name="ball" pos="0 0 0">
+            <joint axis="1 0 0" damping="0.0" name="tar:x" pos="0 0 0" stiffness="0" type="slide" frictionloss="0" limited="false"/>
+            <joint axis="0 1 0" damping="0.0" name="tar:y" pos="0 0 0" stiffness="0" type="slide" frictionloss="0" limited="false"/>
+            <joint axis="0 0 1" damping="0.0" name="tar:z" pos="0 0 0" stiffness="0" type="slide" frictionloss="0" limited="false"/>
+            <geom priority= "1" size="0.025 0.025 0.025" type="sphere" condim="4" name="ball_geom" rgba="0.8 0.2 0.1 1" mass="0.1"
+                  friction="0.1 0.1 0.1" solimp="0.9 0.95 0.001 0.5 2" solref="-10000 -10"/>
+            <site name="target_ball" pos="0 0 0" size="0.02 0.02 0.02" rgba="1 0 0 1" type="sphere"/>
+        </body>
+<!--        <camera name="visualization" mode="targetbody" target="wam/wrist_yaw_link" pos="1.5 -0.4 2.2"/>-->
+<!--        <camera name="experiment" mode="fixed" quat="0.44418059 0.41778323 0.54301123 0.57732103" pos="1.5 -0.3 1.33" />-->
+        <camera name="visualization" mode="fixed" euler="2.35 2.0 -0.75" pos="2.0 -0.0 1.85"/>
+    </worldbody>
+     <actuator>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="150.0" joint="wam/base_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="200.0" joint="wam/shoulder_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="50.0" joint="wam/shoulder_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="60.0" joint="wam/elbow_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0" joint="wam/wrist_yaw_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0" joint="wam/wrist_pitch_joint"/>
+        <motor ctrllimited="true" ctrlrange="-1.0 1.0" gear="2.0" joint="wam/palm_yaw_joint"/>
+    </actuator>
+
+</mujoco>
