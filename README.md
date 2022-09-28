@@ -205,7 +205,7 @@ at the [examples](fancy_gym/examples/).
 import fancy_gym
 
 # Base environment name, according to structure of above example
-base_env_id = "ball_in_cup-catch"
+base_env_id = "dmc:ball_in_cup-catch"
 
 # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInferfaceWrapper.
 # You can also add other gym.Wrappers in case they are needed, 
