@@ -18,7 +18,8 @@ class MetaWorldController(BaseController):
         cur_pos = c_pos[:-1]
         xyz_pos = des_pos[:-1]
 
-        assert xyz_pos.shape == cur_pos.shape, \
-            f"Mismatch in dimension between desired position {xyz_pos.shape} and current position {cur_pos.shape}"
+        if xyz_pos.shape != cur_pos.shape:
+            raise ValueError(f"Mismatch in dimension between desired position"
+                             f" {xyz_pos.shape} and current position {cur_pos.shape}")
         trq = np.hstack([(xyz_pos - cur_pos), gripper_pos])
         return trq
