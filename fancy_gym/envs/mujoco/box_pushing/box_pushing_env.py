@@ -79,8 +79,7 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
         box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
-        self.data.body("box_0").xpos = box_init_pos[:3]
-        self.data.body("box_0").xquat = box_init_pos[3:]
+        self.data.joint("box_joint").qpos = box_init_pos
 
         # set target position
         box_target_pos = self.sample_context()
@@ -90,7 +89,7 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
         self.model.body_quat[3] = box_target_pos[-4:]
 
         # set the robot to the right configuration (rod tip in the box)
-        desired_tcp_pos = box_target_pos[:3] + np.array([0.0, 0.0, 0.15])
+        desired_tcp_pos = box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
         desired_tcp_quat = np.array([0, 1, 0, 0])
         desired_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
         self.data.qpos[:7] = desired_joint_pos
