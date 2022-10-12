@@ -48,7 +48,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # trajectory generation
         self.traj_gen = trajectory_generator
 
-        self.traj_gen.basis_gn.show_basis(plot=True)
         self.tracking_controller = tracking_controller
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         # self.traj_gen.set_mp_times(self.time_steps)
