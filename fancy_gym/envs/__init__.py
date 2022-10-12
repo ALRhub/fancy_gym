@@ -16,6 +16,7 @@ from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
+from .mujoco.box_pushing.box_pushing_env import BoxPushingEnv, MAX_EPISODE_STEPS_BOX_PUSHING
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
 
@@ -36,7 +37,8 @@ DEFAULT_BB_DICT_ProMP = {
     "basis_generator_kwargs": {
         'basis_generator_type': 'zero_rbf',
         'num_basis': 5,
-        'num_basis_zero_start': 1
+        'num_basis_zero_start': 1,
+        'basis_bandwidth_factor': 3.0,
     }
 }
 
@@ -196,6 +198,18 @@ register(
     entry_point='fancy_gym.envs.mujoco:BeerPongEnv',
     max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
 )
+
+# Box pushing environments with different rewards
+for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
+    register(
+        id='BoxPushing{}-v0'.format(reward_type),
+        entry_point='fancy_gym.envs.mujoco:BoxPushingEnv',
+        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING//10,  # divided by frames skip
+        kwargs={
+            "reward_type": reward_type,
+            "frame_skip": 10
+        }
+    )
 
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
 # only one time step, i.e. we simulate until the end of th episode
@@ -431,7 +445,26 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # ########################################################################################################################
-#
+
+## Box Pushing
+_versions = ['BoxPushingDense-v0', 'BoxPushingTemporalSparse-v0', 'BoxPushingTemporalSpatialSparse-v0']
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    kwargs_dict_box_pushing_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_box_pushing_promp['wrappers'].append(mujoco.box_pushing.MPWrapper)
+    kwargs_dict_box_pushing_promp['name'] = _v
+    kwargs_dict_box_pushing_promp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
+    kwargs_dict_box_pushing_promp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
+    kwargs_dict_box_pushing_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 2
+
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_box_pushing_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
 #
 # ## Walker2DJump
 # _versions = ['Walker2DJump-v0']

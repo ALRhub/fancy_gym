@@ -26,21 +26,22 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
     3. time-spatial-depend sparse reward
     """
 
-    def __init__(self, reward_type: str = "dense", frame_skip: int = 10):
+    def __init__(self, reward_type: str = "Dense", frame_skip: int = 10):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
         self.init_qvel_box_pushing = np.zeros(15)
-        assert reward_type in ["dense", "temporal_sparse", "temporal_spatial_sparse"], "unrecognized reward type"
+        self.frame_skip = frame_skip
+        assert reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"], "unrecognized reward type"
         self.reward = BoxPushingReward(reward_type, q_max, q_min, q_dot_max)
+        self._episode_energy = 0.
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "box_pushing.xml"),
-                           frame_skip=frame_skip,
+                           frame_skip=self.frame_skip,
                            mujoco_bindings="mujoco")
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
     def step(self, action):
-        episode_end = False
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
         resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
 
@@ -53,8 +54,9 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
             unstable_simulation = True
 
         self._steps += 1
-        if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING:
-            episode_end = True
+        self._episode_energy += np.sum(np.square(action))
+
+        episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING//self.frame_skip else False
 
         box_pos = self.data.body("box_0").xpos.copy()
         box_quat = self.data.body("box_0").xquat.copy()
@@ -72,7 +74,16 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
             reward = -50
 
         obs = self._get_obs()
-        infos = dict()
+        box_goal_pos_dist = 0. if not episode_end else np.linalg.norm(box_pos - target_pos)
+        box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
+        infos = {
+            'episode_end': episode_end,
+            'box_goal_pos_dist': box_goal_pos_dist,
+            'box_goal_rot_dist': box_goal_quat_dist,
+            'episode_energy': 0. if not episode_end else self._episode_energy,
+            'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
+            'num_steps': self._steps
+        }
         return obs, reward, episode_end, infos
 
     def reset_model(self):
@@ -83,6 +94,9 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
 
         # set target position
         box_target_pos = self.sample_context()
+        box_target_pos[0] = 0.4
+        box_target_pos[1] = -0.3
+        box_target_pos[-4:] = np.array([0.0, 0.0, 0.0, 1.0])
         self.model.body_pos[2] = box_target_pos[:3]
         self.model.body_quat[2] = box_target_pos[-4:]
         self.model.body_pos[3] = box_target_pos[:3]
@@ -96,6 +110,7 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
 
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
+        self._episode_energy = 0.
 
         return self._get_obs()
 
@@ -189,7 +204,6 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
 
             err = np.hstack((cart_pos_error, cart_quat_error))
             err_norm = np.sum(cart_pos_error**2) + np.sum((current_cart_quat - desired_cart_quat)**2)
-            print("err_norm: {}, old_err_norm: {}".format(err_norm, old_err_norm))
             if err_norm > old_err_norm:
                 q = q_old
                 dt = 0.7 * dt
@@ -245,3 +259,4 @@ if __name__=="__main__":
             env.render("human")
             action = env.action_space.sample()
             obs, reward, done, info = env.step(action)
+            print("info: {}".format(info))

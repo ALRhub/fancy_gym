@@ -183,11 +183,11 @@ class TemporalSpatialSparseReward(RewardBase):
 
 
 def BoxPushingReward(reward_type, q_max, q_min, q_dot_max):
-    if reward_type == 'dense':
+    if reward_type == 'Dense':
         return DenseReward(q_max, q_min, q_dot_max)
-    elif reward_type == 'temporal_sparse':
+    elif reward_type == 'TemporalSparse':
         return TemporalSparseReward(q_max, q_min, q_dot_max)
-    elif reward_type == 'temporal_spatial_sparse':
+    elif reward_type == 'TemporalSpatialSparse':
         return TemporalSpatialSparseReward(q_max, q_min, q_dot_max)
     else:
         raise NotImplementedError
