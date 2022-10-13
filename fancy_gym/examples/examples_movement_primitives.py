@@ -24,7 +24,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
 
-        if render and i % 2 == 0:
+        if render and i % 1 == 0:
             # This renders the full MP trajectory
             # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
             # Resetting to no rendering, can be achieved by render(mode=None).
@@ -161,10 +161,10 @@ if __name__ == '__main__':
 
     # ProMP
     # example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
-    example_mp("BoxPushingDenseProMP-v0", seed=10, iterations=50, render=render)
+    # example_mp("BoxPushingDenseProMP-v0", seed=10, iterations=50, render=render)
 
     # ProDMP
-    # example_mp("BoxPushingDenseProDMP-v0", seed=10, iterations=50, render=render)
+    example_mp("BoxPushingDenseProDMP-v0", seed=10, iterations=50, render=render)
 
     # Altered basis functions
     # obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=1, render=render)

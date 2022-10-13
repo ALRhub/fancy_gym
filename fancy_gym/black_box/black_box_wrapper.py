@@ -81,9 +81,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         # TODO we could think about initializing with the previous desired value in order to have a smooth transition
         #  at least from the planning point of view.
-        self.traj_gen.set_boundary_conditions(torch.as_tensor(bc_time),
-                                              torch.as_tensor(self.current_pos),
-                                              torch.as_tensor(self.current_vel))
+
+        self.traj_gen.set_boundary_conditions(bc_time,
+                                                self.current_pos,
+                                                self.current_vel)
         duration = None if self.learn_sub_trajectories else self.duration
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)

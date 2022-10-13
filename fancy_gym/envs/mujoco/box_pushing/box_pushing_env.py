@@ -94,6 +94,8 @@ class BoxPushingEnv(MujocoEnv, utils.EzPickle):
 
         # set target position
         box_target_pos = self.sample_context()
+        while np.linalg.norm(box_target_pos[:2] - box_init_pos[:2]) < 0.3:
+            box_target_pos = self.sample_context()
         #box_target_pos[0] = 0.4
         #box_target_pos[1] = -0.3
         #box_target_pos[-4:] = np.array([0.0, 0.0, 0.0, 1.0])
