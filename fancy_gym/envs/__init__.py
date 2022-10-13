@@ -87,8 +87,7 @@ DEFAULT_BB_DICT_ProDMP = {
     },
     "black_box_kwargs": {
         'replanning_schedule': None,
-        'verbose': 2,
-        'enable_traj_level_reward': False,
+        'verbose': 2
     }
 }
 
@@ -500,6 +499,16 @@ for _v in _versions:
     _env_id = f'{_name[0]}ProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
+    kwargs_dict_box_pushing_prodmp['name'] = _v
+    kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
+    kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
+
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_box_pushing_prodmp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
 #
 # ## Walker2DJump
 # _versions = ['Walker2DJump-v0']
