@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from . import manipulation, suite
 
-ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
+ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
 from gym.envs.registration import register
 

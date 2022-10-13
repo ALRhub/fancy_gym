@@ -5,7 +5,7 @@ from gym import register
 from . import mujoco
 from .deprecated_needs_gym_robotics import robotics
 
-ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
+ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
 DEFAULT_BB_DICT_ProMP = {
     "name": 'EnvName',

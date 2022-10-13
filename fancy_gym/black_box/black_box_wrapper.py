@@ -52,6 +52,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # self.time_steps = np.linspace(0, self.duration, self.traj_steps)
         # self.traj_gen.set_mp_times(self.time_steps)
         self.traj_gen.set_duration(self.duration, self.dt)
+        # self.traj_gen.basis_gn.show_basis(plot=True)
 
         # reward computation
         self.reward_aggregation = reward_aggregation
