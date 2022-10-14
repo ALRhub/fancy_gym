@@ -16,7 +16,8 @@ from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
-from .mujoco.box_pushing.box_pushing_env import BoxPushingEnv, MAX_EPISODE_STEPS_BOX_PUSHING
+from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
+                                                BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -232,10 +233,9 @@ register(
 for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
     register(
         id='BoxPushing{}-v0'.format(reward_type),
-        entry_point='fancy_gym.envs.mujoco:BoxPushingEnv',
+        entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING//10,  # divided by frames skip
         kwargs={
-            "reward_type": reward_type,
             "frame_skip": 10
         }
     )
