@@ -1,6 +1,6 @@
 # MetaWorld Wrappers
 
-These are the Environment Wrappers for selected [Metaworld](https://meta-world.github.io/) environments in order to use our Motion Primitive gym interface with them. 
+These are the Environment Wrappers for selected [Metaworld](https://meta-world.github.io/) environments in order to use our Movement Primitive gym interface with them. 
 All Metaworld environments have a 39 dimensional observation space with the same structure. The tasks differ only in the objective and the initial observations that are randomized. 
 Unused observations are zeroed out. E.g. for `Button-Press-v2` the observation mask looks the following:
 ```python

@@ -17,7 +17,7 @@ from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPER
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 
-ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": []}
+ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
 DEFAULT_BB_DICT_ProMP = {
     "name": 'EnvName',
@@ -204,7 +204,6 @@ register(
     entry_point='fancy_gym.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
     max_episode_steps=FIXED_RELEASE_STEP,
 )
-
 
 # movement Primitive Environments
 
