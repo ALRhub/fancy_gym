@@ -248,7 +248,6 @@ register(
     max_episode_steps=FIXED_RELEASE_STEP,
 )
 
-
 # movement Primitive Environments
 
 ## Simple Reacher
