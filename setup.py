@@ -1,6 +1,12 @@
 import itertools
+import pathlib
 
 from setuptools import setup, find_packages
+
+here = pathlib.Path(__file__).parent.resolve()
+
+# Get the long description from the README file
+long_description = (here / "README.md").read_text(encoding="utf-8")
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
@@ -16,31 +22,38 @@ all_groups = set(extras.keys())
 extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[group], all_groups))))
 
 setup(
-    author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.2',
+    version='0.3',
+    description='Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url='https://github.com/ALRhub/fancy_gym/',
+    author='Fabian Otto, Onur Celik',
+    author_email='',
     classifiers=[
-        # Python 3.7 is minimally supported
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
-    extras_require=extras,
+    keywords="reinforcement learning, robotics, OpenAI gym, machine learning",
+    packages=[package for package in find_packages() if package.startswith("fancy_gym")],
+    python_requires=">=3.7, <4",
     install_requires=[
         'gym[mujoco]<0.25.0,>=0.24.0',
         'mp_pytorch @ git+https://github.com/ALRhub/MP_PyTorch.git@main'
     ],
-    packages=[package for package in find_packages() if package.startswith("fancy_gym")],
+    extras_require=extras,
     package_data={
         "fancy_gym": [
             "envs/mujoco/*/assets/*.xml",
         ]
     },
-    python_requires=">=3.7",
-    url='https://github.com/ALRhub/fancy_gym/',
-    # license='AGPL-3.0 license',
-    author_email='',
-    description='Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.'
 )
