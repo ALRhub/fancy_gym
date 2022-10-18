@@ -15,6 +15,7 @@ extras = {
                   'mujoco-py<2.2,>=2.1',
                   'scipy'
                   ],
+    "test": ["pytest"]
 }
 
 # All dependencies
@@ -23,7 +24,7 @@ extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[
 
 setup(
     name='fancy_gym',
-    version='0.3',
+    version='0.3.0',
     description='Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.',
     long_description=long_description,
     long_description_content_type="text/markdown",
