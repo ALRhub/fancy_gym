@@ -18,9 +18,9 @@ extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[
 setup(
     author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.3',
+    version='0.2',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
