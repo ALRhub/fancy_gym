@@ -9,6 +9,7 @@ from typing import Iterable, Type, Union
 import gym
 import numpy as np
 from gym.envs.registration import register, registry
+from gym.utils import seeding
 
 try:
     from dm_control import suite, manipulation
@@ -88,7 +89,9 @@ def make(env_id: str, seed: int, **kwargs):
     else:
         env = make_gym(env_id, seed, **kwargs)
 
-    env.seed(seed)
+    np_random, _ = seeding.np_random(seed)
+    env.np_random = np_random
+    # env.seed(seed)
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 

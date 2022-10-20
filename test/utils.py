@@ -24,6 +24,7 @@ def run_env(env_id, iterations=None, seed=0, render=False):
     actions = []
     dones = []
     obs = env.reset()
+    print(obs.dtype)
     verify_observations(obs, env.observation_space, "reset()")
 
     iterations = iterations or (env.spec.max_episode_steps or 1)
