@@ -73,24 +73,30 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         return observation.astype(self.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
+        duration = self.duration
+        if self.learn_sub_trajectories:
+            duration = None
+            # reset  with every new call as we need to set all arguments, such as tau, delay, again.
+            # If we do not do this, the traj_gen assumes we are continuing the trajectory.
+            self.traj_gen.reset()
+
         clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
         bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         # TODO we could think about initializing with the previous desired value in order to have a smooth transition
         #  at least from the planning point of view.
         self.traj_gen.set_boundary_conditions(bc_time, self.current_pos, self.current_vel)
-        duration = None if self.learn_sub_trajectories else self.duration
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
-        trajectory = get_numpy(self.traj_gen.get_traj_pos())
+        position = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
 
-        if self.do_replanning:
-            # Remove first part of trajectory as this is already over
-            trajectory = trajectory[self.current_traj_steps:]
-            velocity = velocity[self.current_traj_steps:]
+        # if self.do_replanning:
+        #     # Remove first part of trajectory as this is already over
+        #     position = position[self.current_traj_steps:]
+        #     velocity = velocity[self.current_traj_steps:]
 
-        return trajectory, velocity
+        return position, velocity
 
     def _get_traj_gen_action_space(self):
         """This function can be used to set up an individual space for the parameters of the traj_gen."""
@@ -125,9 +131,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         # TODO remove this part, right now only needed for beer pong
         mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
-        trajectory, velocity = self.get_trajectory(mp_params)
+        position, velocity = self.get_trajectory(mp_params)
 
-        trajectory_length = len(trajectory)
+        trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
         if self.verbose >= 2:
             actions = np.zeros(shape=(trajectory_length,) + self.env.action_space.shape)
@@ -137,7 +143,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        for t, (pos, vel) in enumerate(zip(trajectory, velocity)):
+        for t, (pos, vel) in enumerate(zip(position, velocity)):
             step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
             obs, c_reward, done, info = self.env.step(c_action)
@@ -163,7 +169,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.current_traj_steps += t + 1
 
         if self.verbose >= 2:
-            infos['positions'] = trajectory
+            infos['positions'] = position
             infos['velocities'] = velocity
             infos['step_actions'] = actions[:t + 1]
             infos['step_observations'] = observations[:t + 1]
@@ -180,4 +186,5 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
+        self.traj_gen.reset()
         return super(BlackBoxWrapper, self).reset()

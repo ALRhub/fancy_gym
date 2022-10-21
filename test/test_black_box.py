@@ -25,7 +25,7 @@ class Object(object):
 class ToyEnv(gym.Env):
     observation_space = gym.spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float64)
     action_space = gym.spaces.Box(low=-1, high=1, shape=(1,), dtype=np.float64)
-    dt = 0.01
+    dt = 0.02
 
     def __init__(self, a: int = 0, b: float = 0.0, c: list = [], d: dict = {}, e: Object = Object()):
         self.a, self.b, self.c, self.d, self.e = a, b, c, d, e
@@ -49,7 +49,7 @@ class ToyWrapper(RawInterfaceWrapper):
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return np.ones(self.action_space.shape)
+        return np.zeros(self.action_space.shape)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -67,74 +67,81 @@ def test_missing_wrapper(env_id: str):
         fancy_gym.make_bb(env_id, [], {}, {}, {}, {}, {})
 
 
-def test_missing_local_state():
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+def test_missing_local_state(mp_type: str):
     env = fancy_gym.make_bb('toy-v0', [RawInterfaceWrapper], {},
-                            {'trajectory_generator_type': 'promp'},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
     env.reset()
     with pytest.raises(NotImplementedError):
         env.step(env.action_space.sample())
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
 @pytest.mark.parametrize('verbose', [1, 2])
-def test_verbosity(env_wrap: Tuple[str, Type[RawInterfaceWrapper]], verbose: int):
+def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]], verbose: int):
     env_id, wrapper_class = env_wrap
-    env = fancy_gym.make_bb(env_id, [wrapper_class], {},
-                            {'trajectory_generator_type': 'promp'},
+    env = fancy_gym.make_bb(env_id, [wrapper_class], {'verbose': verbose},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
     env.reset()
-    info_keys = env.step(env.action_space.sample())[3].keys()
+    info_keys = list(env.step(env.action_space.sample())[3].keys())
 
     env_step = fancy_gym.make(env_id, SEED)
     env_step.reset()
     info_keys_step = env_step.step(env_step.action_space.sample())[3].keys()
 
-    assert info_keys_step in info_keys
+    assert all(e in info_keys for e in info_keys_step)
     assert 'trajectory_length' in info_keys
 
     if verbose >= 2:
-        mp_keys = ['position', 'velocities', 'step_actions', 'step_observations', 'step_rewards']
-        assert mp_keys in info_keys
+        mp_keys = ['positions', 'velocities', 'step_actions', 'step_observations', 'step_rewards']
+        assert all(e in info_keys for e in mp_keys)
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
-def test_length(env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
+def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
     env_id, wrapper_class = env_wrap
     env = fancy_gym.make_bb(env_id, [wrapper_class], {},
-                            {'trajectory_generator_type': 'promp'},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
-    env.reset()
-    length = env.step(env.action_space.sample())[3]['trajectory_length']
 
-    assert length == env.spec.max_episode_steps
+    for _ in range(5):
+        env.reset()
+        length = env.step(env.action_space.sample())[3]['trajectory_length']
+
+        assert length == env.spec.max_episode_steps
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('reward_aggregation', [np.sum, np.mean, np.median, lambda x: np.mean(x[::2])])
-def test_aggregation(reward_aggregation: callable):
+def test_aggregation(mp_type: str, reward_aggregation: callable):
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'reward_aggregation': reward_aggregation},
-                            {'trajectory_generator_type': 'promp'},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
     env.reset()
     # ToyEnv only returns 1 as reward
     assert env.step(env.action_space.sample())[1] == reward_aggregation(np.ones(50, ))
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
-def test_context_space(env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
+def test_context_space(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
     env_id, wrapper_class = env_wrap
     env = fancy_gym.make_bb(env_id, [wrapper_class], {},
-                            {'trajectory_generator_type': 'promp'},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
     # check if observation space matches with the specified mask values which are true
     env_step = fancy_gym.make(env_id, SEED)
@@ -142,36 +149,42 @@ def test_context_space(env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
     assert env.observation_space.shape == wrapper.context_mask[wrapper.context_mask].shape
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('num_dof', [0, 1, 2, 5])
 @pytest.mark.parametrize('num_basis', [0, 1, 2, 5])
 @pytest.mark.parametrize('learn_tau', [True, False])
 @pytest.mark.parametrize('learn_delay', [True, False])
-def test_action_space(num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
+def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {},
-                            {'trajectory_generator_type': 'promp',
+                            {'trajectory_generator_type': mp_type,
                              'action_dim': num_dof
                              },
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear',
+                            {'phase_generator_type': 'exp',
                              'learn_tau': learn_tau,
                              'learn_delay': learn_delay
                              },
                             {'basis_generator_type': 'rbf',
                              'num_basis': num_basis
                              })
-    assert env.action_space.shape[0] == num_dof * num_basis + int(learn_tau) + int(learn_delay)
+
+    base_dims = num_dof * num_basis
+    additional_dims = num_dof if mp_type == 'dmp' else 0
+    traj_modification_dims = int(learn_tau) + int(learn_delay)
+    assert env.action_space.shape[0] == base_dims + traj_modification_dims + additional_dims
 
 
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('a', [1])
 @pytest.mark.parametrize('b', [1.0])
 @pytest.mark.parametrize('c', [[1], [1.0], ['str'], [{'a': 'b'}], [np.ones(3, )]])
 @pytest.mark.parametrize('d', [{'a': 1}, {1: 2.0}, {'a': [1.0]}, {'a': np.ones(3, )}, {'a': {'a': 'b'}}])
 @pytest.mark.parametrize('e', [Object()])
-def test_change_env_kwargs(a: int, b: float, c: list, d: dict, e: Object):
+def test_change_env_kwargs(mp_type: str, a: int, b: float, c: list, d: dict, e: Object):
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {},
-                            {'trajectory_generator_type': 'promp'},
+                            {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
+                            {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'},
                             a=a, b=b, c=c, d=d, e=e
                             )
@@ -183,33 +196,135 @@ def test_change_env_kwargs(a: int, b: float, c: list, d: dict, e: Object):
     assert e is env.e
 
 
-@pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
-@pytest.mark.parametrize('add_time_aware_wrapper_before', [True, False])
-def test_learn_sub_trajectories(env_wrap: Tuple[str, Type[RawInterfaceWrapper]], add_time_aware_wrapper_before: bool):
-    env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(fancy_gym.make(env_id, SEED))
-    wrappers = [wrapper_class]
-
-    # has time aware wrapper
-    if add_time_aware_wrapper_before:
-        wrappers += [TimeAwareObservation]
-
-    env = fancy_gym.make_bb(env_id, [wrapper_class], {'learn_sub_trajectories': True},
-                            {'trajectory_generator_type': 'promp'},
+@pytest.mark.parametrize('mp_type', ['promp'])
+@pytest.mark.parametrize('tau', [0.25, 0.5, 0.75, 1])
+def test_learn_tau(mp_type: str, tau: float):
+    env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
                             {'controller_type': 'motor'},
-                            {'phase_generator_type': 'linear'},
-                            {'basis_generator_type': 'rbf'})
+                            {'phase_generator_type': 'linear',
+                             'learn_tau': True,
+                             'learn_delay': False
+                             },
+                            {'basis_generator_type': 'rbf',
+                             }, seed=SEED)
 
-    assert env.learn_sub_trajectories
-    assert env.traj_gen.learn_tau
-    assert env.observation_space == env_step.observation_space
+    d = True
+    for i in range(5):
+        if d:
+            env.reset()
+        action = env.action_space.sample()
+        action[0] = tau
 
-    env.reset()
-    action = env.action_space.sample()
-    obs, r, d, info = env.step(action)
+        obs, r, d, info = env.step(action)
 
-    length = info['trajectory_length']
+        length = info['trajectory_length']
+        assert length == env.spec.max_episode_steps
 
-    factor = 1 / env.dt
-    assert np.allclose(length * env.dt, np.round(factor * action[0]) / factor)
-    assert np.allclose(length * env.dt, np.round(factor * env.traj_gen.tau.numpy()) / factor)
+        tau_time_steps = int(np.round(tau / env.dt))
+
+        pos = info['positions'].flatten()
+        vel = info['velocities'].flatten()
+
+        # Check end is all same (only true for linear basis)
+        assert np.all(pos[tau_time_steps:] == pos[-1])
+        assert np.all(vel[tau_time_steps:] == vel[-1])
+
+        # Check active trajectory section is different to end values
+        assert np.all(pos[:tau_time_steps - 1] != pos[-1])
+        assert np.all(vel[:tau_time_steps - 2] != vel[-1])
+
+
+@pytest.mark.parametrize('mp_type', ['promp'])
+@pytest.mark.parametrize('delay', [0, 0.25, 0.5, 0.75])
+def test_learn_delay(mp_type: str, delay: float):
+    env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': 'linear',
+                             'learn_tau': False,
+                             'learn_delay': True
+                             },
+                            {'basis_generator_type': 'rbf',
+                             }, seed=SEED)
+
+    d = True
+    for i in range(5):
+        if d:
+            env.reset()
+        action = env.action_space.sample()
+        action[0] = delay
+
+        obs, r, d, info = env.step(action)
+
+        length = info['trajectory_length']
+        assert length == env.spec.max_episode_steps
+
+        delay_time_steps = int(np.round(delay / env.dt))
+
+        pos = info['positions'].flatten()
+        vel = info['velocities'].flatten()
+
+        # Check beginning is all same (only true for linear basis)
+        assert np.all(pos[:max(1, delay_time_steps - 1)] == pos[0])
+        assert np.all(vel[:max(1, delay_time_steps - 2)] == vel[0])
+
+        # Check active trajectory section is different to beginning values
+        assert np.all(pos[max(1, delay_time_steps):] != pos[0])
+        assert np.all(vel[max(1, delay_time_steps)] != vel[0])
+
+
+@pytest.mark.parametrize('mp_type', ['promp'])
+@pytest.mark.parametrize('tau', [0.25, 0.5, 0.75, 1])
+@pytest.mark.parametrize('delay', [0.25, 0.5, 0.75, 1])
+def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
+    env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': 'linear',
+                             'learn_tau': True,
+                             'learn_delay': True
+                             },
+                            {'basis_generator_type': 'rbf',
+                             }, seed=SEED)
+
+    if env.spec.max_episode_steps * env.dt < delay + tau:
+        return
+
+    d = True
+    for i in range(5):
+        if d:
+            env.reset()
+        action = env.action_space.sample()
+        action[0] = tau
+        action[1] = delay
+
+        obs, r, d, info = env.step(action)
+
+        length = info['trajectory_length']
+        assert length == env.spec.max_episode_steps
+
+        tau_time_steps = int(np.round(tau / env.dt))
+        delay_time_steps = int(np.round(delay / env.dt))
+        joint_time_steps = delay_time_steps + tau_time_steps
+
+        pos = info['positions'].flatten()
+        vel = info['velocities'].flatten()
+
+        # Check end is all same (only true for linear basis)
+        assert np.all(pos[joint_time_steps:] == pos[-1])
+        assert np.all(vel[joint_time_steps:] == vel[-1])
+
+        # Check beginning is all same (only true for linear basis)
+        assert np.all(pos[:delay_time_steps - 1] == pos[0])
+        assert np.all(vel[:delay_time_steps - 2] == vel[0])
+
+        # Check active trajectory section is different to beginning and end values
+        active_pos = pos[delay_time_steps: joint_time_steps - 1]
+        active_vel = vel[delay_time_steps: joint_time_steps - 2]
+        assert np.all(active_pos != pos[-1]) and np.all(active_pos != pos[0])
+        assert np.all(active_vel != vel[-1]) and np.all(active_vel != vel[0])
+
