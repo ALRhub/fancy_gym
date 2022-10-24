@@ -141,7 +141,7 @@ def make_bb(
     Returns: DMP wrapped gym env
 
     """
-    _verify_time_limit(traj_gen_kwargs.get("duration", None), kwargs.get("time_limit", None))
+    _verify_time_limit(traj_gen_kwargs.get("duration"), kwargs.get("time_limit"))
 
     learn_sub_trajs = black_box_kwargs.get('learn_sub_trajectories')
     do_replanning = black_box_kwargs.get('replanning_schedule')
@@ -165,6 +165,15 @@ def make_bb(
     if learn_sub_trajs is not None:
         # We have to learn the length when learning sub_trajectories trajectories
         phase_kwargs['learn_tau'] = True
+
+    # set tau bounds to minimum of two env steps otherwise computing the velocity is not possible.
+    # maximum is full duration of one episode.
+    if phase_kwargs.get('learn_tau'):
+        phase_kwargs["tau_bound"] = [env.dt * 2, black_box_kwargs['duration']]
+
+    # Max delay is full duration minus two steps due to above reason
+    if phase_kwargs.get('learn_delay'):
+        phase_kwargs["delay_bound"] = [0, black_box_kwargs['duration'] - env.dt * 2]
 
     phase_gen = get_phase_generator(**phase_kwargs)
     basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)
