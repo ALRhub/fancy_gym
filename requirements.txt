@@ -3,4 +3,5 @@ metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworl
 mujoco-py<2.2,>=2.1
 scipy
 gym[mujoco]<0.25.0,>=0.24.0
-mp_pytorch @ git+git@github.com:ALRhub/MP_PyTorch.git
+git+ssh://github.com/ALRhub/MP_PyTorch.git
+# git+git@github.com:ALRhub/MP_PyTorch.git
