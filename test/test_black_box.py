@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Tuple, Type, Union, Optional
+from typing import Tuple, Type, Union, Optional, Callable
 
 import gym
 import numpy as np
@@ -123,7 +123,7 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
 @pytest.mark.parametrize('reward_aggregation', [np.sum, np.mean, np.median, lambda x: np.mean(x[::2])])
-def test_aggregation(mp_type: str, reward_aggregation: callable):
+def test_aggregation(mp_type: str, reward_aggregation: Callable[[np.ndarray], float]):
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'reward_aggregation': reward_aggregation},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
@@ -327,4 +327,3 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
         active_vel = vel[delay_time_steps: joint_time_steps - 2]
         assert np.all(active_pos != pos[-1]) and np.all(active_pos != pos[0])
         assert np.all(active_vel != vel[-1]) and np.all(active_vel != vel[0])
-

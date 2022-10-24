@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Callable
 
 import gym
 import numpy as np
@@ -19,8 +19,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  duration: float,
                  verbose: int = 1,
                  learn_sub_trajectories: bool = False,
-                 replanning_schedule: Optional[callable] = None,
-                 reward_aggregation: callable = np.sum
+                 replanning_schedule: Optional[
+                     Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
+                 reward_aggregation: Callable[[np.ndarray], float] = np.sum
                  ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.

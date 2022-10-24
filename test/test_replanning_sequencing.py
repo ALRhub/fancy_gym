@@ -1,4 +1,5 @@
 from itertools import chain
+from types import FunctionType
 from typing import Tuple, Type, Union, Optional
 
 import gym
@@ -120,7 +121,7 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
                             {'basis_generator_type': 'rbf'}, seed=SEED)
 
     assert env.do_replanning
-    assert env.replanning_schedule
+    assert callable(env.replanning_schedule)
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
     assert env.observation_space == env_step.observation_space
 
