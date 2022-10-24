@@ -32,7 +32,7 @@ class MPWrapper(BaseMetaworldMPWrapper):
             # Current observation
             [False] * 3,  # end-effector position
             [False] * 1,  # normalized gripper open distance
-            [False] * 3,  # main object position
+            [True] * 3,  # main object position
             [False] * 4,  # main object quaternion
             [False] * 3,  # secondary object position
             [False] * 4,  # secondary object quaternion
