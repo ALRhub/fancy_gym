@@ -234,10 +234,7 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
     register(
         id='BoxPushing{}-v0'.format(reward_type),
         entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
-        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING//10,  # divided by frames skip
-        kwargs={
-            "frame_skip": 10
-        }
+        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
 
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
