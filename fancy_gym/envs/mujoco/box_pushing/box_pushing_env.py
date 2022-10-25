@@ -360,7 +360,7 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 if __name__=="__main__":
     env = BoxPushingTemporalSpatialSparse(frame_skip=10)
     env.reset()
-    for i in range(1):
+    for i in range(10):
         env.reset()
         for _ in range(100):
             env.render("human")
