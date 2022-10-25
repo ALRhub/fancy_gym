@@ -16,8 +16,8 @@ class MPWrapper(RawInterfaceWrapper):
             [False] * 7,  # joints gravity compensation
             [False] * 3,  # position of rod tip
             [False] * 4,  # orientation of rod
-            [False] * 3,  # position of box
-            [False] * 4,  # orientation of box
+            [True] * 3,  # position of box
+            [True] * 4,  # orientation of box
             [True] * 3,  # position of target
             [True] * 4,  # orientation of target
             # [True] * 1,  # time

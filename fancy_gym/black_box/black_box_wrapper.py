@@ -56,6 +56,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # reward computation
         self.reward_aggregation = reward_aggregation
 
+        # self.traj_gen.basis_gn.show_basis(plot=True)
         # spaces
         self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
         self.traj_gen_action_space = self._get_traj_gen_action_space()

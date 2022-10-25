@@ -68,8 +68,7 @@ DEFAULT_BB_DICT_ProDMP = {
     "wrappers": [],
     "trajectory_generator_kwargs": {
         'trajectory_generator_type': 'prodmp',
-        'duration': 2.0,
-        'weight_scale': 1.0,
+        'weights_scale': 1.0,
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'exp',
@@ -497,6 +496,8 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['name'] = _v
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = np.array([3.4944e+01, 4.3734e+01, 9.6711e+01, 2.4429e+02, 5.8272e+02])
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 3.1264e-01
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
     register(
         id=_env_id,
