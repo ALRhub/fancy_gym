@@ -22,6 +22,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  replanning_schedule: Optional[
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
+                 max_replan_times: int = 1,
                  desired_conditioning: bool = False
                  ):
         """
@@ -72,6 +73,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.desired_conditioning = False
         self.condition_pos = None
         self.condition_vel = None
+
+        self.max_replan_times = max_replan_times
+        self.replan_counts = 0
 
     def observation(self, observation):
         # return context space if we are
@@ -155,6 +159,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
+        self.replan_counts += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
             step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
@@ -173,14 +178,16 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                t + 1 + self.current_traj_steps):
+            if done or (self.replan_counts < self.max_replan_times
+                        and self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                t + 1 + self.current_traj_steps)):
                 if self.desired_conditioning:
                     self.condition_pos = pos
                     self.condition_vel = vel
                 else:
                     self.condition_pos = self.current_pos
                     self.condition_vel = self.current_vel
+
                 break
 
         infos.update({k: v[:t+1] for k, v in infos.items()})
