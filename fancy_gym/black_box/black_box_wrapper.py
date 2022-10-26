@@ -69,7 +69,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.verbose = verbose
 
         # condition value
-        self.desired_conditioning = True
+        self.desired_conditioning = False
         self.condition_pos = None
         self.condition_vel = None
 
