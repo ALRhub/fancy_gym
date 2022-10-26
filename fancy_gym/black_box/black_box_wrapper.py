@@ -150,7 +150,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
         ## tricky part, only use weights basis
-        weights_basis = action.reshape(-1, 7)
+        basis_weights = action.reshape(7, -1)
+        goal_weights = np.zeros((7, 1))
+        action = np.concatenate((basis_weights, goal_weights), axis=1).flatten()
 
         # TODO remove this part, right now only needed for beer pong
         mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
