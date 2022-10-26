@@ -62,7 +62,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # spaces
         self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
         self.traj_gen_action_space = self._get_traj_gen_action_space()
-        self.action_space = self._get_action_space()
+        # self.action_space = self._get_action_space()
+
+        tricky_action_upperbound = [np.inf] * (self.traj_gen_action_space.shape[0] - 7)
+        tricky_action_lowerbound = [-np.inf] * (self.traj_gen_action_space.shape[0] - 7)
+        self.action_space = spaces.Box(np.array(tricky_action_lowerbound), np.array(tricky_action_upperbound), dtype=np.float32)
         self.observation_space = self._get_observation_space()
 
         # rendering
@@ -144,6 +148,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
+
+        ## tricky part, only use weights basis
+        weights_basis = action.reshape(-1, 7)
 
         # TODO remove this part, right now only needed for beer pong
         mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
