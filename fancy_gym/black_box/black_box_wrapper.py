@@ -187,9 +187,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or (self.replan_counts < self.max_replan_times
-                        and self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                t + 1 + self.current_traj_steps)):
+            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                t + 1 + self.current_traj_steps):
                 if self.desired_conditioning:
                     self.condition_pos = pos
                     self.condition_vel = vel
