@@ -20,7 +20,7 @@ class MPWrapper(RawInterfaceWrapper):
             [True] * 4,  # orientation of box
             [True] * 3,  # position of target
             [True] * 4,  # orientation of target
-            # [True] * 1,  # time
+            [True] * 1,  # time
         ])
 
     @property
