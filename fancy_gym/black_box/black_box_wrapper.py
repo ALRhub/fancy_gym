@@ -2,6 +2,7 @@ from typing import Tuple, Optional, Callable
 
 import gym
 import numpy as np
+import torch
 from gym import spaces
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
@@ -74,7 +75,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.verbose = verbose
 
         # condition value
-        self.desired_conditioning = False
+        self.desired_conditioning = True
         self.condition_pos = None
         self.condition_vel = None
 
@@ -105,6 +106,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         if self.current_traj_steps == 0:
             self.condition_pos = self.current_pos
             self.condition_vel = self.current_vel
+
+        bc_time = torch.as_tensor(bc_time, dtype=torch.float32)
+        self.condition_pos = torch.as_tensor(self.condition_pos, dtype=torch.float32)
+        self.condition_vel = torch.as_tensor(self.condition_vel, dtype=torch.float32)
         self.traj_gen.set_boundary_conditions(bc_time, self.condition_pos, self.condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
