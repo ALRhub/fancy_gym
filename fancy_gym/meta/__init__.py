@@ -43,6 +43,10 @@ DEFAULT_BB_DICT_ProDMP = {
     "basis_generator_kwargs": {
         'basis_generator_type': 'prodmp',
         'num_basis': 5
+    },
+    "black_box_kwargs": {
+        'replanning_schedule': None,
+        'max_planning_times': None,
     }
 }
 

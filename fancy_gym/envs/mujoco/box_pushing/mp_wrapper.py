@@ -11,16 +11,13 @@ class MPWrapper(RawInterfaceWrapper):
     @property
     def context_mask(self):
         return np.hstack([
-            [True] * 7,  # joints position
-            [True] * 7,  # joints velocity
-            [False] * 7,  # joints gravity compensation
-            [False] * 3,  # position of rod tip
-            [False] * 4,  # orientation of rod
-            [True] * 3,  # position of box
-            [True] * 4,  # orientation of box
+            [False] * 7,  # joints position
+            [False] * 7,  # joints velocity
+            [False] * 3,  # position of box
+            [False] * 4,  # orientation of box
             [True] * 3,  # position of target
             [True] * 4,  # orientation of target
-            [True] * 1,  # time
+            # [True] * 1,  # time
         ])
 
     @property

@@ -134,9 +134,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         obs = np.concatenate([
             self.data.qpos[:7].copy(),  # joint position
             self.data.qvel[:7].copy(),  # joint velocity
-            self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
-            self.data.site("rod_tip").xpos.copy(),  # position of rod tip
-            self.data.body("push_rod").xquat.copy(),  # orientation of rod
+            # self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
+            # self.data.site("rod_tip").xpos.copy(),  # position of rod tip
+            # self.data.body("push_rod").xquat.copy(),  # orientation of rod
             self.data.body("box_0").xpos.copy(),  # position of box
             self.data.body("box_0").xquat.copy(),  # orientation of box
             self.data.body("replan_target_pos").xpos.copy(),  # position of target

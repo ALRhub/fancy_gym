@@ -87,6 +87,7 @@ DEFAULT_BB_DICT_ProDMP = {
     },
     "black_box_kwargs": {
         'replanning_schedule': None,
+        'max_planning_times': None,
         'verbose': 2
     }
 }
@@ -506,7 +507,7 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['alpha'] = 10.
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_replan_times'] = 4
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 2
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
     register(
         id=_env_id,

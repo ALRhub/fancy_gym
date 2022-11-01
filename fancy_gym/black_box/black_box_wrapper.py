@@ -23,7 +23,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  replanning_schedule: Optional[
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
-                 max_replan_times: int = 1,
+                 max_planning_times: int = 1,
                  desired_conditioning: bool = False
                  ):
         """
@@ -61,8 +61,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         # self.traj_gen.basis_gn.show_basis(plot=True)
         # spaces
-        # self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
-        self.return_context_observation = True
+        self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
+        # self.return_context_observation = True
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
 
@@ -82,8 +82,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.condition_pos = None
         self.condition_vel = None
 
-        self.max_replan_times = max_replan_times
-        self.replan_counts = 0
+        self.max_planning_times = max_planning_times
+        self.plan_counts = 0
 
     def observation(self, observation):
         # return context space if we are
@@ -176,7 +176,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        self.replan_counts += 1
+        self.plan_counts += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
             step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
@@ -197,12 +197,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
             if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
                                                 t + 1 + self.current_traj_steps):
-                if self.desired_conditioning:
-                    self.condition_pos = pos
-                    self.condition_vel = vel
-                else:
-                    self.condition_pos = self.current_pos
-                    self.condition_vel = self.current_vel
+
+                if self.max_planning_times is not None and self.plan_counts >= self.max_planning_times:
+                    continue
+
+                self.condition_pos = pos if self.desired_conditioning else self.current_pos
+                self.condition_vel = vel if self.desired_conditioning else self.current_vel
 
                 break
 
@@ -229,5 +229,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
+        self.plan_counts = 0
         self.traj_gen.reset()
         return super(BlackBoxWrapper, self).reset()
