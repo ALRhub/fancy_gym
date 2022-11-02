@@ -1,0 +1,36 @@
+<mujocoinclude>
+    <actuator>
+<!--        <motor name="wam/base_slide_motor" joint="wam/base_slide_joint" ctrllimited="true" ctrlrange="-1.0 1.0" gear="150.0"/>-->
+        <motor name="wam/base_motor" joint="wam/base_yaw_joint_right" ctrllimited="true" ctrlrange="-1.0 1.0" gear="150.0"/>
+        <motor name="wam/shoulder_pitch_motor" joint='wam/shoulder_pitch_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="125.0"/>
+        <motor name="wam/shoulder_yaw_motor" joint='wam/shoulder_yaw_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="40.0"/>
+        <motor name="wam/elbow_pitch_motor" joint='wam/elbow_pitch_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="60.0"/>
+        <motor name="wam/wrist_yaw_motor" joint='wam/wrist_yaw_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0"/>
+        <motor name="wam/wrist_pitch_motor" joint='wam/wrist_pitch_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="5.0"/>
+        <motor name="wam/palm_yaw_motor" joint='wam/palm_yaw_joint_right' ctrllimited="true" ctrlrange="-1.0 1.0" gear="2.0"/>
+    </actuator>
+</mujocoinclude>
+
+<!--<mujocoinclude>-->
+<!--<actuator>-->
+<!--    <motor name="wam/base_motor" joint="wam/base_yaw_joint_right"/>-->
+<!--    <motor name="wam/shoulder_pitch_motor" joint='wam/shoulder_pitch_joint_right'/>-->
+<!--    <motor name="wam/shoulder_yaw_motor" joint='wam/shoulder_yaw_joint_right'/>-->
+<!--    <motor name="wam/elbow_pitch_motor" joint='wam/elbow_pitch_joint_right'/>-->
+<!--    <motor name="wam/wrist_yaw_motor" joint='wam/wrist_yaw_joint_right'/>-->
+<!--    <motor name="wam/wrist_pitch_motor" joint='wam/wrist_pitch_joint_right'/>-->
+<!--    <motor name="wam/palm_yaw_motor" joint='wam/palm_yaw_joint_right'/>-->
+<!--</actuator>-->
+<!--</mujocoinclude>-->
+
+<!--<mujocoinclude>-->
+<!--    <actuator boastype="none">-->
+<!--        <motor name="wam/shoulder_yaw_link_right_motor" joint="wam/base_yaw_joint_right"/>-->
+<!--        <motor name="wam/shoulder_pitch_joint_right_motor" joint='wam/shoulder_pitch_joint_right'/>-->
+<!--        <motor name="wam/shoulder_yaw_joint_right_motor" joint='wam/shoulder_yaw_joint_right'/>-->
+<!--        <motor name="wam/elbow_pitch_joint_right_motor" joint='wam/elbow_pitch_joint_right'/>-->
+<!--        <motor name="wam/wrist_yaw_joint_right_motor" joint='wam/wrist_yaw_joint_right'/>-->
+<!--        <motor name="wam/wrist_pitch_joint_right_motor" joint='wam/wrist_pitch_joint_right'/>-->
+<!--        <motor name="wam/palm_yaw_joint_right_motor" joint='wam/palm_yaw_joint_right'/>-->
+<!--    </actuator>-->
+<!--</mujocoinclude>-->
