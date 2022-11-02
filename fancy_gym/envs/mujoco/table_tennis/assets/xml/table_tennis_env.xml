@@ -12,8 +12,8 @@
         <geom conaffinity="1" contype="1" material="floor_plane" name="floor" pos="0 0 0" size="10 5 1" type="plane" />
         <include file="include_table.xml" />
         <include file="include_barrett_wam_7dof_right.xml" />
-<!--        <include file="include_target_ball.xml" />-->
-        <include file="include_free_ball.xml" />
+        <include file="include_target_ball.xml" />
+<!--        <include file="include_free_ball.xml" />-->
     </worldbody>
     <include file="include_7_motor_actuator.xml" />
 <!--    <include file="right_arm_actuator.xml"/>-->
