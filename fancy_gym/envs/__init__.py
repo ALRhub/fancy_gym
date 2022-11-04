@@ -28,7 +28,9 @@ DEFAULT_BB_DICT_ProMP = {
         'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
-        'phase_generator_type': 'linear'
+        'phase_generator_type': 'linear',
+        'learn_tau': False,
+        'learn_delay': False,
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -40,6 +42,8 @@ DEFAULT_BB_DICT_ProMP = {
         'num_basis': 5,
         'num_basis_zero_start': 1,
         'basis_bandwidth_factor': 3.0,
+    },
+    "black_box_kwargs": {
     }
 }
 
@@ -244,6 +248,18 @@ register(
     entry_point='fancy_gym.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
     max_episode_steps=FIXED_RELEASE_STEP,
 )
+
+# Table Tennis environments
+for ctxt_dim in [2, 4]:
+    register(
+        id='TableTennis{}D-v0'.format(ctxt_dim),
+        entry_point='fancy_gym.envs.mujoco:TableTennisEnv',
+        max_episode_steps=350,
+        kwargs={
+            "ctxt_dim": ctxt_dim,
+            'frame_skip': 4
+        }
+    )
 
 # movement Primitive Environments
 
@@ -515,6 +531,29 @@ for _v in _versions:
         kwargs=kwargs_dict_box_pushing_prodmp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
+
+## Table Tennis
+_versions = ['TableTennis2D-v0', 'TableTennis4D-v0']
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    kwargs_dict_tt_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_tt_promp['wrappers'].append(mujoco.table_tennis.MPWrapper)
+    kwargs_dict_tt_promp['name'] = _v
+    kwargs_dict_tt_promp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
+    kwargs_dict_tt_promp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
+    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_tau'] = True
+    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_delay'] = True
+    kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis'] = 3
+    kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_tt_promp['black_box_kwargs']['duration'] = 2.
+    kwargs_dict_tt_promp['black_box_kwargs']['verbose'] = 2
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_tt_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 #
 # ## Walker2DJump
 # _versions = ['Walker2DJump-v0']

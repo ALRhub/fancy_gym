@@ -4,6 +4,8 @@ import numpy as np
 from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
 
+from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import check_init_state_validity, magnus_force
+
 import mujoco
 
 MAX_EPISODE_STEPS_TABLE_TENNIS = 250
@@ -22,10 +24,23 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
-        self.hit_ball = False
-        self.ball_land_on_table = False
+        self._hit_ball = False
+        self._ball_land_on_table = False
+        self._ball_contact_after_hit = False
+        self._ball_return_success = False
+        self._ball_landing_pos = None
+        self._init_ball_state = None
+        self._episode_end = False
+
         self._id_set = False
+
+        # reward calculation
         self.ball_landing_pos = None
+        self._goal_pos = np.zeros(2)
+        self._ball_traj = []
+        self._racket_traj = []
+
+
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
                            frame_skip=frame_skip,
@@ -40,11 +55,11 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
 
     def _set_ids(self):
-        self._floor_contact_id = self.model.geom("floor").bodyid[0]
-        self._ball_contact_id = self.model.geom("target_ball_contact").bodyid[0]
-        self._bat_front_id = self.model.geom("bat").bodyid[0]
-        self._bat_back_id = self.model.geom("bat_back").bodyid[0]
-        self._table_contact_id = self.model.geom("table_tennis_table").bodyid[0]
+        self._floor_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "floor")
+        self._ball_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "target_ball_contact")
+        self._bat_front_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "bat")
+        self._bat_back_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "bat_back")
+        self._table_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "table_tennis_table")
         self._id_set = True
 
     def step(self, action):
@@ -53,40 +68,55 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         unstable_simulation = False
 
-        done = False
-
         for _ in range(self.frame_skip):
             try:
-                self.do_simulation(action, self.frame_skip)
+                self.do_simulation(action, 1)
             except Exception as e:
                 print("Simulation get unstable return with MujocoException: ", e)
                 unstable_simulation = True
+                self._episode_end = True
+                break
 
-            if not self.hit_ball:
-                self.hit_ball = self._contact_checker(self._ball_contact_id, self._bat_front_id) or \
+            if not self._hit_ball:
+                self._hit_ball = self._contact_checker(self._ball_contact_id, self._bat_front_id) or \
                                 self._contact_checker(self._ball_contact_id, self._bat_back_id)
-                if not self.hit_ball:
+                if not self._hit_ball:
                     ball_land_on_floor_no_hit = self._contact_checker(self._ball_contact_id, self._floor_contact_id)
                     if ball_land_on_floor_no_hit:
-                        self.ball_landing_pos = self.data.body("target_ball").xpos.copy()
-                        done = True
-            if self.hit_ball and not self.ball_contact_after_hit:
-                if not self.ball_contact_after_hit:
+                        self._ball_landing_pos = self.data.body("target_ball").xpos.copy()
+                        self._episode_end = True
+            if self._hit_ball and not self._ball_contact_after_hit:
+                if not self._ball_contact_after_hit:
                     if self._contact_checker(self._ball_contact_id, self._floor_contact_id):  # first check contact with floor
-                        self.ball_contact_after_hit = True
-                        self.ball_landing_pos = self.sim.data.geom("target_ball_contact").xpos.copy()
+                        self._ball_contact_after_hit = True
+                        self._ball_landing_pos = self.data.geom("target_ball_contact").xpos.copy()
+                        self._episode_end = True
                     elif self._contact_checker(self._ball_contact_id, self._table_contact_id):  # second check contact with table
-                        self.ball_contact_after_hit = True
-                        self.ball_landing_pos = self.sim.data.geom("target_ball_contact").xpos.copy()
-                        if self.ball_landing_pos[0] < 0.:  # ball lands on the opponent side
-                            self.ball_return_success = True
+                        self._ball_contact_after_hit = True
+                        self._ball_landing_pos = self.data.geom("target_ball_contact").xpos.copy()
+                        if self._ball_landing_pos[0] < 0.:  # ball lands on the opponent side
+                            self._ball_return_success = True
+                        self._episode_end = True
+
+            # update ball trajectory & racket trajectory
+            self._ball_traj.append(self.data.body("target_ball").xpos.copy())
+            self._racket_traj.append(self.data.geom("bat").xpos.copy())
 
         self._steps += 1
-        episode_end = True if self._steps >= MAX_EPISODE_STEPS_TABLE_TENNIS else False
+        self._episode_end = True if self._steps >= MAX_EPISODE_STEPS_TABLE_TENNIS else self._episode_end
 
-        obs = self._get_obs()
+        reward = -25 if unstable_simulation else self._get_reward(self._episode_end)
 
-        return obs, 0., False, {}
+        land_dist_err = np.linalg.norm(self._ball_landing_pos[:-1] - self._goal_pos) \
+                            if self._ball_landing_pos is not None else 10.
+
+        return self._get_obs(), reward, self._episode_end, {
+            "hit_ball": self._hit_ball,
+            "ball_returned_success": self._ball_return_success,
+            "land_dist_error": land_dist_err,
+            "is_success": self._ball_return_success and land_dist_err < 0.2,
+            "num_steps": self._steps,
+        }
 
     def _contact_checker(self, id_1, id_2):
         for coni in range(0, self.data.ncon):
@@ -97,31 +127,94 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self._steps = 0
-        new_context = self._sample_context()
-        self.data.joint("tar_x").qpos = new_context[0]
-        self.data.joint("tar_y").qpos = new_context[1]
-        self.data.joint("tar_z").qvel = 2.
+        self._init_ball_state = self._generate_valid_init_ball(random_pos=False, random_vel=False)
+        self._goal_pos = self.np_random.uniform(low=self.context_bounds[0][-2:], high=self.context_bounds[1][-2:])
+        self.data.joint("tar_x").qpos = self._init_ball_state[0]
+        self.data.joint("tar_y").qpos = self._init_ball_state[1]
+        self.data.joint("tar_z").qpos = self._init_ball_state[2]
+        self.data.joint("tar_x").qvel = self._init_ball_state[3]
+        self.data.joint("tar_y").qvel = self._init_ball_state[4]
+        self.data.joint("tar_z").qvel = self._init_ball_state[5]
 
-        self.ball_landing_pos = None
-        self.hit_ball = False
+        self.model.body_pos[5] = np.concatenate([self._goal_pos, [0.77]])
+
+        self.data.qpos[:7] = np.array([0., 0., 0., 1.5, 0., 0., 1.5])
+
+        mujoco.mj_forward(self.model, self.data)
+
+        self._hit_ball = False
+        self._ball_land_on_table = False
+        self._ball_contact_after_hit = False
+        self._ball_return_success = False
+        self._ball_landing_pos = None
+        self._episode_end = False
+        self._ball_traj = []
+        self._racket_traj = []
         return self._get_obs()
 
-    def _sample_context(self):
-        return self.np_random.uniform(low=self.context_bounds[0],
-                                      high=self.context_bounds[1])
 
     def _get_obs(self):
         obs = np.concatenate([
-            self.data.qpos.flat[:7],
-            self.data.qvel.flat[:7],
+            self.data.qpos.flat[:7].copy(),
+            self.data.qvel.flat[:7].copy(),
+            self.data.joint("tar_x").qpos.copy(),
+            self.data.joint("tar_y").qpos.copy(),
+            self.data.joint("tar_z").qpos.copy(),
+            # self.data.body("target_ball").xvel.copy(),
+            self._goal_pos.copy(),
         ])
         return obs
 
+    def get_obs(self):
+        return self._get_obs()
+
+    def _get_reward(self, episode_end):
+        if not episode_end:
+            return 0
+        else:
+            min_r_b_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._racket_traj), axis=1))
+            if not self._hit_ball:
+                return 0.2 * (1 - np.tanh(min_r_b_dist**2))
+            else:
+                if self._ball_landing_pos is None:
+                    min_b_des_b_dist = np.min(np.linalg.norm(np.array(self._ball_traj)[:,:2] - self._goal_pos[:2], axis=1))
+                    return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + (1 - np.tanh(min_b_des_b_dist**2))
+                else:
+                    min_b_des_b_land_dist = np.linalg.norm(self._goal_pos[:2] - self._ball_landing_pos[:2])
+                    over_net_bonus = int(self._ball_landing_pos[0] < 0)
+                    return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus
+
+    def _generate_random_ball(self, random_pos=False, random_vel=False):
+        x_pos, y_pos, z_pos = -0.5, 0.35, 1.75
+        x_vel, y_vel, z_vel = 2.5, 0., 0.5
+        if random_pos:
+            x_pos = self.np_random.uniform(low=self.context_bounds[0][0], high=self.context_bounds[1][0], size=1)
+            y_pos = self.np_random.uniform(low=self.context_bounds[0][1], high=self.context_bounds[1][1], size=1)
+        if random_vel:
+            x_vel = self.np_random.uniform(low=2.0, high=3.0, size=1)
+        init_ball_state = np.array([x_pos, y_pos, z_pos, x_vel, y_vel, z_vel])
+        return init_ball_state
+
+    def _generate_valid_init_ball(self, random_pos=False, random_vel=False):
+        init_ball_state = self._generate_random_ball(random_pos=random_pos, random_vel=random_vel)
+        while not check_init_state_validity(init_ball_state):
+            init_ball_state = self._generate_random_ball(random_pos=random_pos, random_vel=random_vel)
+        return init_ball_state
+
+    def check_traj_validity(self, traj):
+        raise NotImplementedError
+
+    def get_invalid_steps(self, traj):
+        penalty = -100
+        return self._get_obs(), penalty, True, {}
 
 if __name__ == "__main__":
     env = TableTennisEnv()
-    env.reset()
     for _ in range(1000):
-        for _ in range(200):
+        obs = env.reset()
+        for _ in range(2000):
             env.render("human")
-            env.step(env.action_space.sample())
+            obs, reward, done, info = env.step(np.zeros(7))
+            print(reward)
+            if done:
+                break

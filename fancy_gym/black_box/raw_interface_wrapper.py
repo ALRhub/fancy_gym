@@ -52,8 +52,7 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return self.env.dt
 
-    def episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[
-        np.ndarray, Union[np.ndarray, None]]:
+    def episode_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.array) -> Tuple[bool]:
         """
         Used to extract the parameters for the movement primitive and other parameters from an action array which might
         include other actions like ball releasing time for the beer pong environment.
@@ -65,4 +64,11 @@ class RawInterfaceWrapper(gym.Wrapper):
         Returns:
             Tuple: mp_arguments and other arguments
         """
-        return action, None
+        return True
+
+    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
+        """
+        Used to return a fake return from the environment if the desired trajectory is invalid.
+        """
+        obs = np.zeros(1)
+        return obs, 0, True, {}
