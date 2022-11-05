@@ -127,7 +127,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self._steps = 0
-        self._init_ball_state = self._generate_valid_init_ball(random_pos=False, random_vel=False)
+        self._init_ball_state = self._generate_valid_init_ball(random_pos=True, random_vel=False)
         self._goal_pos = self.np_random.uniform(low=self.context_bounds[0][-2:], high=self.context_bounds[1][-2:])
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
@@ -188,8 +188,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         x_pos, y_pos, z_pos = -0.5, 0.35, 1.75
         x_vel, y_vel, z_vel = 2.5, 0., 0.5
         if random_pos:
-            x_pos = self.np_random.uniform(low=self.context_bounds[0][0], high=self.context_bounds[1][0], size=1)
-            y_pos = self.np_random.uniform(low=self.context_bounds[0][1], high=self.context_bounds[1][1], size=1)
+            x_pos = self.np_random.uniform(low=self.context_bounds[0][0], high=self.context_bounds[1][0])
+            y_pos = self.np_random.uniform(low=self.context_bounds[0][1], high=self.context_bounds[1][1])
         if random_vel:
             x_vel = self.np_random.uniform(low=2.0, high=3.0, size=1)
         init_ball_state = np.array([x_pos, y_pos, z_pos, x_vel, y_vel, z_vel])

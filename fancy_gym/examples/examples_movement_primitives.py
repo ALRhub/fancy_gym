@@ -17,9 +17,12 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
     # It takes care of seeding and enables the use of a variety of external environments using the gym interface.
     env = fancy_gym.make(env_name, seed)
 
+    # env.traj_gen.basis_gn.show_basis(plot=True)
+
     returns = 0
     # env.render(mode=None)
     obs = env.reset()
+    print(obs)
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -46,8 +49,9 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
         returns += reward
 
         if done:
-            print(reward)
+            # print(reward)
             obs = env.reset()
+            print(obs)
 
 
 def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render=True):
