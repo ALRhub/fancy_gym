@@ -70,7 +70,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # tricky_action_upperbound = [np.inf] * (self.traj_gen_action_space.shape[0] - 7)
         # tricky_action_lowerbound = [-np.inf] * (self.traj_gen_action_space.shape[0] - 7)
         # self.action_space = spaces.Box(np.array(tricky_action_lowerbound), np.array(tricky_action_upperbound), dtype=np.float32)
-
+        self.action_space.low[0] = 0.5
+        self.action_space.high[0] = 1.5
+        self.action_space.low[1] = 0.05
+        self.action_space.high[1] = 0.2
         self.observation_space = self._get_observation_space()
 
         # rendering

@@ -22,7 +22,6 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
     returns = 0
     # env.render(mode=None)
     obs = env.reset()
-    print(obs)
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -51,7 +50,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
         if done:
             # print(reward)
             obs = env.reset()
-            print(obs)
+            print("steps: {}".format(info["num_steps"][-1]))
 
 
 def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render=True):
@@ -166,7 +165,7 @@ if __name__ == '__main__':
     # ProMP
     # example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
     # example_mp("BoxPushingTemporalSparseProMP-v0", seed=10, iterations=1, render=render)
-    example_mp("TableTennis4DProMP-v0", seed=10, iterations=5, render=render)
+    example_mp("TableTennis4DProMP-v0", seed=10, iterations=10, render=True)
 
     # ProDMP
     # example_mp("BoxPushingDenseProDMP-v0", seed=10, iterations=16, render=render)
