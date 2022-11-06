@@ -128,7 +128,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         self._steps = 0
         self._init_ball_state = self._generate_valid_init_ball(random_pos=True, random_vel=False)
-        self._goal_pos = self.np_random.uniform(low=self.context_bounds[0][-2:], high=self.context_bounds[1][-2:])
+        self._goal_pos = self._generate_goal_pos(random=True)
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
         self.data.joint("tar_z").qpos = self._init_ball_state[2]
@@ -152,6 +152,11 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self._racket_traj = []
         return self._get_obs()
 
+    def _generate_goal_pos(self, random=True):
+        if random:
+            return self.np_random.uniform(low=self.context_bounds[0][-2:], high=self.context_bounds[1][-2:])
+        else:
+            return np.array([-0.6, 0.4])
 
     def _get_obs(self):
         obs = np.concatenate([
@@ -191,7 +196,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             x_pos = self.np_random.uniform(low=self.context_bounds[0][0], high=self.context_bounds[1][0])
             y_pos = self.np_random.uniform(low=self.context_bounds[0][1], high=self.context_bounds[1][1])
         if random_vel:
-            x_vel = self.np_random.uniform(low=2.0, high=3.0, size=1)
+            x_vel = self.np_random.uniform(low=2.0, high=3.0)
         init_ball_state = np.array([x_pos, y_pos, z_pos, x_vel, y_vel, z_vel])
         return init_ball_state
 
@@ -201,12 +206,6 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             init_ball_state = self._generate_random_ball(random_pos=random_pos, random_vel=random_vel)
         return init_ball_state
 
-    def check_traj_validity(self, traj):
-        raise NotImplementedError
-
-    def get_invalid_steps(self, traj):
-        penalty = -100
-        return self._get_obs(), penalty, True, {}
 
 if __name__ == "__main__":
     env = TableTennisEnv()

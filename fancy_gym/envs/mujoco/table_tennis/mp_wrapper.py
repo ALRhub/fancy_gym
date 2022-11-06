@@ -37,8 +37,8 @@ class MPWrapper(RawInterfaceWrapper):
 
     def invalid_traj_callback(self, action, pos_traj: np.ndarray, vel_traj: np.ndarray) \
             -> Tuple[np.ndarray, float, bool, dict]:
-        tau_invalid_penalty = 0.3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
-        delay_invalid_penalty = 0.3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
+        tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+        delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
         violate_high_bound_error = np.mean(np.maximum(pos_traj - jnt_pos_high, 0))
         violate_low_bound_error = np.mean(np.maximum(jnt_pos_low - pos_traj, 0))
         invalid_penalty = tau_invalid_penalty + delay_invalid_penalty + \

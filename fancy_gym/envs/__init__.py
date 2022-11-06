@@ -546,6 +546,7 @@ for _v in _versions:
     kwargs_dict_tt_promp['phase_generator_kwargs']['learn_delay'] = True
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis'] = 3
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 1
     kwargs_dict_tt_promp['black_box_kwargs']['duration'] = 2.
     kwargs_dict_tt_promp['black_box_kwargs']['verbose'] = 2
     register(
