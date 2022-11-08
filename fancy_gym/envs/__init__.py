@@ -560,7 +560,7 @@ for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProDMP-{_name[1]}'
     kwargs_dict_tt_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_tt_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
+    kwargs_dict_tt_prodmp['wrappers'].append(mujoco.table_tennis.MPWrapper)
     kwargs_dict_tt_prodmp['name'] = _v
     kwargs_dict_tt_prodmp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_prodmp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])

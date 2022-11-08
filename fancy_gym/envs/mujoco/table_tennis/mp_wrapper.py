@@ -28,12 +28,31 @@ class MPWrapper(RawInterfaceWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.data.qvel[:7].copy()
 
+    def check_time_validity(self, action):
+        return action[0] <= tau_bound[1] and action[0] >= tau_bound[0] \
+               and action[1] <= delay_bound[1] and action[1] >= delay_bound[0]
+
+    def time_invalid_traj_callback(self, action) \
+        -> Tuple[np.ndarray, float, bool, dict]:
+        tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+        delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
+        invalid_penalty = tau_invalid_penalty + delay_invalid_penalty
+        obs = np.concatenate([self.get_obs(), np.array([0])])
+        return obs, -invalid_penalty, True, {
+        "hit_ball": [False],
+        "ball_returned_success": [False],
+        "land_dist_error": [10.],
+        "is_success": [False],
+        'trajectory_length': 1,
+        "num_steps": [1]
+        }
+
     def episode_callback(self, action, pos_traj, vel_traj):
         time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0] \
                      or action[1] > delay_bound[1] or action[1] < delay_bound[0]
         if time_invalid or np.any(pos_traj > jnt_pos_high) or np.any(pos_traj < jnt_pos_low):
-            return False
-        return True
+            return True
+        return False
 
     def invalid_traj_callback(self, action, pos_traj: np.ndarray, vel_traj: np.ndarray) \
             -> Tuple[np.ndarray, float, bool, dict]:
@@ -43,7 +62,8 @@ class MPWrapper(RawInterfaceWrapper):
         violate_low_bound_error = np.mean(np.maximum(jnt_pos_low - pos_traj, 0))
         invalid_penalty = tau_invalid_penalty + delay_invalid_penalty + \
                           violate_high_bound_error + violate_low_bound_error
-        return self.get_obs(), -invalid_penalty, True, {
+        obs = np.concatenate([self.get_obs(), np.array([0])])
+        return obs, -invalid_penalty, True, {
         "hit_ball": [False],
         "ball_returned_success": [False],
         "land_dist_error": [10.],
