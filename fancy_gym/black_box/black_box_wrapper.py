@@ -81,12 +81,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.verbose = verbose
 
         # condition value
-        self.desired_conditioning = True
+        self.desired_conditioning = False
         self.condition_pos = None
         self.condition_vel = None
 
         self.max_planning_times = max_planning_times
         self.plan_counts = 0
+
+        self.tau_first_prediction = None
 
     def observation(self, observation):
         # return context space if we are
@@ -96,7 +98,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         return observation.astype(self.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
-        duration = self.duration
+        # duration = self.duration
+        # duration = self.duration - self.current_traj_steps * self.dt
+        duration = 2.
         if self.learn_sub_trajectories:
             duration = None
             # reset  with every new call as we need to set all arguments, such as tau, delay, again.
@@ -117,7 +121,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.condition_pos = torch.as_tensor(self.condition_pos, dtype=torch.float32)
         self.condition_vel = torch.as_tensor(self.condition_vel, dtype=torch.float32)
         self.traj_gen.set_boundary_conditions(bc_time, self.condition_pos, self.condition_vel)
-        self.traj_gen.set_duration(duration, self.dt)
+        # self.traj_gen.set_duration(duration, self.dt)
+        self.traj_gen.set_duration(self.tau_first_prediction, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         position = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
@@ -159,6 +164,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
+
+        if self.plan_counts == 0:
+            self.tau_first_prediction = action[0]
 
         ## tricky part, only use weights basis
         # basis_weights = action.reshape(7, -1)
@@ -253,5 +261,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
         self.plan_counts = 0
+        self.tau_first_prediction = None
         self.traj_gen.reset()
         return super(BlackBoxWrapper, self).reset()
