@@ -51,8 +51,8 @@ class MPWrapper(RawInterfaceWrapper):
         time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0] \
                      or action[1] > delay_bound[1] or action[1] < delay_bound[0]
         if time_invalid or np.any(pos_traj > jnt_pos_high) or np.any(pos_traj < jnt_pos_low):
-            return True
-        return False
+            return False
+        return True
 
     def invalid_traj_callback(self, action, pos_traj: np.ndarray, vel_traj: np.ndarray) \
             -> Tuple[np.ndarray, float, bool, dict]:

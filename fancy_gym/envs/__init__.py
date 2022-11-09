@@ -72,6 +72,7 @@ DEFAULT_BB_DICT_ProDMP = {
     "wrappers": [],
     "trajectory_generator_kwargs": {
         'trajectory_generator_type': 'prodmp',
+        'duration': 2.0,
         'weights_scale': 1.0,
     },
     "phase_generator_kwargs": {
@@ -254,7 +255,7 @@ for ctxt_dim in [2, 4]:
     register(
         id='TableTennis{}D-v0'.format(ctxt_dim),
         entry_point='fancy_gym.envs.mujoco:TableTennisEnv',
-        max_episode_steps=500,
+        max_episode_steps=350,
         kwargs={
             "ctxt_dim": ctxt_dim,
             'frame_skip': 4
