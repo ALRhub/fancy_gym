@@ -210,10 +210,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.current_traj_steps += t + 1
 
         if self.verbose >= 2:
-            infos['desired_pos'] = position[:t+1]
-            infos['desired_vel'] = velocity[:t+1]
-            infos['current_pos'] = self.current_pos
-            infos['current_vel'] = self.current_vel
+            infos['positions'] = position
+            infos['velocities'] = velocity
             infos['step_actions'] = actions[:t + 1]
             infos['step_observations'] = observations[:t + 1]
             infos['step_rewards'] = rewards[:t + 1]
