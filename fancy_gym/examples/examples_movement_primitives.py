@@ -46,6 +46,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
         # full observation space of the last step, if replanning/sub-trajectory learning is used. The 'reward' is equal
         # to the return of a trajectory. Default is the sum over the step-wise rewards.
         obs, reward, done, info = env.step(ac)
+        print(f'steps: {info["num_steps"][-1]}')
         # Aggregated returns
         returns += reward
 
