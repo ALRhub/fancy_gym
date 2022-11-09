@@ -503,7 +503,7 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 0
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['alpha'] = 10.
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3

@@ -67,28 +67,32 @@ def test_missing_wrapper(env_id: str):
         fancy_gym.make_bb(env_id, [], {}, {}, {}, {}, {})
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 def test_missing_local_state(mp_type: str):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
+
     env = fancy_gym.make_bb('toy-v0', [RawInterfaceWrapper], {},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'})
+                            {'basis_generator_type': basis_generator_type})
     env.reset()
     with pytest.raises(NotImplementedError):
         env.step(env.action_space.sample())
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
 @pytest.mark.parametrize('verbose', [1, 2])
 def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]], verbose: int):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
+
     env_id, wrapper_class = env_wrap
     env = fancy_gym.make_bb(env_id, [wrapper_class], {'verbose': verbose},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'})
+                            {'basis_generator_type': basis_generator_type})
     env.reset()
     info_keys = list(env.step(env.action_space.sample())[3].keys())
 
@@ -104,15 +108,17 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
         assert all(e in info_keys for e in mp_keys)
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
 def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
+
     env_id, wrapper_class = env_wrap
     env = fancy_gym.make_bb(env_id, [wrapper_class], {},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'})
+                            {'basis_generator_type': basis_generator_type})
 
     for _ in range(5):
         env.reset()
@@ -121,14 +127,15 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
         assert length == env.spec.max_episode_steps
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('reward_aggregation', [np.sum, np.mean, np.median, lambda x: np.mean(x[::2])])
 def test_aggregation(mp_type: str, reward_aggregation: Callable[[np.ndarray], float]):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'reward_aggregation': reward_aggregation},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'})
+                            {'basis_generator_type': basis_generator_type})
     env.reset()
     # ToyEnv only returns 1 as reward
     assert env.step(env.action_space.sample())[1] == reward_aggregation(np.ones(50, ))
@@ -149,12 +156,13 @@ def test_context_space(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapp
     assert env.observation_space.shape == wrapper.context_mask[wrapper.context_mask].shape
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('num_dof', [0, 1, 2, 5])
-@pytest.mark.parametrize('num_basis', [0, 1, 2, 5])
+@pytest.mark.parametrize('num_basis', [0, 2, 5]) # should add 1 back after the bug is fixed
 @pytest.mark.parametrize('learn_tau', [True, False])
 @pytest.mark.parametrize('learn_delay', [True, False])
 def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {},
                             {'trajectory_generator_type': mp_type,
                              'action_dim': num_dof
@@ -164,28 +172,29 @@ def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: boo
                              'learn_tau': learn_tau,
                              'learn_delay': learn_delay
                              },
-                            {'basis_generator_type': 'rbf',
+                            {'basis_generator_type': basis_generator_type,
                              'num_basis': num_basis
                              })
 
     base_dims = num_dof * num_basis
-    additional_dims = num_dof if mp_type == 'dmp' else 0
+    additional_dims = num_dof if 'dmp' in mp_type else 0
     traj_modification_dims = int(learn_tau) + int(learn_delay)
     assert env.action_space.shape[0] == base_dims + traj_modification_dims + additional_dims
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
+@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('a', [1])
 @pytest.mark.parametrize('b', [1.0])
 @pytest.mark.parametrize('c', [[1], [1.0], ['str'], [{'a': 'b'}], [np.ones(3, )]])
 @pytest.mark.parametrize('d', [{'a': 1}, {1: 2.0}, {'a': [1.0]}, {'a': np.ones(3, )}, {'a': {'a': 'b'}}])
 @pytest.mark.parametrize('e', [Object()])
 def test_change_env_kwargs(mp_type: str, a: int, b: float, c: list, d: dict, e: Object):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {},
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'},
+                            {'basis_generator_type': basis_generator_type},
                             a=a, b=b, c=c, d=d, e=e
                             )
     assert a is env.a

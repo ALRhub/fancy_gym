@@ -175,6 +175,9 @@ def make_bb(
     if phase_kwargs.get('learn_delay'):
         phase_kwargs["delay_bound"] = [0, black_box_kwargs['duration'] - env.dt * 2]
 
+    if traj_gen_kwargs['trajectory_generator_type'] == 'prodmp':
+        assert basis_kwargs['basis_generator_type'] == 'prodmp', 'prodmp trajectory generator requires prodmp basis generator'
+
     phase_gen = get_phase_generator(**phase_kwargs)
     basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)
     controller = get_controller(**controller_kwargs)
