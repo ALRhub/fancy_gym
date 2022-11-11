@@ -20,7 +20,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     7 DoF table tennis environment
     """
 
-    def __init__(self, ctxt_dim: int = 2, frame_skip: int = 4):
+    def __init__(self, ctxt_dim: int = 2, frame_skip: int = 4,
+                 enable_wind: bool = False, enable_magnus: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -53,6 +54,13 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             raise NotImplementedError
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
+
+         # complex dynamics settings
+        self.model.opt.density = 1.225
+        self.model.opt.viscosity = 2.27e-5
+        self._enable_wind = enable_wind
+        self._enable_magnus = enable_magnus
+        self._wind_vel = np.zeros(3)
 
     def _set_ids(self):
         self._floor_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "floor")
@@ -142,6 +150,10 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         mujoco.mj_forward(self.model, self.data)
 
+        if self._enable_wind:
+            self._wind_vel[1] = self.np_random.uniform(low=-10, high=10, size=1)
+            self.model.opt.wind[:3] = self._wind_vel
+
         self._hit_ball = False
         self._ball_land_on_table = False
         self._ball_contact_after_hit = False
@@ -208,7 +220,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
 
 if __name__ == "__main__":
-    env = TableTennisEnv()
+    env = TableTennisEnv(enable_wind=True)
     for _ in range(1000):
         obs = env.reset()
         for _ in range(2000):
