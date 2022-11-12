@@ -1,7 +1,8 @@
-from typing import Tuple, Optional, Callable
+from typing import Tuple, Optional, Callable, Union
 
 import gym
 import numpy as np
+import torch
 from gym import spaces
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
@@ -73,7 +74,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # cast dtype because metaworld returns incorrect that throws gym error
         return observation.astype(self.observation_space.dtype)
 
-    def get_trajectory(self, action: np.ndarray) -> Tuple:
+    def get_trajectory(self, action: Union[np.ndarray, torch.Tensor]) -> Tuple:
         duration = self.duration
         if self.learn_sub_trajectories:
             duration = None
@@ -81,7 +82,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             # If we do not do this, the traj_gen assumes we are continuing the trajectory.
             self.traj_gen.reset()
 
-        clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
+        if isinstance(action, np.ndarray):
+            clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
+        else:
+            low, high = torch.from_numpy(self.traj_gen_action_space.low), torch.from_numpy(self.traj_gen_action_space.high)
+            clipped_params = torch.clip(action, low, high)
         self.traj_gen.set_params(clipped_params)
         bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         # TODO we could think about initializing with the previous desired value in order to have a smooth transition
@@ -89,8 +94,13 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.traj_gen.set_boundary_conditions(bc_time, self.current_pos, self.current_vel)
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
-        position = get_numpy(self.traj_gen.get_traj_pos())
-        velocity = get_numpy(self.traj_gen.get_traj_vel())
+
+        position = self.traj_gen.get_traj_pos()
+        velocity = self.traj_gen.get_traj_vel()
+
+        if isinstance(action, np.ndarray):
+            position = get_numpy(position)
+            velocity = get_numpy(velocity)
 
         # if self.do_replanning:
         #     # Remove first part of trajectory as this is already over

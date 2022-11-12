@@ -1,9 +1,11 @@
 from itertools import chain
-from typing import Tuple, Type, Union, Optional, Callable
+from numbers import Number
+from typing import Tuple, Type, Union, Optional, Callable, Iterable
 
 import gym
 import numpy as np
 import pytest
+import torch
 from gym import register
 from gym.core import ActType, ObsType
 
@@ -327,3 +329,26 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
         active_vel = vel[delay_time_steps: joint_time_steps - 2]
         assert np.all(active_pos != pos[-1]) and np.all(active_pos != pos[0])
         assert np.all(active_vel != vel[-1]) and np.all(active_vel != vel[0])
+
+
+@pytest.mark.parametrize("action_constructor, expected_type", [(np.array, np.ndarray), (torch.tensor, torch.Tensor)])
+@pytest.mark.parametrize('mp_type', ['promp'])
+def test_get_trajectory(action_constructor: Callable[[Iterable[Number]], Union[np.ndarray, torch.Tensor]],
+                        expected_type: Type,
+                        mp_type: str
+                        ):
+    env = fancy_gym.make_bb('toy-v0', [ToyWrapper], {'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': 'linear',
+                             'learn_tau': False,
+                             'learn_delay': True
+                             },
+                            {'basis_generator_type': 'rbf',
+                             }, seed=SEED)
+    action = action_constructor(env.action_space.sample())
+    pos, vel = env.get_trajectory(action=action)
+
+    assert isinstance(pos, expected_type)
+    assert isinstance(vel, expected_type)
