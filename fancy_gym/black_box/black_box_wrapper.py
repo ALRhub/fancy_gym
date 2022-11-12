@@ -82,11 +82,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             # If we do not do this, the traj_gen assumes we are continuing the trajectory.
             self.traj_gen.reset()
 
-        if isinstance(action, np.ndarray):
-            clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
-        else:
+        if isinstance(action, torch.Tensor):
             low, high = torch.from_numpy(self.traj_gen_action_space.low), torch.from_numpy(self.traj_gen_action_space.high)
             clipped_params = torch.clip(action, low, high)
+        else:
+            clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
         bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         # TODO we could think about initializing with the previous desired value in order to have a smooth transition
@@ -98,7 +98,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         position = self.traj_gen.get_traj_pos()
         velocity = self.traj_gen.get_traj_vel()
 
-        if isinstance(action, np.ndarray):
+        if not isinstance(action, torch.Tensor):
             position = get_numpy(position)
             velocity = get_numpy(velocity)
 
