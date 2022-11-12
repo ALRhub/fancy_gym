@@ -21,6 +21,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     """
 
     def __init__(self, ctxt_dim: int = 2, frame_skip: int = 4,
+                 enable_switching_goal: bool = False,
                  enable_wind: bool = False, enable_magnus: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
@@ -55,7 +56,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
 
-         # complex dynamics settings
+        self._enable_switching_goal = enable_switching_goal
+
+        # complex dynamics settings
         self.model.opt.density = 1.225
         self.model.opt.viscosity = 2.27e-5
         self._enable_wind = enable_wind

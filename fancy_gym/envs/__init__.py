@@ -258,7 +258,8 @@ for ctxt_dim in [2, 4]:
         max_episode_steps=350,
         kwargs={
             "ctxt_dim": ctxt_dim,
-            'frame_skip': 4
+            'frame_skip': 4,
+            'enable_wind': True
         }
     )
 
