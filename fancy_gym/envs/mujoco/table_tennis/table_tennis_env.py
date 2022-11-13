@@ -154,7 +154,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
 
         if self._enable_wind:
-            self._wind_vel[1] = self.np_random.uniform(low=-10, high=10, size=1)
+            self._wind_vel[1] = self.np_random.uniform(low=-5, high=5, size=1)
             self.model.opt.wind[:3] = self._wind_vel
 
         self._hit_ball = False
@@ -180,6 +180,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.data.joint("tar_x").qpos.copy(),
             self.data.joint("tar_y").qpos.copy(),
             self.data.joint("tar_z").qpos.copy(),
+            self.data.joint("tar_x").qvel.copy(),
+            self.data.joint("tar_y").qvel.copy(),
+            self.data.joint("tar_z").qvel.copy(),
             # self.data.body("target_ball").xvel.copy(),
             self._goal_pos.copy(),
         ])
