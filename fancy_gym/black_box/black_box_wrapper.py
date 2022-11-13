@@ -24,7 +24,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
                  max_planning_times: int = 1,
-                 desired_conditioning: bool = False
+                 desired_traj_bc: bool = False
                  ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
@@ -59,17 +59,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # reward computation
         self.reward_aggregation = reward_aggregation
 
-        # self.traj_gen.basis_gn.show_basis(plot=True)
         # spaces
         self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
-        # self.return_context_observation = True
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
-
-        # no goal learning
-        # tricky_action_upperbound = [np.inf] * (self.traj_gen_action_space.shape[0] - 7)
-        # tricky_action_lowerbound = [-np.inf] * (self.traj_gen_action_space.shape[0] - 7)
-        # self.action_space = spaces.Box(np.array(tricky_action_lowerbound), np.array(tricky_action_upperbound), dtype=np.float32)
 
         self.observation_space = self._get_observation_space()
 
@@ -78,7 +71,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.verbose = verbose
 
         # condition value
-        self.desired_conditioning = True
+        self.desired_traj_bc = desired_traj_bc
         self.condition_pos = None
         self.condition_vel = None
 
@@ -157,11 +150,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
-        ## tricky part, only use weights basis
-        # basis_weights = action.reshape(7, -1)
-        # goal_weights = np.zeros((7, 1))
-        # action = np.concatenate((basis_weights, goal_weights), axis=1).flatten()
-
         # TODO remove this part, right now only needed for beer pong
         mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
         position, velocity = self.get_trajectory(mp_params)
@@ -201,8 +189,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 if self.max_planning_times is not None and self.plan_counts >= self.max_planning_times:
                     continue
 
-                self.condition_pos = pos if self.desired_conditioning else self.current_pos
-                self.condition_vel = vel if self.desired_conditioning else self.current_vel
+                self.condition_pos = pos if self.desired_traj_bc else self.current_pos
+                self.condition_vel = vel if self.desired_traj_bc else self.current_vel
 
                 break
 

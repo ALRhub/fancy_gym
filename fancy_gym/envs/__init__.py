@@ -88,6 +88,7 @@ DEFAULT_BB_DICT_ProDMP = {
     "black_box_kwargs": {
         'replanning_schedule': None,
         'max_planning_times': None,
+        'desired_traj_bc': False,
         'verbose': 2
     }
 }
@@ -509,6 +510,7 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 2
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['desired_traj_bc'] = True
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
