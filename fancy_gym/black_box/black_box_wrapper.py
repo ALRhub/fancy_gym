@@ -23,7 +23,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  replanning_schedule: Optional[
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
-                 max_planning_times: int = 1,
+                 max_planning_times: int = None,
                  desired_traj_bc: bool = False
                  ):
         """
