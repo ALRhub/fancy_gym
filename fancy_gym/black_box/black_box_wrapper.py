@@ -86,7 +86,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         return observation.astype(self.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
-        # duration = self.duration - self.current_traj_steps * self.dt
         duration = self.duration
         if self.learn_sub_trajectories:
             duration = None
