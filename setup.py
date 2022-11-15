@@ -29,7 +29,7 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'gym[mujoco]<0.25.0,>=0.24.0',
+        'gym[mujoco]<0.25.0,>=0.24.1',
         'mp_pytorch @ git+https://github.com/ALRhub/MP_PyTorch.git@main'
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],
