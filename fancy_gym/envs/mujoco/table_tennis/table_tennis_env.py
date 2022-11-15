@@ -43,6 +43,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self._racket_traj = []
 
 
+        self._enable_goal_switching = enable_switching_goal
+
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
                            frame_skip=frame_skip,
@@ -55,8 +57,6 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             raise NotImplementedError
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
-
-        self._enable_switching_goal = enable_switching_goal
 
         # complex dynamics settings
         self.model.opt.density = 1.225
@@ -78,6 +78,12 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self._set_ids()
 
         unstable_simulation = False
+
+        if self._enable_goal_switching:
+            if self._steps == 45 and self.np_random.uniform(0, 1) < 0.5:
+                self._goal_pos[1] = -self._goal_pos[1]
+                self.model.body_pos[5] = np.concatenate([self._goal_pos, [0.77]])
+                mujoco.mj_forward(self.model, self.data)
 
         for _ in range(self.frame_skip):
             try:
@@ -180,9 +186,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.data.joint("tar_x").qpos.copy(),
             self.data.joint("tar_y").qpos.copy(),
             self.data.joint("tar_z").qpos.copy(),
-            self.data.joint("tar_x").qvel.copy(),
-            self.data.joint("tar_y").qvel.copy(),
-            self.data.joint("tar_z").qvel.copy(),
+            # self.data.joint("tar_x").qvel.copy(),
+            # self.data.joint("tar_y").qvel.copy(),
+            # self.data.joint("tar_z").qvel.copy(),
             # self.data.body("target_ball").xvel.copy(),
             self._goal_pos.copy(),
         ])
