@@ -59,8 +59,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
 
         # complex dynamics settings
-        self.model.opt.density = 1.225
-        self.model.opt.viscosity = 2.27e-5
+        # self.model.opt.density = 1.225
+        # self.model.opt.viscosity = 2.27e-5
         self._enable_wind = enable_wind
         self._enable_magnus = enable_magnus
         self._wind_vel = np.zeros(3)
