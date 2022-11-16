@@ -113,7 +113,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def _get_traj_gen_action_space(self):
         """This function can be used to set up an individual space for the parameters of the traj_gen."""
-        min_action_bounds, max_action_bounds = self.traj_gen.get_params_bounds()
+        min_action_bounds, max_action_bounds = self.traj_gen.get_params_bounds().cpu()
         action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
                                       dtype=self.env.action_space.dtype)
         return action_space
