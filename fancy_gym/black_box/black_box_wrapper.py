@@ -163,14 +163,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
-        # time_valid = self.env.check_time_validity(action)
+        # time_is_valid = self.env.check_time_validity(action)
         #
         # if time_valid:
-
-            ## tricky part, only use weights basis
-            # basis_weights = action.reshape(7, -1)
-            # goal_weights = np.zeros((7, 1))
-            # action = np.concatenate((basis_weights, goal_weights), axis=1).flatten()
 
         # TODO remove this part, right now only needed for beer pong
         # mp_params, env_spec_params, proceed = self.env.episode_callback(action, self.traj_gen)
@@ -253,9 +248,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         else:
             obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity)
             return self.observation(obs), trajectory_return, done, infos
-        # else:
-        #         obs, trajectory_return, done, infos = self.env.time_invalid_traj_callback(action)
-        #         return self.observation(obs), trajectory_return, done, infos
+
     def render(self, **kwargs):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""

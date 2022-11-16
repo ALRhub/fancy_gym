@@ -13,6 +13,8 @@ MAX_EPISODE_STEPS_TABLE_TENNIS = 250
 CONTEXT_BOUNDS_2DIMS = np.array([[-1.0, -0.65], [-0.2, 0.65]])
 CONTEXT_BOUNDS_4DIMS = np.array([[-1.0, -0.65, -1.0, -0.65],
                                  [-0.2, 0.65, -0.2, 0.65]])
+CONTEXT_BOUNDS_SWICHING = np.array([[-1.0, -0.65, -1.0, 0.1],
+                                    [-0.2, 0.65, -0.2, 0.65]])
 
 
 class TableTennisEnv(MujocoEnv, utils.EzPickle):
@@ -20,9 +22,10 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     7 DoF table tennis environment
     """
 
-    def __init__(self, ctxt_dim: int = 2, frame_skip: int = 4,
+    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
                  enable_switching_goal: bool = False,
-                 enable_wind: bool = False, enable_magnus: bool = False):
+                 enable_wind: bool = False, enable_magnus: bool = False,
+                 enable_air: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -53,14 +56,18 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.context_bounds = CONTEXT_BOUNDS_2DIMS
         elif ctxt_dim == 4:
             self.context_bounds = CONTEXT_BOUNDS_4DIMS
+            if self._enable_goal_switching:
+                self.context_bounds = CONTEXT_BOUNDS_SWICHING
         else:
             raise NotImplementedError
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
 
         # complex dynamics settings
-        # self.model.opt.density = 1.225
-        # self.model.opt.viscosity = 2.27e-5
+        if enable_air:
+            self.model.opt.density = 1.225
+            self.model.opt.viscosity = 2.27e-5
+
         self._enable_wind = enable_wind
         self._enable_magnus = enable_magnus
         self._wind_vel = np.zeros(3)
@@ -244,17 +251,20 @@ def plot_ball_traj_2d(x_traj, y_traj):
     ax.plot(x_traj, y_traj)
     plt.show()
 
-def plot_single_axis(traj):
+def plot_single_axis(traj, title):
     import matplotlib.pyplot as plt
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.plot(traj)
+    ax.set_title(title)
     plt.show()
 
 if __name__ == "__main__":
-    env = TableTennisEnv(enable_wind=True)
-    for _ in range(5):
-        obs = env.reset()
+    env = TableTennisEnv(enable_air=True)
+    # env_with_air = TableTennisEnv(enable_air=True)
+    for _ in range(1):
+        obs1 = env.reset()
+        # obs2 = env_with_air.reset()
         x_pos = []
         y_pos = []
         z_pos = []
@@ -262,8 +272,8 @@ if __name__ == "__main__":
         y_vel = []
         z_vel = []
         for _ in range(2000):
-            # env.render("human")
             obs, reward, done, info = env.step(np.zeros(7))
+            # _, _, _, _ = env_no_air.step(np.zeros(7))
             x_pos.append(env.data.joint("tar_x").qpos[0])
             y_pos.append(env.data.joint("tar_y").qpos[0])
             z_pos.append(env.data.joint("tar_z").qpos[0])
@@ -272,6 +282,6 @@ if __name__ == "__main__":
             z_vel.append(env.data.joint("tar_z").qvel[0])
             # print(reward)
             if done:
-                plot_ball_traj_2d(x_pos, y_pos)
-                plot_single_axis(x_vel)
+                # plot_ball_traj_2d(x_pos, y_pos)
+                plot_single_axis(x_pos, title="x_vel without air")
                 break

@@ -45,6 +45,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
         # This executes a full trajectory and gives back the context (obs) of the last step in the trajectory, or the
         # full observation space of the last step, if replanning/sub-trajectory learning is used. The 'reward' is equal
         # to the return of a trajectory. Default is the sum over the step-wise rewards.
+        print(f'target obs: {obs[-3:]}')
         obs, reward, done, info = env.step(ac)
         print(f'steps: {info["num_steps"][-1]}')
         # Aggregated returns

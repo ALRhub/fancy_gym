@@ -16,7 +16,7 @@ class MPWrapper(RawInterfaceWrapper):
             [False] * 7,  # joints velocity
             [True] * 2,  # position ball x, y
             [False] * 1,  # position ball z
-            [True] * 3,    # velocity ball x, y, z
+            [False] * 3,    # velocity ball x, y, z
             [True] * 2,  # target landing position
             # [True] * 1,  # time
         ])
@@ -33,7 +33,7 @@ class MPWrapper(RawInterfaceWrapper):
         return action[0] <= tau_bound[1] and action[0] >= tau_bound[0] \
                and action[1] <= delay_bound[1] and action[1] >= delay_bound[0]
 
-    def time_invalid_traj_callback(self, action) \
+    def time_invalid_traj_callback(self, action, pos_traj, vel_traj) \
         -> Tuple[np.ndarray, float, bool, dict]:
         tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
         delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
