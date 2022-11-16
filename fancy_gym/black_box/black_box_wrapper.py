@@ -84,6 +84,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         if isinstance(action, torch.Tensor):
             low, high = torch.from_numpy(self.traj_gen_action_space.low), torch.from_numpy(self.traj_gen_action_space.high)
+            if action.is_cuda:
+                low, high = low.cuda(), high.cuda()
             clipped_params = torch.clip(action, low, high)
         else:
             clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
