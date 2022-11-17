@@ -13,7 +13,7 @@ MAX_EPISODE_STEPS_TABLE_TENNIS = 250
 CONTEXT_BOUNDS_2DIMS = np.array([[-1.0, -0.65], [-0.2, 0.65]])
 CONTEXT_BOUNDS_4DIMS = np.array([[-1.0, -0.65, -1.0, -0.65],
                                  [-0.2, 0.65, -0.2, 0.65]])
-CONTEXT_BOUNDS_SWICHING = np.array([[-1.0, -0.65, -1.0, 0.1],
+CONTEXT_BOUNDS_SWICHING = np.array([[-1.0, -0.65, -1.0, 0.],
                                     [-0.2, 0.65, -0.2, 0.65]])
 
 
