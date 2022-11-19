@@ -29,24 +29,24 @@ class MPWrapper(RawInterfaceWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.data.qvel[:7].copy()
 
-    def check_time_validity(self, action):
-        return action[0] <= tau_bound[1] and action[0] >= tau_bound[0] \
-               and action[1] <= delay_bound[1] and action[1] >= delay_bound[0]
-
-    def time_invalid_traj_callback(self, action, pos_traj, vel_traj) \
-        -> Tuple[np.ndarray, float, bool, dict]:
-        tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
-        delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
-        invalid_penalty = tau_invalid_penalty + delay_invalid_penalty
-        obs = np.concatenate([self.get_obs(), np.array([0])])
-        return obs, -invalid_penalty, True, {
-        "hit_ball": [False],
-        "ball_returned_success": [False],
-        "land_dist_error": [10.],
-        "is_success": [False],
-        'trajectory_length': 1,
-        "num_steps": [1]
-        }
+    # def check_time_validity(self, action):
+    #     return action[0] <= tau_bound[1] and action[0] >= tau_bound[0] \
+    #            and action[1] <= delay_bound[1] and action[1] >= delay_bound[0]
+    #
+    # def time_invalid_traj_callback(self, action, pos_traj, vel_traj) \
+    #     -> Tuple[np.ndarray, float, bool, dict]:
+    #     tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+    #     delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
+    #     invalid_penalty = tau_invalid_penalty + delay_invalid_penalty
+    #     obs = np.concatenate([self.get_obs(), np.array([0])])
+    #     return obs, -invalid_penalty, True, {
+    #     "hit_ball": [False],
+    #     "ball_returned_success": [False],
+    #     "land_dist_error": [10.],
+    #     "is_success": [False],
+    #     'trajectory_length': 1,
+    #     "num_steps": [1]
+    #     }
 
     def episode_callback(self, action, pos_traj, vel_traj):
         time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0] \

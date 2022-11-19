@@ -71,6 +71,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
+        if (self._steps + 1) % 10 == 0:
+            self.calculateOfflineIK(np.array([0.4, 0.3, 0.14]), np.array([0, 1, 0, 0]))
+
         if not unstable_simulation:
             reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat,
                                       rod_tip_pos, rod_quat, qpos, qvel, action)
@@ -93,7 +96,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
-        box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
+        random_init_pos = self.sample_context()
+        # box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
+        box_init_pos = random_init_pos
         self.data.joint("box_joint").qpos = box_init_pos
 
         # set target position
@@ -219,6 +224,10 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             q_old = q
             q = q + dt * qd_d
             q = np.clip(q, q_min, q_max)
+
+            self.data.qpos[:7] = q
+            mujoco.mj_forward(self.model, self.data)
+
             current_cart_pos = self.data.body("tcp").xpos.copy()
             current_cart_quat = self.data.body("tcp").xquat.copy()
 
@@ -230,19 +239,29 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
             err = np.hstack((cart_pos_error, cart_quat_error))
             err_norm = np.sum(cart_pos_error**2) + np.sum((current_cart_quat - desired_cart_quat)**2)
+
             if err_norm > old_err_norm:
+                # old_err_norm = err_norm
                 q = q_old
                 dt = 0.7 * dt
+
                 continue
+
             else:
                 dt = 1.025 * dt
 
+            i += 1
+
             if err_norm < eps:
+                print("IK converged in {} iterations".format(i))
                 break
+
             if i > IT_MAX:
+                print("IK did not converge in {} iterations".format(i))
                 break
 
             old_err_norm = err_norm
+
 
             ### get Jacobian by mujoco
             self.data.qpos[:7] = q
@@ -272,7 +291,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
             qd_d = w.dot(J.transpose()).dot(qd_d) + qd_null
 
-            i += 1
+            # i += 1
 
         return q
 
@@ -360,10 +379,10 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 if __name__=="__main__":
     env = BoxPushingTemporalSpatialSparse(frame_skip=10)
     env.reset()
-    for i in range(10):
+    for i in range(100):
         env.reset()
         for _ in range(100):
             env.render("human")
             action = env.action_space.sample()
             obs, reward, done, info = env.step(action)
-            print("info: {}".format(info))
+            # print("info: {}".format(info))
