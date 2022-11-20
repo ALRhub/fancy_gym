@@ -33,7 +33,7 @@ def example_custom_replanning_envs(seed=0, iteration=100, render=True):
     # condition_on_desired: use desired state as the boundary condition for the next plan
     black_box_kwargs = {'max_planning_times': 4,
                         'replanning_schedule': lambda pos, vel, obs, action, t: t % 25 == 0,
-                        'desired_traj_bc': True}
+                        'condition_on_desired': True}
 
     env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs=black_box_kwargs,
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
@@ -59,4 +59,4 @@ if __name__ == "__main__":
     example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1, iterations=1, render=False)
 
     # run a custom replanning environment
-    example_custom_replanning_envs(seed=0, iteration=100, render=True)
+    example_custom_replanning_envs(seed=0, iteration=8, render=True)
