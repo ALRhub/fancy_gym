@@ -68,12 +68,9 @@ DEFAULT_BB_DICT_ProDMP = {
     "wrappers": [],
     "trajectory_generator_kwargs": {
         'trajectory_generator_type': 'prodmp',
-        'weights_scale': 1.0,
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'exp',
-        'learn_delay': False,
-        'learn_tau': False,
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -86,10 +83,6 @@ DEFAULT_BB_DICT_ProDMP = {
         'num_basis': 5,
     },
     "black_box_kwargs": {
-        'replanning_schedule': None,
-        'max_planning_times': None,
-        'desired_traj_bc': False,
-        'verbose': 2
     }
 }
 
@@ -492,7 +485,7 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
     kwargs_dict_box_pushing_prodmp['name'] = _v
@@ -502,13 +495,12 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['alpha'] = 10.
+    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 2
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['desired_traj_bc'] = True
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desried'] = True
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',

@@ -158,7 +158,7 @@ def test_context_space(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapp
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('num_dof', [0, 1, 2, 5])
-@pytest.mark.parametrize('num_basis', [0, 2, 5]) # should add 1 back after the bug is fixed
+@pytest.mark.parametrize('num_basis', [0, 1, 2, 5])
 @pytest.mark.parametrize('learn_tau', [True, False])
 @pytest.mark.parametrize('learn_delay', [True, False])
 def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
@@ -344,31 +344,3 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
         active_vel = vel[delay_time_steps: joint_time_steps - 2]
         assert np.all(active_pos != pos[-1]) and np.all(active_pos != pos[0])
         assert np.all(active_vel != vel[-1]) and np.all(active_vel != vel[0])
-
-
-@pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
-@pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
-@pytest.mark.parametrize('sub_segment_steps', [5, 10])
-def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_steps: int):
-    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
-    phase_generator_type = 'exp' if mp_type == 'prodmp' else 'linear'
-    env = fancy_gym.make_bb('toy-v0', [ToyWrapper],
-                            {'max_planning_times': max_planning_times,
-                             'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
-                             'verbose': 2},
-                            {'trajectory_generator_type': mp_type,
-                             },
-                            {'controller_type': 'motor'},
-                            {'phase_generator_type': phase_generator_type,
-                             'learn_tau': False,
-                             'learn_delay': False
-                             },
-                            {'basis_generator_type': basis_generator_type,
-                             },
-                            seed=SEED)
-    _ = env.reset()
-    d = False
-    for i in range(max_planning_times):
-        _, _, d, _ = env.step(env.action_space.sample())
-    assert d
-

@@ -219,6 +219,8 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             q_old = q
             q = q + dt * qd_d
             q = np.clip(q, q_min, q_max)
+            self.data.qpos[:7] = q
+            mujoco.mj_forward(self.model, self.data)
             current_cart_pos = self.data.body("tcp").xpos.copy()
             current_cart_quat = self.data.body("tcp").xquat.copy()
 
@@ -247,8 +249,10 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             ### get Jacobian by mujoco
             self.data.qpos[:7] = q
             mujoco.mj_forward(self.model, self.data)
+
             jacp = self.get_body_jacp("tcp")[:, :7].copy()
             jacr = self.get_body_jacr("tcp")[:, :7].copy()
+
             J = np.concatenate((jacp, jacr), axis=0)
 
             Jw = J.dot(w)
@@ -356,14 +360,3 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
 
         return reward
-
-if __name__=="__main__":
-    env = BoxPushingTemporalSpatialSparse(frame_skip=10)
-    env.reset()
-    for i in range(10):
-        env.reset()
-        for _ in range(100):
-            env.render("human")
-            action = env.action_space.sample()
-            obs, reward, done, info = env.step(action)
-            print("info: {}".format(info))

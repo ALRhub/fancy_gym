@@ -305,3 +305,29 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
         planning_times += 1
 
     assert planning_times == max_planning_times
+
+@pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
+@pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
+@pytest.mark.parametrize('sub_segment_steps', [5, 10])
+def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_steps: int):
+    basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
+    phase_generator_type = 'exp' if mp_type == 'prodmp' else 'linear'
+    env = fancy_gym.make_bb('toy-v0', [ToyWrapper],
+                            {'max_planning_times': max_planning_times,
+                             'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
+                             'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': phase_generator_type,
+                             'learn_tau': False,
+                             'learn_delay': False
+                             },
+                            {'basis_generator_type': basis_generator_type,
+                             },
+                            seed=SEED)
+    _ = env.reset()
+    d = False
+    for i in range(max_planning_times):
+        _, _, d, _ = env.step(env.action_space.sample())
+    assert d

@@ -1,38 +1,62 @@
 import fancy_gym
-import numpy as np
-import matplotlib.pyplot as plt
 
-def plot_trajectory(traj):
-    plt.figure()
-    plt.plot(traj[:, 3])
-    plt.legend()
-    plt.show()
-
-def run_replanning_envs(env_name="BoxPushingProDMP-v0", seed=1, iterations=1, render=True):
+def example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1, iterations=1, render=False):
     env = fancy_gym.make(env_name, seed=seed)
     env.reset()
     for i in range(iterations):
         done = False
-        desired_pos_traj = np.zeros((100, 7))
-        desired_vel_traj = np.zeros((100, 7))
-        real_pos_traj = np.zeros((100, 7))
-        real_vel_traj = np.zeros((100, 7))
-        t = 0
         while done is False:
             ac = env.action_space.sample()
             obs, reward, done, info = env.step(ac)
-            desired_pos_traj[t: t + 25, :] = info['desired_pos']
-            desired_vel_traj[t: t + 25, :] = info['desired_vel']
-            # real_pos_traj.append(info['current_pos'])
-            # real_vel_traj.append(info['current_vel'])
-            t += 25
             if render:
                 env.render(mode="human")
             if done:
                 env.reset()
-        plot_trajectory(desired_pos_traj)
     env.close()
     del env
 
+def example_custom_replanning_envs(seed=0, iteration=100, render=True):
+    # id for a step-based environment
+    base_env_id = "BoxPushingDense-v0"
+
+    wrappers = [fancy_gym.envs.mujoco.box_pushing.mp_wrapper.MPWrapper]
+
+    trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
+                                   'weight_scale': 1}
+    phase_generator_kwargs = {'phase_generator_type': 'exp'}
+    controller_kwargs = {'controller_type': 'velocity'}
+    basis_generator_kwargs = {'basis_generator_type': 'prodmp',
+                              'num_basis': 5}
+
+    # max_planning_times: the maximum number of plans can be generated
+    # replanning_schedule: the trigger for replanning
+    # condition_on_desired: use desired state as the boundary condition for the next plan
+    black_box_kwargs = {'max_planning_times': 4,
+                        'replanning_schedule': lambda pos, vel, obs, action, t: t % 25 == 0,
+                        'desired_traj_bc': True}
+
+    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs=black_box_kwargs,
+                            traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
+                            phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
+                            seed=seed)
+    if render:
+        env.render(mode="human")
+
+    obs = env.reset()
+
+    for i in range(iteration):
+        ac = env.action_space.sample()
+        obs, reward, done, info = env.step(ac)
+        if done:
+            env.reset()
+
+    env.close()
+    del env
+
+
 if __name__ == "__main__":
-    run_replanning_envs(env_name="BoxPushingDenseProDMP-v0", seed=1, iterations=1, render=False)
+    # run a registered replanning environment
+    example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1, iterations=1, render=False)
+
+    # run a custom replanning environment
+    example_custom_replanning_envs(seed=0, iteration=100, render=True)
