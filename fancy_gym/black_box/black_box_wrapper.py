@@ -162,7 +162,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
-            step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
+            current_pos = self.current_pos
+            current_vel = self.current_vel
+            step_action = self.tracking_controller.get_action(pos, vel, current_pos, current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
             obs, c_reward, done, info = self.env.step(c_action)
             rewards[t] = c_reward
@@ -179,7 +181,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+            if done or self.replanning_schedule(current_pos, current_vel, obs, c_action,
                                                 t + 1 + self.current_traj_steps):
 
                 if self.max_planning_times is not None and self.plan_steps >= self.max_planning_times:
