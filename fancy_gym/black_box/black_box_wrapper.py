@@ -99,7 +99,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
         # duration = self.duration
-        duration = self.duration - self.current_traj_steps * self.dt
+        # duration = self.duration - self.current_traj_steps * self.dt
+        duration = action[0]
         if self.learn_sub_trajectories:
             duration = None
             # reset  with every new call as we need to set all arguments, such as tau, delay, again.
