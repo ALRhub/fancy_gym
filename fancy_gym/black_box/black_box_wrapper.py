@@ -170,6 +170,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # TODO remove this part, right now only needed for beer pong
         # mp_params, env_spec_params, proceed = self.env.episode_callback(action, self.traj_gen)
         position, velocity = self.get_trajectory(action)
+
+        print("position", position)
+        print("velocity", velocity)
+
         traj_is_valid = self.env.episode_callback(action, position, velocity)
 
         trajectory_length = len(position)
