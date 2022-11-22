@@ -116,9 +116,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             self.condition_pos = self.current_pos
             self.condition_vel = self.current_vel
 
-        bc_time = torch.as_tensor(bc_time, dtype=torch.float32)
-        self.condition_pos = torch.as_tensor(self.condition_pos, dtype=torch.float32)
-        self.condition_vel = torch.as_tensor(self.condition_vel, dtype=torch.float32)
+        # bc_time = torch.as_tensor(bc_time, dtype=torch.float32)
+        # self.condition_pos = torch.as_tensor(self.condition_pos, dtype=torch.float32)
+        # self.condition_vel = torch.as_tensor(self.condition_vel, dtype=torch.float32)
+        print("bc_time", bc_time)
+        print("self.condition_pos", self.condition_pos)
+        print("self.condition_vel", self.condition_vel)
         self.traj_gen.set_boundary_conditions(bc_time, self.condition_pos, self.condition_vel)
         # self.traj_gen.set_duration(duration, self.dt)
         self.traj_gen.set_duration(duration, self.dt)
