@@ -260,7 +260,8 @@ for ctxt_dim in [2, 4]:
             "ctxt_dim": ctxt_dim,
             'frame_skip': 4,
             'enable_wind': False,
-            'enable_switching_goal': False,
+            'enable_switching_goal': True,
+            'enable_air': False,
         }
     )
 
