@@ -194,7 +194,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 if done or self.replanning_schedule(current_pos, current_vel, obs, c_action,
                                                     t + 1 + self.current_traj_steps):
 
-                    if self.max_planning_times is not None and self.plan_steps >= self.max_planning_times:
+                    if not done and self.max_planning_times is not None and self.plan_steps >= self.max_planning_times:
                         continue
 
                     self.condition_pos = pos if self.condition_on_desired else None
