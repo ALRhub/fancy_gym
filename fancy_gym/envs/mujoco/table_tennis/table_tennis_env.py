@@ -208,9 +208,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.data.joint("tar_x").qpos.copy(),
             self.data.joint("tar_y").qpos.copy(),
             self.data.joint("tar_z").qpos.copy(),
-            self.data.joint("tar_x").qvel.copy(),
-            self.data.joint("tar_y").qvel.copy(),
-            self.data.joint("tar_z").qvel.copy(),
+            #self.data.joint("tar_x").qvel.copy(),
+            #self.data.joint("tar_y").qvel.copy(),
+            #self.data.joint("tar_z").qvel.copy(),
             # self.data.body("target_ball").xvel.copy(),
             self._goal_pos.copy(),
         ])

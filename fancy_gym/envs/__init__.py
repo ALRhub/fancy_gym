@@ -262,7 +262,7 @@ for ctxt_dim in [2, 4]:
             'enable_wind': False,
             'enable_switching_goal': False,
             'enable_air': False,
-            'enable_artifical_wind': True,
+            'enable_artifical_wind': False,
         }
     )
 
@@ -578,7 +578,7 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['alpha'] = 25.
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
-    kwargs_dict_tt_prodmp['basis_generator_kwargs']['pre_compute_length_factor'] = 5
+    #kwargs_dict_tt_prodmp['basis_generator_kwargs']['pre_compute_length_factor'] = 5
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_tt_prodmp['black_box_kwargs']['max_planning_times'] = 3
     kwargs_dict_tt_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 50 == 0

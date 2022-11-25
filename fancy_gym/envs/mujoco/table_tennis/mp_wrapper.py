@@ -16,7 +16,7 @@ class MPWrapper(RawInterfaceWrapper):
             [False] * 7,  # joints velocity
             [True] * 2,  # position ball x, y
             [False] * 1,  # position ball z
-            [True] * 3,    # velocity ball x, y, z
+            #[True] * 3,    # velocity ball x, y, z
             [True] * 2,  # target landing position
             # [True] * 1,  # time
         ])
