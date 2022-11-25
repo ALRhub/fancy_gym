@@ -55,8 +55,8 @@ class MPWrapper(RawInterfaceWrapper):
             return False
         return True
 
-    def invalid_traj_callback(self, action, pos_traj: np.ndarray, vel_traj: np.ndarray) \
-            -> Tuple[np.ndarray, float, bool, dict]:
+    def invalid_traj_callback(self, action, pos_traj: np.ndarray, vel_traj: np.ndarray,
+                              return_contextual_obs: bool) -> Tuple[np.ndarray, float, bool, dict]:
         tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
         delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
         violate_high_bound_error = np.mean(np.maximum(pos_traj - jnt_pos_high, 0))
@@ -64,6 +64,8 @@ class MPWrapper(RawInterfaceWrapper):
         invalid_penalty = tau_invalid_penalty + delay_invalid_penalty + \
                           violate_high_bound_error + violate_low_bound_error
         obs = np.concatenate([self.get_obs(), np.array([0])])
+        if return_contextual_obs:
+            obs = self.get_obs()
         return obs, -invalid_penalty, True, {
         "hit_ball": [False],
         "ball_returned_success": [False],

@@ -157,17 +157,18 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 if __name__ == '__main__':
     render = True
     # DMP
-    example_mp("HoleReacherDMP-v0", seed=10, iterations=5, render=render)
+    # example_mp("HoleReacherDMP-v0", seed=10, iterations=5, render=render)
 
     # ProMP
-    example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
-    example_mp("BoxPushingTemporalSparseProMP-v0", seed=10, iterations=1, render=render)
+    # example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
+    # example_mp("BoxPushingTemporalSparseProMP-v0", seed=10, iterations=1, render=render)
+    example_mp("TableTennis4DProMP-v0", seed=10, iterations=20, render=render)
 
     # ProDMP
-    example_mp("BoxPushingDenseReplanProDMP-v0", seed=10, iterations=4, render=render)
+    # example_mp("BoxPushingDenseReplanProDMP-v0", seed=10, iterations=4, render=render)
 
     # Altered basis functions
-    obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=1, render=render)
+    # obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=1, render=render)
 
     # Custom MP
-    example_fully_custom_mp(seed=10, iterations=1, render=render)
+    # example_fully_custom_mp(seed=10, iterations=1, render=render)

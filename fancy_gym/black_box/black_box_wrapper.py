@@ -169,8 +169,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-
-
         if traj_is_valid:
             self.plan_steps += 1
             for t, (pos, vel) in enumerate(zip(position, velocity)):
@@ -207,18 +205,19 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             infos.update({k: v[:t+1] for k, v in infos.items()})
             self.current_traj_steps += t + 1
 
-        if self.verbose >= 2:
-            infos['positions'] = position
-            infos['velocities'] = velocity
-            infos['step_actions'] = actions[:t + 1]
-            infos['step_observations'] = observations[:t + 1]
-            infos['step_rewards'] = rewards[:t + 1]
+            if self.verbose >= 2:
+                infos['positions'] = position
+                infos['velocities'] = velocity
+                infos['step_actions'] = actions[:t + 1]
+                infos['step_observations'] = observations[:t + 1]
+                infos['step_rewards'] = rewards[:t + 1]
 
             infos['trajectory_length'] = t + 1
             trajectory_return = self.reward_aggregation(rewards[:t + 1])
             return self.observation(obs), trajectory_return, done, infos
         else:
-            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity)
+            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
+                                                                                 self.return_context_observation)
             return self.observation(obs), trajectory_return, done, infos
 
     def render(self, **kwargs):
