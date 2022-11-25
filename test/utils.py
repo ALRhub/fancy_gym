@@ -49,8 +49,8 @@ def run_env(env_id, iterations=None, seed=0, render=False):
 
         if done:
             break
-
-    assert done, "Done flag is not True after end of episode."
+    if not hasattr(env, "replanning_schedule"):
+        assert done, "Done flag is not True after end of episode."
     observations.append(obs)
     env.close()
     del env
