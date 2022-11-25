@@ -2,7 +2,6 @@ from typing import Tuple, Optional, Callable
 
 import gym
 import numpy as np
-import torch
 from gym import spaces
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
