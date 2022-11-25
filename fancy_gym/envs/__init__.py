@@ -28,9 +28,7 @@ DEFAULT_BB_DICT_ProMP = {
         'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
-        'phase_generator_type': 'linear',
-        'learn_tau': False,
-        'learn_delay': False,
+        'phase_generator_type': 'linear'
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -77,8 +75,6 @@ DEFAULT_BB_DICT_ProDMP = {
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'exp',
-        'learn_delay': False,
-        'learn_tau': False,
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -91,9 +87,6 @@ DEFAULT_BB_DICT_ProDMP = {
         'num_basis': 5,
     },
     "black_box_kwargs": {
-        'replanning_schedule': None,
-        'max_planning_times': None,
-        'verbose': 2
     }
 }
 
@@ -512,24 +505,22 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
     kwargs_dict_box_pushing_prodmp['name'] = _v
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
-    # kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = np.array([3.4944e+01, 4.3734e+01, 9.6711e+01, 2.4429e+02, 5.8272e+02])
-    # kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 3.1264e-01
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['alpha'] = 10.
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
+    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 4
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
