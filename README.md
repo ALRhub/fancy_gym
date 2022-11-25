@@ -46,7 +46,7 @@ pip install -e .
 In case you want to use dm_control oder metaworld, you can install them by specifying extras
 
 ```bash 
-pip install -e .[dmc, metaworld]
+pip install -e .[dmc,metaworld]
 ```
 
 > **Note:**   

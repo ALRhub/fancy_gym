@@ -20,12 +20,17 @@ setup(
     name='fancy_gym',
     version='0.2',
     classifiers=[
-        # Python 3.7 is minimally supported
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     extras_require=extras,
     install_requires=[
@@ -40,7 +45,7 @@ setup(
     },
     python_requires=">=3.7",
     url='https://github.com/ALRhub/fancy_gym/',
-    # license='AGPL-3.0 license',
+    license='MIT license',
     author_email='',
     description='Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.'
 )
