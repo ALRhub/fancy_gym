@@ -485,7 +485,7 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
     kwargs_dict_box_pushing_prodmp['name'] = _v
