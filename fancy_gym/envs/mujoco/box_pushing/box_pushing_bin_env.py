@@ -132,15 +132,42 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
-        box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
-        self.data.joint("box_joint").qpos = box_init_pos
 
+        # Initialize box positions randomly, ensure collision free init by trial
+        positions = []
+        for joint in self.joints:
+            new_pos, collision = self.sample_context(), True
+            while collision and len(positions) > 0:
+                for p in positions:
+                    collision = np.linalg.norm(new_pos[:3] - p[:3]) < 0.15
+                    if collision:  # collision detected sample new pos and check again
+                        new_pos = self.sample_context()
+                        break
+            self.data.joint(joint).qpos = new_pos
+            positions.append(new_pos)
+
+        # Robot out of the way of boxes before dropping them
+        self.data.qpos[:7] = START_POS + np.array([0, 0, 0, np.pi*5/8, 0, 0, 0])
 
         mujoco.mj_forward(self.model, self.data)
-        self._steps = 0
-        self._episode_energy = 0.
+        self._steps, self._episode_energy = 0, 0
+
+        # Init environemnt by letting boxes fall
+        no_action = np.clip(
+            np.zeros(self.action_space.shape) + self.data.qfrc_bias[:7].copy(),
+            -q_torque_max,
+            q_torque_max
+        )
+        self.do_simulation(no_action, BOX_INIT_FRAME_SKIPS)
+
+        self.reset_robot_pos()
 
         return self._get_obs()
+
+    def reset_robot_pos(self):
+        self.data.qpos[:7] = self.noisy_start_pos()
+        self.data.qvel[:7] = np.zeros(START_POS.shape)
+        mujoco.mj_forward(self.model, self.data)
 
     def sample_context(self):
         pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
