@@ -63,6 +63,33 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         )
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
+        # Boxes that are extra are rendered inside the bins
+        for i, joint in enumerate(self.hidden):
+            x, y, z = i % 18 // 6, i % 6, i // 18  # arange in a grid
+            start_idx = 7 * (1 + i + self.num_boxes)
+            self.init_qpos_box_pushing[start_idx:start_idx + 7] = np.array(
+                [1.21 + x * 0.12, -0.58 + 0.23 * y , 0.2 + z * 0.12, 0, 0, 0, 0]
+            )
+
+        # camera calibration utilities
+        fovys = [self.model.cam("rgbd").fovy[0], self.model.cam("rgbd_cage").fovy[0]]
+        focal = 0.5 * self.height / np.tan(np.array(fovys) * np.pi / 360)
+        self.focal_mat = {
+            "rgbd": np.array([
+                [-focal[0], 0, self.width / 2.0, 0],
+                [0, focal[0], self.height / 2.0, 0],
+                [0, 0, 1, 0]
+            ]),
+            "rgbd_cage": np.array([
+                [-focal[1], 0, self.width / 2.0, 0],
+                [0, focal[1], self.height / 2.0, 0],
+                [0, 0, 1, 0]
+            ]),
+        }
+
+        self.near = self.model.vis.map.znear * self.model.stat.extent
+        self.far = self.model.vis.map.zfar * self.model.stat.extent
+
     def step(self, action):
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
         resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
