@@ -111,9 +111,36 @@
             </body>
             -->
 
-            <body name="support_body" pos="0 0 -0.4" >
-            <geom type="box" size="0.49 0.98 0.4" rgba="0 0 0 0" solimp="0.999  0.999 0.001" solref="0.002 1"/>
+            <body name="bin_0" pos="1.325 0 -0.399">
+              <geom pos="0 0 0.005" size="0.2 0.2 0.005" rgba="0.33 0.55 0.62 1" type="box"/>
+              <geom pos="0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.53 0.75 0.82 1" type="box"/>
+              <geom pos="0 0.2 0.2" size="0.2 0.005 0.2" rgba="0.53 0.75 0.82 1" type="box"/>
+              <geom pos="-0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.53 0.75 0.82 1" type="box"/>
+              <geom pos="0 -0.2 0.2" size="0.2 0.005 0.2" rgba="0.53 0.75 0.82 1" type="box"/>
+            </body>
+
+            <body name="bin_1" pos=" 1.325 0.45 -0.399">
+              <geom pos="0 0 0.005" size="0.2 0.2 0.005" rgba="0.66 0.3 0.11 1" type="box"/>
+              <geom pos="0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.86 0.5 0.31 1" type="box"/>
+              <geom pos="0 0.2 0.2" size="0.2 0.005 0.2" rgba="0.86 0.5 0.31 1" type="box"/>
+              <geom pos="-0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.86 0.5 0.31 1" type="box"/>
+              <geom pos="0 -0.2 0.2" size="0.2 0.005 0.2" rgba="0.86 0.5 0.31 1" type="box"/>
+            </body>
+
+            <body name="bin_2" pos="1.325 -0.45 -0.399">
+              <geom pos="0 0 0.005" size="0.2 0.2 0.005" rgba="0.67 0.29 0.4 1" type="box"/>
+              <geom pos="0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.87 0.49 0.6 1" type="box"/>
+              <geom pos="0 0.2 0.2" size="0.2 0.005 0.2" rgba="0.87 0.49 0.6 1" type="box"/>
+              <geom pos="-0.2 0 0.2" size="0.005 0.205 0.2" rgba="0.87 0.49 0.62 1" type="box"/>
+              <geom pos="0 -0.2 0.2" size="0.2 0.005 0.2" rgba="0.87 0.49 0.6 1" type="box"/>
+            </body>
+
+            <body name="support_body" pos="0.54 0 -0.02" >
+            <geom type="box" size="0.58 1 0.021" rgba="0 0 0 0" solimp="0.999  0.999 0.001" solref="0.002 1"/>
             </body>
         </body>
+      <body name="ref" pos="0.6 0.0 -0.2">
+       <site name="ref" rgba='1 1 1 1' size='0.020'/>
+      </body>
     </worldbody>
 </mujoco>
