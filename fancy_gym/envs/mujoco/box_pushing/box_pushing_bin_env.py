@@ -21,29 +21,46 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     action space:
         normalized joints torque * 7 , range [-1, 1]
     observation space:
-
-    rewards:
-    1. dense reward
-    2. time-depend sparse reward
-    3. time-spatial-depend sparse reward
     """
 
-    def __init__(self, frame_skip: int = 10):
+    def __init__(
+        self,
+        num_boxes: int = 10,
+        frame_skip: int = 10,
+        width: int = 244,
+        height: int = 244,
+    ):
+        assert num_boxes <= MAX_NUM_BOXES
         utils.EzPickle.__init__(**locals())
         self._steps = 0
-        self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
-        self.init_qvel_box_pushing = np.zeros(15)
         self.frame_skip = frame_skip
+        self.num_boxes = num_boxes
+        self._q_max, self._q_min, self._q_dot_max = q_max, q_min, q_dot_max
+        self.width, self.height = width, height
 
-        self._q_max = q_max
-        self._q_min = q_min
-        self._q_dot_max = q_dot_max
+        self.init_qpos_box_pushing = np.zeros(7 + MAX_NUM_BOXES * 7)
+        self.init_qvel_box_pushing = np.zeros(7 + MAX_NUM_BOXES * 6)
+        self.boxes = ["box_" + str(i) for i in range(num_boxes)]
+        self.joints = ["box_joint_" + str(i) for i in range(num_boxes)]
+        self.hidden = ["box_joint_" + str(i) for i in range(num_boxes, MAX_NUM_BOXES)]
+
+        # noise of 8deg ~ pi/21rad, ensure >95% values inside the range with 3sigma=range
+        self.noisy_start_pos = lambda : np.clip(
+            START_POS + np.random.normal(0, np.pi / 21 / 3, START_POS.shape),
+            self._q_min,
+            self._q_max
+        )
 
         self._episode_energy = 0.
-        MujocoEnv.__init__(self,
-                           model_path=os.path.join(os.path.dirname(__file__), "assets", "box_pushing.xml"),
-                           frame_skip=self.frame_skip,
-                           mujoco_bindings="mujoco")
+        MujocoEnv.__init__(
+            self,
+            model_path=os.path.join(
+                os.path.dirname(__file__),
+                "assets/box_pushing_bins.xml",
+            ),
+            frame_skip=self.frame_skip,
+            mujoco_bindings="mujoco"
+        )
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
     def step(self, action):
