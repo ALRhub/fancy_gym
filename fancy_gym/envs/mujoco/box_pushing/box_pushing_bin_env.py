@@ -457,3 +457,55 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         trans_mat[:3, 3] = -self.data.camera(cam).xpos
         rot_mat[:3, :3] = self.data.camera(cam).xmat.reshape((3, 3)).T
         return self.focal_mat[cam] @ rot_mat @ trans_mat
+
+
+class BoxPushingBinSparse(BoxPushingBin):
+    def __init__(
+        self,
+        num_boxes: int = 10,
+        frame_skip: int = 10,
+        width: int = 244,
+        height: int = 244,
+    ):
+        self.bin_borders = np.random.rand(NUM_BINS, 6)  # 3 dims, each 2 border values
+        super(BoxPushingBinSparse, self).__init__(num_boxes, frame_skip, width, height)
+        bin_pos = [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
+        bin_edges = np.array([BIN_SIZE, -BIN_SIZE] * 2 + [0, -3 * BIN_SIZE / 2])
+        self.bin_borders = np.array([np.repeat(p, 2) - bin_edges for p in bin_pos])
+
+
+    def _get_reward(self, action, qpos, qvel, box_pos):
+        """
+        The sparse reward checks if a box is inside one of the bins. The condition is
+        checked in parallel (no if statements). Only boxes that are inside the
+        predetermined bin borders have distance > 0 on all 6 conditions. These boxes are
+        then removed from the current trajectory. The instrinsic reward of smooth
+        constrained movements is still applied from the base env reward.
+
+        Args:
+            action (np.array): action taken during step
+            qpos (np.array): robot position, angle for each joint
+            qvel (np.array): robot velocity, torque for each joint
+            box_pos (np.array): (x, y, z) coordinated of all boxes, shape (num_boxes, 3)
+        Return:
+            (float): scalar reward value
+        """
+        penalty = super()._get_reward(action, qpos, qvel)
+
+        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
+        parallel_bin_borders = np.repeat(
+            np.expand_dims(self.bin_borders, axis=0),
+            len(box_pos),
+            axis=0
+        )
+        bin_dist = np.concatenate(
+            [
+                parallel_box_pos - parallel_bin_borders[:,:,(0, 2, 4)],  # dist to low
+                parallel_bin_borders[:,:,(1, 3, 5)] - parallel_box_pos  # dist to high
+            ],
+            axis=-1,
+        )
+        boxes_to_remove = np.where(np.sum(bin_dist > 0.0, axis=-1) >= 6)[0]
+
+        reward = penalty + len(boxes_to_remove) * 100
+        return reward
