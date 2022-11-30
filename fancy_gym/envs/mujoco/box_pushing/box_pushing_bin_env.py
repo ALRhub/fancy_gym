@@ -115,8 +115,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         qvel = self.data.qvel[:7].copy()
 
         if not unstable_simulation:
-            reward = self._get_reward(episode_end, box_pos, box_quat,
-                                      rod_tip_pos, rod_quat, qpos, qvel, action)
+            reward = self._get_reward(action, qpos, qvel, box_pos_xyz)
         else:
             reward = -50
 
@@ -175,9 +174,27 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         quat = rot_to_quat(theta, np.array([0, 0, 1]))
         return np.concatenate([pos, quat])
 
-    def _get_reward(self, episode_end, box_pos, box_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
-        raise NotImplementedError
+    def _get_reward(self, action, qpos, qvel, box_pos=None):
+        """
+        By default the environment should learn smooth movement with the least torque
+        necessary without violating constraints.
+
+        Args:
+            action (np.array): action taken during step
+            qpos (np.array): robot position, angle for each joint
+            qvel (np.array): robot velocity, torque for each joint
+        Return:
+            (float): scalar reward value
+        """
+        joint_penalty_reward = self._joint_limit_violate_penalty(
+            qpos,
+            qvel,
+            enable_pos_limit=True,
+            enable_vel_limit=True
+        )
+        energy_cost = -0.0005 * np.sum(np.square(action))
+
+        return joint_penalty_reward + energy_cost
 
     def _get_obs(self):
         obs = np.concatenate([
