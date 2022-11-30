@@ -366,3 +366,27 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             i += 1
 
         return q
+
+    def move_robot_start_pos(self):
+        target_pos = START_POS
+        target_vel = np.zeros(target_pos.shape)
+
+        while np.sum(np.abs(target_pos - self.data.qpos[:7])) +\
+              np.sum(np.abs(target_vel - self.data.qvel[:7])) > 1.0:
+            action = self.controller.get_action(
+                target_pos, target_vel, self.data.qpos[:7], self.data.qvel[:7]
+            )
+            action = 4 * np.clip(action, self.action_space.low, self.action_space.high)
+            resultant_action = np.clip(
+                action + self.data.qfrc_bias[:7].copy(),
+                -q_torque_max,
+                q_torque_max
+            )
+
+            self.render()
+            try:
+                self.do_simulation(resultant_action, self.frame_skip)
+            except Exception as e:
+                print(e)
+                unstable_simulation = True
+
