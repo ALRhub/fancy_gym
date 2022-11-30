@@ -209,7 +209,13 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         )
         return obs
 
-    def _joint_limit_violate_penalty(self, qpos, qvel, enable_pos_limit=False, enable_vel_limit=False):
+    def _joint_limit_violate_penalty(
+        self,
+        qpos,
+        qvel,
+        enable_pos_limit=False,
+        enable_vel_limit=False
+    ):
         penalty = 0.
         p_coeff = 1.
         v_coeff = 1.
@@ -291,12 +297,18 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
             cart_pos_error = np.clip(desired_cart_pos - current_cart_pos, -0.1, 0.1)
 
-            if np.linalg.norm(current_cart_quat - desired_cart_quat) > np.linalg.norm(current_cart_quat + desired_cart_quat):
+            if (np.linalg.norm(current_cart_quat - desired_cart_quat) >
+                np.linalg.norm(current_cart_quat + desired_cart_quat)):
                 current_cart_quat = -current_cart_quat
-            cart_quat_error = np.clip(get_quaternion_error(current_cart_quat, desired_cart_quat), -0.5, 0.5)
+            cart_quat_error = np.clip(
+                get_quaternion_error(current_cart_quat, desired_cart_quat),
+                -0.5,
+                0.5
+            )
 
             err = np.hstack((cart_pos_error, cart_quat_error))
-            err_norm = np.sum(cart_pos_error**2) + np.sum((current_cart_quat - desired_cart_quat)**2)
+            err_norm = np.sum(cart_pos_error**2) +\
+                np.sum((current_cart_quat - desired_cart_quat)**2)
             if err_norm > old_err_norm:
                 q = q_old
                 dt = 0.7 * dt
@@ -304,9 +316,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             else:
                 dt = 1.025 * dt
 
-            if err_norm < eps:
-                break
-            if i > IT_MAX:
+            if err_norm < eps or i > IT_MAX:
                 break
 
             old_err_norm = err_norm
@@ -332,8 +342,10 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             qd_null_limit = np.zeros(qd_null.shape)
             qd_null_limit_max = pgain_limit * (q_max - margin_to_limit - q)
             qd_null_limit_min = pgain_limit * (q_min + margin_to_limit - q)
-            qd_null_limit[q > q_max - margin_to_limit] += qd_null_limit_max[q > q_max - margin_to_limit]
-            qd_null_limit[q < q_min + margin_to_limit] += qd_null_limit_min[q < q_min + margin_to_limit]
+            qd_null_limit[q > q_max - margin_to_limit] +=\
+                qd_null_limit_max[q > q_max - margin_to_limit]
+            qd_null_limit[q < q_min + margin_to_limit] +=\
+                qd_null_limit_min[q < q_min + margin_to_limit]
             qd_null += qd_null_limit
 
             # W J.T (J W J' + reg I)^-1 xd_d + (I - W J.T (J W J' + reg I)^-1 J qd_null
