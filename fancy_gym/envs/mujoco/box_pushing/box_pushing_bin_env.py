@@ -197,15 +197,16 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         return joint_penalty_reward + energy_cost
 
     def _get_obs(self):
+        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
         obs = np.concatenate([
-            self.data.qpos[:7].copy(),  # joint position
-            self.data.qvel[:7].copy(),  # joint velocity
-            # self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
-            # self.data.site("rod_tip").xpos.copy(),  # position of rod tip
-            # self.data.body("push_rod").xquat.copy(),  # orientation of rod
-            self.data.body("box_0").xpos.copy(),  # position of box
-            self.data.body("box_0").xquat.copy(),  # orientation of box
-        ])
+                self.data.qpos[:7].copy(),  # joint position
+                self.data.qvel[:7].copy(),  # joint velocity
+                self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
+                self.data.site("rod_tip").xpos.copy(),  # position of rod tip
+                self.data.body("push_rod").xquat.copy(),  # orientation of rod
+            ] + box_pos + box_quat
+        )
         return obs
 
     def _joint_limit_violate_penalty(self, qpos, qvel, enable_pos_limit=False, enable_vel_limit=False):
