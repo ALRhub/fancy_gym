@@ -509,3 +509,48 @@ class BoxPushingBinSparse(BoxPushingBin):
 
         reward = penalty + len(boxes_to_remove) * 100
         return reward
+
+
+class BoxPushingBinDense(BoxPushingBinSparse):
+    def __init__(
+        self,
+        num_boxes: int = 10,
+        frame_skip: int = 10,
+        width: int = 244,
+        height: int = 244,
+    ):
+        super(BoxPushingBinDense, self).__init__(num_boxes, frame_skip, width, height)
+
+
+    def _get_reward(self, action, qpos, qvel, box_pos):
+        """
+        The dense reward adds to the sparse reward the distance of each box to all of the
+        bins. The distance across all bins and all boxes are summed up. The negative of
+        value makes up the added reward which means the higher the distance the more
+        negative reward. The distance used between the boxes and the bins is the
+        mehalanobis distance across x and y axis, z is ignored since the boxes are
+        assumed to be on the plane of the desk.
+
+        Args:
+            action (np.array): action taken during step
+            qpos (np.array): robot position, angle for each joint
+            qvel (np.array): robot velocity, torque for each joint
+            box_pos (np.array): (x, y, z) coordinated of all boxes, shape (num_boxes, 3)
+        Return:
+            (float): scalar reward value
+        """
+        sparse_reward = super()._get_reward(action, qpos, qvel, box_pos)
+
+        # Parallelize calculating mahalanobis distance by casting both box positions and
+        # bin borders to (num_boxes, num_bins, 4 borders which are 2 for x and 2 for y)
+        box_pos = np.repeat([b[:2] for b in box_pos], 2, axis=-1)
+        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
+        parallel_bin_borders = np.repeat(
+            np.expand_dims(self.bin_borders[:,:4], axis=0),
+            len(box_pos),
+            axis=0
+        )
+        dist_to_bin_borders = -np.sum(np.abs(parallel_box_pos - parallel_bin_borders))
+
+        reward = sparse_reward + dist_to_bin_borders
+        return reward
