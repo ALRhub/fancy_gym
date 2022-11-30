@@ -16,8 +16,19 @@ from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
-from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
-                                                BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
+from .mujoco.box_pushing.box_pushing_env import (
+    BoxPushingDense,
+    BoxPushingTemporalSparse,
+    BoxPushingTemporalSpatialSparse,
+    MAX_EPISODE_STEPS_BOX_PUSHING,
+)
+from .mujoco.box_pushing.box_pushing_bin_env import (
+    BoxPushingBin,
+    BoxPushingBinSparse,
+    BoxPushingBinDense,
+    MAX_EPISODE_STEPS_BOX_PUSHING_BIN,
+)
+
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -229,6 +240,18 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
         id='BoxPushing{}-v0'.format(reward_type),
         entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
+    )
+
+# Box pushing into bins environments with different rewards
+for reward_type, num_boxes in\
+        [(r, n) for r in ["", "Sparse", "Dense"] for n in range(5,31)]:
+    register(
+        id='BoxPushingBin{}{}-v0'.format(reward_type, str(num_boxes)),
+        entry_point='fancy_gym.envs.mujoco:BoxPushingBin{}'.format(reward_type),
+        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING_BIN,
+        kwargs={
+            "num_boxes": num_boxes,
+        }
     )
 
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
@@ -485,29 +508,62 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
     kwargs_dict_box_pushing_prodmp['name'] = _v
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.3
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
-    kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 4
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = np.array([3.4944e+01, 4.3734e+01, 9.6711e+01, 2.4429e+02, 5.8272e+02])
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 3.1264e-01
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
         kwargs=kwargs_dict_box_pushing_prodmp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
-#
+
+# ########################################################################################################################
+
+## Box Pushing Bin
+_versions = ['BoxPushingBin' + r + str(b) + '-v0' for r in ["", "Sparse", "Dense"] for b in range(5, 31)]
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    kwargs_dict_box_pushing_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_box_pushing_promp['wrappers'].append(mujoco.box_pushing.MPWrapper)
+    kwargs_dict_box_pushing_promp['name'] = _v
+    kwargs_dict_box_pushing_promp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
+    kwargs_dict_box_pushing_promp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
+    kwargs_dict_box_pushing_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 2 # 3.5, 4 to try
+
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_box_pushing_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
+    kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
+    kwargs_dict_box_pushing_prodmp['name'] = _v
+    kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
+    kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = np.array([3.4944e+01, 4.3734e+01, 9.6711e+01, 2.4429e+02, 5.8272e+02])
+    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 3.1264e-01
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_box_pushing_prodmp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
+
+
 # ## Walker2DJump
 # _versions = ['Walker2DJump-v0']
 # for _v in _versions:
@@ -684,7 +740,7 @@ for i in _vs:
             }
         }
     )
-    
+
     register(
         id='HopperJumpOnBox-v0',
         entry_point='fancy_gym.envs.mujoco:HopperJumpOnBoxEnv',
@@ -702,7 +758,7 @@ for i in _vs:
         "max_episode_steps": MAX_EPISODE_STEPS_HOPPERTHROW,
         "context": False
     }
-    )   
+    )
     register(
     id='HopperThrowInBasket-v0',
     entry_point='fancy_gym.envs.mujoco:HopperThrowInBasketEnv',
