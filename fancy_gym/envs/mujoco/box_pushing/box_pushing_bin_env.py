@@ -10,6 +10,7 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import (
     q_max, q_min,
     q_dot_max, q_torque_max,
 )
+from fancy_gym.black_box.controller.pd_controller import PDController
 
 MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 100
 BOX_INIT_FRAME_SKIPS = 500  # boxes need time to fall
@@ -25,7 +26,8 @@ START_POS = np.array([0, -np.pi/8, 0.0, -np.pi*5/8, 0.0, np.pi/2, np.pi/4])
 ROBOT_CENTER = np.array([0.16, 0.0])
 ROBOT_RADIUS = 0.788
 
-class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
+
+class BoxPushingBin(MujocoEnv, utils.EzPickle):
     """
     franka box pushing environment
     action space:
@@ -60,6 +62,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             self._q_min,
             self._q_max
         )
+        self.robot_tcp_penalty = lambda x :\
+            (np.linalg.norm(x - ROBOT_CENTER) > ROBOT_RADIUS) * -100
+        self.controller = PDController()
 
         self._episode_energy = 0.
         MujocoEnv.__init__(
@@ -102,8 +107,11 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
-        resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
-
+        resultant_action = np.clip(
+            action + self.data.qfrc_bias[:7].copy(),
+            -q_torque_max,
+            q_torque_max
+        )
         unstable_simulation = False
 
         try:
@@ -114,11 +122,11 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
         self._steps += 1
         self._episode_energy += np.sum(np.square(action))
+        episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING_BIN else False
 
-        episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING else False
-
-        box_pos = self.data.body("box_0").xpos.copy()
-        box_quat = self.data.body("box_0").xquat.copy()
+        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos_xyz = [b[:3] for b in box_pos]
+        box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         qpos = self.data.qpos[:7].copy()
@@ -132,7 +140,6 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         obs = self._get_obs()
         infos = {
             'episode_end': episode_end,
-            'box_goal_pos_dist': box_goal_pos_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
             'num_steps': self._steps
         }
