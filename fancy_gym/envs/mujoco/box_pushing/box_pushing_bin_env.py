@@ -11,9 +11,19 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import (
     q_dot_max, q_torque_max,
 )
 
-MAX_EPISODE_STEPS_BOX_PUSHING = 100
+MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 100
+BOX_INIT_FRAME_SKIPS = 500  # boxes need time to fall
+PUSH_DISTANCE = 0.03  # 3cm ~ 1 / 3 of box sizes
 
-BOX_POS_BOUND = np.array([[0.3, -0.45, -0.01], [0.6, 0.45, -0.01]])
+# Need to set by hand depending on the environment config in the xml files
+MAX_NUM_BOXES = 10
+BOX_POS_BOUND = np.array([[0.4, -0.3, 0.06], [0.8, 0.3, 0.45]])
+BIN_SIZE = 0.2
+NUM_BINS = 3
+# (ahead, lean 45 back, ahead, lean 225 front, ahead, look down, camera front)
+START_POS = np.array([0, -np.pi/8, 0.0, -np.pi*5/8, 0.0, np.pi/2, np.pi/4])
+ROBOT_CENTER = np.array([0.16, 0.0])
+ROBOT_RADIUS = 0.788
 
 class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     """
