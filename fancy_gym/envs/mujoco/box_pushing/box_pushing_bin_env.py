@@ -390,3 +390,14 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
                 print(e)
                 unstable_simulation = True
 
+    def set_tcp_pos(self, desired_tcp_pos, hard_set=False):
+        desired_tcp_pos[-1] = 0.05 if desired_tcp_pos[-1] < 0.05 else desired_tcp_pos[-1]
+        init_robot_pos =  self.data.qpos[:7].copy()
+        desired_tcp_quat = np.array([0, 1, 0, 0])
+        robot_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
+        if hard_set:
+            self.data.qpos[:7] = robot_joint_pos
+        else:
+            self.data.qpos[:7] = init_robot_pos
+        self.data.qvel[:7] = np.zeros(robot_joint_pos.shape)
+        return robot_joint_pos, self.robot_tcp_penalty(desired_tcp_pos[:2])
