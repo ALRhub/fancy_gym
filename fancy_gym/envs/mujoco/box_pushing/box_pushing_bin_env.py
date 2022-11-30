@@ -401,3 +401,59 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             self.data.qpos[:7] = init_robot_pos
         self.data.qvel[:7] = np.zeros(robot_joint_pos.shape)
         return robot_joint_pos, self.robot_tcp_penalty(desired_tcp_pos[:2])
+
+    def img_to_world(self, pixel_pos, cam="rgbd"):
+        """
+        Convert end-effector camera observation (rgb + depth) to simulation "world"
+        coordinates using the camera rotation matrix and the intrinsic camera values.
+
+        Args:
+            pixel_pos (np.array): numpy array with, x and y image coordinates and depth
+                value from depth camera
+            cam (str): camera name
+        Return:
+            (np.array): x, y, z coordinated in the simulation
+        """
+        img_coords = np.append(pixel_pos[:2], 1.0)  # [u, v, 1]
+        world_depth = self.depth_to_world_depth(img_coords, pixel_pos[-1])
+        cam_pos = self.data.camera(cam).xpos
+
+        world_point = np.linalg.lstsq(self.get_cam_mat(cam), img_coords, rcond=None)[0]
+        world_point = -world_point[:3] / np.abs(world_point[-1])  # [X, Y, Z, 1]
+
+        # line from camera to projected point
+        direction = world_point - cam_pos
+        world_coords = cam_pos + (world_depth / np.linalg.norm(direction)) * direction
+
+        return world_coords
+
+    def depth_to_world_depth(self, img_coords, depth, cam="rgbd"):
+        """
+        Undo zbuffer that maps real world distance to [0, 1]. Afterwards the real world
+        depth is adjusted for camera distortion.
+
+        Args:
+            img_coords (np.array): pixel coordinates in the image to calculate distortion
+                from the center
+            depth (float): depth value from camera
+            cam (str): camera name
+        Return:
+            (float): real "world" simulation distance from camera to pixel position
+        """
+        world_depth = self.near / (1 - depth * (1 - self.near / self.far))
+        distortion = np.linalg.inv(self.focal_mat[cam][:3, :3]) @ img_coords
+        depth_scale = (distortion / np.linalg.norm(distortion))[-1]
+        world_depth /= depth_scale
+        return world_depth
+
+    def get_cam_mat(self, cam="rgbd"):
+        """
+        Args:
+            cam (str): camera name
+        Return:
+            (np.array): camera matrix of shape (3, 4)
+        """
+        trans_mat, rot_mat = np.eye(4), np.eye(4)
+        trans_mat[:3, 3] = -self.data.camera(cam).xpos
+        rot_mat[:3, :3] = self.data.camera(cam).xmat.reshape((3, 3)).T
+        return self.focal_mat[cam] @ rot_mat @ trans_mat
