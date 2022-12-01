@@ -147,7 +147,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         position, velocity = self.get_trajectory(action)
         position, velocity = self.env.set_episode_arguments(action, position, velocity)
-        traj_is_valid = self.env.preprocessing_and_validity_callback(action, position, velocity)
+        traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity)
 
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
@@ -159,7 +159,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        if not traj_is_valid:
+        if traj_is_valid is False:
             obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
                                                                                  self.return_context_observation)
             return self.observation(obs), trajectory_return, done, infos
