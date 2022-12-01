@@ -18,6 +18,8 @@ from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
                                                 BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
+from .mujoco.table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching, \
+                                                MAX_EPISODE_STEPS_TABLE_TENNIS
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -28,9 +30,7 @@ DEFAULT_BB_DICT_ProMP = {
         'trajectory_generator_type': 'promp'
     },
     "phase_generator_kwargs": {
-        'phase_generator_type': 'linear',
-        'learn_tau': False,
-        'learn_delay': False,
+        'phase_generator_type': 'linear'
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -77,8 +77,6 @@ DEFAULT_BB_DICT_ProDMP = {
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'exp',
-        'learn_delay': False,
-        'learn_tau': False,
     },
     "controller_kwargs": {
         'controller_type': 'motor',
@@ -91,9 +89,6 @@ DEFAULT_BB_DICT_ProDMP = {
         'num_basis': 5,
     },
     "black_box_kwargs": {
-        'replanning_schedule': None,
-        'max_planning_times': None,
-        'verbose': 2
     }
 }
 
@@ -255,14 +250,27 @@ for ctxt_dim in [2, 4]:
     register(
         id='TableTennis{}D-v0'.format(ctxt_dim),
         entry_point='fancy_gym.envs.mujoco:TableTennisEnv',
-        max_episode_steps=350,
+        max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
         kwargs={
             "ctxt_dim": ctxt_dim,
             'frame_skip': 4,
-            'enable_wind': False,
-            'enable_switching_goal': False,
+            'goal_switching_step': None,
+            'enable_artificial_wind': False,
         }
     )
+
+register(
+    id='TableTennisWind-v0',
+    entry_point='fancy_gym.envs.mujoco:TableTennisWind',
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
+)
+
+register(
+    id='TableTennisGoalSwitching-v0',
+    entry_point='fancy_gym.envs.mujoco:TableTennisGoalSwitching',
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
+)
+
 
 # movement Primitive Environments
 
@@ -510,24 +518,22 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapper)
     kwargs_dict_box_pushing_prodmp['name'] = _v
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
-    # kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = np.array([3.4944e+01, 4.3734e+01, 9.6711e+01, 2.4429e+02, 5.8272e+02])
-    # kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 3.1264e-01
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['alpha'] = 10.
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
+    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 4
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -536,21 +542,25 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
 
 ## Table Tennis
-_versions = ['TableTennis2D-v0', 'TableTennis4D-v0']
+_versions = ['TableTennis2D-v0', 'TableTennis4D-v0', 'TableTennisWind-v0', 'TableTennisGoalSwitching-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'
     kwargs_dict_tt_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_tt_promp['wrappers'].append(mujoco.table_tennis.MPWrapper)
+    if _v == 'TableTennisWind-v0':
+        kwargs_dict_tt_promp['wrappers'].append(mujoco.table_tennis.TTVelObs_MPWrapper)
+    else:
+        kwargs_dict_tt_promp['wrappers'].append(mujoco.table_tennis.TT_MPWrapper)
     kwargs_dict_tt_promp['name'] = _v
     kwargs_dict_tt_promp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_promp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
     kwargs_dict_tt_promp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_tt_promp['phase_generator_kwargs']['learn_delay'] = True
+    kwargs_dict_tt_promp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
+    kwargs_dict_tt_promp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis'] = 3
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 1
-    kwargs_dict_tt_promp['black_box_kwargs']['duration'] = 2.
     kwargs_dict_tt_promp['black_box_kwargs']['verbose'] = 2
     register(
         id=_env_id,
@@ -561,22 +571,24 @@ for _v in _versions:
 
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProDMP-{_name[1]}'
+    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
     kwargs_dict_tt_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_tt_prodmp['wrappers'].append(mujoco.table_tennis.MPWrapper)
+    if _v == 'TableTennisWind-v0':
+        kwargs_dict_tt_prodmp['wrappers'].append(mujoco.table_tennis.TTVelObs_MPWrapper)
+    else:
+        kwargs_dict_tt_prodmp['wrappers'].append(mujoco.table_tennis.TT_MPWrapper)
     kwargs_dict_tt_prodmp['name'] = _v
     kwargs_dict_tt_prodmp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_prodmp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
-    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
-    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
-    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
+    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = False
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_tt_prodmp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
+    kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_delay'] = True
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['alpha'] = 25.
-    kwargs_dict_tt_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
-    kwargs_dict_tt_prodmp['basis_generator_kwargs']['pre_compute_length_factor'] = 5
+    kwargs_dict_tt_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_tt_prodmp['black_box_kwargs']['max_planning_times'] = 3
     kwargs_dict_tt_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 50 == 0
