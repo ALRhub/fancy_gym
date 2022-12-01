@@ -63,14 +63,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
 
-        # no goal learning
-        # tricky_action_upperbound = [np.inf] * (self.traj_gen_action_space.shape[0] - 7)
-        # tricky_action_lowerbound = [-np.inf] * (self.traj_gen_action_space.shape[0] - 7)
-        # self.action_space = spaces.Box(np.array(tricky_action_lowerbound), np.array(tricky_action_upperbound), dtype=np.float32)
-        self.action_space.low[0] = 0.8
-        self.action_space.high[0] = 1.5
-        self.action_space.low[1] = 0.05
-        self.action_space.high[1] = 0.15
         self.observation_space = self._get_observation_space()
 
         # rendering
@@ -93,8 +85,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         return observation.astype(self.observation_space.dtype)
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
-        # duration = self.duration
-        duration = self.duration - self.current_traj_steps * self.dt
+        duration = self.duration
+        # duration = self.duration - self.current_traj_steps * self.dt
         if self.learn_sub_trajectories:
             duration = None
             # reset  with every new call as we need to set all arguments, such as tau, delay, again.
@@ -157,8 +149,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # TODO remove this part, right now only needed for beer pong
         # mp_params, env_spec_params, proceed = self.env.episode_callback(action, self.traj_gen)
         position, velocity = self.get_trajectory(action)
-        traj_is_valid = self.env.episode_callback(action, position, velocity)
-
+        traj_is_valid = self.env.preprocessing_and_validity_callback(action, position, velocity)
+        # insert validation here
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
         if self.verbose >= 2:
@@ -169,7 +161,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        if traj_is_valid:
+        if not traj_is_valid:
+            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
+                                                                                 self.return_context_observation)
+            return self.observation(obs), trajectory_return, done, infos
+        else:
             self.plan_steps += 1
             for t, (pos, vel) in enumerate(zip(position, velocity)):
                 current_pos = self.current_pos
@@ -214,10 +210,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
             infos['trajectory_length'] = t + 1
             trajectory_return = self.reward_aggregation(rewards[:t + 1])
-            return self.observation(obs), trajectory_return, done, infos
-        else:
-            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
-                                                                                 self.return_context_observation)
             return self.observation(obs), trajectory_return, done, infos
 
     def render(self, **kwargs):

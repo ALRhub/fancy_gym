@@ -52,6 +52,19 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return self.env.dt
 
+    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) \
+            -> Tuple[bool, np.ndarray, np.ndarray]:
+        """
+        Used to preprocess the action and check if the desired trajectory is valid.
+        """
+        return True, pos_traj, vel_traj
+
+    def set_episode_arguments(self, action, pos_traj, vel_traj):
+        """
+        Used to set the arguments for env that valid for the whole episode
+        """
+        return pos_traj, vel_traj
+
     def episode_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.array) -> Tuple[bool]:
         """
         Used to extract the parameters for the movement primitive and other parameters from an action array which might
@@ -68,7 +81,6 @@ class RawInterfaceWrapper(gym.Wrapper):
 
     def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
         """
-        Used to return a fake return from the environment if the desired trajectory is invalid.
+        Used to return a artificial return from the env if the desired trajectory is invalid.
         """
-        obs = np.zeros(1)
-        return obs, 0, True, {}
+        return np.zeros(1), 0, True, {}

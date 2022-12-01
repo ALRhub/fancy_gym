@@ -5,6 +5,7 @@ from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
 
 from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import check_init_state_validity, magnus_force
+from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import jnt_pos_low, jnt_pos_high, delay_bound, tau_bound
 
 import mujoco
 
@@ -21,13 +22,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     """
     7 DoF table tennis environment
     """
-
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
-                 enable_switching_goal: bool = False,
-                 enable_wind: bool = False,
-                 enable_artifical_wind: bool = False,
-                 enable_magnus: bool = False,
-                 enable_air: bool = False):
+                 goal_switching_step: int = None,
+                 enable_artificial_wind: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -47,12 +44,11 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self._ball_traj = []
         self._racket_traj = []
 
+        self._goal_switching_step = goal_switching_step
 
-        self._enable_goal_switching = enable_switching_goal
+        self._enable_artificial_wind = enable_artificial_wind
 
-        self._enable_artifical_wind = enable_artifical_wind
-
-        self._artifical_force = 0.
+        self._artificial_force = 0.
 
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
@@ -62,20 +58,13 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.context_bounds = CONTEXT_BOUNDS_2DIMS
         elif ctxt_dim == 4:
             self.context_bounds = CONTEXT_BOUNDS_4DIMS
-            if self._enable_goal_switching:
+            if self._goal_switching_step is not None:
                 self.context_bounds = CONTEXT_BOUNDS_SWICHING
         else:
             raise NotImplementedError
 
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,), dtype=np.float32)
 
-        # complex dynamics settings
-        if enable_air:
-            self.model.opt.density = 1.225
-            self.model.opt.viscosity = 2.27e-5
-
-        self._enable_wind = enable_wind
-        self._enable_magnus = enable_magnus
         self._wind_vel = np.zeros(3)
 
     def _set_ids(self):
@@ -92,9 +81,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         unstable_simulation = False
 
-
-        if self._enable_goal_switching:
-            if self._steps == 99 and self.np_random.uniform(0, 1) < 0.5:
+        if self._steps == self._goal_switching_step and self.np_random.uniform(0, 1) < 0.5:
                 new_goal_pos = self._generate_goal_pos(random=True)
                 new_goal_pos[1] = -new_goal_pos[1]
                 self._goal_pos = new_goal_pos
@@ -102,8 +89,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
                 mujoco.mj_forward(self.model, self.data)
 
         for _ in range(self.frame_skip):
-            if self._enable_artifical_wind:
-                self.data.qfrc_applied[-2] = self._artifical_force
+            if self._enable_artificial_wind:
+                self.data.qfrc_applied[-2] = self._artificial_force
             try:
                 self.do_simulation(action, 1)
             except Exception as e:
@@ -163,7 +150,6 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     def reset_model(self):
         self._steps = 0
         self._init_ball_state = self._generate_valid_init_ball(random_pos=True, random_vel=False)
-        # self._init_ball_state[2] = 1.85
         self._goal_pos = self._generate_goal_pos(random=True)
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
@@ -172,18 +158,15 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self.data.joint("tar_y").qvel = self._init_ball_state[4]
         self.data.joint("tar_z").qvel = self._init_ball_state[5]
 
-        if self._enable_artifical_wind:
-            self._artifical_force = self.np_random.uniform(low=-0.1, high=0.1)
+        if self._enable_artificial_wind:
+            self._artificial_force = self.np_random.uniform(low=-0.1, high=0.1)
 
         self.model.body_pos[5] = np.concatenate([self._goal_pos, [0.77]])
 
         self.data.qpos[:7] = np.array([0., 0., 0., 1.5, 0., 0., 1.5])
+        self.data.qvel[:7] = np.zeros(7)
 
         mujoco.mj_forward(self.model, self.data)
-
-        if self._enable_wind:
-            self._wind_vel[1] = self.np_random.uniform(low=-10, high=10, size=1)
-            self.model.opt.wind[:3] = self._wind_vel
 
         self._hit_ball = False
         self._ball_land_on_table = False
@@ -208,10 +191,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.data.joint("tar_x").qpos.copy(),
             self.data.joint("tar_y").qpos.copy(),
             self.data.joint("tar_z").qpos.copy(),
-            #self.data.joint("tar_x").qvel.copy(),
-            #self.data.joint("tar_y").qvel.copy(),
-            #self.data.joint("tar_z").qvel.copy(),
-            # self.data.body("target_ball").xvel.copy(),
+            # self.data.joint("tar_x").qvel.copy(),
+            # self.data.joint("tar_y").qvel.copy(),
+            # self.data.joint("tar_z").qvel.copy(),
             self._goal_pos.copy(),
         ])
         return obs
@@ -252,56 +234,54 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             init_ball_state = self._generate_random_ball(random_pos=random_pos, random_vel=random_vel)
         return init_ball_state
 
-def plot_ball_traj(x_traj, y_traj, z_traj):
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot(x_traj, y_traj, z_traj)
-    plt.show()
+    def _get_traj_invalid_reward(self, action, pos_traj, vel_traj):
+        tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+        delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
+        violate_high_bound_error = np.mean(np.maximum(pos_traj - jnt_pos_high, 0))
+        violate_low_bound_error = np.mean(np.maximum(jnt_pos_low - pos_traj, 0))
+        invalid_penalty = tau_invalid_penalty + delay_invalid_penalty + \
+                          violate_high_bound_error + violate_low_bound_error
+        return -invalid_penalty
 
-def plot_ball_traj_2d(x_traj, y_traj):
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(x_traj, y_traj)
-    plt.show()
+    def get_invalid_traj_step_return(self, action, pos_traj, vel_traj, contextual_obs):
+        obs = self._get_obs() if contextual_obs else np.concatenate([self._get_obs(), np.array([0])]) # 0 for invalid traj
+        penalty = self._get_traj_invalid_reward(action, pos_traj, vel_traj)
+        return obs, penalty, True, {
+            "hit_ball": [False],
+            "ball_return_success": [False],
+            "land_dist_error": [False],
+            "trajectory_length": 1,
+            "num_steps": [1],
+        }
 
-def plot_compare_trajs(traj1, traj2, title):
-    import matplotlib.pyplot as plt
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    ax.plot(traj1, color='r', label='traj1')
-    ax.plot(traj2, color='b', label='traj2')
-    ax.set_title(title)
-    plt.legend()
-    plt.show()
+    @staticmethod
+    def check_traj_validity(action, pos_traj, vel_traj):
+        time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0] \
+                     or action[1] > delay_bound[1] or action[1] < delay_bound[0]
+        if time_invalid or np.any(pos_traj > jnt_pos_high) or np.any(pos_traj < jnt_pos_low):
+            return False, pos_traj, vel_traj
+        return True, pos_traj, vel_traj
 
-if __name__ == "__main__":
-    env_air = TableTennisEnv(enable_air=False, enable_wind=False, enable_artifical_wind=True)
-    env_no_air = TableTennisEnv(enable_air=False, enable_wind=False)
-    for _ in range(10):
-        obs1 = env_air.reset()
-        obs2 = env_no_air.reset()
-        # obs2 = env_with_air.reset()
-        air_x_pos = []
-        no_air_x_pos = []
-        # y_pos = []
-        # z_pos = []
-        # x_vel = []
-        # y_vel = []
-        # z_vel = []
-        for _ in range(2000):
-            env_air.render("human")
-            obs1, reward1, done1, info1 = env_air.step(np.zeros(7))
-            obs2, reward2, done2, info2 = env_no_air.step(np.zeros(7))
-            # # _, _, _, _ = env_no_air.step(np.zeros(7))
-            air_x_pos.append(env_air.data.joint("tar_z").qpos[0])
-            no_air_x_pos.append(env_no_air.data.joint("tar_z").qpos[0])
-            # # z_pos.append(env.data.joint("tar_z").qpos[0])
-            # # x_vel.append(env.data.joint("tar_x").qvel[0])
-            # # y_vel.append(env.data.joint("tar_y").qvel[0])
-            # # z_vel.append(env.data.joint("tar_z").qvel[0])
-            # # print(reward)
-            if info1["num_steps"] == 150:
-                plot_compare_trajs(air_x_pos, no_air_x_pos, title="z_pos with/out wind")
-                break
+
+class TableTennisWind(TableTennisEnv):
+    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4):
+        super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip, enable_artificial_wind=True)
+
+    def _get_obs(self):
+        obs = np.concatenate([
+            self.data.qpos.flat[:7].copy(),
+            self.data.qvel.flat[:7].copy(),
+            self.data.joint("tar_x").qpos.copy(),
+            self.data.joint("tar_y").qpos.copy(),
+            self.data.joint("tar_z").qpos.copy(),
+            self.data.joint("tar_x").qvel.copy(),
+            self.data.joint("tar_y").qvel.copy(),
+            self.data.joint("tar_z").qvel.copy(),
+            self._goal_pos.copy(),
+        ])
+        return obs
+
+
+class TableTennisGoalSwitching(TableTennisEnv):
+    def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99):
+        super().__init__(frame_skip=frame_skip, goal_switching_step=goal_switching_step)
