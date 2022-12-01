@@ -145,11 +145,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
-        # TODO remove this part, right now only needed for beer pong
-        # mp_params, env_spec_params, proceed = self.env.episode_callback(action, self.traj_gen)
         position, velocity = self.get_trajectory(action)
+        position, velocity = self.env.set_episode_arguments(action, position, velocity)
         traj_is_valid = self.env.preprocessing_and_validity_callback(action, position, velocity)
-        # insert validation here
+
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
         if self.verbose >= 2:
@@ -167,8 +166,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         else:
             self.plan_steps += 1
             for t, (pos, vel) in enumerate(zip(position, velocity)):
-                current_pos = self.current_pos
-                current_vel = self.current_vel
                 step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
                 c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
                 obs, c_reward, done, info = self.env.step(c_action)
@@ -186,7 +183,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 if self.render_kwargs:
                     self.env.render(**self.render_kwargs)
 
-            if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
                                                  t + 1 + self.current_traj_steps)
                         and self.plan_steps < self.max_planning_times):
 
