@@ -191,9 +191,6 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             self.data.joint("tar_x").qpos.copy(),
             self.data.joint("tar_y").qpos.copy(),
             self.data.joint("tar_z").qpos.copy(),
-            # self.data.joint("tar_x").qvel.copy(),
-            # self.data.joint("tar_y").qvel.copy(),
-            # self.data.joint("tar_z").qvel.copy(),
             self._goal_pos.copy(),
         ])
         return obs
@@ -234,7 +231,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             init_ball_state = self._generate_random_ball(random_pos=random_pos, random_vel=random_vel)
         return init_ball_state
 
-    def _get_traj_invalid_reward(self, action, pos_traj):
+    def _get_traj_invalid_penalty(self, action, pos_traj):
         tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
         delay_invalid_penalty = 3 * (np.max([0, action[1] - delay_bound[1]]) + np.max([0, delay_bound[0] - action[1]]))
         violate_high_bound_error = np.mean(np.maximum(pos_traj - jnt_pos_high, 0))
@@ -245,7 +242,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def get_invalid_traj_step_return(self, action, pos_traj, contextual_obs):
         obs = self._get_obs() if contextual_obs else np.concatenate([self._get_obs(), np.array([0])]) # 0 for invalid traj
-        penalty = self._get_traj_invalid_reward(action, pos_traj)
+        penalty = self._get_traj_invalid_penalty(action, pos_traj)
         return obs, penalty, True, {
             "hit_ball": [False],
             "ball_returned_success": [False],
