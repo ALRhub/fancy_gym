@@ -9,7 +9,7 @@ from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import jnt_pos_low, j
 
 import mujoco
 
-MAX_EPISODE_STEPS_TABLE_TENNIS = 250
+MAX_EPISODE_STEPS_TABLE_TENNIS = 350
 
 CONTEXT_BOUNDS_2DIMS = np.array([[-1.0, -0.65], [-0.2, 0.65]])
 CONTEXT_BOUNDS_4DIMS = np.array([[-1.0, -0.65, -1.0, -0.65],
