@@ -254,8 +254,6 @@ for ctxt_dim in [2, 4]:
         kwargs={
             "ctxt_dim": ctxt_dim,
             'frame_skip': 4,
-            'goal_switching_step': None,
-            'enable_artificial_wind': False,
         }
     )
 
@@ -269,6 +267,9 @@ register(
     id='TableTennisGoalSwitching-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisGoalSwitching',
     max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
+    kwargs={
+        'goal_switching_step': 99
+    }
 )
 
 

@@ -149,8 +149,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self._steps = 0
-        self._init_ball_state = self._generate_valid_init_ball(random_pos=False, random_vel=False)
-        self._goal_pos = self._generate_goal_pos(random=False)
+        self._init_ball_state = self._generate_valid_init_ball(random_pos=True, random_vel=False)
+        self._goal_pos = self._generate_goal_pos(random=True)
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
         self.data.joint("tar_z").qpos = self._init_ball_state[2]
