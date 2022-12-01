@@ -37,7 +37,7 @@ class TT_MPWrapper(RawInterfaceWrapper):
 
     def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
                               return_contextual_obs: bool) -> Tuple[np.ndarray, float, bool, dict]:
-        return self.get_invalid_traj_step_return(action, pos_traj, vel_traj, return_contextual_obs)
+        return self.get_invalid_traj_step_return(action, pos_traj, return_contextual_obs)
 
 class TTVelObs_MPWrapper(TT_MPWrapper):
 
