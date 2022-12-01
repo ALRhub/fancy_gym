@@ -248,8 +248,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         penalty = self._get_traj_invalid_reward(action, pos_traj)
         return obs, penalty, True, {
             "hit_ball": [False],
-            "ball_return_success": [False],
-            "land_dist_error": [False],
+            "ball_returned_success": [False],
+            "land_dist_error": [10.],
+            "is_success": [False],
             "trajectory_length": 1,
             "num_steps": [1],
         }
