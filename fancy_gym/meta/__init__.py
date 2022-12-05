@@ -13,7 +13,8 @@ DEFAULT_BB_DICT_ProMP = {
     "name": 'EnvName',
     "wrappers": [],
     "trajectory_generator_kwargs": {
-        'trajectory_generator_type': 'promp'
+        'trajectory_generator_type': 'promp',
+        'weights_scale': 10,
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'linear'
@@ -32,17 +33,22 @@ DEFAULT_BB_DICT_ProDMP = {
     "name": 'EnvName',
     "wrappers": [],
     "trajectory_generator_kwargs": {
-        'trajectory_generator_type': 'prodmp'
+        'trajectory_generator_type': 'prodmp',
+        'auto_scale_basis': True,
+        'weights_scale': 10,
+        'goal_scale': 0.
     },
     "phase_generator_kwargs": {
-        'phase_generator_type': 'exp'
+        'phase_generator_type': 'exp',
+        # 'alpha_phase' : 3,
     },
     "controller_kwargs": {
         'controller_type': 'metaworld',
     },
     "basis_generator_kwargs": {
         'basis_generator_type': 'prodmp',
-        'num_basis': 5
+        'num_basis': 3,
+        'alpha': 10
     }
 }
 
@@ -147,7 +153,6 @@ for _task in _goal_and_object_change_envs:
         kwargs=kwargs_dict_goal_and_object_change_prodmp
     )
     ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
-
 
 _goal_and_endeffector_change_envs = ["basketball-v2"]
 for _task in _goal_and_endeffector_change_envs:
