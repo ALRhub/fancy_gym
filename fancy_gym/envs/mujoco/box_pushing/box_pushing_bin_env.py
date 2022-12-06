@@ -12,7 +12,7 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import (
 )
 from fancy_gym.black_box.controller.pd_controller import PDController
 
-MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 100
+MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 1000
 BOX_INIT_FRAME_SKIPS = 500  # boxes need time to fall
 PUSH_DISTANCE = 0.03  # 3cm ~ 1 / 3 of box sizes
 
@@ -34,7 +34,6 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         normalized joints torque * 7 , range [-1, 1]
     observation space:
     """
-
     def __init__(
         self,
         num_boxes: int = 10,
@@ -188,7 +187,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
     def sample_context(self):
         pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
         theta = self.np_random.uniform(low=0, high=np.pi * 2)
-        quat = rot_to_quat(theta, np.array([0, 0, 1]))
+        quat = rot_to_quat(theta, np.array([1, 1, 1]))
         return np.concatenate([pos, quat])
 
     def _get_reward(self, action, qpos, qvel, box_pos=None):
