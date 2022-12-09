@@ -54,6 +54,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self.boxes = ["box_" + str(i) for i in range(num_boxes)]
         self.joints = ["box_joint_" + str(i) for i in range(num_boxes)]
         self.hidden = ["box_joint_" + str(i) for i in range(num_boxes, MAX_NUM_BOXES)]
+        self.boxes_out_bins = np.arange(num_boxes)
 
         # noise of 8deg ~ pi/21rad, ensure >95% values inside the range with 3sigma=range
         self.noisy_start_pos = lambda : np.clip(
@@ -160,6 +161,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
                         break
             self.data.joint(joint).qpos = new_pos
             positions.append(new_pos)
+        self.boxes_out_bins = np.arange(len(self.boxes))  # assume all boxes out
 
         # Robot out of the way of boxes before dropping them
         self.data.qpos[:7] = START_POS + np.array([0, 0, 0, np.pi*5/8, 0, 0, 0])
@@ -175,6 +177,13 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         )
         self.do_simulation(no_action, BOX_INIT_FRAME_SKIPS)
 
+        self.boxes_out_bins = np.delete(  # Remove boxes that fell in bin after box init
+            self.boxes_out_bins,
+            self.boxes_in_bin(
+                np.array([self.data.body(box).xpos.copy() for box in self.boxes])\
+                    [self.boxes_out_bins]
+            )
+        )
         self.reset_robot_pos()
 
         return self._get_obs()
@@ -476,9 +485,24 @@ class BoxPushingBinSparse(BoxPushingBin):
         self.bin_borders = np.random.rand(NUM_BINS, 6)  # 3 dims, each 2 border values
         super(BoxPushingBinSparse, self).__init__(num_boxes, frame_skip, width, height)
         bin_pos = [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
-        bin_edges = np.array([BIN_SIZE, -BIN_SIZE] * 2 + [0, -3 * BIN_SIZE / 2])
+        bin_edges = np.array([BIN_SIZE, -BIN_SIZE] * 2 + [0, -2 * BIN_SIZE])
         self.bin_borders = np.array([np.repeat(p, 2) - bin_edges for p in bin_pos])
 
+    def boxes_in_bin(self, box_pos):
+        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
+        parallel_bin_borders = np.repeat(
+            np.expand_dims(self.bin_borders, axis=0),
+            len(box_pos),
+            axis=0
+        )
+        bin_dist = np.concatenate(
+            [
+                parallel_box_pos - parallel_bin_borders[:,:,(0, 2, 4)],  # dist to low
+                parallel_bin_borders[:,:,(1, 3, 5)] - parallel_box_pos  # dist to high
+            ],
+            axis=-1,
+        )
+        return np.where(np.sum(bin_dist > 0.0, axis=-1) >= 6)[0]
 
     def _get_reward(self, action, qpos, qvel, box_pos):
         """
@@ -497,24 +521,10 @@ class BoxPushingBinSparse(BoxPushingBin):
             (float): scalar reward value
         """
         penalty = super()._get_reward(action, qpos, qvel)
+        boxes_in_bin = self.boxes_in_bin(np.array(box_pos)[self.boxes_out_bins])
+        self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
 
-        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
-        parallel_bin_borders = np.repeat(
-            np.expand_dims(self.bin_borders, axis=0),
-            len(box_pos),
-            axis=0
-        )
-        bin_dist = np.concatenate(
-            [
-                parallel_box_pos - parallel_bin_borders[:,:,(0, 2, 4)],  # dist to low
-                parallel_bin_borders[:,:,(1, 3, 5)] - parallel_box_pos  # dist to high
-            ],
-            axis=-1,
-        )
-        boxes_to_remove = np.where(np.sum(bin_dist > 0.0, axis=-1) >= 6)[0]
-
-        reward = penalty + len(boxes_to_remove) * 100
-        return reward
+        return penalty + len(boxes_in_bin) * 100
 
 
 class BoxPushingBinDense(BoxPushingBinSparse):
