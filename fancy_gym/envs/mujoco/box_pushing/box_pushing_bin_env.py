@@ -188,6 +188,9 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
 
         return self._get_obs()
 
+    def num_boxes_in(self):
+        return len(self.boxes) - len(self.boxes_out_bins)
+
     def reset_robot_pos(self):
         self.data.qpos[:7] = self.noisy_start_pos()
         self.data.qvel[:7] = np.zeros(START_POS.shape)
