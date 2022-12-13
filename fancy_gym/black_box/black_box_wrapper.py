@@ -205,6 +205,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""
         self.render_kwargs = kwargs
+        return self.env.render(**kwargs)
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
