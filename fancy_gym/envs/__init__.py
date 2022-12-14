@@ -567,7 +567,7 @@ for _v in _versions:
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = 4
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['max_planning_times'] = MAX_EPISODE_STEPS_BOX_PUSHING_BIN // 25
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
     register(
