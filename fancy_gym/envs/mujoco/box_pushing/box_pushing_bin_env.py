@@ -137,6 +137,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             reward_info = self._get_reward(action, qpos, qvel, box_pos_xyz)
             reward = sum(reward_info.values())
         else:
+            reward_info = {"reward_unstable_sim": -50}
             reward = -50
 
         obs = self._get_obs()
@@ -144,9 +145,8 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             'episode_end': episode_end,
             'episode_energy': 0. if not episode_end else self._episode_energy,
             'num_souteps': self._steps,
-            'reward_unstable_sim': reward if unstable_simulation else 0,
+            'reward_info': reward_info
         }
-        infos.update(reward_info)
         return obs, reward, episode_end, infos
 
     def reset_model(self):
