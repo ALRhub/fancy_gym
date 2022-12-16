@@ -135,7 +135,6 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         reward_info = {}
         if not unstable_simulation:
             reward_info = self._get_reward(action, qpos, qvel, box_pos_xyz)
-            print(reward_info)
             reward = sum(reward_info.values())
         else:
             reward = -50
@@ -181,14 +180,6 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             q_torque_max
         )
         self.do_simulation(no_action, BOX_INIT_FRAME_SKIPS)
-
-        self.boxes_out_bins = np.delete(  # Remove boxes that fell in bin after box init
-            self.boxes_out_bins,
-            self.boxes_in_bin(
-                np.array([self.data.body(box).xpos.copy() for box in self.boxes])\
-                    [self.boxes_out_bins]
-            )
-        )
         self.reset_robot_pos()
 
         return self._get_obs()
@@ -495,6 +486,17 @@ class BoxPushingBinSparse(BoxPushingBin):
         bin_pos = [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
         bin_edges = np.array([BIN_SIZE, -BIN_SIZE] * 2 + [0, -2 * BIN_SIZE])
         self.bin_borders = np.array([np.repeat(p, 2) - bin_edges for p in bin_pos])
+
+    def reset_model(self):
+        obs = super().reset_model()
+        self.boxes_out_bins = np.delete(  # Remove boxes that fell in bin after box init
+            self.boxes_out_bins,
+            self.boxes_in_bin(
+                np.array([self.data.body(box).xpos.copy() for box in self.boxes])\
+                    [self.boxes_out_bins]
+            )
+        )
+        return obs
 
     def boxes_in_bin(self, box_pos):
         parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
