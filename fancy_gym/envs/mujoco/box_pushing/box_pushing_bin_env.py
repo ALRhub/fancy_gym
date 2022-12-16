@@ -132,8 +132,11 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
+        reward_info = {}
         if not unstable_simulation:
-            reward = self._get_reward(action, qpos, qvel, box_pos_xyz)
+            reward_info = self._get_reward(action, qpos, qvel, box_pos_xyz)
+            print(reward_info)
+            reward = sum(reward_info.values())
         else:
             reward = -50
 
@@ -141,8 +144,10 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         infos = {
             'episode_end': episode_end,
             'episode_energy': 0. if not episode_end else self._episode_energy,
-            'num_steps': self._steps
+            'num_souteps': self._steps,
+            'reward_unstable_sim': reward if unstable_simulation else 0,
         }
+        infos.update(reward_info)
         return obs, reward, episode_end, infos
 
     def reset_model(self):
@@ -222,7 +227,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         )
         energy_cost = -0.0005 * np.sum(np.square(action))
 
-        return joint_penalty_reward + energy_cost
+        return {"joint_penalty": joint_penalty_reward, "energy_cost": energy_cost}
 
     def _get_obs(self):
         box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
@@ -527,7 +532,9 @@ class BoxPushingBinSparse(BoxPushingBin):
         boxes_in_bin = self.boxes_in_bin(np.array(box_pos)[self.boxes_out_bins])
         self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
 
-        return penalty + len(boxes_in_bin) * 100
+        sparse_reward = penalty
+        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * 100})
+        return sparse_reward
 
 
 class BoxPushingBinDense(BoxPushingBinSparse):
@@ -571,5 +578,6 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         )
         dist_to_bin_borders = -np.sum(np.abs(parallel_box_pos - parallel_bin_borders))
 
-        reward = sparse_reward + dist_to_bin_borders
-        return reward
+        dense_reward = sparse_reward
+        dense_reward.update({"dist_to_bin_borderd_rew": dist_to_bin_borders})
+        return dense_reward
