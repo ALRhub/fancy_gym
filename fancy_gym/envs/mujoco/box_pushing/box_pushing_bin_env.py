@@ -241,8 +241,8 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         enable_vel_limit=False
     ):
         penalty = 0.
-        p_coeff = 1.
-        v_coeff = 1.
+        p_coeff = 0.01
+        v_coeff = 0.01
         # q_limit
         if enable_pos_limit:
             higher_error = qpos - self._q_max
