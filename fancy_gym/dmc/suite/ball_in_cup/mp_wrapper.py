@@ -31,4 +31,4 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def dt(self) -> Union[float, int]:
-        return self.env.dt
+        return self.env.control_timestep()

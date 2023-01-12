@@ -3,15 +3,15 @@
 # Copyright (c) 2020 Denis Yarats
 import collections
 from collections.abc import MutableMapping
-from typing import Any, Dict, Tuple, Optional, Union, Callable
+from typing import Any, Dict, Tuple, Optional, Union, Callable, SupportsFloat
 
-import gym
+import gymnasium as gym
 import numpy as np
 from dm_control import composer
 from dm_control.rl import control
 from dm_env import specs
-from gym import spaces
-from gym.core import ObsType
+from gymnasium import spaces
+from gymnasium.core import ObsType, ActType
 
 
 def _spec_to_box(spec):
@@ -100,23 +100,23 @@ class DMCWrapper(gym.Env):
         self._action_space.seed(seed)
         self._observation_space.seed(seed)
 
-    def step(self, action) -> Tuple[np.ndarray, float, bool, Dict[str, Any]]:
+    def step(self, action: ActType) -> Tuple[ObsType, SupportsFloat, bool, bool, Dict[str, Any]]:
         assert self._action_space.contains(action)
         extra = {'internal_state': self._env.physics.get_state().copy()}
-
         time_step = self._env.step(action)
         reward = time_step.reward or 0.
-        done = time_step.last()
+        terminated = False
+        truncated = time_step.last() and time_step.discount > 0
         obs = self._get_obs(time_step)
         extra['discount'] = time_step.discount
 
-        return obs, reward, done, extra
+        return obs, reward, terminated, truncated, extra
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         time_step = self._env.reset()
         obs = self._get_obs(time_step)
-        return obs
+        return obs, {}
 
     def render(self, mode='rgb_array', height=240, width=320, camera_id=-1, overlays=(), depth=False,
                segmentation=False, scene_option=None, render_flag_overrides=None):
