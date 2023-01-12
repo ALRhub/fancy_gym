@@ -7,8 +7,10 @@ extras = {
     "dmc": ["dm_control>=1.0.1"],
     "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld",
                   'mujoco-py<2.2,>=2.1',
-                  'scipy'
+                  'scipy',
+                  'gym>=0.15.4',
                   ],
+    "mujoco": ["gymnasium[mujoco]"],
 }
 
 # All dependencies
@@ -18,7 +20,7 @@ extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[
 setup(
     author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.2',
+    version='0.3',
     classifiers=[
         # Python 3.7 is minimally supported
         "Programming Language :: Python :: 3",
@@ -29,7 +31,7 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'gym[mujoco]<0.25.0,>=0.24.0',
+        'gymnasium',
         'mp_pytorch @ git+https://github.com/ALRhub/MP_PyTorch.git@main'
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],

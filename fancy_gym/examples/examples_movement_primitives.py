@@ -41,11 +41,11 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
         # This executes a full trajectory and gives back the context (obs) of the last step in the trajectory, or the
         # full observation space of the last step, if replanning/sub-trajectory learning is used. The 'reward' is equal
         # to the return of a trajectory. Default is the sum over the step-wise rewards.
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         # Aggregated returns
         returns += reward
 
-        if done:
+        if terminated or truncated:
             print(reward)
             obs = env.reset()
 
@@ -79,10 +79,10 @@ def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         returns += reward
 
-        if done:
+        if terminated or truncated:
             print(i, reward)
             obs = env.reset()
 
@@ -145,10 +145,10 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
 
-        if done:
+        if terminated or truncated:
             print(rewards)
             rewards = 0
             obs = env.reset()

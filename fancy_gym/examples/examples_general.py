@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 import fancy_gym
@@ -29,13 +29,13 @@ def example_general(env_id="Pendulum-v1", seed=1, iterations=1000, render=True):
 
     # number of environment steps
     for i in range(iterations):
-        obs, reward, done, info = env.step(env.action_space.sample())
+        obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
         rewards += reward
 
         if render:
             env.render()
 
-        if done:
+        if terminated or truncated:
             print(rewards)
             rewards = 0
             obs = env.reset()
@@ -69,12 +69,15 @@ def example_async(env_id="HoleReacher-v0", n_cpu=4, seed=int('533D', 16), n_samp
     # this would generate more samples than requested if n_samples % num_envs != 0
     repeat = int(np.ceil(n_samples / env.num_envs))
     for i in range(repeat):
-        obs, reward, done, info = env.step(env.action_space.sample())
+        obs, reward, terminated, truncated, info = env.step(env.action_space.sample())
         buffer['obs'].append(obs)
         buffer['reward'].append(reward)
-        buffer['done'].append(done)
+        buffer['terminated'].append(terminated)
+        buffer['truncated'].append(truncated)
         buffer['info'].append(info)
         rewards += reward
+
+        done = terminated or truncated
         if np.any(done):
             print(f"Reward at iteration {i}: {rewards[done]}")
             rewards[done] = 0

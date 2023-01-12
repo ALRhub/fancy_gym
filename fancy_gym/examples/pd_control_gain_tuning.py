@@ -34,7 +34,7 @@ fig.show()
 for t, pos_vel in enumerate(zip(pos, vel)):
     actions = env.tracking_controller.get_action(pos_vel[0], pos_vel[1], env.current_vel, env.current_pos)
     actions = np.clip(actions, env.env.action_space.low, env.env.action_space.high)
-    _, _, _, _ = env.env.step(actions)
+    env.env.step(actions)
     if t % 15 == 0:
         img.set_data(env.env.render(mode="rgb_array"))
         fig.canvas.draw()

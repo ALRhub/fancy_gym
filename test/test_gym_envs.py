@@ -1,12 +1,12 @@
 from itertools import chain
 
-import gym
+import gymnasium as gym
 import pytest
 
 import fancy_gym
 from test.utils import run_env, run_env_determinism
 
-GYM_IDS = [spec.id for spec in gym.envs.registry.all() if
+GYM_IDS = [spec.id for spec in gym.envs.registry.values() if
            "fancy_gym" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
 GYM_MP_IDS = chain(*fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
 SEED = 1
