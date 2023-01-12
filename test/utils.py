@@ -53,16 +53,16 @@ def run_env(env_id, iterations=None, seed=0, render=False):
         if terminated or truncated:
             break
 
-    assert terminated or truncated, "Termination or truncation flag is not True after end of episode."
+    assert terminated or truncated, f"Termination or truncation flag is not True after {i + 1} iterations."
     observations.append(obs)
     env.close()
     del env
     return np.array(observations), np.array(rewards), np.array(terminations), np.array(truncations), np.array(actions)
 
 
-def run_env_determinism(env_id: str, seed: int):
-    traj1 = run_env(env_id, seed=seed)
-    traj2 = run_env(env_id, seed=seed)
+def run_env_determinism(env_id: str, seed: int, iterations: int = None):
+    traj1 = run_env(env_id, iterations=iterations, seed=seed)
+    traj2 = run_env(env_id, iterations=iterations, seed=seed)
     # Iterate over two trajectories, which should have the same state and action sequence
     for i, time_step in enumerate(zip(*traj1, *traj2)):
         obs1, rwd1, term1, trunc1, ac1, obs2, rwd2, term2, trunc2, ac2 = time_step
