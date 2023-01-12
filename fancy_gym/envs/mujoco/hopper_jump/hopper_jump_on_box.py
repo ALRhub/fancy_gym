@@ -1,7 +1,9 @@
 import os
+from typing import Optional, Dict, Any, Tuple
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
 
 MAX_EPISODE_STEPS_HOPPERJUMPONBOX = 250
 
@@ -74,10 +76,10 @@ class HopperJumpOnBoxEnv(HopperEnv):
 
         costs = ctrl_cost
 
-        done = fell_over or self.hopper_on_box
+        terminated = fell_over or self.hopper_on_box
 
-        if self.current_step >= self.max_episode_steps or done:
-            done = False
+        if self.current_step >= self.max_episode_steps or terminated:
+            done = False  # TODO why are we doing this???
 
             max_height = self.max_height.copy()
             min_distance = self.min_distance.copy()
@@ -122,12 +124,13 @@ class HopperJumpOnBoxEnv(HopperEnv):
             'goal': self.box_x,
         }
 
-        return observation, reward, done, info
+        return observation, reward, terminated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.box_x)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
 
         self.max_height = 0
         self.min_distance = 5000
@@ -136,7 +139,7 @@ class HopperJumpOnBoxEnv(HopperEnv):
         if self.context:
             self.box_x = self.np_random.uniform(1, 3, 1)
             self.model.body("box").pos = [self.box_x[0], 0, 0]
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -151,20 +154,5 @@ class HopperJumpOnBoxEnv(HopperEnv):
         observation = self._get_obs()
         return observation
 
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = HopperJumpOnBoxEnv()
-    obs = env.reset()
 
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
 
-    env.close()

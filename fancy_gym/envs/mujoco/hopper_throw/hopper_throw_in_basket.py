@@ -1,8 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.core import ObsType
 
 MAX_EPISODE_STEPS_HOPPERTHROWINBASKET = 250
 
@@ -72,7 +73,7 @@ class HopperThrowInBasketEnv(HopperEnv):
             self.ball_in_basket = True
 
         ball_landed = self.get_body_com("ball")[2] <= 0.05
-        done = bool(ball_landed or is_in_basket)
+        terminated = bool(ball_landed or is_in_basket)
 
         rewards = 0
 
@@ -80,7 +81,7 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         costs = ctrl_cost
 
-        if self.current_step >= self.max_episode_steps or done:
+        if self.current_step >= self.max_episode_steps or terminated:
 
             if is_in_basket:
                 if not self.context:
@@ -101,13 +102,16 @@ class HopperThrowInBasketEnv(HopperEnv):
         info = {
             'ball_pos': ball_pos[0],
         }
+        truncated = False
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.basket_x)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
+
         if self.max_episode_steps == 10:
             # We have to initialize this here, because the spec is only added after creating the env.
             self.max_episode_steps = self.spec.max_episode_steps
@@ -117,7 +121,7 @@ class HopperThrowInBasketEnv(HopperEnv):
         if self.context:
             self.basket_x = self.np_random.uniform(low=3, high=7, size=1)
             self.model.body("basket_ground").pos[:] = [self.basket_x[0], 0, 0]
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -134,20 +138,4 @@ class HopperThrowInBasketEnv(HopperEnv):
         return observation
 
 
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = HopperThrowInBasketEnv()
-    obs = env.reset()
 
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

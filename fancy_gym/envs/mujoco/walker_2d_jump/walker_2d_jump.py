@@ -1,8 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym.envs.mujoco.walker2d_v4 import Walker2dEnv
+from gymnasium.envs.mujoco.walker2d_v4 import Walker2dEnv
+from gymnasium.core import ObsType
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
 
@@ -54,13 +55,13 @@ class Walker2dJumpEnv(Walker2dEnv):
 
         self.max_height = max(height, self.max_height)
 
-        done = bool(height < 0.2)
+        terminated = bool(height < 0.2)
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
         rewards = 0
-        if self.current_step >= self.max_episode_steps or done:
-            done = True
+        if self.current_step >= self.max_episode_steps or terminated:
+            terminated = True
             height_goal_distance = -10 * (np.linalg.norm(self.max_height - self.goal))
             healthy_reward = self.healthy_reward * self.current_step
 
@@ -73,17 +74,19 @@ class Walker2dJumpEnv(Walker2dEnv):
             'max_height': self.max_height,
             'goal': self.goal,
         }
+        truncated = False
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
         self.max_height = 0
         self.goal = self.np_random.uniform(1.5, 2.5, 1)  # 1.5 3.0
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -98,20 +101,3 @@ class Walker2dJumpEnv(Walker2dEnv):
         observation = self._get_obs()
         return observation
 
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = Walker2dJumpEnv()
-    obs = env.reset()
-
-    for i in range(6000):
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

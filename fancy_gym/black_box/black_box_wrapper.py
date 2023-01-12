@@ -1,8 +1,9 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Dict, Any
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
+from gymnasium.core import ObsType
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
 from fancy_gym.black_box.controller.base_controller import BaseController
@@ -140,7 +141,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         for t, (pos, vel) in enumerate(zip(trajectory, velocity)):
             step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
-            obs, c_reward, done, info = self.env.step(c_action)
+            obs, c_reward, terminated, truncated, info = self.env.step(c_action)
             rewards[t] = c_reward
 
             if self.verbose >= 2:
@@ -155,8 +156,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                t + 1 + self.current_traj_steps):
+            if terminated or truncated or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                                   t + 1 + self.current_traj_steps):
                 break
 
         infos.update({k: v[:t] for k, v in infos.items()})
@@ -171,13 +172,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         infos['trajectory_length'] = t + 1
         trajectory_return = self.reward_aggregation(rewards[:t + 1])
-        return self.observation(obs), trajectory_return, done, infos
+        return self.observation(obs), trajectory_return, terminated, truncated, infos
 
     def render(self, **kwargs):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""
         self.render_kwargs = kwargs
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_traj_steps = 0
-        return super(BlackBoxWrapper, self).reset()
+        return super(BlackBoxWrapper, self).reset(seed=seed, options=options)

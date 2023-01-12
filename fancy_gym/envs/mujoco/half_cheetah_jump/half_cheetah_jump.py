@@ -1,9 +1,9 @@
 import os
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, Any, Dict
 
 import numpy as np
-from gym.core import ObsType
-from gym.envs.mujoco.half_cheetah_v4 import HalfCheetahEnv
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco.half_cheetah_v4 import HalfCheetahEnv
 
 MAX_EPISODE_STEPS_HALFCHEETAHJUMP = 100
 
@@ -44,7 +44,8 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
         ## Didnt use fell_over, because base env also has no done condition - Paul and Marc
         # fell_over = abs(self.sim.data.qpos[2]) > 2.5  # how to figure out if the cheetah fell over? -> 2.5 oke?
         # TODO: Should a fall over be checked here?
-        done = False
+        terminated = False
+        truncated = False
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
@@ -63,17 +64,17 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
             'max_height': self.max_height
         }
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.max_height = 0
         self.current_step = 0
         self.goal = self.np_random.uniform(1.1, 1.6, 1)  # 1.1 1.6
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

@@ -1,10 +1,10 @@
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, Any, Dict
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
-from gym.core import ObsType
-from gym.utils import seeding
+from gymnasium import spaces
+from gymnasium.core import ObsType
+from gymnasium.utils import seeding
 
 from fancy_gym.envs.classic_control.utils import intersect
 
@@ -69,10 +69,14 @@ class BaseReacherEnv(gym.Env):
     def current_vel(self):
         return self._angle_velocity.copy()
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         # Sample only orientation of first link, i.e. the arm is always straight.
-        if self.random_start:
+        try:
+            random_start = options.get('random_start', self.random_start)
+        except AttributeError:
+            random_start = self.random_start
+        if random_start:
             first_joint = self.np_random.uniform(np.pi / 4, 3 * np.pi / 4)
             self._joint_angles = np.hstack([[first_joint], np.zeros(self.n_links - 1)])
             self._start_pos = self._joint_angles.copy()
@@ -84,7 +88,7 @@ class BaseReacherEnv(gym.Env):
         self._update_joints()
         self._steps = 0
 
-        return self._get_obs().copy()
+        return self._get_obs().copy(), {}
 
     def _update_joints(self):
         """

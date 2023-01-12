@@ -1,8 +1,8 @@
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, Any, Dict
 
 import numpy as np
-from gym.core import ObsType
-from gym.envs.mujoco.ant_v4 import AntEnv
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco.ant_v4 import AntEnv
 
 MAX_EPISODE_STEPS_ANTJUMP = 200
 
@@ -61,9 +61,10 @@ class AntJumpEnv(AntEnv):
 
         costs = ctrl_cost + contact_cost
 
-        done = bool(height < 0.3)  # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
+        terminated = bool(
+            height < 0.3)  # fall over -> is the 0.3 value from healthy_z_range? TODO change 0.3 to the value of healthy z angle
 
-        if self.current_step == MAX_EPISODE_STEPS_ANTJUMP or done:
+        if self.current_step == MAX_EPISODE_STEPS_ANTJUMP or terminated:
             # -10 for scaling the value of the distance between the max_height and the goal height; only used when context is enabled
             # height_reward = -10 * (np.linalg.norm(self.max_height - self.goal))
             height_reward = -10 * np.linalg.norm(self.max_height - self.goal)
@@ -80,19 +81,20 @@ class AntJumpEnv(AntEnv):
             'max_height': self.max_height,
             'goal': self.goal
         }
+        truncated = False
 
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
         self.max_height = 0
         # goal heights from 1.0 to 2.5; can be increased, but didnt work well with CMORE
         self.goal = self.np_random.uniform(1.0, 2.5, 1)
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # reset_model had to be implemented in every env to make it deterministic
     def reset_model(self):

@@ -1,9 +1,10 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym import utils
-from gym.envs.mujoco import MujocoEnv
+from gymnasium import utils
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco import MujocoEnv
 
 MAX_EPISODE_STEPS_BEERPONG = 300
 FIXED_RELEASE_STEP = 62  # empirically evaluated for frame_skip=2!
@@ -30,7 +31,7 @@ CUP_COLLISION_OBJ = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "c
 
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "beerpong_wo_cup.xml")
@@ -65,7 +66,13 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
-        MujocoEnv.__init__(self, model_path=self.xml_path, frame_skip=1, mujoco_bindings="mujoco")
+        MujocoEnv.__init__(
+            self,
+            self.xml_path,
+            frame_skip=1,
+            observation_space=self.observation_space,
+            **kwargs
+        )
         utils.EzPickle.__init__(self)
 
     @property
@@ -76,7 +83,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
     def start_vel(self):
         return self._start_vel
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.dists = []
         self.dists_final = []
         self.action_costs = []
@@ -86,7 +94,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ball_cup_contact = False
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     def reset_model(self):
         init_pos_all = self.init_qpos.copy()
@@ -128,11 +136,11 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         if not crash:
             reward, reward_infos = self._get_reward(applied_action)
             is_collided = reward_infos['is_collided']  # TODO: Remove if self collision does not make a difference
-            done = is_collided
+            terminated = is_collided
             self._steps += 1
         else:
             reward = -30
-            done = True
+            terminated = True
             reward_infos = {"success": False, "ball_pos": np.zeros(3), "ball_vel": np.zeros(3), "is_collided": False}
 
         infos = dict(
@@ -142,7 +150,10 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             q_vel=self.data.qvel[0:7].ravel().copy(), sim_crash=crash,
         )
         infos.update(reward_infos)
-        return ob, reward, done, infos
+
+        truncated = False
+
+        return ob, reward, terminated, truncated, infos
 
     def _get_obs(self):
         theta = self.data.qpos.flat[:7].copy()
@@ -258,9 +269,9 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
             return super(BeerPongEnvStepBasedEpisodicReward, self).step(a)
         else:
             reward = 0
-            done = True
+            terminated, truncated = True, False
             while self._steps < MAX_EPISODE_STEPS_BEERPONG:
-                obs, sub_reward, done, infos = super(BeerPongEnvStepBasedEpisodicReward, self).step(
+                obs, sub_reward, terminated, truncated, infos = super(BeerPongEnvStepBasedEpisodicReward, self).step(
                     np.zeros(a.shape))
                 reward += sub_reward
-        return obs, reward, done, infos
+        return obs, reward, terminated, truncated, infos

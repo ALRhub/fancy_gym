@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from gym import register
+from gymnasium import register
 
 from . import mujoco
 from .deprecated_needs_gym_robotics import robotics

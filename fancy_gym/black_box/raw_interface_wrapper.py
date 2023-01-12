@@ -1,6 +1,6 @@
 from typing import Union, Tuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 from mp_pytorch.mp.mp_interfaces import MPInterface
 

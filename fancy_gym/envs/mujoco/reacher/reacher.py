@@ -1,9 +1,9 @@
 import os
 
 import numpy as np
-from gym import utils
-from gym.envs.mujoco import MujocoEnv
-from gym.spaces import Box
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_REACHER = 200
 

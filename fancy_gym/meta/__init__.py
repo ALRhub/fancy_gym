@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from gym import register
+from gymnasium import register
 
 from . import goal_object_change_mp_wrapper, goal_change_mp_wrapper, goal_endeffector_change_mp_wrapper, \
     object_change_mp_wrapper

@@ -1,8 +1,9 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
 
 MAX_EPISODE_STEPS_HOPPERTHROW = 250
 
@@ -56,14 +57,14 @@ class HopperThrowEnv(HopperEnv):
 
         # done = self.done TODO We should use this, not sure why there is no other termination; ball_landed should be enough, because we only look at the throw itself? - Paul and Marc
         ball_landed = bool(self.get_body_com("ball")[2] <= 0.05)
-        done = ball_landed
+        terminated = ball_landed
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
 
         rewards = 0
 
-        if self.current_step >= self.max_episode_steps or done:
+        if self.current_step >= self.max_episode_steps or terminated:
             distance_reward = -np.linalg.norm(ball_pos_after - self.goal) if self.context else \
                 self._forward_reward_weight * ball_pos_after
             healthy_reward = 0 if self.context else self.healthy_reward * self.current_step
@@ -78,16 +79,18 @@ class HopperThrowEnv(HopperEnv):
             '_steps': self.current_step,
             'goal': self.goal,
         }
+        truncated = False
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
         self.goal = self.goal = self.np_random.uniform(2.0, 6.0, 1)  # 0.5 8.0
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -103,20 +106,3 @@ class HopperThrowEnv(HopperEnv):
         return observation
 
 
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = HopperThrowEnv()
-    obs = env.reset()
-
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()
