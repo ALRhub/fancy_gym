@@ -55,7 +55,6 @@ class BaseReacherEnv(gym.Env):
         self.fig = None
 
         self._steps = 0
-        self.seed()
 
     @property
     def dt(self) -> Union[float, int]:
@@ -72,6 +71,7 @@ class BaseReacherEnv(gym.Env):
     def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
             -> Tuple[ObsType, Dict[str, Any]]:
         # Sample only orientation of first link, i.e. the arm is always straight.
+        super(BaseReacherEnv, self).reset(seed=seed, options=options)
         try:
             random_start = options.get('random_start', self.random_start)
         except AttributeError:
@@ -127,10 +127,6 @@ class BaseReacherEnv(gym.Env):
 
     def _terminate(self, info) -> bool:
         raise NotImplementedError
-
-    def seed(self, seed=None):
-        self.np_random, seed = seeding.np_random(seed)
-        return [seed]
 
     def close(self):
         super(BaseReacherEnv, self).close()

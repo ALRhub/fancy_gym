@@ -57,11 +57,16 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
             -> Tuple[ObsType, Dict[str, Any]]:
+
+        # initialize seed here as the random goal needs to be generated before the super reset()
+        gym.Env.reset(self, seed=seed, options=options)
+
         self._generate_hole()
         self._set_patches()
         self.reward_function.reset()
 
-        return super().reset()
+        # do not provide seed to avoid setting it twice
+        return super(HoleReacherEnv, self).reset(options=options)
 
     def _get_reward(self, action: np.ndarray) -> (float, dict):
         return self.reward_function.get_reward(self)
@@ -224,6 +229,3 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.gca().add_patch(left_block)
             self.fig.gca().add_patch(right_block)
             self.fig.gca().add_patch(hole_floor)
-
-
-

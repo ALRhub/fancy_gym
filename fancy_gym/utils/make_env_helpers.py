@@ -3,11 +3,13 @@ import uuid
 from collections.abc import MutableMapping
 from copy import deepcopy
 from math import ceil
-from typing import Iterable, Type, Union
+from typing import Iterable, Type, Union, Optional
 
 import gymnasium as gym
 import numpy as np
 from gymnasium.envs.registration import register, registry
+
+from fancy_gym.utils.env_compatibility import EnvCompatibility
 
 try:
     from dm_control import suite, manipulation
@@ -186,9 +188,9 @@ def make_bb(
 
 def get_env_duration(env: gym.Env):
     try:
-        # TODO Remove if this is in the compatibility class
         duration = env.spec.max_episode_steps * env.dt
     except (AttributeError, TypeError) as e:
+        # TODO Remove if this information is in the compatibility class
         logging.error(f'Attributes env.spec.max_episode_steps and env.dt are not available. '
                       f'Assuming you are using dm_control. Please make sure you have ran '
                       f'"pip install shimmy[dm_control]" for that.')
@@ -300,7 +302,7 @@ def make_bb_env_helper(**kwargs):
 #     return env
 
 
-def make_metaworld(env_id: str, seed: int, **kwargs):
+def make_metaworld(env_id: str, seed: int, render_mode: Optional[str] = None, **kwargs):
     if env_id not in metaworld.ML1.ENV_NAMES:
         raise ValueError(f'Specified environment "{env_id}" not present in metaworld ML1.')
 
@@ -314,7 +316,7 @@ def make_metaworld(env_id: str, seed: int, **kwargs):
     max_episode_steps = _env.max_path_length
 
     # TODO remove this as soon as there is support for the new API
-    _env = gym.wrappers.EnvCompatibility(_env)
+    _env = EnvCompatibility(_env, render_mode)
 
     gym_id = uuid.uuid4().hex + '-v1'
 

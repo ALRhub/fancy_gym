@@ -1,4 +1,6 @@
+import re
 from itertools import chain
+from typing import Callable
 
 import gymnasium as gym
 import pytest
@@ -7,8 +9,12 @@ import fancy_gym
 from test.utils import run_env, run_env_determinism
 
 GYM_IDS = [spec.id for spec in gym.envs.registry.values() if
-           "fancy_gym" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point]
-GYM_MP_IDS = chain(*fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+           not isinstance(spec.entry_point, Callable) and
+           "fancy_gym" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point
+           and 'jax' not in spec.id.lower()
+           and not re.match(r'GymV2.Environment', spec.id)
+           ]
+GYM_MP_IDS = list(chain(*fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values()))
 SEED = 1
 
 
