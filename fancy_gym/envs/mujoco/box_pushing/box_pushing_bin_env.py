@@ -218,7 +218,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         )
         energy_cost = -0.0005 * np.sum(np.square(action))
 
-        return {"joint_penalty": joint_penalty_reward, "energy_cost": energy_cost}
+        return {"joint_rew": joint_penalty_reward, "energy_rew": energy_cost}
 
     def _get_obs(self):
         box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
