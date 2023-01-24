@@ -333,12 +333,12 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             err = np.hstack((cart_pos_error, cart_quat_error))
             err_norm = np.sum(cart_pos_error**2) +\
                 np.sum((current_cart_quat - desired_cart_quat)**2)
-            if err_norm > old_err_norm:
-                q = q_old
-                dt = 0.7 * dt
-                continue
-            else:
-                dt = 1.025 * dt
+            # if err_norm > old_err_norm:
+            #     q = q_old
+            #     dt = 0.7 * dt
+            #     continue
+            # else:
+            #     dt = 1.025 * dt
 
             if err_norm < eps or i > IT_MAX:
                 break

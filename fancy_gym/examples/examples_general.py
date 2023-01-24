@@ -4,6 +4,10 @@ import gym
 import numpy as np
 
 import fancy_gym
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import (
+    img_to_world_testing,
+    set_tcp_testing,
+)
 
 
 def example_general(env_id="Pendulum-v1", seed=1, iterations=1000, render=True):

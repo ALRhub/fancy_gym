@@ -111,3 +111,27 @@ def img_to_world_testing(env, pixel_pos=None, cam="rgbd"):
     fig.add_subplot(1, 2, 2)
     plt.imshow(depth)
     plt.show()
+
+
+def set_tcp_testing(step, env, render=False, thresh=0.2):
+    """
+    Tests hard setting the tcp position by sampling a point inside the boundaries and
+    call set_tcp_pos that uses IK to find the correct joint position to get to the desired
+    position. The function also renders a reference point in the desired position.
+
+    Args:
+        step (0 or 1): 0 for first step (sample & set robot position), 1 for reset robot
+        env (BoxPushingBin): environment
+        render (bool): render steps
+    """
+    if step == 0:
+        pos_bounds = np.array([[0.4, -0.3, 0.01], [0.8, 0.3, 0.15]])
+        world_point = env.np_random.uniform(low=pos_bounds[0], high=pos_bounds[1])
+        env.data.site("ref").xpos = world_point
+        env.render(mode="human") if render else None
+        env.set_tcp_pos(world_point, hard_set=True)
+        env.data.site("ref").xpos = world_point
+        env.render(mode="human") if render else None
+        return 1 if np.abs(env.data.body("tcp").xpos - world_point).sum() > thresh else 0
+    if step == 1:
+        env.reset_robot_pos()
