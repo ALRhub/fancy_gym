@@ -36,7 +36,8 @@ DEFAULT_BB_DICT_ProDMP = {
         'trajectory_generator_type': 'prodmp',
         'auto_scale_basis': True,
         'weights_scale': 10,
-        'goal_scale': 0.
+        # 'goal_scale': 0.,
+        'disable_goal': True,
     },
     "phase_generator_kwargs": {
         'phase_generator_type': 'exp',
