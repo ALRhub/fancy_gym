@@ -21,7 +21,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                  learn_sub_trajectories: bool = False,
                  replanning_schedule: Optional[
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
-                 reward_aggregation: Callable[[np.ndarray], float] = np.sum
+                 reward_aggregation: Callable[[np.ndarray], float] = np.sum,
+                 max_planning_times: int = np.inf,
+                 condition_on_desired: bool = False
                  ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
@@ -66,6 +68,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.render_kwargs = {}
         self.verbose = verbose
 
+        # condition value
+        self.condition_on_desired = condition_on_desired
+        self.condition_pos = None
+        self.condition_vel = None
+
+        self.max_planning_times = max_planning_times
+        self.plan_steps = 0
+
     def observation(self, observation):
         # return context space if we are
         if self.return_context_observation:
@@ -83,10 +93,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
-        bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
-        # TODO we could think about initializing with the previous desired value in order to have a smooth transition
-        #  at least from the planning point of view.
-        self.traj_gen.set_initial_conditions(bc_time, self.current_pos, self.current_vel)
+        init_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
+
+        condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
+        condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
+
+        self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         position = get_numpy(self.traj_gen.get_traj_pos())
@@ -144,6 +156,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
+        self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
             step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
             c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
@@ -162,8 +175,13 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                t + 1 + self.current_traj_steps):
+            if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                 t + 1 + self.current_traj_steps)
+                        and self.plan_steps < self.max_planning_times):
+
+                self.condition_pos = pos if self.condition_on_desired else None
+                self.condition_vel = vel if self.condition_on_desired else None
+
                 break
 
         infos.update({k: v[:t + 1] for k, v in infos.items()})
@@ -187,5 +205,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
+        self.plan_steps = 0
         self.traj_gen.reset()
+        self.condition_vel = None
+        self.condition_pos = None
         return super(BlackBoxWrapper, self).reset()

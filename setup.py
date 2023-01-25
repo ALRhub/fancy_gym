@@ -18,9 +18,9 @@ extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[
 setup(
     author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.3',
+    version='0.2',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -34,8 +34,8 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'gym[mujoco]<0.25.0,>=0.24.0',
-        'mp_pytorch @ git+https://github.com/ALRhub/MP_PyTorch.git@main'
+        'gym[mujoco]<0.25.0,>=0.24.1',
+        'mp_pytorch<=0.1.3'
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],
     package_data={
