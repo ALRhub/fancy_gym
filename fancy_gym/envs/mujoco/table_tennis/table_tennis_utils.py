@@ -13,7 +13,7 @@ table_y_min = -0.6
 table_y_max = 0.6
 g = 9.81
 
-def check_init_state_validity(init_state):
+def is_init_state_valid(init_state):
     assert len(init_state) == 6, "init_state must be a 6D vector (pos+vel),got {}".format(init_state)
     x = init_state[0]
     y = init_state[1]

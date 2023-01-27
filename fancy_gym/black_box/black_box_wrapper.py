@@ -159,52 +159,52 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
 
-        if traj_is_valid is False:
+        if not traj_is_valid:
             obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
                                                                                  self.return_context_observation)
             return self.observation(obs), trajectory_return, done, infos
-        else:
-            self.plan_steps += 1
-            for t, (pos, vel) in enumerate(zip(position, velocity)):
-                step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
-                c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
-                obs, c_reward, done, info = self.env.step(c_action)
-                rewards[t] = c_reward
 
-                if self.verbose >= 2:
-                    actions[t, :] = c_action
-                    observations[t, :] = obs
-
-                for k, v in info.items():
-                    elems = infos.get(k, [None] * trajectory_length)
-                    elems[t] = v
-                    infos[k] = elems
-
-                if self.render_kwargs:
-                    self.env.render(**self.render_kwargs)
-
-                if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                 t + 1 + self.current_traj_steps)
-                        and self.plan_steps < self.max_planning_times):
-
-                    self.condition_pos = pos if self.condition_on_desired else None
-                    self.condition_vel = vel if self.condition_on_desired else None
-
-                    break
-
-            infos.update({k: v[:t+1] for k, v in infos.items()})
-            self.current_traj_steps += t + 1
+        self.plan_steps += 1
+        for t, (pos, vel) in enumerate(zip(position, velocity)):
+            step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
+            c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
+            obs, c_reward, done, info = self.env.step(c_action)
+            rewards[t] = c_reward
 
             if self.verbose >= 2:
-                infos['positions'] = position
-                infos['velocities'] = velocity
-                infos['step_actions'] = actions[:t + 1]
-                infos['step_observations'] = observations[:t + 1]
-                infos['step_rewards'] = rewards[:t + 1]
+                actions[t, :] = c_action
+                observations[t, :] = obs
 
-            infos['trajectory_length'] = t + 1
-            trajectory_return = self.reward_aggregation(rewards[:t + 1])
-            return self.observation(obs), trajectory_return, done, infos
+            for k, v in info.items():
+                elems = infos.get(k, [None] * trajectory_length)
+                elems[t] = v
+                infos[k] = elems
+
+            if self.render_kwargs:
+                self.env.render(**self.render_kwargs)
+
+            if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                t + 1 + self.current_traj_steps)
+                    and self.plan_steps < self.max_planning_times):
+
+                self.condition_pos = pos if self.condition_on_desired else None
+                self.condition_vel = vel if self.condition_on_desired else None
+
+                break
+
+        infos.update({k: v[:t+1] for k, v in infos.items()})
+        self.current_traj_steps += t + 1
+
+        if self.verbose >= 2:
+            infos['positions'] = position
+            infos['velocities'] = velocity
+            infos['step_actions'] = actions[:t + 1]
+            infos['step_observations'] = observations[:t + 1]
+            infos['step_rewards'] = rewards[:t + 1]
+
+        infos['trajectory_length'] = t + 1
+        trajectory_return = self.reward_aggregation(rewards[:t + 1])
+        return self.observation(obs), trajectory_return, done, infos
 
     def render(self, **kwargs):
         """Only set render options here, such that they can be used during the rollout.
