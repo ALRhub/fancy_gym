@@ -22,7 +22,7 @@ def example_mp(env_name, seed=1, render=True):
         if render and i % 2 == 0:
             env.render(mode="human")
         else:
-            env.render(mode=None)
+            env.render()
         ac = env.action_space.sample()
         obs, reward, done, info = env.step(ac)
         returns += reward

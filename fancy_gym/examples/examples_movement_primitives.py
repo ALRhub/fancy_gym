@@ -33,7 +33,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
             # Just make sure the correct mode is set before executing the step.
             env.render(mode="human")
         else:
-            env.render(mode=None)
+            env.render()
 
         # Now the action space is not the raw action but the parametrization of the trajectory generator,
         # such as a ProMP
