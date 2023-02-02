@@ -88,7 +88,7 @@ def img_to_world_testing(env, pixel_pos=None, cam="rgbd"):
 
     # Convert img pixel to simulation coordinate, draw that coordinate in simulation
     depth_at_pos = depth[tuple(pixel_pos)]
-    world_coords = env.img_to_world(np.append(np.flip(pixel_pos), depth_at_pos))
+    world_coords = env.img_to_world(np.append(pixel_pos, depth_at_pos))
     env.data.site("ref").xpos = world_coords
     print("World coordinates (x, y, z): ", world_coords)
 

@@ -428,7 +428,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         Return:
             (np.array): x, y, z coordinated in the simulation
         """
-        img_coords = np.append(pixel_pos[:2], 1.0)  # [u, v, 1]
+        img_coords = np.append(np.flip(pixel_pos[:2]), 1.0)  # [u, v, 1]
         world_depth = self.depth_to_world_depth(img_coords, pixel_pos[-1])
         cam_pos = self.data.camera(cam).xpos
 
