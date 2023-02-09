@@ -482,10 +482,13 @@ class BoxPushingBinSparse(BoxPushingBin):
         height: int = 244,
     ):
         self.bin_borders = np.random.rand(NUM_BINS, 6)  # 3 dims, each 2 border values
+        self.bin_pos = np.random.rand(NUM_BINS, 2)  # 3 dims, each 2 border values
         super(BoxPushingBinSparse, self).__init__(num_boxes, frame_skip, width, height)
-        bin_pos = [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
+        self.bin_pos = np.array(
+                [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
+        )
         bin_edges = np.array([BIN_SIZE, -BIN_SIZE] * 2 + [0, -2 * BIN_SIZE])
-        self.bin_borders = np.array([np.repeat(p, 2) - bin_edges for p in bin_pos])
+        self.bin_borders = np.array([np.repeat(p, 2) - bin_edges for p in self.bin_pos])
 
     def reset_model(self):
         obs = super().reset_model()
@@ -579,14 +582,12 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         dense_reward.update({"dist_to_tcp": 0.1 * dist_to_tcp})
 
         # Parallelize calculating mahalanobis distance by casting both box positions and
-        # bin borders to (num_boxes, num_bins, 4 borders which are 2 for x and 2 for y)
-        box_pos = np.repeat([b[:2] for b in box_pos], 2, axis=-1)
+        # bin borders to (num_boxes, num_bins, 2 coordinates x and y)
+        box_pos = [b[:2] for b in box_pos]
         parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
-        parallel_bin_borders = np.repeat(
-            np.expand_dims(self.bin_borders[:,:4], axis=0),
-            len(box_pos),
-            axis=0
+        parallel_bin_pos = np.repeat(
+            np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
         )
-        dist_to_bin_borders = -np.sum(np.abs(parallel_box_pos - parallel_bin_borders))
-        dense_reward.update({"dist_to_bin_borderd_rew": 0.01 * dist_to_bin_borders})
+        dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+        dense_reward.update({"dist_to_bin_borderd_rew": 0.01 * dist_to_bin_pos})
         return dense_reward
