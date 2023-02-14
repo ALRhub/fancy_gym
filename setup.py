@@ -1,4 +1,6 @@
 import itertools
+from pathlib import Path
+from typing import List
 
 from setuptools import setup, find_packages
 
@@ -14,6 +16,16 @@ extras = {
 # All dependencies
 all_groups = set(extras.keys())
 extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[group], all_groups))))
+
+
+def find_package_data(extensions_to_include: List[str]) -> List[str]:
+    envs_dir = Path("fancy_gym/envs/mujoco")
+    package_data_paths = []
+    for extension in extensions_to_include:
+        package_data_paths.extend([str(path)[10:] for path in envs_dir.rglob(extension)])
+
+    return package_data_paths
+
 
 setup(
     author='Fabian Otto, Onur Celik',
@@ -39,9 +51,7 @@ setup(
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],
     package_data={
-        "fancy_gym": [
-            "envs/mujoco/*/assets/*.xml",
-        ]
+        "fancy_gym": find_package_data(extensions_to_include=["*.stl", "*.xml"])
     },
     python_requires=">=3.7",
     url='https://github.com/ALRhub/fancy_gym/',
