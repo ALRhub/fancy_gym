@@ -236,6 +236,9 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
     def robot_state(self):
         return self.data.qpos[:7].copy()  # joint position
 
+    def get_obs(self):
+        return self._get_obs()
+
     def _joint_limit_violate_penalty(
         self,
         qpos,
