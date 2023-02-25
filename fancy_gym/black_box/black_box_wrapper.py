@@ -94,14 +94,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
-        bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
+        init_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
         # TODO we could think about initializing with the previous desired value in order to have a smooth transition
         #  at least from the planning point of view.
 
         condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
         condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
 
-        self.traj_gen.set_boundary_conditions(bc_time, condition_pos, condition_vel)
+        self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
         position = get_numpy(self.traj_gen.get_traj_pos())
