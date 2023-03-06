@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import numpy as np
 from gym import utils, spaces
@@ -11,7 +12,9 @@ import mujoco
 
 MAX_EPISODE_STEPS_BOX_PUSHING = 100
 
-BOX_POS_BOUND = np.array([[0.3, -0.45, -0.01], [0.6, 0.45, -0.01]])
+# BOX_POS_BOUND = np.array([[0.3, -0.45, -0.01], [0.6, 0.45, -0.01]])
+BOX_POS_BOUND = np.array([[0.3, -0.45], [0.6, 0.45]])
+
 
 class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     """
@@ -33,6 +36,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self.init_qvel_box_pushing = np.zeros(15)
         self.frame_skip = frame_skip
 
+        self.box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
+        self.desireid_init_joint_pos = np.array([0.38706806, 0.17620842, 0.24989142, -2.39914377, -0.07986905, 2.56857367,
+                                      1.47951693])
         self._q_max = q_max
         self._q_min = q_min
         self._q_dot_max = q_dot_max
@@ -44,6 +50,27 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
                            frame_skip=self.frame_skip,
                            mujoco_bindings="mujoco")
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
+        # max_box_pos = BOX_POS_BOUND[1]
+        # max_box_pos[-1] += 0.01
+        # quat_box_max = np.array([1.01, 0.01, 0.01, 1.01])      # [0, 0, 0, -1]
+        # min_box_pos = BOX_POS_BOUND[0]
+        # min_box_pos[-1] -= 0.01
+        # quat_box_min = np.array([-0.01, -0.01, -0.01, -1.01])          # [0, 0, 0, 1]
+        # obs_max = np.concatenate((self._q_max, self._q_dot_max, max_box_pos, quat_box_max, max_box_pos, quat_box_max))
+        # obs_min = np.concatenate((self._q_min, -self._q_dot_max, min_box_pos, quat_box_min, min_box_pos, quat_box_min))
+        # self.observation_space = spaces.Box(low=obs_min, high=obs_max, shape=obs_min.shape, dtype=np.float64)
+
+    def plot_quat(self):
+        angles = np.linspace(0, 2 * np.pi, 500)
+        quats = np.zeros((angles.shape[0], 4))
+        for i in range(angles.shape[0]):
+            quats[i, :] = rot_to_quat(angles[i], np.array([0, 0, 1]))
+        import matplotlib.pyplot as plt
+        for i in range(4):
+            fig = plt.figure(str(i))
+            plt.figure(fig.number)
+            plt.plot(angles, quats[:, i])
+        plt.show()
 
     def step(self, action):
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
@@ -90,29 +117,76 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         }
         return obs, reward, episode_end, infos
 
+    def reset(
+            self,
+            *,
+            seed: Optional[int] = None,
+            return_info: bool = False,
+            options: Optional[dict] = None,
+    ):
+        if options is None or len(options.keys()) == 0:
+            return super().reset()
+        else:
+            if self._mujoco_bindings.__name__ == "mujoco_py":
+                self.sim.reset()
+            else:
+                self._mujoco_bindings.mj_resetData(self.model, self.data)
+            return self.set_context(options['ctxt'])
+
+    def set_context(self, context):
+        # rest box to initial position
+        self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
+        self.data.joint("box_joint").qpos = self.box_init_pos
+
+        # self.model.body_pos[2] = context[:3]
+        self.model.body_pos[2][:2] = context[:2]
+        self.model.body_pos[2][-1] = -0.01
+        # self.model.body_quat[2] = context[-4:]
+        self.model.body_quat[2] = context[-4:]
+        # self.model.body_pos[3] = context[:3]
+        self.model.body_pos[3][:2] = context[:2]
+        self.model.body_pos[3][-1] = -0.01
+        # self.model.body_quat[3] = context[-4:]
+        self.model.body_quat[3] = context[-4:]
+
+        # set the robot to the right configuration (rod tip in the box)
+        # desired_tcp_pos = self.box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
+        # desired_tcp_quat = np.array([0, 1, 0, 0])
+        # desired_joint_pos_ik = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
+        self.data.qpos[:7] = self.desireid_init_joint_pos
+
+        mujoco.mj_forward(self.model, self.data)
+        self._steps = 0
+        self._episode_energy = 0.
+        return self._get_obs()
+
     def reset_model(self):
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
-        box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
-        self.data.joint("box_joint").qpos = box_init_pos
+        self.data.joint("box_joint").qpos = self.box_init_pos
 
         # set target position
         box_target_pos = self.sample_context()
-        while np.linalg.norm(box_target_pos[:2] - box_init_pos[:2]) < 0.3:
+        while np.linalg.norm(box_target_pos[:2] - self.box_init_pos[:2]) < 0.3:
             box_target_pos = self.sample_context()
-        # box_target_pos[0] = 0.4
-        # box_target_pos[1] = -0.3
-        # box_target_pos[-4:] = np.array([0.0, 0.0, 0.0, 1.0])
-        self.model.body_pos[2] = box_target_pos[:3]
+
+        # self.model.body_pos[2] = box_target_pos[:3]
+        # self.model.body_quat[2] = box_target_pos[-4:]
+        # self.model.body_pos[3] = box_target_pos[:3]
+        # self.model.body_quat[3] = box_target_pos[-4:]
+
+        self.model.body_pos[2][:2] = box_target_pos[:2]
+        self.model.body_pos[2][-1] = -0.01
         self.model.body_quat[2] = box_target_pos[-4:]
-        self.model.body_pos[3] = box_target_pos[:3]
+        self.model.body_pos[3][:2] = box_target_pos[:2]
+        self.model.body_pos[3][-1] = -0.01
         self.model.body_quat[3] = box_target_pos[-4:]
 
         # set the robot to the right configuration (rod tip in the box)
-        desired_tcp_pos = box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
-        desired_tcp_quat = np.array([0, 1, 0, 0])
-        desired_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
-        self.data.qpos[:7] = desired_joint_pos
+        # desired_tcp_pos = self.box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
+        # desired_tcp_quat = np.array([0, 1, 0, 0])
+        # desired_joint_pos_ik = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
+        self.data.qpos[:7] = self.desireid_init_joint_pos
 
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
@@ -143,6 +217,9 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             self.data.body("replan_target_pos").xquat.copy()  # orientation of target
         ])
         return obs
+
+    def create_observation(self):
+        return self._get_obs()
 
     def _joint_limit_violate_penalty(self, qpos, qvel, enable_pos_limit=False, enable_vel_limit=False):
         penalty = 0.
@@ -365,3 +442,18 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
 
         return reward
+
+
+if __name__ == '__main__':
+    env = BoxPushingDense()
+    import time
+    start_time = time.time()
+    env.reset()
+    # env.render()
+    for _ in range(10000):
+        a = env.action_space.sample()
+        obs, reward, done, infos = env.step(a)
+        if done:
+            env.reset()
+            # env.render()
+    print('Test loop took: ', (time.time()-start_time)/100)

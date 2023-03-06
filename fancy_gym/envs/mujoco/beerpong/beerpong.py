@@ -28,6 +28,9 @@ CUP_COLLISION_OBJ = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "c
                      "cup_geom_table7", "cup_geom_table8", "cup_geom_table9", "cup_geom_table10",
                      "cup_geom_table15", "cup_geom_table16", "cup_geom_table17", "cup_geom1_table8"]
 
+CUP_POS_MIN = [-1.42, -4.05]
+CUP_POS_MAX = [1.42, -1.25]
+
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):
     def __init__(self):
@@ -39,8 +42,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets",
                                      "beerpong_wo_cup_big_table.xml")
-        self._cup_pos_min = np.array([-1.42, -4.05])
-        self._cup_pos_max = np.array([1.42, -1.25])
+        self._cup_pos_min = np.array(CUP_POS_MIN)
+        self._cup_pos_max = np.array(CUP_POS_MAX)
 
         self._start_pos = np.array([0.0, 1.35, 0.0, 1.18, 0.0, -0.786, -1.59])
         self._start_vel = np.zeros(7)

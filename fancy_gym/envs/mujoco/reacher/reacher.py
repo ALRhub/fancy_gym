@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import numpy as np
 from gym import utils
@@ -23,6 +24,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         self._ctrl_cost_weight = ctrl_cost_weight
         self._reward_weight = reward_weight
 
+        self.joint_traj = np.zeros((MAX_EPISODE_STEPS_REACHER + 1, n_links))
+        self.tip_traj = np.zeros((MAX_EPISODE_STEPS_REACHER + 1, 2))
         file_name = f'reacher_{n_links}links.xml'
 
         MujocoEnv.__init__(self,
@@ -47,7 +50,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
         done = False
-
+        self.tip_traj[self._steps, :] = self.get_body_com("fingertip")[:2].copy()
+        self.joint_traj[self._steps, :] = self.data.qpos.flat[:self.n_links].copy()
         infos = dict(
             reward_dist=reward_dist,
             reward_ctrl=reward_ctrl,
@@ -67,6 +71,35 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
+
+    def reset(
+            self,
+            *,
+            seed: Optional[int] = None,
+            return_info: bool = False,
+            options: Optional[dict] = None,
+    ):
+        if options is None or len(options.keys()) == 0:
+            return super().reset()
+        else:
+            if self._mujoco_bindings.__name__ == "mujoco_py":
+                self.sim.reset()
+            else:
+                self._mujoco_bindings.mj_resetData(self.model, self.data)
+            return self.set_context(options['ctxt'])
+
+    def set_context(self, context):
+        qpos = self.data.qpos
+        self.goal = context
+        qpos[-2:] = context
+        qvel = self.data.qvel
+        qvel[-2:] = 0
+        self.set_state(qpos, qvel)
+        self.tip_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, 0))
+        self.joint_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, self.n_links))
+        self.tip_traj[0, :] = self.get_body_com("fingertip")[:2]
+        self.joint_traj[0, :] = self.data.qpos.flat[:self.n_links]
+        return self._get_obs()
 
     def reset_model(self):
         qpos = (
@@ -108,3 +141,15 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
             self.data.qvel.flat[:self.n_links],  # angular velocity
             self.get_body_com("fingertip") - target,  # goal distance
         ])
+
+    def create_observation(self):
+        return self._get_obs()
+
+    def get_joint_trajectory(self):
+        return self.joint_traj
+
+    def get_tip_trajectory(self):
+        return self.tip_traj
+
+    def get_np_random(self):
+        return self._np_random

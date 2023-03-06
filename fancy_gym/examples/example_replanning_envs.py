@@ -5,7 +5,11 @@ def example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1
     env.reset()
     for i in range(iterations):
         done = False
+        k = 0
         while done is False:
+            print('i: ', i)
+            print('k; ', k)
+            print("")
             ac = env.action_space.sample()
             obs, reward, done, info = env.step(ac)
             if render:

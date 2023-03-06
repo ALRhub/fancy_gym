@@ -24,3 +24,11 @@ class MPWrapper(RawInterfaceWrapper):
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.data.qvel.flat[:self.n_links]
+
+    def set_context(self, context):
+        qpos = self.env.env.env.env.data.qpos
+        self.goal = context
+        qpos[-2:] = context
+        qvel = self.env.env.env.env.data.qvel
+        self.env.env.env.env.set_state(qpos, qvel)
+        return self.env.env.env.env.create_observation()[self.context_mask]
