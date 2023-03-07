@@ -70,20 +70,19 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         if not unstable_simulation:
-            reward = self._get_reward(rod_tip_pos, rod_quat, action)
+            reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
+                action_reward = self._get_reward(rod_tip_pos, rod_quat, action)
         else:
-            reward = -50
+            reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
+                action_reward = -50, 0, 0, 0, 0
 
         ob = self._get_obs()
-        reward_dist = 0
-        reward_ctrl = 0
-        angular_vel = 0
         infos = dict(
-            reward_dist=reward_dist,
-            reward_ctrl=reward_ctrl,
-            velocity=angular_vel,
-            end_effector=self.data.body("tcp").xpos.copy(),
-            goal=self.goal if hasattr(self, "goal") else None
+            tot_reward=reward,
+            dist_to_obstacles_rew=dist_to_obstacles_rew,
+            dist_to_max_height_reward=dist_to_max_height_reward,
+            ee_rot_rew=ee_rot_rew,
+            action_reward=action_reward
         )
 
         return ob, reward, done, infos
@@ -98,17 +97,23 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         # Distance to obstacles
         for obs in self.obj_xy_list:
             rewards -= squared_exp_kernel(pos[:2], np.array(obs), 1, 1)
+        dist_to_obstacles_rew = np.copy(rewards)
         # rewards += np.abs(x[:, 1]- 0.4)
-        rewards -= np.abs(pos[1] - self._line_y_pos)
+        dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
+        rewards += dist_to_line_rew
         # Distance to max height
-        rewards -= squared_exp_kernel(pos[2], self._max_height, 10, 1)
+        dist_to_max_height_reward = -squared_exp_kernel(pos[2], self._max_height, 10, 1)
+        rewards += dist_to_max_height_reward
         # Correct ee rotation
+        ee_rot_rew = 0
         rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
         if rod_inclined_angle > np.pi / 4:
-            rewards -= rod_inclined_angle / np.pi
+            ee_rot_rew -= 5*rod_inclined_angle / np.pi
+        rewards += ee_rot_rew
         # action punishment
-        rewards -= 0.0005 * np.sum(np.square(action))
-        return rewards
+        action_reward = - 0.0005 * np.sum(np.square(action))
+        rewards += action_reward
+        return rewards, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, action_reward
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
