@@ -10,6 +10,7 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_torque_max, q_
     rotation_distance
 
 MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE = 250
+GOAL_RANGE = np.array([0.2, 0.8])
 
 
 class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
@@ -27,7 +28,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
         self.init_qvel_obs_avoidance = np.zeros(9)
         self.frame_skip = frame_skip
-        self.goal_range = np.array([0.2, 0.8])
+        self.goal_range = GOAL_RANGE
         self.obj_xy_list = []
         self._max_height = 0
         self._line_y_pos = 0

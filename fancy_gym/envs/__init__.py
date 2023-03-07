@@ -19,6 +19,7 @@ from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
                                                 BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
 
+from .mujoco.obstacle_avoidance.obstacle_avoidance import MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
 DEFAULT_BB_DICT_ProMP = {
@@ -237,6 +238,13 @@ register(
     id='BeerPongStepBased-v0',
     entry_point='fancy_gym.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
     max_episode_steps=FIXED_RELEASE_STEP,
+)
+
+
+register(
+    id='ObstacleAvoidance-v0',
+    entry_point='fancy_gym.envs.mujoco:ObstacleAvoidanceEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE,
 )
 
 # movement Primitive Environments

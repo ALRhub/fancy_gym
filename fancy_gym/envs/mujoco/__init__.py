@@ -8,3 +8,4 @@ from .hopper_throw.hopper_throw_in_basket import HopperThrowInBasketEnv
 from .reacher.reacher import ReacherEnv
 from .walker_2d_jump.walker_2d_jump import Walker2dJumpEnv
 from .box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, BoxPushingTemporalSpatialSparse
+from .obstacle_avoidance.obstacle_avoidance import ObstacleAvoidanceEnv
