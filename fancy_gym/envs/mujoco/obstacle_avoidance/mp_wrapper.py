@@ -21,11 +21,11 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.data.qpos[:7].copy()
+        return np.zeros(2)
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        return self.data.qvel[:7].copy()
+        return np.zeros(2)
 
     # def set_context(self, context):
     #     # rest box to initial position
