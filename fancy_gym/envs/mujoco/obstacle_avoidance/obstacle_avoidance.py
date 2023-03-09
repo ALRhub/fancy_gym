@@ -40,8 +40,9 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "obstacle_avoidance.xml"),
                            frame_skip=1,
                            mujoco_bindings="mujoco")
-        self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
+        # self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
         self.action_space_cart = spaces.Box(low=-10, high=10, shape=(2,))
+        self.action_space = spaces.Box(low=-10, high=10, shape=(2,))
         self._line_y_pos = self.data.body('finish_line').xpos[1].copy()
         self.goal = self.data.site('target_pos').xpos[:2].copy()
         self._max_height = self.data.site('max_height').xpos[2].copy()
@@ -66,7 +67,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             else:
                 torques = action
 
-            torques = 10 * np.clip(torques, self.action_space.low, self.action_space.high)
+            # torques = 10 * np.clip(torques, self.action_space.low, self.action_space.high)
+            torques = 10 * np.clip(torques, -1, 1)
             resultant_action = np.clip(torques + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
             try:
                 # self.do_simulation(resultant_action, self.frame_skip)
