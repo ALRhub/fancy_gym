@@ -73,8 +73,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             try:
                 # self.do_simulation(resultant_action, self.frame_skip)
                 # self.do_simulation(resultant_action, 1)  # do simulation will check if the action space shape aligns
-                                                           # with the action ... this won't work as we control in torque
-                                                           # but action space are xy positions
+                # with the action ... this won't work as we control in torque
+                # but action space are xy positions
                 self.data.ctrl[:] = resultant_action
                 self._mujoco_bindings.mj_step(self.model, self.data)
             except Exception as e:
@@ -89,23 +89,22 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rod_tip_pos = self.data.body("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         if not unstable_simulation:
-            reward, dist_to_obstacles_rew = self._get_reward(rod_tip_pos)
+            reward, dist_to_obstacles_rew, dist_to_goal_rew = self._get_reward(rod_tip_pos)
         else:
-            reward, dist_to_obstacles_rew = -50, 0
+            reward, dist_to_obstacles_rew, dist_to_goal_rew = -50, 0, 0
 
         ob = self._get_obs()
         infos = dict(
             tot_reward=reward,
-            dist_to_obstacles_rew=dist_to_obstacles_rew
+            dist_to_obstacles_rew=dist_to_obstacles_rew,
+            dist_to_goal_rew=dist_to_goal_rew
         )
 
         return ob, reward, done, infos
 
     def _get_reward(self, pos):
         def squared_exp_kernel(x, mean, scale, bandwidth):
-            return scale * np.exp(
-                np.square(np.linalg.norm(x - mean)) / bandwidth
-            )
+            return scale * np.exp(-np.square(np.linalg.norm(x - mean)) / bandwidth)
 
         rewards = 0
         # Distance to obstacles
@@ -115,7 +114,9 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
         rewards += dist_to_line_rew
-        return rewards, dist_to_obstacles_rew
+        dist_to_goal_rew = -squared_exp_kernel(pos[:2], self.goal, 5, 1)
+        rewards += dist_to_goal_rew
+        return rewards, dist_to_obstacles_rew, dist_to_goal_rew
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
