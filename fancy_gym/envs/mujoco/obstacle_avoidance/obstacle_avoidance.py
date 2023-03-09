@@ -83,8 +83,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rod_tip_pos = self.data.body("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         if not unstable_simulation:
-            reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
-                action_reward = self._get_reward(rod_tip_pos, rod_quat, torques)
+            reward, dist_to_obstacles_rew = self._get_reward(rod_tip_pos, rod_quat, torques)
         else:
             reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
                 action_reward = -50, 0, 0, 0, 0
@@ -92,15 +91,12 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         ob = self._get_obs()
         infos = dict(
             tot_reward=reward,
-            dist_to_obstacles_rew=dist_to_obstacles_rew,
-            dist_to_max_height_reward=dist_to_max_height_reward,
-            ee_rot_rew=ee_rot_rew,
-            action_reward=action_reward
+            dist_to_obstacles_rew=dist_to_obstacles_rew
         )
 
         return ob, reward, done, infos
 
-    def _get_reward(self, pos, rod_quat):
+    def _get_reward(self, pos):
         def squared_exp_kernel(x, mean, scale, bandwidth):
             return scale * np.exp(
                 np.square(np.linalg.norm(x - mean)) / bandwidth
@@ -114,13 +110,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
         rewards += dist_to_line_rew
-        # Correct ee rotation
-        ee_rot_rew = 0
-        rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
-        if rod_inclined_angle > np.pi / 4:
-            ee_rot_rew -= 5 * rod_inclined_angle / np.pi
-        rewards += ee_rot_rew
-        return rewards, dist_to_obstacles_rew, ee_rot_rew
+        return rewards, dist_to_obstacles_rew
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
