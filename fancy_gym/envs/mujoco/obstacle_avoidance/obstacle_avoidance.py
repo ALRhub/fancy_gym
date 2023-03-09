@@ -144,8 +144,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.set_state(self.init_qpos_obs_avoidance, self.init_qvel_obs_avoidance)
-        # pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
-        pos = 0.35
+        pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
+        # pos = 0.35
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
