@@ -28,6 +28,7 @@ def get_quaternion_error(curr_quat, des_quat):
     """
     return curr_quat[0] * des_quat[1:] - des_quat[0] * curr_quat[1:] - skew(des_quat[1:]) @ curr_quat[1:]
 
+
 def rotation_distance(p: np.array, q: np.array):
     """
     Calculates the rotation angular between two quaternions

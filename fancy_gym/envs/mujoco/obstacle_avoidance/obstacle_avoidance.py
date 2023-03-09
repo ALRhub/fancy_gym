@@ -9,7 +9,7 @@ from gym.envs.mujoco import MujocoEnv
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_torque_max, q_min, q_max, get_quaternion_error, \
     rotation_distance
 
-MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE = 250
+MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE = 100
 GOAL_RANGE = np.array([0.2, 0.8])
 
 
@@ -35,11 +35,13 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self._max_height = 0
         self._desired_rod_quat = np.zeros(4)
         self.goal = np.zeros(2)
+        self.init_z = 0
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "obstacle_avoidance.xml"),
-                           frame_skip=self.frame_skip,
+                           frame_skip=1,
                            mujoco_bindings="mujoco")
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
+        self.action_space_cart = spaces.Box(low=-10, high=10, shape=(2,))
         self._line_y_pos = self.data.body('finish_line').xpos[1].copy()
         self.goal = self.data.site('target_pos').xpos[:2].copy()
         self._max_height = self.data.site('max_height').xpos[2].copy()
@@ -52,26 +54,37 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self._desired_rod_quat = np.array([-7.80232724e-05, 9.99999177e-01, -1.15696870e-04, 1.27505693e-03])
 
     def step(self, action):
-
-        action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
-        resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
-
         unstable_simulation = False
-        try:
-            self.do_simulation(resultant_action, self.frame_skip)
-        except Exception as e:
-            print(e)
-            unstable_simulation = True
+        des_pos = None
+        for _ in range(self.frame_skip):
+            if action.shape[0] != 7:
+                if des_pos is None:
+                    des_pos = self.data.body("rod_tip").xpos[:2].copy() + np.clip(action, self.action_space_cart.low,
+                                                                                  self.action_space_cart.high)
+                    des_pos = np.concatenate([des_pos, [self.init_z]])
+                torques = self.map2torque(des_pos, np.array([0, 1, 0, 0]))
+            else:
+                torques = action
+
+            torques = 10 * np.clip(torques, self.action_space.low, self.action_space.high)
+            resultant_action = np.clip(torques + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
+            try:
+                # self.do_simulation(resultant_action, self.frame_skip)
+                self.do_simulation(resultant_action, 1)
+            except Exception as e:
+                print(e)
+                unstable_simulation = True
+                break
 
         self._steps += 1
 
         done = True if self._steps >= MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE else False
 
-        rod_tip_pos = self.data.site("rod_tip").xpos.copy()
+        rod_tip_pos = self.data.body("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         if not unstable_simulation:
             reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
-                action_reward = self._get_reward(rod_tip_pos, rod_quat, action)
+                action_reward = self._get_reward(rod_tip_pos, rod_quat, torques)
         else:
             reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
                 action_reward = -50, 0, 0, 0, 0
@@ -87,7 +100,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
         return ob, reward, done, infos
 
-    def _get_reward(self, pos, rod_quat, action):
+    def _get_reward(self, pos, rod_quat):
         def squared_exp_kernel(x, mean, scale, bandwidth):
             return scale * np.exp(
                 np.square(np.linalg.norm(x - mean)) / bandwidth
@@ -101,19 +114,13 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
         rewards += dist_to_line_rew
-        # Distance to max height
-        dist_to_max_height_reward = -squared_exp_kernel(pos[2], self._max_height, 10, 1)
-        rewards += dist_to_max_height_reward
         # Correct ee rotation
         ee_rot_rew = 0
         rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
         if rod_inclined_angle > np.pi / 4:
-            ee_rot_rew -= 5*rod_inclined_angle / np.pi
+            ee_rot_rew -= 5 * rod_inclined_angle / np.pi
         rewards += ee_rot_rew
-        # action punishment
-        action_reward = - 0.0005 * np.sum(np.square(action))
-        rewards += action_reward
-        return rewards, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, action_reward
+        return rewards, dist_to_obstacles_rew, ee_rot_rew
 
     def viewer_setup(self):
         self.viewer.cam.trackbodyid = 0
@@ -146,10 +153,11 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
+        self.init_z = self.data.body("rod_tip").xpos[-1].copy()
         return self._get_obs()
 
     def _get_obs(self):
-        dist2goal = np.linalg.norm(self.data.site('target_pos').xpos.copy() - self.data.site("rod_tip").xpos.copy())
+        dist2goal = np.linalg.norm(self.data.site('target_pos').xpos.copy() - self.data.body("rod_tip").xpos.copy())
         obs = np.concatenate([
             self.data.qpos[:7].copy(),  # joint position
             self.data.qvel[:7].copy(),  # joint velocity
@@ -167,114 +175,106 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
     def get_np_random(self):
         return self._np_random
 
-    def calculateOfflineIK(self, desired_cart_pos, desired_cart_quat):
-        """
-        calculate offline inverse kinematics for franka pandas
-        :param desired_cart_pos: desired cartesian position of tool center point
-        :param desired_cart_quat: desired cartesian quaternion of tool center point
-        :return: joint angles
-        """
-        J_reg = 1e-6
+    def map2torque(self, desired_cart_pos, desired_cart_quat):
+        pgain_pos = np.array([200.0, 200.0, 800.0])
+        pgain_quat = np.array([30.0, 30.0, 30.0])
+
+        pgain_joint = np.array([120.0, 120.0, 120.0, 120.0, 50.0, 30.0, 10.0])
+        dgain_joint = np.array([10.0, 10.0, 10.0, 10.0, 6.0, 5.0, 3.0])
+
         w = np.diag([1, 1, 1, 1, 1, 1, 1])
-        target_theta_null = np.array([
-            3.57795216e-09,
-            1.74532920e-01,
-            3.30500960e-08,
-            -8.72664630e-01,
-            -1.14096181e-07,
-            1.22173047e00,
-            7.85398126e-01])
-        eps = 1e-5  # threshold for convergence
-        IT_MAX = 1000
-        dt = 1e-3
-        i = 0
-        pgain = [
-            33.9403713446798,
-            30.9403713446798,
-            33.9403713446798,
-            27.69370238555632,
-            33.98706171459314,
-            30.9185531893281,
-        ]
-        pgain_null = 5 * np.array([
-            7.675519770796831,
-            2.676935478437176,
-            8.539040163444975,
-            1.270446361314313,
-            8.87752182480855,
-            2.186782233762969,
-            4.414432577659688,
-        ])
-        pgain_limit = 20
+        J_reg = 1e-12
+        min_svd_values = 1e-2
+        max_svd_values = 1e2
+        rest_posture = np.array([0, 0.174, 0, -0.872, 0, 1.222, 0.785])
+        pgain_null = np.array([40, 40, 40, 40, 40, 40, 40])
+        joint_pos_max = np.array([2.8973, 1.7628, 2.0, -0.0698, 2.8973, 3.7525, 2.8973])
+        joint_pos_min = np.array([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
+        learning_rate = 0.001
+        dt = 0.002
+        ddgain = np.array([0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4])
+
+        old_state = self.data.qpos.copy()
+        old_velocities = self.data.qvel.copy()
         q = self.data.qpos[:7].copy()
-        qd_d = np.zeros(q.shape)
-        old_err_norm = np.inf
 
-        while True:
-            q_old = q
-            q = q + dt * qd_d
-            q = np.clip(q, q_min, q_max)
+        joint_filter_coefficient = 1
+        q = (joint_filter_coefficient * q + (1 - joint_filter_coefficient) * q)
+
+        qd_dsum = np.zeros(q.shape)
+
+        des_quat = desired_cart_quat
+        for i in range(10):
             self.data.qpos[:7] = q
             mujoco.mj_forward(self.model, self.data)
-            current_cart_pos = self.data.body("tcp").xpos.copy()
-            current_cart_quat = self.data.body("tcp").xquat.copy()
+            current_c_pos = self.data.body("rod_tip").xpos.copy()
+            current_c_quat = self.data.body("rod_tip").xquat.copy()
+            target_cpos_acc = desired_cart_pos - current_c_pos
+            curr_quat = current_c_quat
 
-            cart_pos_error = np.clip(desired_cart_pos - current_cart_pos, -0.1, 0.1)
+            if np.linalg.norm(curr_quat - des_quat) > np.linalg.norm(curr_quat + des_quat):
+                des_quat = -des_quat
 
-            if np.linalg.norm(current_cart_quat - desired_cart_quat) > np.linalg.norm(
-                    current_cart_quat + desired_cart_quat):
-                current_cart_quat = -current_cart_quat
-            cart_quat_error = np.clip(get_quaternion_error(current_cart_quat, desired_cart_quat), -0.5, 0.5)
+            target_cquat = get_quaternion_error(curr_quat, des_quat)
+            target_cpos_acc = np.clip(target_cpos_acc, -0.01, 0.01)
+            target_cquat = np.clip(target_cquat, -0.1, 0.1)
 
-            err = np.hstack((cart_pos_error, cart_quat_error))
-            err_norm = np.sum(cart_pos_error ** 2) + np.sum((current_cart_quat - desired_cart_quat) ** 2)
-            if err_norm > old_err_norm:
-                q = q_old
-                dt = 0.7 * dt
-                continue
-            else:
-                dt = 1.025 * dt
+            target_c_acc = np.hstack((pgain_pos * target_cpos_acc, pgain_quat * target_cquat))
 
-            if err_norm < eps:
-                break
-            if i > IT_MAX:
-                break
-
-            old_err_norm = err_norm
-
-            ### get Jacobian by mujoco
-            self.data.qpos[:7] = q
-            mujoco.mj_forward(self.model, self.data)
-
-            jacp = self.get_body_jacp("tcp")[:, :7].copy()
-            jacr = self.get_body_jacr("tcp")[:, :7].copy()
-
+            jacp = self.get_body_jacp("rod_tip")[:, :7].copy()
+            jacr = self.get_body_jacr("rod_tip")[:, :7].copy()
             J = np.concatenate((jacp, jacr), axis=0)
+
+            # Singular Value decomposition, to clip the singular values which are too small/big
 
             Jw = J.dot(w)
 
-            # J * W * J.T + J_reg * I
+            # J *  W * J' + reg * I
             JwJ_reg = Jw.dot(J.T) + J_reg * np.eye(J.shape[0])
 
-            # Null space velocity, points to home position
-            qd_null = pgain_null * (target_theta_null - q)
+            u, s, v = np.linalg.svd(JwJ_reg, full_matrices=False)
+            s = np.clip(s, min_svd_values, max_svd_values)
+            # reconstruct the Jacobian
+            JwJ_reg = u @ np.diag(s) @ v
 
-            margin_to_limit = 0.1
+            qdev_rest = np.clip(rest_posture - q, -0.2, 0.2)
+
+            # Null space movement
+            qd_null = np.array(pgain_null * qdev_rest)
+
+            margin_to_limit = 0.01
+            pgain_limit = 20
+
             qd_null_limit = np.zeros(qd_null.shape)
-            qd_null_limit_max = pgain_limit * (q_max - margin_to_limit - q)
-            qd_null_limit_min = pgain_limit * (q_min + margin_to_limit - q)
-            qd_null_limit[q > q_max - margin_to_limit] += qd_null_limit_max[q > q_max - margin_to_limit]
-            qd_null_limit[q < q_min + margin_to_limit] += qd_null_limit_min[q < q_min + margin_to_limit]
-            qd_null += qd_null_limit
+            qd_null_limit_max = pgain_limit * (joint_pos_max - margin_to_limit - q)
+            qd_null_limit_min = pgain_limit * (joint_pos_min + margin_to_limit - q)
+            qd_null_limit[q > joint_pos_max - margin_to_limit] += qd_null_limit_max[q > joint_pos_max - margin_to_limit]
+            qd_null_limit[q < joint_pos_min + margin_to_limit] += qd_null_limit_min[q < joint_pos_min + margin_to_limit]
+
+            # qd_null += qd_null_limit
 
             # W J.T (J W J' + reg I)^-1 xd_d + (I - W J.T (J W J' + reg I)^-1 J qd_null
-            qd_d = np.linalg.solve(JwJ_reg, pgain * err - J.dot(qd_null))
-
+            qd_d = np.linalg.solve(JwJ_reg, target_c_acc - J.dot(qd_null))
             qd_d = w.dot(J.transpose()).dot(qd_d) + qd_null
 
-            i += 1
+            # clip desired joint velocities for stability
 
-        return q
+            if np.linalg.norm(qd_d) > 3:
+                qd_d = qd_d * 3 / np.linalg.norm(qd_d)
+
+            qd_dsum = qd_dsum + qd_d
+
+            q = q + learning_rate * qd_d
+            q = np.clip(q, joint_pos_min, joint_pos_max)
+
+        qd_dsum = (q - old_state[:7]) / dt
+        # des_acc = ddgain * (qd_dsum - np.zeros(7)) / dt  # is the np.zeros(7) fine?
+
+        qd_d = q - old_state[:7]
+        vd_d = qd_dsum - old_velocities[:7]
+
+        target_j_acc = pgain_joint * qd_d + dgain_joint * vd_d  # original
+        return target_j_acc
 
     def get_body_jacp(self, name):
         id = mujoco.mj_name2id(self.model, 1, name)
@@ -297,11 +297,12 @@ if __name__ == '__main__':
     env.reset()
     # env.render()
     for _ in range(25000):
-        # print(_)
-        a = env.action_space.sample()
+        print(_)
+        a = env.action_space_cart.sample()
+        # a = np.array([0, 0])
         obs, reward, done, infos = env.step(a)
         env.render()
         if done:
             env.reset()
-            env.render()
+            # env.render()
     print("Test loop took: ", (time.time() - start_time) / 250)
