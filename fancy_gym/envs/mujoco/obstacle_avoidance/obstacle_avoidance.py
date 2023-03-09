@@ -83,10 +83,9 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rod_tip_pos = self.data.body("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         if not unstable_simulation:
-            reward, dist_to_obstacles_rew = self._get_reward(rod_tip_pos, rod_quat, torques)
+            reward, dist_to_obstacles_rew = self._get_reward(rod_tip_pos)
         else:
-            reward, dist_to_obstacles_rew, dist_to_max_height_reward, ee_rot_rew, \
-                action_reward = -50, 0, 0, 0, 0
+            reward, dist_to_obstacles_rew = -50, 0
 
         ob = self._get_obs()
         infos = dict(
