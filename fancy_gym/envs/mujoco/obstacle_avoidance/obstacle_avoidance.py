@@ -104,12 +104,12 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
     def _get_reward(self, pos):
         def squared_exp_kernel(x, mean, scale, bandwidth):
-            return scale * np.exp(-np.square(np.linalg.norm(x - mean)) / bandwidth)
+            return scale * np.exp(np.square(np.linalg.norm(x - mean)) / bandwidth)
 
         rewards = 0
         # Distance to obstacles
         for obs in self.obj_xy_list:
-            rewards -= squared_exp_kernel(pos[:2], np.array(obs), 1, 1)
+            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.5, 1)
         dist_to_obstacles_rew = np.copy(rewards)
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
