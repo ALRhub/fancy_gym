@@ -91,6 +91,9 @@
              <geom type="cylinder" size="0.01 0.15" pos="0 0 0.075"/>
              <site name="rod_tip" type="box" rgba="0 0 1 1." size="0.01 0.01 0.01" pos="0 0 0.2"/>
             </body>
+            <body name="rod_tip" pos="0 0 0.2">
+             <site name="rod_tip_site" type="box" rgba="0 0 1 1." size="0.01 0.01 0.01" pos="0 0 0"/>
+            </body>
 
             <body childclass="panda:gripper" name="panda_leftfinger" pos="0 0 0.0584">
              <inertial diaginertia="5.69661e-06 5.56035e-06 1.55183e-06" mass="0.0218754"
