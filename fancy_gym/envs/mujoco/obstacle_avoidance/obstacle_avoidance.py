@@ -72,7 +72,11 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             resultant_action = np.clip(torques + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
             try:
                 # self.do_simulation(resultant_action, self.frame_skip)
-                self.do_simulation(resultant_action, 1)
+                # self.do_simulation(resultant_action, 1)  # do simulation will check if the action space shape aligns
+                                                           # with the action ... this won't work as we control in torque
+                                                           # but action space are xy positions
+                self.data.ctrl[:] = resultant_action
+                self._mujoco_bindings.mj_step(self.model, self.data)
             except Exception as e:
                 print(e)
                 unstable_simulation = True
@@ -140,7 +144,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.set_state(self.init_qpos_obs_avoidance, self.init_qvel_obs_avoidance)
-        pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
+        # pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
+        pos = 0.35
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
