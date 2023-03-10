@@ -126,7 +126,7 @@
     </body>
    </body>
   </body>
-  <camera euler="0 0.4 1.57" fovy="48" ipd="0.0" mode="fixed" name="rgbd_cage" pos="1.5 0 1.5"/>
+  <camera euler="0 0.5 1.57" fovy="48" ipd="0.0" mode="fixed" name="rgbd_cage" pos="1.5 0 1.5"/>
  </worldbody>
  <sensor>
   <touch name="touchsensor:left" site="panda_leftfinger:site"/>
