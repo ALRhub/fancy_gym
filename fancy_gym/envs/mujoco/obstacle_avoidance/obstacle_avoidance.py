@@ -32,7 +32,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.obj_xy_list = []
         self._max_height = 0
         self._line_y_pos = 0
-        self._max_height = 0
+        # self._max_height = 0
         self._desired_rod_quat = np.zeros(4)
         self.goal = np.zeros(2)
         self.init_z = 0
@@ -109,12 +109,12 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rewards = 0
         # Distance to obstacles
         for obs in self.obj_xy_list:
-            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.5, 1)
+            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.01, 1)
         dist_to_obstacles_rew = np.copy(rewards)
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
         rewards += dist_to_line_rew
-        dist_to_goal_rew = -squared_exp_kernel(pos[:2], self.goal, 5, 1)
+        dist_to_goal_rew = -squared_exp_kernel(pos[:2], self.goal, 10, 1)
         rewards += dist_to_goal_rew
         return rewards, dist_to_obstacles_rew, dist_to_goal_rew
 
@@ -145,8 +145,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.set_state(self.init_qpos_obs_avoidance, self.init_qvel_obs_avoidance)
-        pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
-        # pos = 0.35
+        # pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
+        pos = 0.35
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
@@ -201,7 +201,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         qd_dsum = np.zeros(q.shape)
 
         des_quat = desired_cart_quat
-        for i in range(10):
+        for i in range(3):
             self.data.qpos[:7] = q
             mujoco.mj_forward(self.model, self.data)
             current_c_pos = self.data.body("rod_tip").xpos.copy()
