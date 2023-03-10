@@ -151,6 +151,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
         self.init_z = self.data.body("rod_tip").xpos[-1].copy()
+        self.model.body('finish_line').pos[1] = 1.4
+        self._line_y_pos = self.model.body('finish_line').pos[1]
         return self._get_obs()
 
     def _get_obs(self):

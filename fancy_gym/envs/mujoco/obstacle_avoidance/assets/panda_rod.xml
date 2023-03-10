@@ -1,6 +1,6 @@
 <mujocoinclude>
     <compiler angle="radian" discardvisual="false"
-              meshdir="/home/onur/PhD/Code/fancy_gym/fancy_gym/fancy_gym/envs/mujoco/box_pushing/assets/meshes/panda/"/>
+              meshdir="/home/onur/Onur/PhD/Code/fancy_gym/fancy_gym/fancy_gym/envs/mujoco/box_pushing/assets/meshes/panda/"/>
  <asset>
   <mesh file="link0v.stl" name="link0v"/>
   <mesh file="link1v.stl" name="link1v"/>
