@@ -216,7 +216,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             enable_pos_limit=True,
             enable_vel_limit=True
         )
-        energy_cost = -0.00005 * np.sum(np.square(action))
+        energy_cost = -0.0005 * np.sum(np.square(action))
 
         return {"joint_rew": joint_penalty_reward, "energy_rew": energy_cost}
 
@@ -247,8 +247,8 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         enable_vel_limit=False
     ):
         penalty = 0.
-        p_coeff = 0.01
-        v_coeff = 0.01
+        p_coeff = 1.
+        v_coeff = 1.
         # q_limit
         if enable_pos_limit:
             higher_error = qpos - self._q_max
@@ -544,7 +544,7 @@ class BoxPushingBinSparse(BoxPushingBin):
         self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
 
         sparse_reward = penalty
-        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * 100})
+        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * 1000})
         return sparse_reward
 
 
@@ -585,7 +585,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
             axis=0
         )
         dist_to_tcp = -np.sum(np.abs(parallel_tcp_pos - box_pos))
-        dense_reward.update({"dist_to_tcp": 0.1 * dist_to_tcp})
+        dense_reward.update({"dist_to_tcp": 1. * dist_to_tcp})
 
         # Parallelize calculating mahalanobis distance by casting both box positions and
         # bin borders to (num_boxes, num_bins, 2 coordinates x and y)
@@ -595,5 +595,5 @@ class BoxPushingBinDense(BoxPushingBinSparse):
             np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
         )
         dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
-        dense_reward.update({"dist_to_bin_borderd_rew": 0.01 * dist_to_bin_pos})
+        dense_reward.update({"dist_to_bin_borderd_rew": 1. * dist_to_bin_pos})
         return dense_reward
