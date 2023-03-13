@@ -32,13 +32,12 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.obj_xy_list = []
         self._max_height = 0
         self._line_y_pos = 0
-        # self._max_height = 0
         self._desired_rod_quat = np.zeros(4)
         self.goal = np.zeros(2)
         self.init_z = 0
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "obstacle_avoidance.xml"),
-                           frame_skip=1,
+                           frame_skip=frame_skip,
                            mujoco_bindings="mujoco")
         # self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
         self.action_space_cart = spaces.Box(low=-10, high=10, shape=(2,))
@@ -63,6 +62,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
                     des_pos = self.data.body("rod_tip").xpos[:2].copy() + np.clip(action, self.action_space_cart.low,
                                                                                   self.action_space_cart.high)
                     des_pos = np.concatenate([des_pos, [self.init_z]])
+                # print(des_pos)
                 torques = self.map2torque(des_pos, np.array([0, 1, 0, 0]))
             else:
                 torques = action
@@ -70,6 +70,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             # torques = 10 * np.clip(torques, self.action_space.low, self.action_space.high)
             torques = 10 * np.clip(torques, -1, 1)
             resultant_action = np.clip(torques + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
+            # print(resultant_action)
             try:
                 # self.do_simulation(resultant_action, self.frame_skip)
                 # self.do_simulation(resultant_action, 1)  # do simulation will check if the action space shape aligns
@@ -109,7 +110,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         rewards = 0
         # Distance to obstacles
         for obs in self.obj_xy_list:
-            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.01, 1)
+            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.0, 1)
         dist_to_obstacles_rew = np.copy(rewards)
         # rewards += np.abs(x[:, 1]- 0.4)
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
@@ -151,7 +152,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
         self.init_z = self.data.body("rod_tip").xpos[-1].copy()
-        self.model.body('finish_line').pos[1] = 1.4
+        self.model.body('finish_line').pos[1] = 0.6
         self._line_y_pos = self.model.body('finish_line').pos[1]
         return self._get_obs()
 
