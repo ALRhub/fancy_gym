@@ -14,7 +14,7 @@
       <geom name="ground:geom1" rgba="0.26 0.58 0.51 1" size="0 0 1" type="plane" />
     </body>
   </worldbody>
-  <include file="kit_lab_surrounding_bins.xml" />
+  <include file="kit_lab_surrounding_bins_short.xml" />
   <include file="panda_only_rod.xml" />
   <include file="push_boxes.xml" />
 </mujoco>
