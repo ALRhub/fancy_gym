@@ -11,6 +11,8 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_torque_max, q_
 
 MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE = 100
 GOAL_RANGE = np.array([0.2, 0.8])
+TASK_SPACE_MIN = np.array([0.2, -0.25])
+TASK_SPACE_MAX = np.array([0.7, 0.5])
 
 
 class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
@@ -62,6 +64,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
                 if des_pos is None:
                     des_pos = self.data.body("rod_tip").xpos[:2].copy() + np.clip(action, self.action_space_cart.low,
                                                                                   self.action_space_cart.high)
+                    des_pos = np.clip(des_pos, TASK_SPACE_MIN, TASK_SPACE_MAX)
                     des_pos = np.concatenate([des_pos, [self.init_z]])
                 torques = self.map2torque(des_pos, np.array([0, 1, 0, 0]))
             else:

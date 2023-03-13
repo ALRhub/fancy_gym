@@ -14,28 +14,32 @@
     <body name="ground" pos="0 0 -0.94">
       <geom name="ground:geom1" rgba="0.26 0.58 0.51 1" size="0 0 1" type="plane" />
     </body>
-    <body name="l1_obs" pos="0.5 -0.1 0" quat="1 0 0 0">
+    <body name="l1_obs" pos="0.45 -0.1 0" quat="1 0 0 0">
       <geom type="cylinder" name="l1_obs:geom" mass="0.1" size="0.03 0.07" rgba="1 0 0 1" />
     </body>
-    <body name="l2_top_obs" pos="0.425 0.07999999999999999 0" quat="1 0 0 0">
+    <body name="l2_top_obs" pos="0.375 0.07999999999999999 0" quat="1 0 0 0">
       <geom type="cylinder" name="l2_top_obs:geom" mass="0.1" size="0.025 0.1" rgba="1 0 0 1" />
     </body>
-    <body name="l2_bottom_obs" pos="0.575 0.07999999999999999 0" quat="1 0 0 0">
+    <body name="l2_bottom_obs" pos="0.525 0.07999999999999999 0" quat="1 0 0 0">
       <geom type="cylinder" name="l2_bottom_obs:geom" mass="0.1" size="0.025 0.1" rgba="1 0 0 1" />
     </body>
-    <body name="l3_top_obs" pos="0.35 0.26 0" quat="1 0 0 0">
+    <body name="l3_top_obs" pos="0.3 0.26 0" quat="1 0 0 0">
       <geom type="cylinder" name="l3_top_obs:geom" mass="0.1" size="0.025 0.1" rgba="1 0 0 1" />
     </body>
-    <body name="l3_mid_obs" pos="0.5 0.26 0" quat="1 0 0 0">
+    <body name="l3_mid_obs" pos="0.45 0.26 0" quat="1 0 0 0">
       <geom type="cylinder" name="l3_mid_obs:geom" mass="0.1" size="0.025 0.1" rgba="1 0 0 1" />
     </body>
-    <body name="l3_bottom_obs" pos="0.65 0.26 0" quat="1 0 0 0">
+    <body name="l3_bottom_obs" pos="0.6 0.26 0" quat="1 0 0 0">
       <geom type="cylinder" name="l3_bottom_obs:geom" mass="0.1" size="0.025 0.1" rgba="1 0 0 1" />
     </body>
-    <body name="finish_line" pos="0.4 0.35 0" quat="1 0 0 0">
+    <body name="finish_line" pos="0.35 0.35 0" quat="1 0 0 0">
       <geom type="box" name="finish_line:geom" mass="0.1" size="0.5 0.01 0.005" rgba="0.0 1.0 0.0 0.3" contype="0" conaffinity="0" />
     </body>
       <site name="target_pos" pos="0 0.23 0" size="0.02 0.02 0.02" rgba="1 0 0 1" type="sphere"/>
+      <site name="task_space_const_1" pos="0.2 0.5 0" size="0.02 0.02 0.02" rgba="0 0 1 1" type="sphere"/>
+      <site name="task_space_const_2" pos="0.7 0.5 0" size="0.02 0.02 0.02" rgba="0 0 1 1" type="sphere"/>
+      <site name="task_space_const_3" pos="0.2 -0.25 0" size="0.02 0.02 0.02" rgba="0 0 1 1" type="sphere"/>
+      <site name="task_space_const_4" pos="0.7 -0.25 0" size="0.02 0.02 0.02" rgba="0 0 1 1" type="sphere"/>
       <site name="max_height" pos="0.5 0.0 0.07" size="0.35 0.5 0.0001" rgba="1 0 0 0.1" type="box"/>
 <!--    <body pos="0.7 0.1 0.9" quat="0.6830127 0.1830127 0.1830127 0.683012" name="rgbd_cage">-->
 <!--      <camera name="rgbd_cage" />-->
