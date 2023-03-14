@@ -51,6 +51,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self._steps = 0
         self.frame_skip = frame_skip
         self.num_boxes = num_boxes
+        global BOX_IN_REWARD
         BOX_IN_REWARD /= self.num_boxes
         self._q_max, self._q_min, self._q_dot_max = q_max, q_min, q_dot_max
         self.width, self.height = width, height
