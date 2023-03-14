@@ -26,6 +26,11 @@ START_POS = np.array([0, -np.pi/8, 0.0, -np.pi*5/8, 0.0, np.pi/2, np.pi/4])
 ROBOT_CENTER = np.array([0.16, 0.0])
 ROBOT_RADIUS = 0.788
 
+# Rewards
+BOX_IN_REWARD = 1000
+BOX_DIST_BIN_COEFF = 1.0
+BOX_DIST_TCP_COEFF = 1.0
+
 
 class BoxPushingBin(MujocoEnv, utils.EzPickle):
     """
@@ -46,6 +51,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self._steps = 0
         self.frame_skip = frame_skip
         self.num_boxes = num_boxes
+        BOX_IN_REWARD /= self.num_boxes
         self._q_max, self._q_min, self._q_dot_max = q_max, q_min, q_dot_max
         self.width, self.height = width, height
 
@@ -544,7 +550,7 @@ class BoxPushingBinSparse(BoxPushingBin):
         self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
 
         sparse_reward = penalty
-        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * 1000})
+        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * BOX_IN_REWARD})
         return sparse_reward
 
 
@@ -585,15 +591,15 @@ class BoxPushingBinDense(BoxPushingBinSparse):
             axis=0
         )
         dist_to_tcp = -np.sum(np.abs(parallel_tcp_pos - box_pos))
-        dense_reward.update({"dist_to_tcp": 1. * dist_to_tcp})
+        dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * dist_to_tcp})
 
         # Parallelize calculating mahalanobis distance by casting both box positions and
-        # bin borders to (num_boxes, num_bins, 2 coordinates x and y)
+        # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
         box_pos = [b[:2] for b in box_pos]
         parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
         parallel_bin_pos = np.repeat(
             np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
         )
         dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
-        dense_reward.update({"dist_to_bin_border_rew": 1. * dist_to_bin_pos})
+        dense_reward.update({"dist_to_bin_rew": BOX_DIST_BIN_COEFF * dist_to_bin_pos})
         return dense_reward
