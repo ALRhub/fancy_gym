@@ -28,7 +28,7 @@ ROBOT_RADIUS = 0.788
 
 # Rewards
 BOX_IN_REWARD = 1000
-BOX_DIST_BIN_COEFF = 1.0
+BOX_DIST_BIN_COEFF = 2.0
 BOX_DIST_TCP_COEFF = 1.0
 
 
@@ -52,7 +52,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self.frame_skip = frame_skip
         self.num_boxes = num_boxes
         global BOX_IN_REWARD
-        BOX_IN_REWARD /= self.num_boxes
+        BOX_IN_REWARD /= num_boxes
         self._q_max, self._q_min, self._q_dot_max = q_max, q_min, q_dot_max
         self.width, self.height = width, height
 

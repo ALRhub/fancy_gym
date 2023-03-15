@@ -207,6 +207,13 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.render_kwargs = kwargs
         return self.env.render(**kwargs)
 
+    def reset_mp(self):
+        self.current_traj_steps = 0
+        self.plan_steps = 0
+        self.traj_gen.reset()
+        self.condition_vel = None
+        self.condition_pos = None
+
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
         self.current_traj_steps = 0
         self.plan_steps = 0
