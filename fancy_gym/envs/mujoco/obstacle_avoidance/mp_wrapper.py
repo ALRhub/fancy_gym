@@ -21,7 +21,8 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        return np.zeros(2)
+        # return np.zeros(2)
+        return self.data.body("rod_tip").xpos[:2].copy()
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:

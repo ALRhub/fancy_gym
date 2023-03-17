@@ -37,6 +37,10 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self._desired_rod_quat = np.zeros(4)
         self.goal = np.zeros(2)
         self.init_z = 0
+        self.desired_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.desired_positions_after_clip = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.actual_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE+1, 1))
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "obstacle_avoidance.xml"),
                            frame_skip=frame_skip,
@@ -55,15 +59,20 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
                             self.data.body('l3_bottom_obs').xpos[:2]]
         self._desired_rod_quat = np.array([-7.80232724e-05, 9.99999177e-01, -1.15696870e-04, 1.27505693e-03])
 
+
     def step(self, action):
         unstable_simulation = False
         des_pos = None
         for _ in range(self.frame_skip):
             if action.shape[0] != 7:
                 if des_pos is None:
-                    des_pos = self.data.body("rod_tip").xpos[:2].copy() + np.clip(action, self.action_space_cart.low,
-                                                                                  self.action_space_cart.high)
+                    # des_pos = self.data.body("rod_tip").xpos[:2].copy() + np.clip(action, self.action_space_cart.low,
+                    #                                                               self.action_space_cart.high)
+                    des_pos = np.clip(action, self.action_space_cart.low, self.action_space_cart.high)
+                    self.desired_positions[self._steps] = des_pos
                     des_pos = np.clip(des_pos, TASK_SPACE_MIN, TASK_SPACE_MAX)
+                    self.desired_positions_after_clip[self._steps] = des_pos
+                    self.actual_positions[self._steps] = self.data.body("rod_tip").xpos[:2].copy()
                     des_pos = np.concatenate([des_pos, [self.init_z]])
                 # print(des_pos)
                 torques = self.map2torque(des_pos, np.array([0, 1, 0, 0]))
@@ -96,12 +105,13 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             reward, dist_to_obstacles_rew, dist_to_goal_rew = self._get_reward(rod_tip_pos)
         else:
             reward, dist_to_obstacles_rew, dist_to_goal_rew = -50, 0, 0
-
+        self.reward_traj[self._steps, 0] = reward
         ob = self._get_obs()
         infos = dict(
             tot_reward=reward,
             dist_to_obstacles_rew=dist_to_obstacles_rew,
-            dist_to_goal_rew=dist_to_goal_rew
+            dist_to_goal_rew=dist_to_goal_rew,
+            distance_to_goal = np.linalg.norm(self.goal[:2] - self.data.body("rod_tip").xpos[:2].copy())
         )
 
         return ob, reward, done, infos
@@ -110,15 +120,26 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         def squared_exp_kernel(x, mean, scale, bandwidth):
             return scale * np.exp(np.square(np.linalg.norm(x - mean)) / bandwidth)
 
+        def quad(x, goal, scale):
+            return scale * np.linalg.norm(x-goal)**2
+
         rewards = 0
         # Distance to obstacles
         for obs in self.obj_xy_list:
-            rewards += squared_exp_kernel(pos[:2], np.array(obs), 0.0, 1)
+            rewards -= squared_exp_kernel(pos[:2], np.array(obs), 1.0, 1)
         dist_to_obstacles_rew = np.copy(rewards)
+        # dist_to_obstacles_rew = 0
+
         # rewards += np.abs(x[:, 1]- 0.4)
+
+        additional_dist = 10*np.linalg.norm(pos[:2] - self.goal)
+        rewards -= additional_dist
+
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
+
         rewards += dist_to_line_rew
         dist_to_goal_rew = -squared_exp_kernel(pos[:2], self.goal, 10, 1)
+        # dist_to_goal_rew = -quad(pos[:2], self.goal, 100)
         rewards += dist_to_goal_rew
         return rewards, dist_to_obstacles_rew, dist_to_goal_rew
 
@@ -149,14 +170,18 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
 
     def reset_model(self):
         self.set_state(self.init_qpos_obs_avoidance, self.init_qvel_obs_avoidance)
+        self.model.body('finish_line').pos[1] = 0.45
+        self._line_y_pos = self.model.body('finish_line').pos[1]
         # pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
         pos = 0.35
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
         self.init_z = self.data.body("rod_tip").xpos[-1].copy()
-        self.model.body('finish_line').pos[1] = 0.45
-        self._line_y_pos = self.model.body('finish_line').pos[1]
+        self.actual_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.desired_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.desired_positions_after_clip = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
+        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE+1, 1))
         return self._get_obs()
 
     def _get_obs(self):
@@ -290,6 +315,19 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         jacr = np.zeros((3, self.model.nv))
         mujoco.mj_jacBody(self.model, self.data, None, jacr, id)
         return jacr
+
+    def plot_trajs(self):
+        import matplotlib.pyplot as plt
+        plt.figure()
+        for k in range(self.desired_positions_after_clip.shape[1]):
+            plt.subplot(self.desired_positions_after_clip.shape[1]+1, 1, k+1)
+            plt.plot(self.desired_positions_after_clip[:, k], 'red')
+            plt.plot(self.desired_positions[:, k], '--', color='red')
+            plt.plot(self.actual_positions[:, k], 'blue')
+            plt.plot(self.actual_positions[:, k].shape[0], self.goal[k], 'x')
+        plt.subplot(self.desired_positions_after_clip.shape[1]+1, 1, self.desired_positions_after_clip.shape[1]+1)
+        plt.plot(self.reward_traj)
+        plt.show()
 
 
 if __name__ == '__main__':

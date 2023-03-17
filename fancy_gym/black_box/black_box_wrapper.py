@@ -213,3 +213,18 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.condition_vel = None
         self.condition_pos = None
         return super(BlackBoxWrapper, self).reset()
+
+    def vis_traj(self, params):
+        mp_params, env_spec_params = self.env.episode_callback(params, self.traj_gen)
+        position, velocity = self.get_trajectory(mp_params)
+        import matplotlib.pyplot as plt
+        pos_fig = plt.figure('positions')
+        vel_fig = plt.figure('velocities')
+        for i in range(position.shape[1]):
+            plt.figure(pos_fig.number)
+            plt.subplot(position.shape[1], 1, i+1)
+            plt.plot(position[:, i])
+            plt.figure(vel_fig.number)
+            plt.subplot(velocity.shape[1], 1, i + 1)
+            plt.plot(velocity[:, i])
+        plt.show()
