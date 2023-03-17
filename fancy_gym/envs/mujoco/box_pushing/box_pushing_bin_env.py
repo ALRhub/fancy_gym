@@ -547,11 +547,14 @@ class BoxPushingBinSparse(BoxPushingBin):
             (float): scalar reward value
         """
         penalty = super()._get_reward(action, qpos, qvel)
-        boxes_in_bin = self.boxes_in_bin(np.array(box_pos)[self.boxes_out_bins])
-        self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
-
         sparse_reward = penalty
-        sparse_reward.update({"boxes_in_rew": len(boxes_in_bin) * BOX_IN_REWARD})
+
+        boxes_in_bin = []
+        if len(box_pos) > 0:
+            boxes_in_bin = self.boxes_in_bin(np.array(box_pos)[self.boxes_out_bins])
+            self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
+
+        sparse_reward.update({"boxes_in_rew": BOX_IN_REWARD * len(boxes_in_bin)})
         return sparse_reward
 
 
@@ -586,21 +589,24 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         sparse_reward = super()._get_reward(action, qpos, qvel, box_pos)
         dense_reward = sparse_reward
 
-        parallel_tcp_pos = np.repeat(
-            np.expand_dims(self.data.body("tcp").xpos.copy(), axis=0),
-            len(box_pos),
-            axis=0
-        )
-        dist_to_tcp = -np.sum(np.abs(parallel_tcp_pos - box_pos))
-        dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * dist_to_tcp})
+        dist_to_tcp, dist_to_bin_pos = 0.0, 0.0
+        if len(box_pos) > 0:
+            parallel_tcp_pos = np.repeat(
+                np.expand_dims(self.data.body("tcp").xpos.copy(), axis=0),
+                len(box_pos),
+                axis=0
+            )
+            dist_to_tcp = -np.sum(np.abs(parallel_tcp_pos - box_pos))
 
-        # Parallelize calculating mahalanobis distance by casting both box positions and
-        # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
-        box_pos = [b[:2] for b in box_pos]
-        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
-        parallel_bin_pos = np.repeat(
-            np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
-        )
-        dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+            # Parallelize calculating mahalanobis distance by casting both box positions and
+            # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
+            box_pos = [b[:2] for b in box_pos]
+            parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
+            parallel_bin_pos = np.repeat(
+                np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
+            )
+            dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+
+        dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * dist_to_tcp})
         dense_reward.update({"dist_to_bin_rew": BOX_DIST_BIN_COEFF * dist_to_bin_pos})
         return dense_reward
