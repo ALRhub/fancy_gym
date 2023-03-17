@@ -452,7 +452,15 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         direction = world_point - cam_pos
         world_coords = cam_pos + (world_depth / np.linalg.norm(direction)) * direction
 
-        return world_coords
+        # project inside robot reach
+        dist_to_robot = np.linalg.norm(world_coords[:2] - ROBOT_CENTER)
+        penalty = 0
+        if dist_to_robot > ROBOT_RADIUS:
+            penalty = -100
+            world_coords[:2] = ROBOT_CENTER +\
+                (world_coords[:2] - ROBOT_CENTER) * ROBOT_RADIUS / dist_to_robot
+
+        return world_coords, penalty
 
     def depth_to_world_depth(self, img_coords, depth, cam="rgbd"):
         """
