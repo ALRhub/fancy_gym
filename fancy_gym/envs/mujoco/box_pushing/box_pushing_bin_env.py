@@ -622,7 +622,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
             parallel_bin_pos = np.repeat(
                 np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
             )
-            dist_to_bin_pos = np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+            dist_to_bin = np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
 
         dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * -dist_to_tcp})
         dense_reward.update({"dist_to_bin": BOX_DIST_BIN_COEFF * -dist_to_bin})
