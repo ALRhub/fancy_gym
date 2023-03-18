@@ -28,6 +28,7 @@ ROBOT_RADIUS = 0.788
 
 # Rewards
 BOX_IN_REWARD = 1000
+OUTSIDE_REACH_PENALTY = -100
 BOX_DIST_BIN_COEFF = 2.0
 BOX_DIST_TCP_COEFF = 1.0
 
@@ -69,8 +70,6 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             self._q_min,
             self._q_max
         )
-        self.robot_tcp_penalty = lambda x :\
-            (np.linalg.norm(x - ROBOT_CENTER) > ROBOT_RADIUS) * -100
         self.controller = PDController()
 
         self._episode_energy = 0.
@@ -419,6 +418,16 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
 
     def set_tcp_pos(self, desired_tcp_pos, hard_set=False):
         desired_tcp_pos[-1] = 0.05 if desired_tcp_pos[-1] < 0.05 else desired_tcp_pos[-1]
+
+        # project inside robot reach
+        dist_to_robot = np.linalg.norm(desired_tcp_pos[:2] - ROBOT_CENTER)
+        outside_robot_reach_penalty = 0
+        if dist_to_robot > ROBOT_RADIUS:
+            outside_robot_reach_penalty = OUTSIDE_REACH_PENALTY
+            desired_tcp_pos[:2] = ROBOT_CENTER +\
+                (desired_tcp_pos[:2] - ROBOT_CENTER) * ROBOT_RADIUS / dist_to_robot
+
+        # find robot joint position and hard set robot
         init_robot_pos =  self.data.qpos[:7].copy()
         desired_tcp_quat = np.array([0, 1, 0, 0])
         robot_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
@@ -427,7 +436,21 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         else:
             self.data.qpos[:7] = init_robot_pos
         self.data.qvel[:7] = np.zeros(robot_joint_pos.shape)
-        return robot_joint_pos, self.robot_tcp_penalty(desired_tcp_pos[:2])
+
+        # dist box(es) to tcp
+        dist_to_tcp_rew = -BOX_DIST_TCP_COEFF * self.dist_boxes_to_tcp()
+        return robot_joint_pos, outside_robot_reach_penalty, dist_to_tcp_rew
+
+    def dist_boxes_to_tcp(self):
+        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos_xyz = [b[:3] for b in box_pos]
+        parallel_tcp_pos = np.repeat(
+            np.expand_dims(self.data.body("tcp").xpos.copy(), axis=0),
+            len(box_pos),
+            axis=0
+        )
+        return np.sum(np.abs(parallel_tcp_pos - box_pos))
+
 
     def img_to_world(self, pixel_pos, cam="rgbd"):
         """
@@ -451,16 +474,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         # line from camera to projected point
         direction = world_point - cam_pos
         world_coords = cam_pos + (world_depth / np.linalg.norm(direction)) * direction
-
-        # project inside robot reach
-        dist_to_robot = np.linalg.norm(world_coords[:2] - ROBOT_CENTER)
-        penalty = 0
-        if dist_to_robot > ROBOT_RADIUS:
-            penalty = -100
-            world_coords[:2] = ROBOT_CENTER +\
-                (world_coords[:2] - ROBOT_CENTER) * ROBOT_RADIUS / dist_to_robot
-
-        return world_coords, penalty
+        return world_coords
 
     def depth_to_world_depth(self, img_coords, depth, cam="rgbd"):
         """
@@ -562,7 +576,7 @@ class BoxPushingBinSparse(BoxPushingBin):
             boxes_in_bin = self.boxes_in_bin(np.array(box_pos)[self.boxes_out_bins])
             self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_in_bin)
 
-        sparse_reward.update({"boxes_in_rew": BOX_IN_REWARD * len(boxes_in_bin)})
+        sparse_reward.update({"boxes_in": BOX_IN_REWARD * len(boxes_in_bin)})
         return sparse_reward
 
 
@@ -597,14 +611,9 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         sparse_reward = super()._get_reward(action, qpos, qvel, box_pos)
         dense_reward = sparse_reward
 
-        dist_to_tcp, dist_to_bin_pos = 0.0, 0.0
+        dist_to_tcp, dist_to_bin = 0.0, 0.0
         if len(box_pos) > 0:
-            parallel_tcp_pos = np.repeat(
-                np.expand_dims(self.data.body("tcp").xpos.copy(), axis=0),
-                len(box_pos),
-                axis=0
-            )
-            dist_to_tcp = -np.sum(np.abs(parallel_tcp_pos - box_pos))
+            dist_to_tcp = self.dist_boxes_to_tcp()
 
             # Parallelize calculating mahalanobis distance by casting both box positions and
             # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
@@ -613,8 +622,8 @@ class BoxPushingBinDense(BoxPushingBinSparse):
             parallel_bin_pos = np.repeat(
                 np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
             )
-            dist_to_bin_pos = -np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+            dist_to_bin_pos = np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
 
-        dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * dist_to_tcp})
-        dense_reward.update({"dist_to_bin_rew": BOX_DIST_BIN_COEFF * dist_to_bin_pos})
+        dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * -dist_to_tcp})
+        dense_reward.update({"dist_to_bin": BOX_DIST_BIN_COEFF * -dist_to_bin})
         return dense_reward
