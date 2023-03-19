@@ -107,6 +107,9 @@ venv.bak/
 .DS_Store
 .idea
 
+# vscode
+.vscode
+
 #configs
 /configs/db.cfg
 legacy/
