@@ -449,7 +449,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             len(box_pos),
             axis=0
         )
-        return np.sum(np.abs(parallel_tcp_pos - box_pos))
+        return np.sum(np.abs(parallel_tcp_pos - box_pos_xyz))
 
 
     def img_to_world(self, pixel_pos, cam="rgbd"):
