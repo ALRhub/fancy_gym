@@ -78,8 +78,12 @@ class AirHockeyBase(gym.Env):
         return obs, rew, done, info
 
     def render(self, mode="human"):
-        # todo: rgb_array mode
-        self.env.render()
+        if mode == "human":
+            self.env.base_env.render(mode="human")
+        elif mode == "rgb_array":
+            return self.env.base_env.render(mode="rgb_array")
+        else:
+            raise NotImplementedError
 
     def seed(self, seed=None):
         self.env.seed(seed)

@@ -60,7 +60,8 @@ def test_env(seed=0):
         while True:
             act = env.action_space.sample()
             obs_, reward, done, info = env.step(act)
-            env.render()
+            ra = env.render("rgb_array")
+            print(ra.shape)
             stp += 1
             if done:
                 break
