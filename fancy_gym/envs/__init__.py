@@ -18,7 +18,8 @@ from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
                                                 BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
-from .air_hockey.air_hockey import AirHockeyChallenge, MAX_EPISODE_STEPS_AIR_HOCKEY
+from .air_hockey.air_hockey import MAX_EPISODE_STEPS_AIR_HOCKEY
+from .air_hockey.air_hockey_planar import AirHockeyPlanarHit, AirHockeyPlanarDefend
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -740,12 +741,16 @@ for i in _vs:
 """
 
 # Air Hockey Challenge
-for env_id in ["3dof-hit", "3dof-defend"]:
-    register(
-        id=env_id,
-        entry_point='fancy_gym.envs.air_hockey:AirHockeyChallenge',
-        max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY,
-        kwargs={
-            "env_id": env_id
-        }
-    )
+register(
+    id="3dof-hit",
+    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHit',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY,
+    kwargs={}
+)
+
+register(
+    id="3dof-defend",
+    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY,
+    kwargs={}
+)
