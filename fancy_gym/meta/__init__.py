@@ -26,6 +26,9 @@ DEFAULT_BB_DICT_ProMP = {
         'basis_generator_type': 'zero_rbf',
         'num_basis': 5,
         'num_basis_zero_start': 1
+    },
+    'black_box_kwargs': {
+        'condition_on_desired': False,
     }
 }
 
@@ -50,7 +53,11 @@ DEFAULT_BB_DICT_ProDMP = {
         'basis_generator_type': 'prodmp',
         'num_basis': 3,
         'alpha': 10
+    },
+    'black_box_kwargs': {
+        'condition_on_desired': False,
     }
+
 }
 
 _goal_change_envs = ["assembly-v2", "pick-out-of-hole-v2", "plate-slide-v2", "plate-slide-back-v2",

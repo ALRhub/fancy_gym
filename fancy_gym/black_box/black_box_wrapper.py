@@ -100,14 +100,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
-        # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
+
         position = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
-
-        # if self.do_replanning:
-        #     # Remove first part of trajectory as this is already over
-        #     position = position[self.current_traj_steps:]
-        #     velocity = velocity[self.current_traj_steps:]
 
         return position, velocity
 
@@ -179,8 +174,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                                                  t + 1 + self.current_traj_steps)
                         and self.plan_steps < self.max_planning_times):
 
-                self.condition_pos = pos if self.condition_on_desired else None
-                self.condition_vel = vel if self.condition_on_desired else None
+                if self.condition_on_desired:
+                    self.condition_pos = pos
+                    self.condition_vel = vel
 
                 break
 
@@ -207,6 +203,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.current_traj_steps = 0
         self.plan_steps = 0
         self.traj_gen.reset()
-        self.condition_vel = None
         self.condition_pos = None
+        self.condition_vel = None
         return super(BlackBoxWrapper, self).reset()
