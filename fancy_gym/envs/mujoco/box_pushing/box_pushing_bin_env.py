@@ -443,14 +443,14 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
 
     def dist_boxes_to_tcp(self):
         box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
-        box_pos_xyz = [b[:3] for b in box_pos]
+        box_pos_xyz = np.array([b[:3] for b in box_pos])
+        box_pos_xyz[:, 0] -= 0.08
         parallel_tcp_pos = np.repeat(
             np.expand_dims(self.data.body("tcp").xpos.copy(), axis=0),
             len(box_pos),
             axis=0
         )
         return np.sum(np.abs(parallel_tcp_pos - box_pos_xyz))
-
 
     def img_to_world(self, pixel_pos, cam="rgbd"):
         """
