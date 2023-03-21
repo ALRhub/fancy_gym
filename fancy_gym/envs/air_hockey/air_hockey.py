@@ -75,6 +75,10 @@ class AirHockeyBase(gym.Env):
         self._episode_steps += 1
         if self._episode_steps >= MAX_EPISODE_STEPS_AIR_HOCKEY:
             done = True
+
+        if self.env.base_env.n_agents == 1:
+            info["has_hit"] = 1 if self.env.base_env.has_hit else 0
+
         return obs, rew, done, info
 
     def render(self, mode="human"):
