@@ -10,7 +10,8 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_torque_max, q_
     rotation_distance
 
 MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE = 100
-GOAL_RANGE = np.array([0.2, 0.8])
+# GOAL_RANGE = np.array([0.2, 0.8])
+GOAL_RANGE = np.array([0.4, 0.6])
 TASK_SPACE_MIN = np.array([0.2, -0.25])
 TASK_SPACE_MAX = np.array([0.7, 0.5])
 
@@ -40,7 +41,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.desired_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
         self.desired_positions_after_clip = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
         self.actual_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
-        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE+1, 1))
+        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE + 1, 1))
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "obstacle_avoidance.xml"),
                            frame_skip=frame_skip,
@@ -58,7 +59,6 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
                             self.data.body('l3_mid_obs').xpos[:2],
                             self.data.body('l3_bottom_obs').xpos[:2]]
         self._desired_rod_quat = np.array([-7.80232724e-05, 9.99999177e-01, -1.15696870e-04, 1.27505693e-03])
-
 
     def step(self, action):
         unstable_simulation = False
@@ -111,7 +111,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             tot_reward=reward,
             dist_to_obstacles_rew=dist_to_obstacles_rew,
             dist_to_goal_rew=dist_to_goal_rew,
-            distance_to_goal = np.linalg.norm(self.goal[:2] - self.data.body("rod_tip").xpos[:2].copy())
+            distance_to_goal=np.linalg.norm(self.goal[:2] - self.data.body("rod_tip").xpos[:2].copy())
         )
 
         return ob, reward, done, infos
@@ -121,18 +121,18 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
             return scale * np.exp(np.square(np.linalg.norm(x - mean)) / bandwidth)
 
         def quad(x, goal, scale):
-            return scale * np.linalg.norm(x-goal)**2
+            return scale * np.linalg.norm(x - goal) ** 2
 
         rewards = 0
         # Distance to obstacles
         for obs in self.obj_xy_list:
-            rewards -= squared_exp_kernel(pos[:2], np.array(obs), 1.0, 1)
+            rewards -= squared_exp_kernel(pos[:2], np.array(obs), 5.0, 1)
         dist_to_obstacles_rew = np.copy(rewards)
         # dist_to_obstacles_rew = 0
 
         # rewards += np.abs(x[:, 1]- 0.4)
 
-        additional_dist = 10*np.linalg.norm(pos[:2] - self.goal)
+        additional_dist = 10 * np.linalg.norm(pos[:2] - self.goal)
         rewards -= additional_dist
 
         dist_to_line_rew = -np.abs(pos[1] - self._line_y_pos)
@@ -172,8 +172,8 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.set_state(self.init_qpos_obs_avoidance, self.init_qvel_obs_avoidance)
         self.model.body('finish_line').pos[1] = 0.45
         self._line_y_pos = self.model.body('finish_line').pos[1]
-        # pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
-        pos = 0.35
+        pos = self.np_random.uniform(self.goal_range[0], self.goal_range[1])
+        # pos = 0.35
         self.model.site('target_pos').pos = [pos, self._line_y_pos, 0]
         self.goal = self.model.site('target_pos').pos.copy()[:2]
         self._steps = 0
@@ -181,7 +181,7 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         self.actual_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
         self.desired_positions = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
         self.desired_positions_after_clip = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE, 2))
-        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE+1, 1))
+        self.reward_traj = np.zeros((MAX_EPISODE_STEPS_OBSTACLEAVOIDANCE + 1, 1))
         return self._get_obs()
 
     def _get_obs(self):
@@ -320,12 +320,12 @@ class ObstacleAvoidanceEnv(MujocoEnv, utils.EzPickle):
         import matplotlib.pyplot as plt
         plt.figure()
         for k in range(self.desired_positions_after_clip.shape[1]):
-            plt.subplot(self.desired_positions_after_clip.shape[1]+1, 1, k+1)
+            plt.subplot(self.desired_positions_after_clip.shape[1] + 1, 1, k + 1)
             plt.plot(self.desired_positions_after_clip[:, k], 'red')
             plt.plot(self.desired_positions[:, k], '--', color='red')
             plt.plot(self.actual_positions[:, k], 'blue')
             plt.plot(self.actual_positions[:, k].shape[0], self.goal[k], 'x')
-        plt.subplot(self.desired_positions_after_clip.shape[1]+1, 1, self.desired_positions_after_clip.shape[1]+1)
+        plt.subplot(self.desired_positions_after_clip.shape[1] + 1, 1, self.desired_positions_after_clip.shape[1] + 1)
         plt.plot(self.reward_traj)
         plt.show()
 
