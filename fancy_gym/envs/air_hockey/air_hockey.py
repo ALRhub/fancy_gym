@@ -79,7 +79,7 @@ class AirHockeyBase(gym.Env):
 
     def render(self, mode="human"):
         if mode == "human":
-            self.env.base_env.render(mode="human")
+            self.env.base_env.render()
         elif mode == "rgb_array":
             return self.env.base_env.render(mode="rgb_array")
         else:
