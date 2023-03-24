@@ -51,7 +51,7 @@ DEFAULT_BB_DICT_ProDMP = {
     },
     "basis_generator_kwargs": {
         'basis_generator_type': 'prodmp',
-        'num_basis': 3,
+        'num_basis': 5,
         'alpha': 10
     },
     'black_box_kwargs': {
