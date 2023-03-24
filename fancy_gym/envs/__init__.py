@@ -3,7 +3,7 @@ from copy import deepcopy
 import numpy as np
 from gym import register
 
-from . import classic_control, mujoco
+from . import classic_control, mujoco, air_hockey
 from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
 from .classic_control.viapoint_reacher.viapoint_reacher import ViaPointReacherEnv
@@ -18,8 +18,10 @@ from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
                                                 BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
-from .air_hockey.air_hockey import MAX_EPISODE_STEPS_AIR_HOCKEY
-from .air_hockey.air_hockey_planar import AirHockeyPlanarHit, AirHockeyPlanarDefend
+from .air_hockey.air_hockey import AirHockeyBase, MAX_EPISODE_STEPS_AIR_HOCKEY
+from .air_hockey.air_hockey_planar import AirHockeyPlanarHit, AirHockeyPlanarDefend, \
+                                          MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT, \
+                                          MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -740,17 +742,36 @@ for i in _vs:
         )
 """
 
+#######################################################################################################################
 # Air Hockey Challenge
+# Air Hockey Planar Robot
 register(
     id="3dof-hit",
     entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHit',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY,
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
     kwargs={}
 )
 
 register(
     id="3dof-defend",
     entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY,
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend,
     kwargs={}
 )
+
+_versions = ["3dof-hit", "3dof-defend"]
+for _v in _versions:
+    _name = _v.split("-")
+    _env_id = f'{_name[0]}-ProMP-{_name[1]}'
+    kwargs_dict_bp_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_bp_promp['wrappers'].append(air_hockey.PlanarMPWrapper)
+    kwargs_dict_bp_promp['trajectory_generator_kwargs']['action_dim'] = 3
+    kwargs_dict_bp_promp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_bp_promp['controller_kwargs']['dof'] = 3
+    kwargs_dict_bp_promp['name'] = _v
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_bp_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)

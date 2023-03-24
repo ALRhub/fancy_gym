@@ -5,10 +5,15 @@ from air_hockey_challenge.utils import robot_to_world
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
+MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 120  # default is 500, recommended 120
+MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
+
 
 class AirHockeyPlanarHit(AirHockeyBase):
     def __init__(self):
         super().__init__(env_id="3dof-hit", reward_function=self.planar_hit_reward)
+
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
     @staticmethod
     def planar_hit_reward(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -47,25 +52,14 @@ class AirHockeyPlanarHit(AirHockeyBase):
 
 
 class AirHockeyPlanarDefend(AirHockeyBase):
-    pass
+    def __init__(self):
+        super().__init__(env_id="3dof-hit", reward_function=self.planar_defend_reward)
+
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
+
+    @ staticmethod
+    def planar_defend_reward(base_env: AirHockeyHit, obs, act, obs_, done):
+        return 0
 
 
-def test_env(seed=0):
-    env = AirHockeyPlanarHit()
-    env.seed(seed)
 
-    for i in range(5):
-        obs = env.reset()
-        stp = 0
-        while True:
-            act = env.action_space.sample()
-            obs_, reward, done, info = env.step(act)
-            ra = env.render("rgb_array")
-            print(ra.shape)
-            stp += 1
-            if done:
-                break
-
-
-if __name__ == "__main__":
-    test_env()

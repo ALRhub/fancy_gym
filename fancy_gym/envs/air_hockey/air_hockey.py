@@ -8,13 +8,12 @@ import gym
 from gym import spaces, utils
 from gym.core import ObsType, ActType
 
-from air_hockey_challenge.utils import robot_to_world
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
 MAX_EPISODE_STEPS_AIR_HOCKEY = 150
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 120  # default is 500, recommended 120
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
+# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 120  # default is 500, recommended 120
+# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
 
 
 class AirHockeyBase(gym.Env):
@@ -29,13 +28,25 @@ class AirHockeyBase(gym.Env):
         self.env = AirHockeyChallengeWrapper(env=env_id, action_type="position-velocity",
                                              interpolation_order=3,
                                              custom_reward_function=reward_function, **kwargs)
+        self.base_env = self.env.base_env
+
         # air hockey env info
-        self.info = self.env.info
+        self.mdp_info = self.env.info
         self.env_info = self.env.env_info
 
+        # dt 0.02 or 0.001 ?
+        self.dt = self.env_info["dt"]
+        self.dof = self.env_info["robot"]["n_joints"]
+
+        # mujoco model and data
+        self._model = self.env.base_env._model
+        self._data = self.env.base_env._data
+        self.robot_model = self.env_info["robot"]["robot_model"]
+        self.robot_data = self.env_info["robot"]["robot_data"]
+
         # observation space
-        obs_low = copy.deepcopy(self.info.observation_space.low)
-        obs_high = copy.deepcopy(self.info.observation_space.high)
+        obs_low = copy.deepcopy(self.mdp_info.observation_space.low)
+        obs_high = copy.deepcopy(self.mdp_info.observation_space.high)
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
         # action space
@@ -49,7 +60,8 @@ class AirHockeyBase(gym.Env):
         self._episode_steps = 0
 
         # max steps
-        self.horizon = self.info.horizon
+        # self.horizon = self.mdp_info.horizon
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
     def reset(
         self,
@@ -73,7 +85,7 @@ class AirHockeyBase(gym.Env):
         obs = np.array(obs, dtype=np.float32)
 
         self._episode_steps += 1
-        if self._episode_steps >= MAX_EPISODE_STEPS_AIR_HOCKEY:
+        if self._episode_steps >= self.horizon:
             done = True
 
         if self.env.base_env.n_agents == 1:
