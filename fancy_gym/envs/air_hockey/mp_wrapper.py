@@ -10,8 +10,8 @@ class PlanarMPWrapper(RawInterfaceWrapper):
         return np.hstack([
             [True] * 3,  # puck position [x, y, theta]
             [True] * 3,  # puck velocity [dx, dy, dtheta]
-            [True] * 3,  # joint position
-            [True] * 3,  # joint velocity
+            [False] * 3,  # joint position
+            [False] * 3,  # joint velocity
         ])
 
     @property

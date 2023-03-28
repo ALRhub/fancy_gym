@@ -158,6 +158,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         infos = dict()
         done = False
+        frames = []
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
@@ -176,7 +177,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 infos[k] = elems
 
             if self.render_kwargs:
-                self.env.render(**self.render_kwargs)
+                mode = self.render_kwargs.get("mode")
+                if mode == "rgb_array":
+                    frames.append(self.env.render(mode=mode))
+                else:
+                    self.env.render(**self.render_kwargs)
 
             if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
                                                  t + 1 + self.current_traj_steps)
@@ -189,6 +194,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         infos.update({k: v[:t+1] for k, v in infos.items()})
         self.current_traj_steps += t + 1
+
+        if len(frames) != 0:
+            infos["rgb_array"] = frames
 
         if self.verbose >= 2:
             infos['positions'] = position
