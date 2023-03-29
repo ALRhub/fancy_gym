@@ -199,8 +199,8 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
 
     def sample_context(self):
-        pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
-        theta = self.np_random.uniform(low=0, high=np.pi * 2)
+        pos = np.random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
+        theta = np.random.uniform(low=0, high=np.pi * 2)
         quat = rot_to_quat(theta, np.array([1, 1, 1]))
         return np.concatenate([pos, quat])
 
