@@ -32,8 +32,16 @@ class AirHockeyPlanarHit(AirHockeyBase):
             # if puck in the opponent goal
             x_dis = puck_pos[0] - goal_pos[0]
             y_dis = np.abs(puck_pos[1]) - env_info["table"]["goal_width"] / 2
+            tot_steps = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
+            ep_step = base_env.ep_step
+            th_step = 100
             if x_dis > 0 > y_dis:
-                rew = 200
+                coef = 1.0
+                # print(ep_step)
+                if ep_step > th_step:
+                    coef = coef * (1-(ep_step-th_step)/(tot_steps-th_step))
+                # print(coef)
+                rew = 200 * coef
         else:
             if not base_env.has_hit:
                 ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
@@ -55,7 +63,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             else:
                 rew_hit = 0.25 + min([1, (0.25 * puck_vel[0] ** 4)])
                 rew_goal = 0
-                if puck_pos[0] > 0.8:
+                if puck_pos[0] > 0:
                     sig = 0.1
                     rew_goal = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((puck_pos[1] - 0) / sig, 2.) / 2)
 
@@ -64,8 +72,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
                 ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
                 stay_ee_dist = np.linalg.norm(stay_pos - ee_pos)
                 rew_stay = np.exp(-4 * (stay_ee_dist - 0.08))
-                # print("hit: ", 2 * rew_hit, "rew_goal: ", 4 * rew_goal, "rew_stay: ", 8 * rew_stay)
-                rew = 2 * rew_hit + 4 * rew_goal + 8 * rew_stay
+                # print("hit: ", 2 * rew_hit, "rew_goal: ", 2 * rew_goal, "rew_stay: ", 4 * rew_stay)
+                rew = 2 * rew_hit + 2 * rew_goal + 4 * rew_stay
 
         rew -= 1e-3 * np.linalg.norm(act)
         return rew

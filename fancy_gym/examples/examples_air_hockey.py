@@ -55,4 +55,4 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
 
 if __name__ == "__main__":
     # test_mp_env(env_id="3dof-ProMP-defend", seed=0, iteration=10)
-    test_baseline(env_id='3dof-hit')
+    test_baseline(env_id='3dof-hit', iteration=1)
