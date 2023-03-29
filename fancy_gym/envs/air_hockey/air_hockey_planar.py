@@ -37,18 +37,18 @@ class AirHockeyPlanarHit(AirHockeyBase):
         else:
             if not base_env.has_hit:
                 ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
-                ee_puck_dis = np.linalg.norm(ee_pos[:2] - puck_pos[:2]) # distance between ee and puck
-                ee_puck_vec = (ee_pos[:2] - puck_pos[:2]) / ee_puck_dis # vector from ee to puck
+                ee_puck_dis = np.linalg.norm(ee_pos[:2] - puck_pos[:2])  # distance between ee and puck
+                ee_puck_vec = (ee_pos[:2] - puck_pos[:2]) / ee_puck_dis  # vector from ee to puck
 
                 # compute cos between ee_puck and puck_goal
-                puck_goal_dis = np.linalg.norm(puck_pos[:2] - goal_pos[:2]) # distance between puck and goal
-                puck_goal_vec = (puck_pos[:2] - goal_pos[:2]) / puck_goal_dis # vector from puck and goal
-                cos_ang_goal = np.clip(ee_puck_vec @ puck_goal_vec, 0, 1) # cos between ee_puck and puck_goal
+                puck_goal_dis = np.linalg.norm(puck_pos[:2] - goal_pos[:2])  # distance between puck and goal
+                puck_goal_vec = (puck_pos[:2] - goal_pos[:2]) / puck_goal_dis  # vector from puck and goal
+                cos_ang_goal = np.clip(ee_puck_vec @ puck_goal_vec, 0, 1)  # cos between ee_puck and puck_goal
 
                 # compute cos between ee_puck and puck_side
-                puck_side_dis = np.linalg.norm(puck_pos[:2] - side_pos[:2]) # distance between puck and bouncing point
-                puck_side_vec = (puck_pos[:2] - side_pos[:2]) / puck_side_dis # vector from puck to bouncing point
-                cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1) # cos between ee_puck and puck_side
+                puck_side_dis = np.linalg.norm(puck_pos[:2] - side_pos[:2])  # distance between puck and bouncing point
+                puck_side_vec = (puck_pos[:2] - side_pos[:2]) / puck_side_dis  # vector from puck to bouncing point
+                cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1)  # cos between ee_puck and puck_side
 
                 cos_ang = np.max([cos_ang_goal, cos_ang_side])
                 rew = np.exp(-8 * (ee_puck_dis - 0.08)) * cos_ang**2
@@ -60,12 +60,12 @@ class AirHockeyPlanarHit(AirHockeyBase):
                     rew_goal = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((puck_pos[1] - 0) / sig, 2.) / 2)
 
                 # distance
-                init_j_pos = base_env.init_state
-                j_pos, _ = base_env.get_joints(obs_)
-                j_diff = np.linalg.norm(j_pos - init_j_pos)
-                rew_stay = np.exp(-4 * (j_diff - 0.08))
-                # print("hit: ", 1 * rew_hit, "rew_goal: ", 1 * rew_goal, "rew_stay: ", 10 * rew_stay)
-                rew = 1 * rew_hit + 1 * rew_goal + 10 * rew_stay
+                stay_pos = np.array([-0.5, 0, 0])
+                ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
+                stay_ee_dist = np.linalg.norm(stay_pos - ee_pos)
+                rew_stay = np.exp(-4 * (stay_ee_dist - 0.08))
+                # print("hit: ", 2 * rew_hit, "rew_goal: ", 4 * rew_goal, "rew_stay: ", 8 * rew_stay)
+                rew = 2 * rew_hit + 4 * rew_goal + 8 * rew_stay
 
         rew -= 1e-3 * np.linalg.norm(act)
         return rew
