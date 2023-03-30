@@ -12,7 +12,7 @@ from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import (
 )
 from fancy_gym.black_box.controller.pd_controller import PDController
 
-MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 1000
+MAX_EPISODE_STEPS_BOX_PUSHING_BIN = 50
 BOX_INIT_FRAME_SKIPS = 500  # boxes need time to fall
 PUSH_DISTANCE = 0.03  # 3cm ~ 1 / 3 of box sizes
 
@@ -66,7 +66,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
 
         # noise of 8deg ~ pi/21rad, ensure >95% values inside the range with 3sigma=range
         self.noisy_start_pos = lambda : np.clip(
-            START_POS + np.random.normal(0, np.pi / 21 / 3, START_POS.shape),
+            START_POS,  # + np.random.normal(0, np.pi / 21 / 3, START_POS.shape),
             self._q_min,
             self._q_max
         )
