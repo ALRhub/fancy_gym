@@ -29,7 +29,7 @@ ROBOT_RADIUS = 0.788
 # Rewards
 BOX_IN_REWARD = 1000
 OUTSIDE_REACH_PENALTY = -100
-BOX_DIST_BIN_COEFF = 2.0
+BOX_DIST_BIN_COEFF = 180.0
 BOX_DIST_TCP_COEFF = 1.0
 
 
@@ -593,8 +593,26 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         width: int = 244,
         height: int = 244,
     ):
+        self.last_dist_to_bin = 0
         super(BoxPushingBinDense, self).__init__(num_boxes, frame_skip, width, height)
 
+    def reset_model(self):
+        obs = super().reset_model()
+        self.last_dist_to_bin = self.dist_boxes_to_bins()
+        return obs
+
+    def dist_boxes_to_bins(self):
+        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos_xyz = [b[:2] for b in box_pos]
+
+        # Parallelize calculating mahalanobis distance by casting both box positions and
+        # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
+        box_pos = [b[:2] for b in box_pos]
+        parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
+        parallel_bin_pos = np.repeat(
+            np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
+        )
+        return np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
 
     def _get_reward(self, action, qpos, qvel, box_pos):
         """
@@ -619,16 +637,11 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         dist_to_tcp, dist_to_bin = 0.0, 0.0
         if len(box_pos) > 0:
             dist_to_tcp = self.dist_boxes_to_tcp()
+            new_dist_to_bin =self.dist_boxes_to_bins()
 
-            # Parallelize calculating mahalanobis distance by casting both box positions and
-            # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
-            box_pos = [b[:2] for b in box_pos]
-            parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
-            parallel_bin_pos = np.repeat(
-                np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
-            )
-            dist_to_bin = np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+            dist_to_bin_rew = self.last_dist_to_bin - new_dist_to_bin
+            self.last_dist_to_bin = new_dist_to_bin
 
         dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * -dist_to_tcp})
-        dense_reward.update({"dist_to_bin": BOX_DIST_BIN_COEFF * -dist_to_bin})
+        dense_reward.update({"dist_to_bin": BOX_DIST_BIN_COEFF * dist_to_bin_rew})
         return dense_reward
