@@ -232,7 +232,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         obs = np.concatenate([
                 self.data.qpos[:7].copy(),  # joint position
                 self.data.qvel[:7].copy(),  # joint velocity
-                self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
+                # self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
                 self.data.site("rod_tip").xpos.copy(),  # position of rod tip
                 self.data.body("push_rod").xquat.copy(),  # orientation of rod
             ] + box_pos + box_quat
