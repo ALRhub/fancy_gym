@@ -118,6 +118,6 @@ def test_mp():
 
 
 if __name__ == "__main__":
-    test_mp_env(env_id="3dof-ProMP-hit", seed=0, iteration=10)
-    # test_baseline(env_id='3dof-hit', iteration=1)
+    # test_mp_env(env_id="3dof-ProMP-hit", seed=0, iteration=10)
+    test_baseline(env_id='3dof-hit', iteration=1)
     # test_mp()
