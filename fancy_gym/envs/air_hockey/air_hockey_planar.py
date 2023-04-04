@@ -63,7 +63,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             else:
                 rew_hit = 0.25 + min([1, (0.25 * puck_vel[0] ** 4)])
                 rew_goal = 0
-                if puck_pos[0] > 0:
+                if puck_pos[0] > 0.7:
                     sig = 0.1
                     rew_goal = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((puck_pos[1] - 0) / sig, 2.) / 2)
 
@@ -73,7 +73,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
                 stay_ee_dist = np.linalg.norm(stay_pos - ee_pos)
                 rew_stay = np.exp(-4 * (stay_ee_dist - 0.08))
                 # print("hit: ", 2 * rew_hit, "rew_goal: ", 2 * rew_goal, "rew_stay: ", 4 * rew_stay)
-                rew = 2 * rew_hit + 2 * rew_goal + 4 * rew_stay
+                rew = 2 * rew_hit + 10 * rew_goal + 0 * rew_stay
 
         rew -= 1e-3 * np.linalg.norm(act)
         return rew
