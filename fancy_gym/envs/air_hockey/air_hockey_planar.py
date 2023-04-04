@@ -78,6 +78,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
         rew -= 1e-3 * np.linalg.norm(act)
         return rew
 
+    @staticmethod
+    def planar_hit_sparse_reward(base_env: AirHockeyHit, obs, act, obs_, done):
+        pass
+
 
 class AirHockeyPlanarDefend(AirHockeyBase):
     def __init__(self):

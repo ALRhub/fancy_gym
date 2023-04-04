@@ -39,8 +39,8 @@ class AirHockeyBase(gym.Env):
         self.dof = self.env_info["robot"]["n_joints"]
 
         # mujoco model and data
-        self._model = self.env.base_env._model
-        self._data = self.env.base_env._data
+        self._model = self.base_env._model
+        self._data = self.base_env._data
         self.robot_model = self.env_info["robot"]["robot_model"]
         self.robot_data = self.env_info["robot"]["robot_data"]
 
