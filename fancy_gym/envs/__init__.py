@@ -787,7 +787,7 @@ for _v in _versions:
     # if _v == "3dof-defend":
     #     kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     #     kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 3
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 1
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 1
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
@@ -813,7 +813,7 @@ for _v in _versions:
     # if _v == "3dof-defend":
     #     kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     #     kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 3
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 2
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 1
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 1
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
