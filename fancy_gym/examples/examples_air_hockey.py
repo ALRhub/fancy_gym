@@ -32,6 +32,7 @@ def test_mp_env(env_id="3dof-ProMP-hit", seed=0, iteration=5):
             act = env.action_space.sample()
             obs, reward, done, info = env.step(act)
             if done:
+                print(reward)
                 break
 
 
@@ -118,6 +119,6 @@ def test_mp():
 
 
 if __name__ == "__main__":
-    # test_mp_env(env_id="3dof-ProMP-hit", seed=0, iteration=10)
-    test_baseline(env_id='3dof-hit', iteration=1)
+    # test_mp_env(env_id="3dof-ProMP-hit-sparse", seed=0, iteration=1)
+    test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_mp()
