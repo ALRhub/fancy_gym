@@ -557,8 +557,8 @@ for _v in _versions:
     kwargs_dict_tt_promp['name'] = _v
     kwargs_dict_tt_promp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_promp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
-    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_tau'] = True
-    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_delay'] = True
+    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_tau'] = False
+    kwargs_dict_tt_promp['phase_generator_kwargs']['learn_delay'] = False
     kwargs_dict_tt_promp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
     kwargs_dict_tt_promp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
     kwargs_dict_tt_promp['basis_generator_kwargs']['num_basis'] = 3
@@ -584,7 +584,8 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_prodmp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
-    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['relative_goal'] = True
+    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['disable_goal'] = True
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_tau'] = True
@@ -593,8 +594,6 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['alpha'] = 25.
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    # kwargs_dict_tt_prodmp['black_box_kwargs']['max_planning_times'] = 3
-    # kwargs_dict_tt_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 50 == 0
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',

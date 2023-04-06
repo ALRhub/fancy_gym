@@ -7,4 +7,4 @@ def compare_bases_shape(env1_id, env2_id):
     env2.traj_gen.show_scaled_basis(plot=True)
     return
 if __name__ == '__main__':
-    compare_bases_shape("BoxPushingDenseReplanProDMP-v0", "BoxPushingDenseProMP-v0")
+    compare_bases_shape("TableTennis4DProDMP-v0", "TableTennis4DProMP-v0")
