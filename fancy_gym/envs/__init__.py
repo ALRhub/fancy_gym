@@ -619,7 +619,7 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_delay'] = True
-    kwargs_dict_tt_prodmp['basis_generator_kwargs']['num_basis'] = 2
+    kwargs_dict_tt_prodmp['basis_generator_kwargs']['num_basis'] = 3
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['alpha'] = 25.
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
