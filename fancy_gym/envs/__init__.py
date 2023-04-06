@@ -583,7 +583,7 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['name'] = _v
     kwargs_dict_tt_prodmp['controller_kwargs']['p_gains'] = 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0])
     kwargs_dict_tt_prodmp['controller_kwargs']['d_gains'] = 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1])
-    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = False
+    kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
