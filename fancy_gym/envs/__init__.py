@@ -587,8 +587,8 @@ for _v in _versions:
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
     kwargs_dict_tt_prodmp['trajectory_generator_kwargs']['disable_goal'] = True
-    kwargs_dict_tt_prodmp['phase_generator_kwargs']['tau_bound'] = [0.8, 1.5]
-    kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.05, 0.15]
+    kwargs_dict_tt_prodmp['phase_generator_kwargs']['tau_bound'] = [0.5, 2.0]
+    kwargs_dict_tt_prodmp['phase_generator_kwargs']['delay_bound'] = [0.02, 0.2]
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_tau'] = True
     kwargs_dict_tt_prodmp['phase_generator_kwargs']['learn_delay'] = True
     kwargs_dict_tt_prodmp['basis_generator_kwargs']['num_basis'] = 3
