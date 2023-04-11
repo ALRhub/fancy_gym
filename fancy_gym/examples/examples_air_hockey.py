@@ -23,14 +23,14 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
             env.render(mode="human")
 
             rews.append(rew)
-            jerks.append(info['jerk'])
-            constrs['j_pos'].append(np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int))
-            constrs['j_vel'].append(np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int))
-            constrs['ee'].append(np.any(info['constraints_value']['ee_constr'] > 0).astype(int))
+            jerks.append(info['jerk_violation'])
+            constrs['j_pos'].append(info['constr_j_pos'])
+            constrs['j_vel'].append(info['constr_j_vel'])
+            constrs['ee'].append(info['constr_ee'])
 
             if done:
                 print('Return: ', np.sum(rews))
-                print('Jerks: ', np.sum(jerks, axis=0).astype(int) / 1e4)
+                print('Jerks: ', np.sum(jerks))
                 print('constr_j_pos: ', np.sum(constrs['j_pos']))
                 print('constr_j_vel: ', np.sum(constrs['j_vel']))
                 print('constr_ee: ', np.sum(constrs['ee']))
@@ -47,21 +47,21 @@ def test_env(env_id="3dof-hit", seed=0, iteration=5):
         constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
 
         obs = env.reset()
-        env.render(mode="human")
+        # env.render(mode="human")
         while True:
             act = env.action_space.sample()
             obs_, rew, done, info = env.step(act)
-            env.render(mode='human')
+            # env.render(mode='human')
 
             rews.append(rew)
-            jerks.append(info['jerk'])
-            constrs['j_pos'].append(np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int))
-            constrs['j_vel'].append(np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int))
-            constrs['ee'].append(np.any(info['constraints_value']['ee_constr'] > 0).astype(int))
+            jerks.append(info['jerk_violation'])
+            constrs['j_pos'].append(info['constr_j_pos'])
+            constrs['j_vel'].append(info['constr_j_vel'])
+            constrs['ee'].append(info['constr_ee'])
 
             if done:
                 print('Return: ', np.sum(rews))
-                print('Jerks: ', np.sum(jerks, axis=0).astype(int) / 1e4)
+                print('Jerks: ', np.sum(jerks))
                 print('constr_j_pos: ', np.sum(constrs['j_pos']))
                 print('constr_j_vel: ', np.sum(constrs['j_vel']))
                 print('constr_ee: ', np.sum(constrs['ee']))
@@ -74,22 +74,25 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     for i in range(iteration):
         print("iteration: ", i)
         obs = env.reset()
-        if i == 0:
-            env.render(mode="human")
+        # if i == 0:
+        #     env.render(mode="human")
         while True:
             act = env.action_space.sample()
             obs, rew, done, info = env.step(act)
             if done:
                 print('Return: ', np.sum(rew))
-                print('Jerks: ', np.sum(info['jerk'], axis=0).astype(int) / 1e4)
+                jerks = []
+                for jerk in info['jerk']:
+                    jerks.append(np.any(jerk > 1e4).astype(int))
+                print('Jerks: ', np.sum(info['jerk_violation']))
                 constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
                 for constr in info['constraints_value']:
                     constrs['j_pos'].append(np.any(constr['joint_pos_constr'] > 0).astype(int))
                     constrs['j_vel'].append(np.any(constr['joint_vel_constr'] > 0).astype(int))
                     constrs['ee'].append(np.any(constr['ee_constr'] > 0).astype(int))
-                print('constr_j_pos: ', np.sum(constrs['j_pos']))
-                print('constr_j_vel: ', np.sum(constrs['j_vel']))
-                print('constr_ee: ', np.sum(constrs['ee']))
+                print('constr_j_pos: ', np.sum(info['constr_j_pos']))
+                print('constr_j_vel: ', np.sum(info['constr_j_vel']))
+                print('constr_ee: ', np.sum(info['constr_ee']))
                 break
 
 
@@ -157,7 +160,7 @@ def test_mp():
 
 
 if __name__ == "__main__":
-    # test_baseline(env_id='3dof-hit', iteration=10)
-    # test_env(env_id="3dof-hit", iteration=10)
-    test_mp_env(env_id="3dof-hit-promp", iteration=10)
+    # test_baseline(env_id='3dof-hit-sparse', iteration=10)
+    # test_env(env_id="3dof-hit-sparse", iteration=10)
+    test_mp_env(env_id="3dof-hit-sparse-promp", iteration=10)
     # test_mp()

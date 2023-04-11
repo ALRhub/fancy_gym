@@ -87,16 +87,6 @@ class AirHockeyBase(gym.Env):
         self._episode_steps += 1
         if self._episode_steps >= self.horizon:
             done = True
-        else:
-            done = False
-
-        if self.env.base_env.n_agents == 1:
-            info["has_hit"] = 1 if self.env.base_env.has_hit else 0
-            info["has_goal"] = 1 if self.env.base_env.has_hit else 0
-            info["has_bounce"] = 1 if self.env.base_env.has_bounce else 0
-            info["hit_step"] = self.env.base_env.hit_step
-            info["goal_step"] = self.env.base_env.goal_step
-            info["bounce_step"] = self.env.base_env.bounce_step
 
         return obs, rew, done, info
 

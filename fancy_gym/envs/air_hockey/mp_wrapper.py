@@ -8,8 +8,8 @@ class PlanarMPWrapper(RawInterfaceWrapper):
     @property
     def context_mask(self) -> np.ndarray:
         return np.hstack([
-            [True] * 3,  # puck position [x, y, theta]
-            [True] * 3,  # puck velocity [dx, dy, dtheta]
+            [True, True, False],  # puck position [x, y, theta]
+            [False] * 3,  # puck velocity [dx, dy, dtheta]
             [False] * 3,  # joint position
             [False] * 3,  # joint velocity
         ])

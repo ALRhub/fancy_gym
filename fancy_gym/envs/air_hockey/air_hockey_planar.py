@@ -1,4 +1,7 @@
+from typing import Union, Tuple, Optional
+
 import numpy as np
+from gym.core import ObsType, ActType
 from fancy_gym.envs.air_hockey.air_hockey import AirHockeyBase
 
 from air_hockey_challenge.utils import robot_to_world
@@ -17,6 +20,28 @@ class AirHockeyPlanarHit(AirHockeyBase):
             super().__init__(env_id="3dof-hit", reward_function=self.planar_hit_reward)
 
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
+
+    def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
+        obs, rew, done, info = super().step(action)
+
+        if self._episode_steps >= self.horizon:
+            done = True
+        else:
+            done = False
+
+        if self.env.base_env.n_agents == 1:
+            info["has_hit"] = 1 if self.env.base_env.has_hit else 0
+            info["has_bounce"] = 1 if self.env.base_env.has_bounce else 0
+            info["has_success"] = 1 if self.env.base_env.has_success else 0
+            info["hit_step"] = self.env.base_env.hit_step
+            info["bounce_step"] = self.env.base_env.bounce_step
+            info["success_step"] = self.env.base_env.success_step
+            info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
+            info["constr_j_pos"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
+            info["constr_j_vel"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
+            info["constr_ee"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+
+        return obs, rew, done, info
 
     @staticmethod
     def planar_hit_reward(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -88,26 +113,18 @@ class AirHockeyPlanarHit(AirHockeyBase):
     @staticmethod
     def planar_hit_sparse_reward(base_env: AirHockeyHit, obs, act, obs_, done):
         # init reward and env info
-        rew = 0
         env_info = base_env.env_info
+        goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        # compute puck_pos, goal_pos and side_pos
-        puck_pos, puck_vel = base_env.get_puck(obs_)  # puck_pos, puck_vel in world frame
-        goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])  # goal_pos in world frame
-        e_w = env_info["table"]["width"] / 2 - env_info["puck"]["radius"]
-        w = (abs(puck_pos[1]) * goal_pos[0] + puck_pos[0] * goal_pos[1] - e_w * puck_pos[0] - e_w * goal_pos[0])
-        w = w / (abs(puck_pos[1]) + goal_pos[1] - 2 * e_w)
-        side_pos = np.array([w, np.copysign(e_w, puck_pos[1]), 0])  # side_pos in world frame
+        # record data
+        ee_pos, ee_vel = base_env.get_ee()
+        base_env.traj_ee_pos.append(ee_pos)
+        base_env.traj_ee_vel.append(ee_vel)
+        puck_pos, puck_vel = base_env.get_puck(obs_)
+        base_env.traj_puck_pos.append(puck_pos)
+        base_env.traj_puck_vel.append(puck_vel)
 
-        # if puck in the opponent goal
-        x_dis = puck_pos[0] - goal_pos[0]
-        y_dis = np.abs(puck_pos[1]) - env_info["table"]["goal_width"] / 2
-        has_goal = False
-        if x_dis > 0 > y_dis:
-            has_goal = True
-
-        # if puck has hit
-        ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
+        # ee to puck
         ee_puck_dis = np.linalg.norm(ee_pos[:2] - puck_pos[:2])  # distance between ee and puck
         ee_puck_vec = (ee_pos[:2] - puck_pos[:2]) / ee_puck_dis  # vector from ee to puck
 
@@ -115,44 +132,43 @@ class AirHockeyPlanarHit(AirHockeyBase):
         puck_goal_dis = np.linalg.norm(puck_pos[:2] - goal_pos[:2])  # distance between puck and goal
         puck_goal_vec = (puck_pos[:2] - goal_pos[:2]) / puck_goal_dis  # vector from puck and goal
         cos_ang_goal = np.clip(ee_puck_vec @ puck_goal_vec, 0, 1)  # cos between ee_puck and puck_goal
+        base_env.traj_cos_ang.append(cos_ang_goal)
 
-        # compute cos between ee_puck and puck_side
-        puck_side_dis = np.linalg.norm(puck_pos[:2] - side_pos[:2])  # distance between puck and bouncing point
-        puck_side_vec = (puck_pos[:2] - side_pos[:2]) / puck_side_dis  # vector from puck to bouncing point
-        cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1)  # cos between ee_puck and puck_side
+        # # compute cos between ee_puck and puck_side
+        # puck_side_dis = np.linalg.norm(puck_pos[:2] - side_pos[:2])  # distance between puck and bouncing point
+        # puck_side_vec = (puck_pos[:2] - side_pos[:2]) / puck_side_dis  # vector from puck to bouncing point
+        # cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1)  # cos between ee_puck and puck_side
 
-        cos_ang = np.max([cos_ang_goal, cos_ang_side])
-        base_env.rew_dist = max(np.exp(-8 * (ee_puck_dis - 0.08)) * cos_ang ** 2, base_env.rew_dist)
+        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT:
+            return 0
 
-        # vel
-        base_env.rew_vel = max(puck_vel[0], base_env.rew_vel)
+        traj_ee_pos = np.vstack(base_env.traj_ee_pos)
+        traj_ee_vel = np.vstack(base_env.traj_ee_vel)
+        traj_puck_pos = np.vstack(base_env.traj_puck_pos)
+        traj_puck_vel = np.vstack(base_env.traj_puck_vel)
+        traj_cos_ang = np.stack(base_env.traj_cos_ang)
 
-        if base_env.ep_step == 40:
-            return 8 * base_env.rew_dist
+        if base_env.has_success:
+            min_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 2
+            max_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 1
+            coef = 1.0 - (base_env.success_step - min_success_step)/(max_success_step - min_success_step)
+            success_reward = 6
+            return 4 + coef * success_reward
 
-        if base_env.ep_step == 80:
-            rew = 8 * base_env.rew_dist
-            if base_env.has_hit:
-                rew = 8 * base_env.rew_vel
-                print(rew)
-            if has_goal:
-                rew =  40
-            return rew
+        if base_env.has_bounce:
+            pass
 
-        if base_env.ep_step == 100:
-            rew = 8 * base_env.rew_dist
-            if base_env.has_hit:
-                rew = 8 * base_env.rew_vel
-                print(rew)
-            if has_goal:
-                rew =  20
-            return rew
+        if base_env.has_hit:
+            idx = np.argmin(np.linalg.norm(traj_puck_pos - goal_pos, axis=1))
+            min_p_g_dist = np.linalg.norm(traj_puck_pos[idx] - goal_pos)
+            p_pos_y = np.abs(traj_puck_pos[idx, 1])
+            p_vel_x = traj_puck_vel[idx, 0] if traj_puck_vel[idx, 0] > 0 else 0
+            return 1 + 1.0 * (1 - np.tanh(min_p_g_dist)) + 1.0 * (1 - np.tanh(p_pos_y)) + 1.0 * np.tanh(p_vel_x)
 
-        if base_env.ep_step == 120:
-            if has_goal:
-                return 20
-
-        return 0
+        idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
+        coef = traj_cos_ang[idx]
+        min_e_p_dist = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
+        return coef * (1 - np.tanh(min_e_p_dist))  # [0, 1]
 
 
 class AirHockeyPlanarDefend(AirHockeyBase):
@@ -167,32 +183,32 @@ class AirHockeyPlanarDefend(AirHockeyBase):
         rew = 0
         env_info = base_env.env_info
 
-        # compute puck_pos
-        puck_pos, puck_vel = base_env.get_puck(obs_)  # puck_pos, puck_vel in world frame
-        goal_pos = np.array([-env_info["table"]["length"] / 2, 0, 0])  # self goal_pos in world frame
-        if done:
-            x_dis = puck_pos[0] - goal_pos[0]
-            y_dis = np.abs(puck_pos[1]) - env_info["table"]["goal_width"] / 2
-            if x_dis < 0 and y_dis < 0:
-                rew = -100
-        else:
-            if base_env.has_bounce:
-                rew = -1
-            elif base_env.has_hit:
-                if -0.8 < puck_pos[0] < -0.4:
-                    r_x = np.exp(-5 * np.abs(puck_pos[0] + 0.6))
-                    r_y = 3 * np.exp(-3 * np.abs(puck_pos[1]))
-                    r_v = 5 * np.exp(-(5 * np.linalg.norm(puck_vel))**2)
-                    rew = r_x + r_y + r_v + 1
-            else:
-                ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
-                ee_pos[0] = 0.5
-                ee_puck_dist = np.abs(ee_pos[:2], puck_pos[:2])
-                sig = 0.2
-                r_x = np.exp(-3 * ee_puck_dist[0])
-                r_y = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((ee_puck_dist[1] - 0.08) / sig, 2.) / 2)
-                rew = 0.3 * r_x + 0.7 * (r_y/2)
-        rew -= 1e-3 * np.linalg.norm(act)
+        # # compute puck_pos
+        # puck_pos, puck_vel = base_env.get_puck(obs_)  # puck_pos, puck_vel in world frame
+        # goal_pos = np.array([-env_info["table"]["length"] / 2, 0, 0])  # self goal_pos in world frame
+        # if done:
+        #     x_dis = puck_pos[0] - goal_pos[0]
+        #     y_dis = np.abs(puck_pos[1]) - env_info["table"]["goal_width"] / 2
+        #     if x_dis < 0 and y_dis < 0:
+        #         rew = -100
+        # else:
+        #     if base_env.has_bounce:
+        #         rew = -1
+        #     elif base_env.has_hit:
+        #         if -0.8 < puck_pos[0] < -0.4:
+        #             r_x = np.exp(-5 * np.abs(puck_pos[0] + 0.6))
+        #             r_y = 3 * np.exp(-3 * np.abs(puck_pos[1]))
+        #             r_v = 5 * np.exp(-(5 * np.linalg.norm(puck_vel))**2)
+        #             rew = r_x + r_y + r_v + 1
+        #     else:
+        #         ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
+        #         ee_pos[0] = 0.5
+        #         ee_puck_dist = np.abs(ee_pos[:2], puck_pos[:2])
+        #         sig = 0.2
+        #         r_x = np.exp(-3 * ee_puck_dist[0])
+        #         r_y = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((ee_puck_dist[1] - 0.08) / sig, 2.) / 2)
+        #         rew = 0.3 * r_x + 0.7 * (r_y/2)
+        # rew -= 1e-3 * np.linalg.norm(act)
         return rew
 
 
