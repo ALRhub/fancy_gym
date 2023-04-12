@@ -74,8 +74,8 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     for i in range(iteration):
         print("iteration: ", i)
         obs = env.reset()
-        # if i == 0:
-        #     env.render(mode="human")
+        if i == 0:
+            env.render(mode="human")
         while True:
             act = env.action_space.sample()
             obs, rew, done, info = env.step(act)

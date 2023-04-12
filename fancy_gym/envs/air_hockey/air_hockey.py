@@ -45,8 +45,11 @@ class AirHockeyBase(gym.Env):
         self.robot_data = self.env_info["robot"]["robot_data"]
 
         # observation space
-        obs_low = copy.deepcopy(self.mdp_info.observation_space.low) * 1000
-        obs_high = copy.deepcopy(self.mdp_info.observation_space.high) * 1000
+        # obs_low = copy.deepcopy(self.mdp_info.observation_space.low)
+        # obs_high = copy.deepcopy(self.mdp_info.observation_space.high)
+        obs_dim = 12
+        obs_low = np.ones(obs_dim) * -10000
+        obs_high = np.ones(obs_dim) * 10000
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
         # action space
