@@ -40,6 +40,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             info["constr_j_pos"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
             info["constr_j_vel"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
             info["constr_ee"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+            info["validity"] = 1
 
         return obs, rew, done, info
 
@@ -60,6 +61,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         info["constr_j_pos"] = self.horizon
         info["constr_j_vel"] = self.horizon
         info["constr_ee"] = self.horizon
+        info["validity"] = 0
 
         for k, v in info.items():
             info[k] = [v]
