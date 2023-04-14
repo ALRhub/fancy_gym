@@ -57,14 +57,14 @@ class AirHockeyPlanarHit(AirHockeyBase):
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
 
-        info["jerk_violation"] = self.horizon
-        info["constr_j_pos"] = self.horizon
-        info["constr_j_vel"] = self.horizon
-        info["constr_ee"] = self.horizon
+        info["jerk_violation"] = 1
+        info["constr_j_pos"] = 1
+        info["constr_j_vel"] = 1
+        info["constr_ee"] = 1
         info["validity"] = 0
 
         for k, v in info.items():
-            info[k] = [v]
+            info[k] = [v] * self.horizon
 
         info['trajectory_length'] = self.horizon
 
