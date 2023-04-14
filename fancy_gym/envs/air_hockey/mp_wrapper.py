@@ -29,3 +29,15 @@ class PlanarMPWrapper(RawInterfaceWrapper):
         # return self.unwrapped.robot_data.qvel.copy()
         # return self.unwrapped._data.qvel[:self.dof].copy()
         # return np.array([0, 0, 0])
+
+    def set_episode_arguments(self, action, pos_traj, vel_traj):
+        return pos_traj, vel_traj
+
+    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray):
+        return self.check_traj_validity(action, pos_traj, vel_traj)
+
+    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+                              return_contextual_obs):
+        return self.get_invalid_traj_return(action, pos_traj, vel_traj)
+
+

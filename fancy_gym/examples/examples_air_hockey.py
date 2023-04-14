@@ -1,7 +1,44 @@
+import os
+import time
 import numpy as np
 
 import fancy_gym
 from baseline.baseline_agent.baseline_agent import build_agent
+
+
+def plot_trajs(position, velocity):
+    import matplotlib.pyplot as plt
+
+    pos = position
+    vel = np.diff(pos, n=1, axis=0) / 0.02
+    acc = np.diff(vel, n=1, axis=0) / 0.02
+    jer = np.diff(acc, n=1, axis=0) / 0.02
+
+    pos = pos[:-3]
+    vel = vel[:-2]
+    acc = acc[:-1]
+    jer = jer
+
+    time = np.linspace(0, 2.4, pos.shape[0])
+    constr_j_pos = [[-2.9, +2.9], [-1.8, +1.8], [-2.0, +2.0]]
+    constr_j_vel = [[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]]
+    # plt.subplots(3, 2)
+    for k in range(3):
+        plt.subplot(3, 4, 4 * k + 1)
+        plt.plot(time, pos[:, k])
+        plt.hlines(constr_j_pos[k], xmin=time[0], xmax=time[-1])
+
+        plt.subplot(3, 4, 4 * k + 2)
+        plt.plot(time, vel[:, k])
+        # plt.plot(time, velocity[:-3, k])
+        plt.hlines(constr_j_vel[k], xmin=time[0], xmax=time[-1])
+
+        plt.subplot(3, 4, 4 * k + 3)
+        plt.plot(time, acc[:, k])
+
+        plt.subplot(3, 4, 4 * k + 4)
+        plt.plot(time, jer[:, k])
+    plt.show()
 
 
 def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
@@ -14,6 +51,9 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
         jerks = []
         constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
 
+        j_pos = []
+        j_vel = []
+
         agent.reset()
         obs = env.reset()
         env.render(mode="human")
@@ -21,6 +61,9 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
             act = agent.draw_action(obs).reshape([-1])
             obs_, rew, done, info = env.step(act)
             env.render(mode="human")
+
+            j_pos.append(act[:3])
+            j_vel.append(act[3:])
 
             rews.append(rew)
             jerks.append(info['jerk_violation'])
@@ -34,6 +77,7 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
                 print('constr_j_pos: ', np.sum(constrs['j_pos']))
                 print('constr_j_vel: ', np.sum(constrs['j_vel']))
                 print('constr_ee: ', np.sum(constrs['ee']))
+                # plot_trajs(np.array(j_pos), np.array(j_vel))
                 break
 
 
@@ -72,24 +116,24 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     env = fancy_gym.make(env_id=env_id, seed=seed)
 
     for i in range(iteration):
-        print("iteration: ", i)
+        print("*"*20, i, "*"*20)
         obs = env.reset()
         if i == 0:
             env.render(mode="human")
         while True:
-            act = env.action_space.sample()
+            # act = env.action_space.sample()
+            act = np.array([0.1, 0.2, 0.1, 0.1, -0.1, -0.2, -0.1, -0.1, -0.1, -0.2, -0.1, -0.1]) * -2
             obs, rew, done, info = env.step(act)
+
+            # plot trajs
+            print("weights: ", np.round(act, 2))
+            if rew > -2:
+                traj_pos, traj_vel = env.get_trajectory(act)
+                plot_trajs(traj_pos, traj_vel)
+
             if done:
                 print('Return: ', np.sum(rew))
-                jerks = []
-                for jerk in info['jerk']:
-                    jerks.append(np.any(jerk > 1e4).astype(int))
                 print('Jerks: ', np.sum(info['jerk_violation']))
-                constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
-                for constr in info['constraints_value']:
-                    constrs['j_pos'].append(np.any(constr['joint_pos_constr'] > 0).astype(int))
-                    constrs['j_vel'].append(np.any(constr['joint_vel_constr'] > 0).astype(int))
-                    constrs['ee'].append(np.any(constr['ee_constr'] > 0).astype(int))
                 print('constr_j_pos: ', np.sum(info['constr_j_pos']))
                 print('constr_j_vel: ', np.sum(info['constr_j_vel']))
                 print('constr_ee: ', np.sum(info['constr_ee']))
@@ -159,8 +203,12 @@ def test_mp():
                 plt.show()
 
 
+def test_learn_mp():
+    pass
+
+
 if __name__ == "__main__":
-    # test_baseline(env_id='3dof-hit-sparse', iteration=10)
+    test_baseline(env_id='3dof-hit-sparse', iteration=10)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-sparse-promp", iteration=10)
+    # test_mp_env(env_id="3dof-hit-sparse-promp", seed=1, iteration=100)
     # test_mp()

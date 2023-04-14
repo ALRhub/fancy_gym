@@ -8,7 +8,7 @@ from air_hockey_challenge.utils import robot_to_world
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 120  # default is 500, recommended 120
+MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 120
 MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
 
 
@@ -42,6 +42,31 @@ class AirHockeyPlanarHit(AirHockeyBase):
             info["constr_ee"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
 
         return obs, rew, done, info
+
+    @staticmethod
+    def check_traj_validity(action, pos_traj, vel_traj):
+        constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
+        constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
+        invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
+        invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
+        if invalid_j_pos or invalid_j_vel:
+            return False, pos_traj, vel_traj
+        return True, pos_traj, vel_traj
+
+    def get_invalid_traj_return(self, action, traj_pos, traj_vel):
+        obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
+
+        info["jerk_violation"] = self.horizon
+        info["constr_j_pos"] = self.horizon
+        info["constr_j_vel"] = self.horizon
+        info["constr_ee"] = self.horizon
+
+        for k, v in info.items():
+            info[k] = [v]
+
+        info['trajectory_length'] = self.horizon
+
+        return obs, -1, True, info
 
     @staticmethod
     def planar_hit_reward(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -88,7 +113,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
                 cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1)  # cos between ee_puck and puck_side
 
                 cos_ang = np.max([cos_ang_goal, cos_ang_side])
-                rew = np.exp(-8 * (ee_puck_dis - 0.08)) * cos_ang**2
+                rew = np.exp(-8 * (ee_puck_dis - 0.08)) * cos_ang ** 2
                 # print('not has_hit', rew)
             else:
                 rew_hit = 0.25 + min([1, (0.25 * puck_vel[0] ** 4)])
@@ -134,11 +159,6 @@ class AirHockeyPlanarHit(AirHockeyBase):
         cos_ang_goal = np.clip(ee_puck_vec @ puck_goal_vec, 0, 1)  # cos between ee_puck and puck_goal
         base_env.traj_cos_ang.append(cos_ang_goal)
 
-        # # compute cos between ee_puck and puck_side
-        # puck_side_dis = np.linalg.norm(puck_pos[:2] - side_pos[:2])  # distance between puck and bouncing point
-        # puck_side_vec = (puck_pos[:2] - side_pos[:2]) / puck_side_dis  # vector from puck to bouncing point
-        # cos_ang_side = np.clip(ee_puck_vec @ puck_side_vec, 0, 1)  # cos between ee_puck and puck_side
-
         if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT:
             return 0
 
@@ -148,10 +168,19 @@ class AirHockeyPlanarHit(AirHockeyBase):
         traj_puck_vel = np.vstack(base_env.traj_puck_vel)
         traj_cos_ang = np.stack(base_env.traj_cos_ang)
 
+        # ee constr violation
+        table_width = env_info['table']['width']
+        table_length = env_info['table']['length']
+        invalid_ee = np.any(np.abs(traj_ee_pos[:, 1]) > table_width / 2) or \
+                     np.any(traj_ee_pos[:, 0] < -table_length / 2)
+        if invalid_ee:
+            return -1
+
+        # get score
         if base_env.has_success:
-            min_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 2
-            max_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 1
-            coef = 1.0 - (base_env.success_step - min_success_step)/(max_success_step - min_success_step)
+            # min_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 2
+            # max_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 1
+            coef = np.clip(1.0 - (100 - base_env.success_step) / 50, 0, 1)
             success_reward = 6
             return 4 + coef * success_reward
 
@@ -159,11 +188,14 @@ class AirHockeyPlanarHit(AirHockeyBase):
             pass
 
         if base_env.has_hit:
+            hit_step = base_env.hit_step
+            cos_ang = traj_cos_ang[hit_step]
             idx = np.argmin(np.linalg.norm(traj_puck_pos - goal_pos, axis=1))
             min_p_g_dist = np.linalg.norm(traj_puck_pos[idx] - goal_pos)
-            p_pos_y = np.abs(traj_puck_pos[idx, 1])
-            p_vel_x = traj_puck_vel[idx, 0] if traj_puck_vel[idx, 0] > 0 else 0
-            return 1 + 1.0 * (1 - np.tanh(min_p_g_dist)) + 1.0 * (1 - np.tanh(p_pos_y)) + 1.0 * np.tanh(p_vel_x)
+            max_p_vel_x = np.max(traj_puck_vel[:, 0])
+            # p_pos_y = np.abs(traj_puck_pos[idx, 1])
+            # p_vel_x = traj_puck_vel[idx, 0] if traj_puck_vel[idx, 0] > 0 else 0
+            return 1 + 1.0 * cos_ang + 1.0 * (1 - np.tanh(min_p_g_dist)) + 1.0 * np.tanh(max_p_vel_x)
 
         idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
         coef = traj_cos_ang[idx]
@@ -177,7 +209,7 @@ class AirHockeyPlanarDefend(AirHockeyBase):
 
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
 
-    @ staticmethod
+    @staticmethod
     def planar_defend_reward(base_env: AirHockeyDefend, obs, act, obs_, done):
         # init reward and env info
         rew = 0
@@ -210,6 +242,3 @@ class AirHockeyPlanarDefend(AirHockeyBase):
         #         rew = 0.3 * r_x + 0.7 * (r_y/2)
         # rew -= 1e-3 * np.linalg.norm(act)
         return rew
-
-
-
