@@ -905,6 +905,7 @@ for _v in _versions:
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_ah_promp['wrappers'].append(air_hockey.PlanarMPWrapper)
     # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 2
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # if _v == "3dof-defend":
@@ -912,9 +913,9 @@ for _v in _versions:
     #     kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 2
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 4
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
-    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 0.5
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['name'] = _v

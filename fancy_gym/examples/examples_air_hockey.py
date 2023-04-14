@@ -19,7 +19,7 @@ def plot_trajs(position, velocity):
     acc = acc[:-1]
     jer = jer
 
-    time = np.linspace(0, 2.4, pos.shape[0])
+    time = np.linspace(0, 3.1, pos.shape[0])
     constr_j_pos = [[-2.9, +2.9], [-1.8, +1.8], [-2.0, +2.0]]
     constr_j_vel = [[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]]
     # plt.subplots(3, 2)
@@ -210,5 +210,5 @@ def test_learn_mp():
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=10)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-sparse-promp", seed=1, iteration=1000)
+    test_mp_env(env_id="3dof-hit-sparse-promp", seed=1, iteration=100)
     # test_mp()

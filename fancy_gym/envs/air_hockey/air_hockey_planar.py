@@ -54,6 +54,16 @@ class AirHockeyPlanarHit(AirHockeyBase):
             return False, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
+    def _get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
+        constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
+        constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
+        violate_low_bound_error = np.mean(np.maximum(constr_j_pos[:, 0] - traj_pos, 0)) + \
+                                  np.mean(np.maximum(constr_j_vel[:, 0] - traj_vel, 0))
+        violate_high_bound_error = np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)) + \
+                                   np.mean(np.maximum(traj_vel - constr_j_vel[:, 1], 0))
+        invalid_penalty = violate_low_bound_error + violate_high_bound_error
+        return -invalid_penalty
+
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
 
@@ -68,7 +78,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
 
         info['trajectory_length'] = self.horizon
 
-        return obs, -1, True, info
+        return obs, self._get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
 
     @staticmethod
     def planar_hit_reward(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -175,8 +185,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
         table_length = env_info['table']['length']
         invalid_ee = np.any(np.abs(traj_ee_pos[:, 1]) > table_width / 2) or \
                      np.any(traj_ee_pos[:, 0] < -table_length / 2)
-        if invalid_ee:
-            return -1
+        # if invalid_ee:
+        #     return -1
 
         # get score
         if base_env.has_success:
