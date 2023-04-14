@@ -914,6 +914,7 @@ for _v in _versions:
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 2
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 0.5
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['name'] = _v
