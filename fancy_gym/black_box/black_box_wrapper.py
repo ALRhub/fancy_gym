@@ -145,9 +145,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
-        # TODO remove this part, right now only needed for beer pong
-        mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
-        position, velocity = self.get_trajectory(mp_params)
+        position, velocity = self.get_trajectory(action)
+        position, velocity = self.env.set_episode_arguments(action, position, velocity)
+        traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity)
 
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
@@ -159,6 +159,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         infos = dict()
         done = False
         frames = []
+
+        if not traj_is_valid:
+            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
+                                                                                 self.return_context_observation)
+            return self.observation(obs), trajectory_return, done, infos
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
@@ -184,8 +189,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                     self.env.render(**self.render_kwargs)
 
             if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                 t + 1 + self.current_traj_steps)
-                        and self.plan_steps < self.max_planning_times):
+                                                t + 1 + self.current_traj_steps)
+                    and self.plan_steps < self.max_planning_times):
 
                 self.condition_pos = pos if self.condition_on_desired else None
                 self.condition_vel = vel if self.condition_on_desired else None

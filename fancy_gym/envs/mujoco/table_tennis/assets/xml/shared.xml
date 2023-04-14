@@ -1,0 +1,46 @@
+<mujocoinclude>
+    <default>
+        <default class="wam">
+            <joint type="hinge" limited="true" pos="0 0 0" axis="0 0 1"/>
+        </default>
+        <default class="viz">
+            <geom type="mesh" contype="0" conaffinity="0" group="1" rgba="1 1 1 1"/>
+        </default>
+        <default class="col">
+            <geom type="mesh" contype="0" conaffinity="1" group="0" rgba="1 1 1 1"/>
+        </default>
+        <default class="contact_geom">
+            <geom condim="4" friction="0.1 0.1 0.1" margin="0" solimp="1 1 0" solref="0.1 0.03"/>
+        </default>
+    </default>
+    <asset>
+        <mesh file="base_link_fine.stl"/>
+        <mesh file="base_link_convex.stl"/>
+        <mesh file="shoulder_link_fine.stl"/>
+        <mesh file="shoulder_link_convex_decomposition_p1.stl"/>
+        <mesh file="shoulder_link_convex_decomposition_p2.stl"/>
+        <mesh file="shoulder_link_convex_decomposition_p3.stl"/>
+        <mesh file="shoulder_pitch_link_fine.stl"/>
+        <mesh file="shoulder_pitch_link_convex.stl"/>
+        <mesh file="upper_arm_link_fine.stl"/>
+        <mesh file="upper_arm_link_convex_decomposition_p1.stl"/>
+        <mesh file="upper_arm_link_convex_decomposition_p2.stl"/>
+        <mesh file="elbow_link_fine.stl"/>
+        <mesh file="elbow_link_convex.stl"/>
+        <mesh file="forearm_link_fine.stl"/>
+        <mesh file="forearm_link_convex_decomposition_p1.stl"/>
+        <mesh file="forearm_link_convex_decomposition_p2.stl"/>
+        <mesh file="wrist_yaw_link_fine.stl"/>
+        <mesh file="wrist_yaw_link_convex_decomposition_p1.stl"/>
+        <mesh file="wrist_yaw_link_convex_decomposition_p2.stl"/>
+        <mesh file="wrist_pitch_link_fine.stl"/>
+        <mesh file="wrist_pitch_link_convex_decomposition_p1.stl"/>
+        <mesh file="wrist_pitch_link_convex_decomposition_p2.stl"/>
+        <mesh file="wrist_pitch_link_convex_decomposition_p3.stl"/>
+        <mesh file="wrist_palm_link_fine.stl"/>
+        <mesh file="wrist_palm_link_convex.stl"/>
+        <texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 0.15 0.2" type="2d"
+                 width="512"/>
+        <material name="floor_plane" reflectance="0.5" texrepeat="1 1" texture="texplane" texuniform="true"/>
+    </asset>
+</mujocoinclude>

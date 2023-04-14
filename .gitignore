@@ -111,3 +111,6 @@ venv.bak/
 /configs/db.cfg
 legacy/
 MUJOCO_LOG.TXT
+
+# vscode
+.vscode
