@@ -125,9 +125,9 @@ def plot_single_dof_trajs(start_index=0, end_index=150):
 
     # low resolution (50 hz) traj, 3s, 151 points
     dt_low = 0.02
-    traj_low = np.load("./mp_traj_50hz.npz", allow_pickle=True)
-    pos_low = traj_low["position"]
-    vel_low = traj_low["velocity"]
+    steps = np.linspace(0, 3000, 151, dtype=np.int32)
+    pos_low = pos_high[steps]
+    vel_low = vel_high[steps]
     acc_low = np.diff(vel_low, n=1, axis=0, append=np.zeros((1, 3))) / dt_low
     jer_low = np.abs(np.diff(acc_low, n=1, axis=0, append=np.zeros((1, 3))) / dt_low)
     time_low = np.linspace(0, 3.0, pos_low.shape[0])
@@ -190,7 +190,7 @@ def plot_single_dof_trajs(start_index=0, end_index=150):
             plt.title("position")
             plt.hlines(constr_j_pos[d], xmin=time_low[s], xmax=time_low[e], colors="black")
         plt.plot(time_high[ss:ee], pos_high[ss:ee, d], color='green', label='cubic_interp')
-        plt.plot(time_low[s:e], pos_low[s:e, d], color='blue', label='mp_50hz')
+        plt.plot(time_low[s:e], pos_low[s:e, d], color='blue', label='mp_down_sampling')
         plt.legend()
 
         plt.subplot(2, 4, 4 * c + 2)
