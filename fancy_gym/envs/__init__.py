@@ -899,7 +899,7 @@ register(
 )
 
 # ProMP Env
-_versions = ["3dof-hit", "3dof-defend", "3dof-hit-sparse", "2dof-defend-sparse"]
+_versions = ["3dof-hit", "3dof-defend", "3dof-hit-sparse", "3dof-defend-sparse"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -918,6 +918,7 @@ for _v in _versions:
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
+    kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_promp['name'] = _v
     register(
         id=_env_id,

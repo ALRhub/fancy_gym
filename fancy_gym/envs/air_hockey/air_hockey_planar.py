@@ -1,6 +1,7 @@
 from typing import Union, Tuple, Optional
 
 import numpy as np
+from gym import spaces, utils
 from gym.core import ObsType, ActType
 from fancy_gym.envs.air_hockey.air_hockey import AirHockeyBase
 
@@ -19,6 +20,12 @@ class AirHockeyPlanarHit(AirHockeyBase):
         else:
             super().__init__(env_id="3dof-hit", reward_function=self.planar_hit_reward)
 
+        obs_dim = 12
+        obs_low = np.ones(obs_dim) * -10000
+        obs_high = np.ones(obs_dim) * 10000
+        self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
+
+        self.dt = 0.001
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:

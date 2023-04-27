@@ -31,6 +31,8 @@ class PlanarMPWrapper(RawInterfaceWrapper):
         # return np.array([0, 0, 0])
 
     def set_episode_arguments(self, action, pos_traj, vel_traj):
+        if self.dt == 0.001:
+            return pos_traj[19::20].copy(), vel_traj[19::20].copy()
         return pos_traj, vel_traj
 
     def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray):
