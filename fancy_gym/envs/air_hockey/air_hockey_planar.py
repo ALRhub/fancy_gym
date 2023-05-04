@@ -53,22 +53,27 @@ class AirHockeyPlanarHit(AirHockeyBase):
 
     @staticmethod
     def check_traj_validity(action, pos_traj, vel_traj):
+        tau_bound = [1.5, 3.0]
+        invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
         constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
         invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
         invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
-        if invalid_j_pos or invalid_j_vel:
+        if invalid_tau or invalid_j_pos or invalid_j_vel:
             return False, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
     def _get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
+        tau_bound = [1.5, 3.0]
+        violate_tau_bound_error = np.max([0, action[0] - tau_bound[1]]) + \
+                                  np.max([0, tau_bound[0] - action[0]])
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
         constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
         violate_low_bound_error = np.mean(np.maximum(constr_j_pos[:, 0] - traj_pos, 0)) + \
                                   np.mean(np.maximum(constr_j_vel[:, 0] - traj_vel, 0))
         violate_high_bound_error = np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)) + \
                                    np.mean(np.maximum(traj_vel - constr_j_vel[:, 1], 0))
-        invalid_penalty = violate_low_bound_error + violate_high_bound_error
+        invalid_penalty = violate_tau_bound_error + violate_low_bound_error + violate_high_bound_error
         return -invalid_penalty
 
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
