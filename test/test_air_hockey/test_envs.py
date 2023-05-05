@@ -194,14 +194,14 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
             env.render(mode="human")
         while True:
             act = env.action_space.sample()
-            act = act_list[0]
+            act = act_list[1]
             obs, rew, done, info = env.step(act)
 
             # plot trajs
             print("weights: ", np.round(act, 2))
             if rew > -2:
                 traj_pos, traj_vel = env.get_trajectory(act)
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=100, plot_constrs=False)
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_constrs=False)
 
             if done:
                 print('Return: ', np.sum(rew))
@@ -215,5 +215,5 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-sparse-promp", seed=1, iteration=3)
+    test_mp_env(env_id="3dof-hit-sparse-prodmp", seed=1, iteration=3)
     # test_mp()
