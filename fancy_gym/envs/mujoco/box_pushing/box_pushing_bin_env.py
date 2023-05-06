@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+from scipy.spatial.transform import Rotation
 from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
 import mujoco
@@ -229,13 +230,21 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
     def _get_obs(self):
         box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
         box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
+
+        rots = [Rotation.from_quat(quat) for quat in box_quat]
+        box_angles = [r.as_euler("xyz", degrees=True)[:2] for r in rots]
+        orient = [
+            np.array([
+                np.sin(np.array([(a % 89.9 + 90) % 89.9 for a in angles]).max())
+            ]) for angles in box_angles
+        ]
         obs = np.concatenate([
                 self.data.qpos[:7].copy(),  # joint position
-                self.data.qvel[:7].copy(),  # joint velocity
+                # self.data.qvel[:7].copy(),  # joint velocity
                 # self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
-                self.data.site("rod_tip").xpos.copy(),  # position of rod tip
-                self.data.body("push_rod").xquat.copy(),  # orientation of rod
-            ] + box_pos + box_quat
+                # self.data.site("rod_tip").xpos.copy(),  # position of rod tip
+                # self.data.body("push_rod").xquat.copy(),  # orientation of rod
+            ] + box_pos + orient
         )
         return obs
 
