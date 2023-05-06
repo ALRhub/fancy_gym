@@ -236,7 +236,9 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         box_angles = [r.as_euler("xyz", degrees=True)[:2] for r in rots]
         orient = [
             np.array([
-                np.sin(np.array([(a % 89.9 + 90) % 89.9 for a in angles]).max())
+                np.sin(np.array(
+                    [(a % 89.9 + 90) % 89.9 for a in angles]
+                ).max() * np.pi / 180.)
             ]) for angles in box_angles
         ]
         obs = np.concatenate([
