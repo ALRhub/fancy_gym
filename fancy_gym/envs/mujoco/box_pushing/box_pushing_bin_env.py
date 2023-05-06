@@ -146,6 +146,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         else:
             reward_info = {"reward_unstable_sim": -50}
             reward = -50
+        episode_end = episode_end or len(self.boxes_out_bins) == 0
 
         obs = self._get_obs()
         infos = {
