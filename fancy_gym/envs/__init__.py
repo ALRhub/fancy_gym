@@ -534,16 +534,20 @@ for _v in _versions:
 # ########################################################################################################################
 
 ## Box Pushing Bin
-_versions = ['BoxPushingBin' + r + str(b) + '-v0' for r in ["", "Sparse", "Dense"] for b in range(1, 31)]
+env_names = ['BoxPushingBin' + r + str(b) for r in ["", "Sparse", "Dense"] for b in range(1, 31)]
+_versions = [ e + "ProMP" + basis + "-v0" for e in env_names for basis in [""] + list(map(str, range(3, 7)))]
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ProMP-{_name[1]}'
+    _num_basis = _v.split("MP")[1][0]
+    _env_id = _v
     kwargs_dict_box_pushing_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_box_pushing_promp['wrappers'].append(mujoco.box_pushing.MPWrapperBin)
-    kwargs_dict_box_pushing_promp['name'] = _v
+    kwargs_dict_box_pushing_promp['name'] = _name[0].split("Pro")[0] + "-" + _name[1]
     kwargs_dict_box_pushing_promp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_promp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
-    kwargs_dict_box_pushing_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 2 # 3.5, 4 to try
+    kwargs_dict_box_pushing_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
+    kwargs_dict_box_pushing_promp['phase_generator_kwargs']['alpha_phase'] = 3
+    kwargs_dict_box_pushing_promp['basis_generator_kwargs']['num_basis'] = int(_num_basis) if _num_basis.isdigit() else 4
 
     register(
         id=_env_id,
@@ -552,22 +556,24 @@ for _v in _versions:
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
+_versions = [ e + "ReplanProDMP" + basis + "-v0" for e in env_names for basis in [""] + list(map(str, range(3, 7)))]
 for _v in _versions:
     _name = _v.split("-")
-    _env_id = f'{_name[0]}ReplanProDMP-{_name[1]}'
+    _num_basis = _v.split("MP")[1][0]
+    _env_id = _v
     kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
     kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.box_pushing.MPWrapperBin)
-    kwargs_dict_box_pushing_prodmp['name'] = _v
+    kwargs_dict_box_pushing_prodmp['name'] = _name[0].split("Replan")[0] + "-" + _name[1]
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['p_gains'] = 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.])
     kwargs_dict_box_pushing_prodmp['controller_kwargs']['d_gains'] = 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.])
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.5
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.5
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = int(_num_basis) if _num_basis.isdigit() else 4
     kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : None
+    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
     kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
     register(
         id=_env_id,
