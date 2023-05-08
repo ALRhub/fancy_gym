@@ -195,6 +195,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
         while True:
             act = env.action_space.sample()
             act = np.hstack([1.6, act_list[0]])
+            act = act_list[0]
             obs, rew, done, info = env.step(act)
 
             # plot trajs
