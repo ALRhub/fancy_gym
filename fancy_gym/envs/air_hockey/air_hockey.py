@@ -99,7 +99,7 @@ class AirHockeyBase(gym.Env):
             raise NotImplementedError
 
     def seed(self, seed=None):
-        self.env.seed(seed)
+        self.base_env.seed(seed)
 
 
 if __name__ == "__main__":
