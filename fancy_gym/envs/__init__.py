@@ -905,8 +905,8 @@ for _v in _versions:
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
     kwargs_dict_ah_promp['wrappers'].append(air_hockey.PlanarMPWrapper)
     # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
-    kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
-    kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.5, 3.0]
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.5, 3.0]
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
