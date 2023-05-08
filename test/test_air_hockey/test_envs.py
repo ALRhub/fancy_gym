@@ -9,18 +9,23 @@ import matplotlib.pyplot as plt
 import scipy
 
 
-def plot_trajs(position, velocity, start_index=0, end_index=100, plot_constrs=True):
-    dt = 0.001
+def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True):
+    if plot_sampling:
+        dt = 0.001
+    else:
+        dt = 0.02
     pos = position
     vel = velocity
     acc = np.diff(vel, n=1, axis=0, append=np.zeros([1, 3])) / dt
     jer = np.diff(acc, n=1, axis=0, append=np.zeros([1, 3])) / dt
+    jer = np.abs(jer)
 
     # down sampling
-    pos = pos[19::20]
-    vel = vel[19::20]
-    acc = acc[19::20]
-    jer = np.abs(jer[19::20])
+    if plot_sampling:
+        pos = pos[19::20]
+        vel = vel[19::20]
+        acc = acc[19::20]
+        jer = np.abs(jer[19::20])
 
     # interpolation
     tf = 0.02
@@ -193,15 +198,15 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
         if i == 0:
             env.render(mode="human")
         while True:
-            act = env.action_space.sample()
-            act = act_list[1]
+            # act = env.action_space.sample()
+            act = act_list[1] * 5
             obs, rew, done, info = env.step(act)
 
             # plot trajs
             print("weights: ", np.round(act, 2))
             if rew > -2:
                 traj_pos, traj_vel = env.get_trajectory(act)
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_constrs=False)
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_sampling=False, plot_constrs=False)
 
             if done:
                 print('Return: ', np.sum(rew))
@@ -212,8 +217,52 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
                 break
 
 
+def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
+    env = fancy_gym.make(env_id=env_id, seed=seed)
+
+    for i in range(iteration):
+        print("*"*20, i, "*"*20)
+        obs = env.reset()
+        done = False
+        env.render(mode="human")
+        pos_list = []
+        vel_list = []
+        while True:
+            act = env.action_space.sample()
+            act = np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
+                            -0.1360, -0.3141, -0.4803, -0.9457, -0.5832, -0.3209])
+            pos, vel = env.get_trajectory(act)
+            pos_list.append(pos), vel_list.append(vel)
+            obs, rew, done, info = env.step(act)
+
+            # plot trajs
+            # print("weights: ", np.round(act, 2))
+            # if rew > -2:
+            #     traj_pos, traj_vel = env.get_trajectory(act)
+            #     plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_sampling=False, plot_constrs=False)
+
+            if True:
+                print('Return: ', np.sum(rew))
+                print('Jerks: ', np.sum(info['jerk_violation']))
+                print('constr_j_pos: ', np.sum(info['constr_j_pos']))
+                print('constr_j_vel: ', np.sum(info['constr_j_vel']))
+                print('constr_ee: ', np.sum(info['constr_ee']))
+            if done:
+                step = np.linspace(1, 150, 150)
+                for pos, vel in zip(pos_list, vel_list):
+                    plt.subplot(1, 2, 1)
+                    plt.plot(step, pos[:, 0])
+
+                    plt.subplot(1, 2, 2)
+                    plt.plot(step, vel[:, 0])
+
+                plt.show()
+                break
+
+
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-sparse-prodmp", seed=1, iteration=3)
-    # test_mp()
+    # test_mp_env(env_id="3dof-hit-sparse-prodmp", seed=1, iteration=3)
+    test_replan_env(env_id="3dof-hit-sparse-prodmp-replan", seed=1, iteration=3)
+

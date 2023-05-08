@@ -25,7 +25,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         obs_high = np.ones(obs_dim) * 10000
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
-        self.dt = 0.001
+        # self.dt = 0.001
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:

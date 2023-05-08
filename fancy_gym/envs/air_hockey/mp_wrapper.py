@@ -1,6 +1,7 @@
 import numpy as np
 from typing import Union, Tuple
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
+from fancy_gym.utils.time_aware_observation import TimeAwareObservation
 
 
 class PlanarMPWrapper(RawInterfaceWrapper):
@@ -40,6 +41,9 @@ class PlanarMPWrapper(RawInterfaceWrapper):
 
     def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
                               return_contextual_obs):
-        return self.get_invalid_traj_return(action, pos_traj, vel_traj)
+        obs, trajectory_return, done, infos = self.get_invalid_traj_return(action, pos_traj, vel_traj)
+        if issubclass(self.env.__class__, TimeAwareObservation):
+            obs = np.append(obs, np.array([0], dtype=obs.dtype))
+        return obs, trajectory_return, done, infos
 
 
