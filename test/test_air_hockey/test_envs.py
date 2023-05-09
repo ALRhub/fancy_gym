@@ -188,12 +188,12 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     np.random.seed(seed)
 
     env = fancy_gym.make(env_id=env_id, seed=12)
-    act_list = [np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
-                          -0.1360, -0.3141, -0.4803, -0.9457, -0.5832, -0.3209]),
-                np.array([+0.3490, +0.0597, +0.1681, +0.2891, -0.3729, -0.6172,
-                          -0.4291, -0.3400, -0.5428, -0.8549, -0.5452, -0.2657]),
-                np.array([+0.0796, +0.1585, +0.1650, +0.2431, -0.5435, -0.5349,
-                          -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
+    act_list = [np.array([-0.7540, -0.9243, -0.3915, -0.6968, +0.7776, +0.5865,
+                          +0.2396, +0.5940, +1.0370, +0.6986, +0.2010, +0.9623]),
+                np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
+                          +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
+                np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
+                          +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
 
     for i in range(iteration):
         print("*"*20, i, "*"*20)
@@ -203,22 +203,21 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
             env.render(mode="human")
         while True:
             # act = env.action_space.sample()
-            act = act_list[1] * 5
+            act = act_list[1]
             obs, rew, done, info = env.step(act)
 
             # plot trajs
             print("weights: ", np.round(act, 2))
             if rew > -2:
-                pass
-                # traj_pos, traj_vel = env.get_trajectory(act)
-                # plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_sampling=False, plot_constrs=False)
+                traj_pos, traj_vel = env.get_trajectory(act)
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_sampling=False, plot_constrs=False)
 
             if done:
                 print('Return: ', np.sum(rew))
-                # print('Jerks: ', np.sum(info['jerk_violation']))
-                # print('constr_j_pos: ', np.sum(info['constr_j_pos']))
-                # print('constr_j_vel: ', np.sum(info['constr_j_vel']))
-                # print('constr_ee: ', np.sum(info['constr_ee']))
+                print('Jerks: ', np.sum(info['jerk_violation']))
+                print('constr_j_pos: ', np.sum(info['constr_j_pos']))
+                print('constr_j_vel: ', np.sum(info['constr_j_vel']))
+                print('constr_ee: ', np.sum(info['constr_ee']))
                 break
 
 
@@ -268,6 +267,6 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-sparse-promp", seed=1, iteration=3)
+    test_mp_env(env_id="3dof-hit-sparse-prodmp", seed=1, iteration=3)
     # test_replan_env(env_id="3dof-hit-sparse-prodmp-replan", seed=1, iteration=3)
 
