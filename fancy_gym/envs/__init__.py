@@ -910,10 +910,10 @@ for _v in _versions:
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 0
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
-    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 0.8
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
