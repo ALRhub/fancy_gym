@@ -22,21 +22,20 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
 
     # down sampling
     if plot_sampling:
-        pos = pos[19::20]
-        vel = vel[19::20]
-        acc = acc[19::20]
-        jer = np.abs(jer[19::20])
+        pos = pos[::20]
+        vel = vel[::20]
+        acc = acc[::20]
+        jer = np.abs(jer[::20])
 
     # interpolation
     tf = 0.02
     prev_pos = pos[0]
-    prev_vel = vel[0]
-    prev_acc = acc[0]
-    prev_jer = jer[0]
+    prev_vel = 0 * vel[0]
+    prev_acc = 0 * acc[0]
     interp_pos = [prev_pos]
     interp_vel = [prev_vel]
     interp_acc = [prev_acc]
-    interp_jer = [prev_jer]
+    interp_jer = []
     for i in range(pos.shape[0] - 1):
         coef = np.array([[1, 0, 0, 0], [1, tf, tf ** 2, tf ** 3], [0, 1, 0, 0], [0, 1, 2 * tf, 3 * tf ** 2]])
         results = np.vstack([prev_pos, pos[i+1], prev_vel, vel[i+1]])
@@ -188,8 +187,10 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     np.random.seed(seed)
 
     env = fancy_gym.make(env_id=env_id, seed=12)
-    act_list = [np.array([-0.7540, -0.9243, -0.3915, -0.6968, +0.7776, +0.5865,
-                          +0.2396, +0.5940, +1.0370, +0.6986, +0.2010, +0.9623]),
+    act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
+                          +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
+                np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
+                          +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
                 np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
                           +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
                 np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
@@ -203,14 +204,18 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
             env.render(mode="human")
         while True:
             # act = env.action_space.sample()
-            act = act_list[1]
+            act = act_list[0]
             obs, rew, done, info = env.step(act)
 
             # plot trajs
             print("weights: ", np.round(act, 2))
             if rew > -2:
+                obs = env.reset()
                 traj_pos, traj_vel = env.get_trajectory(act)
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_sampling=False, plot_constrs=False)
+                current_pos, current_vel = env.current_pos, env.current_vel
+                traj_pos = np.vstack([current_pos, traj_pos])
+                traj_vel = np.vstack([current_vel, traj_vel])
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=100, plot_sampling=False, plot_constrs=True)
 
             if done:
                 print('Return: ', np.sum(rew))

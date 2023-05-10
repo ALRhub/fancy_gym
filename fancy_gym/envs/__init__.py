@@ -943,7 +943,7 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
-    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = True
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = True
     kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
