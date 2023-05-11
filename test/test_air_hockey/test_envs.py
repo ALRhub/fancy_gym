@@ -9,29 +9,33 @@ import matplotlib.pyplot as plt
 import scipy
 
 
-def plot_trajs(position, velocity, start_index=0, end_index=100, plot_constrs=True):
-    dt = 0.001
+def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True):
+    if plot_sampling:
+        dt = 0.001
+    else:
+        dt = 0.02
     pos = position
     vel = velocity
     acc = np.diff(vel, n=1, axis=0, append=np.zeros([1, 3])) / dt
     jer = np.diff(acc, n=1, axis=0, append=np.zeros([1, 3])) / dt
+    jer = np.abs(jer)
 
     # down sampling
-    pos = pos[19::20]
-    vel = vel[19::20]
-    acc = acc[19::20]
-    jer = np.abs(jer[19::20])
+    if plot_sampling:
+        pos = pos[::20]
+        vel = vel[::20]
+        acc = acc[::20]
+        jer = np.abs(jer[::20])
 
     # interpolation
     tf = 0.02
     prev_pos = pos[0]
-    prev_vel = vel[0]
-    prev_acc = acc[0]
-    prev_jer = jer[0]
+    prev_vel = 0 * vel[0]
+    prev_acc = 0 * acc[0]
     interp_pos = [prev_pos]
     interp_vel = [prev_vel]
     interp_acc = [prev_acc]
-    interp_jer = [prev_jer]
+    interp_jer = []
     for i in range(pos.shape[0] - 1):
         coef = np.array([[1, 0, 0, 0], [1, tf, tf ** 2, tf ** 3], [0, 1, 0, 0], [0, 1, 2 * tf, 3 * tf ** 2]])
         results = np.vstack([prev_pos, pos[i+1], prev_vel, vel[i+1]])
@@ -190,6 +194,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     for i in range(iteration):
         print("*"*20, i, "*"*20)
         obs = env.reset()
+        print(obs)
         if i == 0:
             env.render(mode="human")
         while True:
@@ -201,8 +206,12 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
             # plot trajs
             print("weights: ", np.round(act, 2))
             if rew > -2:
+                obs = env.reset()
                 traj_pos, traj_vel = env.get_trajectory(act)
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=140, plot_constrs=False)
+                current_pos, current_vel = env.current_pos, env.current_vel
+                traj_pos = np.vstack([current_pos, traj_pos])
+                traj_vel = np.vstack([current_vel, traj_vel])
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True)
 
             if done:
                 print('Return: ', np.sum(rew))
