@@ -28,6 +28,15 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # self.dt = 0.001
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
+        # metrics
+        self.max_j_pos_violation = 100
+        self.max_j_vel_violation = 100
+        self.max_jerk_vilolation = 1e5
+        self.max_ee_x_violation = 100
+        self.max_ee_y_violation = 100
+        self.max_ee_z_violation = 100
+        self.mean_compute_time_ms = 1
+
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
 
@@ -44,6 +53,13 @@ class AirHockeyPlanarHit(AirHockeyBase):
             info["constr_j_vel"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
             info["constr_ee"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
             info["validity"] = 1
+            # info["max_j_pos_violation"] = self.max_j_pos_violation
+            # info["max_j_vel_violation"] = self.max_j_vel_violation
+            # info["max_jerk_violation"] = self.max_jerk_vilolation
+            # info["max_ee_x_violation"] = self.max_ee_x_violation
+            # info["max_ee_y_violation"] = self.max_ee_y_violation
+            # info["max_ee_z_violation"] = self.max_ee_z_violation
+            # info["mean_compute_time_ms"] = self.mean_compute_time_ms
 
         return obs, rew, done, info
 
@@ -79,6 +95,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
 
+        info["has_hit"] = 1 if info["has_hit"] else 0
+        info["has_scored"] = 1 if info["has_scored"] else 0
         info["jerk_violation"] = 1
         info["constr_j_pos"] = 1
         info["constr_j_vel"] = 1
