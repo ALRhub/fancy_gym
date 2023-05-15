@@ -60,7 +60,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
         invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
         if invalid_tau or invalid_j_pos or invalid_j_vel:
-            return True, pos_traj, vel_traj
+            return False, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
     @staticmethod
