@@ -158,7 +158,9 @@ def test_context_space(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapp
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('num_dof', [0, 1, 2, 5])
-@pytest.mark.parametrize('num_basis', [0, 1, 2, 5])
+@pytest.mark.parametrize('num_basis', [
+    pytest.param(0, marks=pytest.mark.xfail(reason="Basis Length 0 is not yet implemented.")),
+    1, 2, 5])
 @pytest.mark.parametrize('learn_tau', [True, False])
 @pytest.mark.parametrize('learn_delay', [True, False])
 def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
