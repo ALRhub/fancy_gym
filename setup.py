@@ -6,25 +6,25 @@ from setuptools import setup, find_packages
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
-    "dmc": ["dm_control>=1.0.1"],
-    "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@3ced29c8cee6445386eba32e92870d664ad5e6e3#egg=metaworld",
+    'dmc': ['dm_control>=1.0.1'],
+    'metaworld': ['metaworld @ git+https://github.com/rlworkgroup/metaworld.git@3ced29c8cee6445386eba32e92870d664ad5e6e3#egg=metaworld',
                   'mujoco-py<2.2,>=2.1',
-                  'gym>=0.15.4',
-                  'numpy>=1.18',
-                  'scipy>=1.4.1',
                   ],
+    'box2d': ['gymnasium[box2d]>=0.26.0'],
 }
 
 # All dependencies
 all_groups = set(extras.keys())
-extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[group], all_groups))))
+extras["all"] = list(set(itertools.chain.from_iterable(
+    map(lambda group: extras[group], all_groups))))
 
 
 def find_package_data(extensions_to_include: List[str]) -> List[str]:
     envs_dir = Path("fancy_gym/envs/mujoco")
     package_data_paths = []
     for extension in extensions_to_include:
-        package_data_paths.extend([str(path)[10:] for path in envs_dir.rglob(extension)])
+        package_data_paths.extend([str(path)[10:]
+                                  for path in envs_dir.rglob(extension)])
 
     return package_data_paths
 
@@ -51,7 +51,8 @@ setup(
         'gymnasium>=0.26.0'
         'mp_pytorch<=0.1.3'
     ],
-    packages=[package for package in find_packages() if package.startswith("fancy_gym")],
+    packages=[package for package in find_packages(
+    ) if package.startswith("fancy_gym")],
     package_data={
         "fancy_gym": find_package_data(extensions_to_include=["*.stl", "*.xml"])
     },
