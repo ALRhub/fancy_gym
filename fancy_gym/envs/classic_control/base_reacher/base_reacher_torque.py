@@ -1,5 +1,5 @@
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher import BaseReacherEnv
 
@@ -31,6 +31,7 @@ class BaseReacherTorqueEnv(BaseReacherEnv):
         reward, info = self._get_reward(action)
 
         self._steps += 1
-        done = False
+        terminated = False
+        truncated = False
 
-        return self._get_obs().copy(), reward, done, info
+        return self._get_obs().copy(), reward, terminated, truncated, info

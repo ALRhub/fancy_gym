@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import numpy as np
-from gym import register
+from gymnasium import register
 
 from . import classic_control, mujoco
 from .classic_control.hole_reacher.hole_reacher import HoleReacherEnv

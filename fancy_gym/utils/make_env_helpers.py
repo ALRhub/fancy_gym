@@ -1,17 +1,19 @@
 import logging
-import re
 import uuid
 from collections.abc import MutableMapping
 from copy import deepcopy
 from math import ceil
-from typing import Iterable, Type, Union
+from typing import Iterable, Type, Union, Optional
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym.envs.registration import register, registry
+from gymnasium.envs.registration import register, registry
+
+from fancy_gym.utils.env_compatibility import EnvCompatibility
 
 try:
     from dm_control import suite, manipulation
+    from shimmy.dm_control_compatibility import EnvType
 except ImportError:
     pass
 
@@ -82,13 +84,20 @@ def make(env_id: str, seed: int, **kwargs):
     if framework == 'metaworld':
         # MetaWorld environment
         env = make_metaworld(env_id, seed, **kwargs)
-    elif framework == 'dmc':
-        # DeepMind Control environment
-        env = make_dmc(env_id, seed, **kwargs)
+    # elif framework == 'dmc':
+    # Deprecated: With shimmy gym now has native support for deepmind envs
+    #     # DeepMind Control environment
+    #     env = make_dmc(env_id, seed, **kwargs)
     else:
         env = make_gym(env_id, seed, **kwargs)
 
-    env.seed(seed)
+    # try:
+    env.reset(seed=seed)
+    # except TypeError:
+    #     # Support for older gym envs that do not have seeding
+    #     # env.seed(seed)
+    #     np_random, _ = seeding.np_random(seed)
+    #     env.np_random = np_random
     env.action_space.seed(seed)
     env.observation_space.seed(seed)
 
@@ -158,7 +167,7 @@ def make_bb(
     traj_gen_kwargs['action_dim'] = traj_gen_kwargs.get('action_dim', np.prod(env.action_space.shape).item())
 
     if black_box_kwargs.get('duration') is None:
-        black_box_kwargs['duration'] = env.spec.max_episode_steps * env.dt
+        black_box_kwargs['duration'] = get_env_duration(env)
     if phase_kwargs.get('tau') is None:
         phase_kwargs['tau'] = black_box_kwargs['duration']
 
@@ -184,6 +193,24 @@ def make_bb(
                              **black_box_kwargs)
 
     return bb_env
+
+
+def get_env_duration(env: gym.Env):
+    try:
+        duration = env.spec.max_episode_steps * env.dt
+    except (AttributeError, TypeError) as e:
+        # TODO Remove if this information is in the compatibility class
+        logging.error(f'Attributes env.spec.max_episode_steps and env.dt are not available. '
+                      f'Assuming you are using dm_control. Please make sure you have ran '
+                      f'"pip install shimmy[dm_control]" for that.')
+        if env.env_type is EnvType.COMPOSER:
+            max_episode_steps = ceil(env.unwrapped._time_limit / env.dt)
+        elif env.env_type is EnvType.RL_CONTROL:
+            max_episode_steps = int(env.unwrapped._step_limit)
+        else:
+            raise e
+        duration = max_episode_steps * env.control_timestep()
+    return duration
 
 
 def make_bb_env_helper(**kwargs):
@@ -235,55 +262,56 @@ def make_bb_env_helper(**kwargs):
                    basis_kwargs=basis_kwargs, **kwargs, seed=seed)
 
 
-def make_dmc(
-        env_id: str,
-        seed: int = None,
-        visualize_reward: bool = True,
-        time_limit: Union[None, float] = None,
-        **kwargs
-):
-    if not re.match(r"\w+-\w+", env_id):
-        raise ValueError("env_id does not have the following structure: 'domain_name-task_name'")
-    domain_name, task_name = env_id.split("-")
+# Deprecated: With shimmy gym now has native support for deepmind envs
+# def make_dmc(
+#         env_id: str,
+#         seed: int = None,
+#         visualize_reward: bool = True,
+#         time_limit: Union[None, float] = None,
+#         **kwargs
+# ):
+#     if not re.match(r"\w+-\w+", env_id):
+#         raise ValueError("env_id does not have the following structure: 'domain_name-task_name'")
+#     domain_name, task_name = env_id.split("-")
+#
+#     if task_name.endswith("_vision"):
+#         # TODO
+#         raise ValueError("The vision interface for manipulation tasks is currently not supported.")
+#
+#     if (domain_name, task_name) not in suite.ALL_TASKS and task_name not in manipulation.ALL:
+#         raise ValueError(f'Specified domain "{domain_name}" and task "{task_name}" combination does not exist.')
+#
+#     # env_id = f'dmc_{domain_name}_{task_name}_{seed}-v1'
+#     gym_id = uuid.uuid4().hex + '-v1'
+#
+#     task_kwargs = {'random': seed}
+#     if time_limit is not None:
+#         task_kwargs['time_limit'] = time_limit
+#
+#     # create task
+#     # Accessing private attribute because DMC does not expose time_limit or step_limit.
+#     # Only the current time_step/time as well as the control_timestep can be accessed.
+#     if domain_name == "manipulation":
+#         env = manipulation.load(environment_name=task_name, seed=seed)
+#         max_episode_steps = ceil(env._time_limit / env.control_timestep())
+#     else:
+#         env = suite.load(domain_name=domain_name, task_name=task_name, task_kwargs=task_kwargs,
+#                          visualize_reward=visualize_reward, environment_kwargs=kwargs)
+#         max_episode_steps = int(env._step_limit)
+#
+#     register(
+#         id=gym_id,
+#         entry_point='fancy_gym.dmc.dmc_wrapper:DMCWrapper',
+#         kwargs={'env': lambda: env},
+#         max_episode_steps=max_episode_steps,
+#     )
+#
+#     env = gym.make(gym_id)
+#     env.seed(seed)
+#     return env
 
-    if task_name.endswith("_vision"):
-        # TODO
-        raise ValueError("The vision interface for manipulation tasks is currently not supported.")
 
-    if (domain_name, task_name) not in suite.ALL_TASKS and task_name not in manipulation.ALL:
-        raise ValueError(f'Specified domain "{domain_name}" and task "{task_name}" combination does not exist.')
-
-    # env_id = f'dmc_{domain_name}_{task_name}_{seed}-v1'
-    gym_id = uuid.uuid4().hex + '-v1'
-
-    task_kwargs = {'random': seed}
-    if time_limit is not None:
-        task_kwargs['time_limit'] = time_limit
-
-    # create task
-    # Accessing private attribute because DMC does not expose time_limit or step_limit.
-    # Only the current time_step/time as well as the control_timestep can be accessed.
-    if domain_name == "manipulation":
-        env = manipulation.load(environment_name=task_name, seed=seed)
-        max_episode_steps = ceil(env._time_limit / env.control_timestep())
-    else:
-        env = suite.load(domain_name=domain_name, task_name=task_name, task_kwargs=task_kwargs,
-                         visualize_reward=visualize_reward, environment_kwargs=kwargs)
-        max_episode_steps = int(env._step_limit)
-
-    register(
-        id=gym_id,
-        entry_point='fancy_gym.dmc.dmc_wrapper:DMCWrapper',
-        kwargs={'env': lambda: env},
-        max_episode_steps=max_episode_steps,
-    )
-
-    env = gym.make(gym_id)
-    env.seed(seed)
-    return env
-
-
-def make_metaworld(env_id: str, seed: int, **kwargs):
+def make_metaworld(env_id: str, seed: int, render_mode: Optional[str] = None, **kwargs):
     if env_id not in metaworld.ML1.ENV_NAMES:
         raise ValueError(f'Specified environment "{env_id}" not present in metaworld ML1.')
 
@@ -294,12 +322,17 @@ def make_metaworld(env_id: str, seed: int, **kwargs):
     # New argument to use global seeding
     _env.seeded_rand_vec = True
 
+    max_episode_steps = _env.max_path_length
+
+    # TODO remove this as soon as there is support for the new API
+    _env = EnvCompatibility(_env, render_mode)
+
     gym_id = uuid.uuid4().hex + '-v1'
 
     register(
         id=gym_id,
         entry_point=lambda: _env,
-        max_episode_steps=_env.max_path_length,
+        max_episode_steps=max_episode_steps,
     )
 
     # TODO enable checker when the incorrect dtype of obs and observation space are fixed by metaworld

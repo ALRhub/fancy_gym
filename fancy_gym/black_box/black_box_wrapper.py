@@ -1,8 +1,9 @@
-from typing import Tuple, Optional, Callable
+from typing import Tuple, Optional, Callable, Dict, Any
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
+from gymnasium.core import ObsType
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
 from fancy_gym.black_box.controller.base_controller import BaseController
@@ -59,7 +60,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.reward_aggregation = reward_aggregation
 
         # spaces
-        self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
+        self.return_context_observation = not (
+            learn_sub_trajectories or self.do_replanning)
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
         self.observation_space = self._get_observation_space()
@@ -91,14 +93,17 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             # If we do not do this, the traj_gen assumes we are continuing the trajectory.
             self.traj_gen.reset()
 
-        clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
+        clipped_params = np.clip(
+            action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
-        init_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
+        init_time = np.array(
+            0 if not self.do_replanning else self.current_traj_steps * self.dt)
 
         condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
         condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
 
-        self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
+        self.traj_gen.set_initial_conditions(
+            init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
 
         position = get_numpy(self.traj_gen.get_traj_pos())
@@ -138,13 +143,15 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
         # TODO remove this part, right now only needed for beer pong
-        mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
+        mp_params, env_spec_params = self.env.episode_callback(
+            action, self.traj_gen)
         position, velocity = self.get_trajectory(mp_params)
 
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
         if self.verbose >= 2:
-            actions = np.zeros(shape=(trajectory_length,) + self.env.action_space.shape)
+            actions = np.zeros(shape=(trajectory_length,) +
+                               self.env.action_space.shape)
             observations = np.zeros(shape=(trajectory_length,) + self.env.observation_space.shape,
                                     dtype=self.env.observation_space.dtype)
 
@@ -153,9 +160,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
-            step_action = self.tracking_controller.get_action(pos, vel, self.current_pos, self.current_vel)
-            c_action = np.clip(step_action, self.env.action_space.low, self.env.action_space.high)
-            obs, c_reward, done, info = self.env.step(c_action)
+            step_action = self.tracking_controller.get_action(
+                pos, vel, self.current_pos, self.current_vel)
+            c_action = np.clip(
+                step_action, self.env.action_space.low, self.env.action_space.high)
+            obs, c_reward, terminated, truncated, info = self.env.step(
+                c_action)
             rewards[t] = c_reward
 
             if self.verbose >= 2:
@@ -170,9 +180,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                 t + 1 + self.current_traj_steps)
-                        and self.plan_steps < self.max_planning_times):
+            if terminated or truncated or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                                                    t + 1 + self.current_traj_steps)
+                                           and self.plan_steps < self.max_planning_times):
 
                 if self.condition_on_desired:
                     self.condition_pos = pos
@@ -192,17 +202,18 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         infos['trajectory_length'] = t + 1
         trajectory_return = self.reward_aggregation(rewards[:t + 1])
-        return self.observation(obs), trajectory_return, done, infos
+        return self.observation(obs), trajectory_return, terminated, truncated, infos
 
     def render(self, **kwargs):
         """Only set render options here, such that they can be used during the rollout.
         This only needs to be called once"""
         self.render_kwargs = kwargs
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_traj_steps = 0
         self.plan_steps = 0
         self.traj_gen.reset()
         self.condition_pos = None
         self.condition_vel = None
-        return super(BlackBoxWrapper, self).reset()
+        return super(BlackBoxWrapper, self).reset(seed=seed, options=options)

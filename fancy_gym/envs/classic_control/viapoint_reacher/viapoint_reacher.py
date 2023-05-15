@@ -1,9 +1,10 @@
-from typing import Iterable, Union, Tuple, Optional
+from typing import Iterable, Union, Tuple, Optional, Any, Dict
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
-from gym.core import ObsType
+from gymnasium import spaces
+from gymnasium.core import ObsType
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
 
@@ -34,16 +35,16 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
             [np.inf] * 2,  # x-y coordinates of target distance
             [np.inf]  # env steps, because reward start after n steps
         ])
-        self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
+        self.observation_space = spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
     # @property
     # def start_pos(self):
     #     return self._start_pos
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self._generate_goal()
-        return super().reset()
+        return super().reset(seed=seed, options=options)
 
     def _generate_goal(self):
         # TODO: Maybe improve this later, this can yield quite a lot of invalid settings
@@ -185,14 +186,3 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
                 plt.pause(0.01)
 
 
-if __name__ == "__main__":
-
-    env = ViaPointReacherEnv(5)
-    env.reset()
-
-    for i in range(10000):
-        ac = env.action_space.sample()
-        obs, rew, done, info = env.step(ac)
-        env.render()
-        if done:
-            env.reset()

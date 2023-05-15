@@ -1,9 +1,10 @@
-from typing import Union, Optional, Tuple
+from typing import Union, Optional, Tuple, Any, Dict
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
-from gym.core import ObsType
+from gymnasium import spaces
+from gymnasium.core import ObsType
 from matplotlib import patches
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
@@ -40,7 +41,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             [np.inf]  # env steps, because reward start after n steps TODO: Maybe
         ])
         # self.action_space = gym.spaces.Box(low=-action_bound, high=action_bound, shape=action_bound.shape)
-        self.observation_space = gym.spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
+        self.observation_space = spaces.Box(low=-state_bound, high=state_bound, shape=state_bound.shape)
 
         if rew_fct == "simple":
             from fancy_gym.envs.classic_control.hole_reacher.hr_simple_reward import HolereacherReward
@@ -54,13 +55,18 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         else:
             raise ValueError("Unknown reward function {}".format(rew_fct))
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
+
+        # initialize seed here as the random goal needs to be generated before the super reset()
+        gym.Env.reset(self, seed=seed, options=options)
+
         self._generate_hole()
         self._set_patches()
         self.reward_function.reset()
 
-        return super().reset()
+        # do not provide seed to avoid setting it twice
+        return super(HoleReacherEnv, self).reset(options=options)
 
     def _get_reward(self, action: np.ndarray) -> (float, dict):
         return self.reward_function.get_reward(self)
@@ -223,16 +229,3 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.gca().add_patch(left_block)
             self.fig.gca().add_patch(right_block)
             self.fig.gca().add_patch(hole_floor)
-
-
-if __name__ == "__main__":
-
-    env = HoleReacherEnv(5)
-    env.reset()
-
-    for i in range(10000):
-        ac = env.action_space.sample()
-        obs, rew, done, info = env.step(ac)
-        env.render()
-        if done:
-            env.reset()

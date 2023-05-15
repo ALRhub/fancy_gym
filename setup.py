@@ -12,6 +12,7 @@ extras = {
                   ],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
     'testing': ['pytest'],
+    "mujoco": ["gymnasium[mujoco]"],
 }
 
 # All dependencies

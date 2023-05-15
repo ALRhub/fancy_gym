@@ -29,9 +29,9 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
             # THIS NEEDS TO BE SET TO FALSE FOR NOW, BECAUSE THE INTERFACE FOR RENDERING IS DIFFERENT TO BASIC GYM
             # TODO: Remove this, when Metaworld fixes its interface.
             env.render(False)
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
-        if done:
+        if terminated or truncated:
             print(env_id, rewards)
             rewards = 0
             obs = env.reset()
@@ -103,10 +103,10 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
 
-        if done:
+        if terminated or truncated:
             print(base_env_id, rewards)
             rewards = 0
             obs = env.reset()
@@ -131,4 +131,3 @@ if __name__ == '__main__':
     #
     # # Custom MetaWorld task
     example_custom_dmc_and_mp(seed=10, iterations=1, render=render)
-

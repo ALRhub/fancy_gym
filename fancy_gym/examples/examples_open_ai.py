@@ -24,10 +24,10 @@ def example_mp(env_name, seed=1, render=True):
         else:
             env.render()
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         returns += reward
 
-        if done:
+        if terminated or truncated:
             print(returns)
             obs = env.reset()
 

@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
 
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
@@ -73,7 +73,7 @@ class HopperJumpEnv(HopperEnv):
         self.do_simulation(action, self.frame_skip)
 
         height_after = self.get_body_com("torso")[2]
-        #site_pos_after = self.data.get_site_xpos('foot_site')
+        # site_pos_after = self.data.get_site_xpos('foot_site')
         site_pos_after = self.data.site('foot_site').xpos
         self.max_height = max(height_after, self.max_height)
 
@@ -88,7 +88,8 @@ class HopperJumpEnv(HopperEnv):
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
-        done = False
+        terminated = False
+        truncated = False
 
         goal_dist = np.linalg.norm(site_pos_after - self.goal)
         if self.contact_dist is None and self.contact_with_floor:
@@ -115,7 +116,7 @@ class HopperJumpEnv(HopperEnv):
             healthy=self.is_healthy,
             contact_dist=self.contact_dist or 0
         )
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         # goal_dist = self.data.get_site_xpos('foot_site') - self.goal
