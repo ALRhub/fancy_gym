@@ -25,7 +25,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         obs_high = np.ones(obs_dim) * 10000
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
-        self.dt = 0.001
+        # self.dt = 0.001
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
@@ -60,7 +60,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
         invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
         if invalid_tau or invalid_j_pos or invalid_j_vel:
-            return True, pos_traj, vel_traj
+            return False, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
     @staticmethod

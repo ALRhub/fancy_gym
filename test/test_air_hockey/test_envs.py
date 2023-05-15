@@ -267,10 +267,12 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
                 print('constr_j_vel: ', np.sum(info['j_vel_violation']))
                 print('constr_ee: ', np.sum(info['ee_violation']))
             if done:
-                step = np.linspace(0.02, 3, 150)
+                step = np.linspace(0.02, 3, 150) - 1
                 colors = ['r', 'g', 'b']
                 idx = 0
                 for pos, vel in zip(pos_list, vel_list):
+                    step += 1
+
                     plt.subplot(1, 2, 1)
                     plt.plot(step, pos[:, 0], color=colors[idx])
 
