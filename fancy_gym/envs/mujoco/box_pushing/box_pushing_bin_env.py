@@ -19,7 +19,7 @@ PUSH_DISTANCE = 0.03  # 3cm ~ 1 / 3 of box sizes
 
 # Need to set by hand depending on the environment config in the xml files
 MAX_NUM_BOXES = 10
-BOX_POS_BOUND = np.array([[0.54, -0.3, 0.06], [0.8, 0.3, 0.45]])
+BOX_POS_BOUND = np.array([[0.6, -0.3, 0.06], [0.8, 0.3, 0.45]])
 BIN_SIZE = 0.2
 NUM_BINS = 3
 # (ahead, lean 45 back, ahead, lean 225 front, ahead, look down, camera front)
