@@ -7,9 +7,11 @@ from setuptools import setup, find_packages
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     "dmc": ["dm_control>=1.0.1"],
-    "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld",
+    "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@3ced29c8cee6445386eba32e92870d664ad5e6e3#egg=metaworld",
                   'mujoco-py<2.2,>=2.1',
-                  'scipy'
+                  'gym>=0.15.4',
+                  'numpy>=1.18',
+                  'scipy>=1.4.1',
                   ],
 }
 
@@ -30,7 +32,7 @@ def find_package_data(extensions_to_include: List[str]) -> List[str]:
 setup(
     author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.2',
+    version='0.3',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
@@ -46,7 +48,7 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'gym[mujoco]<0.25.0,>=0.24.1',
+        'gymnasium>=0.26.0'
         'mp_pytorch<=0.1.3'
     ],
     packages=[package for package in find_packages() if package.startswith("fancy_gym")],
