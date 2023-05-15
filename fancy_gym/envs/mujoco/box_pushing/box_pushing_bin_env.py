@@ -233,13 +233,11 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
 
         rots = [Rotation.from_quat(quat) for quat in box_quat]
-        box_angles = [r.as_euler("xyz", degrees=True)[:2] for r in rots]
+        box_angles = np.array([r.as_euler("xzy", degrees=True) for r in rots])
+        box_angles = box_angles[:, 0] - box_angles[:, 1] + box_angles[:, 2]
         orient = [
-            np.array([
-                np.sin(np.array(
-                    [(a % 89.9 + 90) % 89.9 for a in angles]
-                ).max() * np.pi / 180.)
-            ]) for angles in box_angles
+            np.array([np.sin(((angle % 90 + 90) % 90) * np.pi / 180.)])
+            for angle in box_angles
         ]
         obs = np.concatenate([
                 self.data.qpos[:7].copy(),  # joint position
