@@ -11,6 +11,7 @@ extras = {
                   'mujoco-py<2.2,>=2.1',
                   ],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
+    'testing': ['pytest'],
 }
 
 # All dependencies
