@@ -51,6 +51,8 @@ DEFAULT_BB_DICT_ProMP = {
         'num_basis': 5,
         'num_basis_zero_start': 1,
         'basis_bandwidth_factor': 3.0,
+    },
+    "black_box_kwargs": {
     }
 }
 
@@ -548,6 +550,7 @@ for _v in _versions:
     kwargs_dict_box_pushing_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3 # 3.5, 4 to try
     kwargs_dict_box_pushing_promp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_box_pushing_promp['basis_generator_kwargs']['num_basis'] = int(_num_basis) if _num_basis.isdigit() else 4
+    kwargs_dict_box_pushing_promp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t : t % 25 == 0
 
     register(
         id=_env_id,
