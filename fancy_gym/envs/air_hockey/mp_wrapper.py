@@ -4,7 +4,7 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.time_aware_observation import TimeAwareObservation
 
 
-class PlanarMPWrapper(RawInterfaceWrapper):
+class HitMPWrapper(RawInterfaceWrapper):
 
     @property
     def context_mask(self) -> np.ndarray:

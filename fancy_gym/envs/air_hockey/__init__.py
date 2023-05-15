@@ -1,4 +1,4 @@
 from .air_hockey import *
-from .air_hockey_planar import *
-
+from .air_hockey_hit import *
+from .air_hockey_defend import *
 from .mp_wrapper import *

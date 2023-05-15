@@ -38,11 +38,13 @@ class AirHockeyPlanarHit(AirHockeyBase):
 
         if self.env.base_env.n_agents == 1:
             info["has_hit"] = 1 if info["has_hit"] else 0
+            info["has_hit_step"] = self.horizon if info["has_hit_step"] == 500 else info["has_hit_step"]
             info["has_scored"] = 1 if info["has_scored"] else 0
+            info["has_scored_step"] = self.horizon if info["has_scored_step"] == 500 else info["has_scored_step"]
             info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
-            info["constr_j_pos"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
-            info["constr_j_vel"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
-            info["constr_ee"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+            info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
+            info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
+            info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
             info["validity"] = 1
 
         return obs, rew, done, info
@@ -58,10 +60,11 @@ class AirHockeyPlanarHit(AirHockeyBase):
         invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
         invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
         if invalid_tau or invalid_j_pos or invalid_j_vel:
-            return False, pos_traj, vel_traj
+            return True, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
-    def _get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
+    @staticmethod
+    def get_invalid_traj_penalty(action, traj_pos, traj_vel):
         violate_tau_bound_error = 0
         if action.shape[0] % 3 != 0:
             tau_bound = [1.5, 3.0]
@@ -79,18 +82,38 @@ class AirHockeyPlanarHit(AirHockeyBase):
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
 
+        # in fancy gym added metrics
+        info["has_hit"] = 0
+        info["has_scored"] = 0
         info["jerk_violation"] = 1
-        info["constr_j_pos"] = 1
-        info["constr_j_vel"] = 1
-        info["constr_ee"] = 1
+        info["j_pos_violation"] = 1
+        info["j_vel_violation"] = 1
+        info["ee_violation"] = 1
         info["validity"] = 0
+
+        # default metrics
+        info["has_hit_step"] = self.horizon
+        info["has_scored_step"] = self.horizon
+        info["current_episode_length"] = self.horizon
+        info["max_j_pos_violation"] = 10
+        info["max_j_vel_violation"] = 10
+        info["max_ee_x_violation"] = 10
+        info["max_ee_y_violation"] = 10
+        info["max_ee_z_violation"] = 10
+        info["max_jerk_violation"] = 10
+        info["num_j_pos_violation"] = self.horizon
+        info["num_j_vel_violation"] = self.horizon
+        info["num_ee_x_violation"] = self.horizon
+        info["num_ee_y_violation"] = self.horizon
+        info["num_ee_z_violation"] = self.horizon
+        info["num_jerk_violation"] = self.horizon
 
         for k, v in info.items():
             info[k] = [v] * self.horizon
 
         info['trajectory_length'] = self.horizon
 
-        return obs, self._get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
+        return obs, self.get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
 
     @staticmethod
     def planar_hit_reward(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -201,44 +224,3 @@ class AirHockeyPlanarHit(AirHockeyBase):
         coef = traj_cos_ee_puck_goal[idx]
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
         return coef * (1 - np.tanh(min_dist_ee_puck))  # [0, 1]
-
-
-class AirHockeyPlanarDefend(AirHockeyBase):
-    def __init__(self):
-        super().__init__(env_id="3dof-defend", reward_function=self.planar_defend_reward)
-
-        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
-
-    @staticmethod
-    def planar_defend_reward(base_env: AirHockeyDefend, obs, act, obs_, done):
-        # init reward and env info
-        rew = 0
-        env_info = base_env.env_info
-
-        # # compute puck_pos
-        # puck_pos, puck_vel = base_env.get_puck(obs_)  # puck_pos, puck_vel in world frame
-        # goal_pos = np.array([-env_info["table"]["length"] / 2, 0, 0])  # self goal_pos in world frame
-        # if done:
-        #     x_dis = puck_pos[0] - goal_pos[0]
-        #     y_dis = np.abs(puck_pos[1]) - env_info["table"]["goal_width"] / 2
-        #     if x_dis < 0 and y_dis < 0:
-        #         rew = -100
-        # else:
-        #     if base_env.has_bounce:
-        #         rew = -1
-        #     elif base_env.has_hit:
-        #         if -0.8 < puck_pos[0] < -0.4:
-        #             r_x = np.exp(-5 * np.abs(puck_pos[0] + 0.6))
-        #             r_y = 3 * np.exp(-3 * np.abs(puck_pos[1]))
-        #             r_v = 5 * np.exp(-(5 * np.linalg.norm(puck_vel))**2)
-        #             rew = r_x + r_y + r_v + 1
-        #     else:
-        #         ee_pos, _ = base_env.get_ee()  # ee_pos, ee_vel in world frame
-        #         ee_pos[0] = 0.5
-        #         ee_puck_dist = np.abs(ee_pos[:2], puck_pos[:2])
-        #         sig = 0.2
-        #         r_x = np.exp(-3 * ee_puck_dist[0])
-        #         r_y = 1. / (np.sqrt(2. * np.pi) * sig) * np.exp(-np.power((ee_puck_dist[1] - 0.08) / sig, 2.) / 2)
-        #         rew = 0.3 * r_x + 0.7 * (r_y/2)
-        # rew -= 1e-3 * np.linalg.norm(act)
-        return rew
