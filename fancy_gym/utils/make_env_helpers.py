@@ -77,13 +77,13 @@ def make(env_id: str, seed: int, **kwargs):
 
     if ':' in env_id:
         split_id = env_id.split(':')
-        framework, env_id = split_id[-2:]
+        framework, framework_env_id = split_id[-2:]
     else:
         framework = None
 
     if framework == 'metaworld':
         # MetaWorld environment
-        env = make_metaworld(env_id, seed, **kwargs)
+        env = make_metaworld(framework_env_id, seed, **kwargs)
     # elif framework == 'dmc':
     # Deprecated: With shimmy gym now has native support for deepmind envs
     #     # DeepMind Control environment
