@@ -84,10 +84,11 @@ def make(env_id: str, seed: int, **kwargs):
     if framework == 'metaworld':
         # MetaWorld environment
         env = make_metaworld(framework_env_id, seed, **kwargs)
-    # elif framework == 'dmc':
-    # Deprecated: With shimmy gym now has native support for deepmind envs
-    #     # DeepMind Control environment
-    #     env = make_dmc(env_id, seed, **kwargs)
+    elif framework == 'dmc':
+        # DeepMind Control environment
+        # ensures legacy compatability:
+        # shimmy expects dm_controll/..., while we used dmc:... in the past
+        env = make_gym('dm_control/'+framework_env_id, seed, **kwargs)
     else:
         env = make_gym(env_id, seed, **kwargs)
 
