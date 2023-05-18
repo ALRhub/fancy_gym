@@ -26,10 +26,12 @@ class ToyEnv(gym.Env):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
               options: Optional[dict] = None) -> Union[ObsType, Tuple[ObsType, dict]]:
-        return np.array([-1])
+        obs, options = np.array([-1]), {}
+        return obs, options
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
-        return np.array([-1]), 1, False, {}
+        obs, reward, terminated, truncated, info = np.array([-1]), 1, False, False, {}
+        return obs, reward, terminated, truncated, info
 
     def render(self, mode="human"):
         pass
