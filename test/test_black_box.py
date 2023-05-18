@@ -94,11 +94,13 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
     env.reset()
-    info_keys = list(env.step(env.action_space.sample())[3].keys())
+    _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+    info_keys = list(info.keys())
 
     env_step = fancy_gym.make(env_id, SEED)
     env_step.reset()
-    info_keys_step = env_step.step(env_step.action_space.sample())[3].keys()
+    _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+    info_keys_step = info.keys()
 
     assert all(e in info_keys for e in info_keys_step)
     assert 'trajectory_length' in info_keys
@@ -122,7 +124,8 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
 
     for _ in range(5):
         env.reset()
-        length = env.step(env.action_space.sample())[3]['trajectory_length']
+        _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+        length = info['trajectory_length']
 
         assert length == env.spec.max_episode_steps
 
@@ -138,7 +141,8 @@ def test_aggregation(mp_type: str, reward_aggregation: Callable[[np.ndarray], fl
                             {'basis_generator_type': basis_generator_type})
     env.reset()
     # ToyEnv only returns 1 as reward
-    assert env.step(env.action_space.sample())[1] == reward_aggregation(np.ones(50, ))
+    _obs, reward, _terminated, _truncated, _info = env.step(env.action_space.sample())
+    assert reward == reward_aggregation(np.ones(50, ))
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
@@ -250,6 +254,8 @@ def test_learn_tau(mp_type: str, tau: float):
         assert np.all(vel[:tau_time_steps - 2] != vel[-1])
 #
 #
+
+
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('delay', [0, 0.25, 0.5, 0.75])
 def test_learn_delay(mp_type: str, delay: float):
@@ -292,6 +298,8 @@ def test_learn_delay(mp_type: str, delay: float):
         assert np.all(vel[max(1, delay_time_steps)] != vel[0])
 #
 #
+
+
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('tau', [0.25, 0.5, 0.75, 1])
 @pytest.mark.parametrize('delay', [0.25, 0.5, 0.75, 1])
@@ -312,15 +320,16 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
     if env.spec.max_episode_steps * env.dt < delay + tau:
         return
 
-    d = True
+    done = True
     for i in range(5):
-        if d:
+        if done:
             env.reset()
         action = env.action_space.sample()
         action[0] = tau
         action[1] = delay
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps
