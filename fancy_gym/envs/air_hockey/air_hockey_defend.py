@@ -37,9 +37,21 @@ class AirHockeyPlanarDefend(AirHockeyBase):
             done = False
 
         if self.env.base_env.n_agents == 1:
-            info["validity"] = 1
+            info["has_hit"] = 1 if info["has_hit"] else 0
+            info["has_hit_step"] = self.horizon if info["has_hit_step"] == 500 else info["has_hit_step"]
+            info["has_goal"] = 1 if info["has_goal"] else 0
+            info["has_goal_step"] = self.horizon if info["has_goal_step"] == 500 else info["has_goal_step"]
+            info["has_success"] = 1 if info["has_success"] else 0
+            info["has_success_step"] = self.horizon if info["has_success_step"] == 500 else info["has_success_step"]
+
             info["valid_trajectory_reward"] = rew
             info["invalid_trajectory_reward"] = 0
+
+            info["validity"] = 1
+            info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+            info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
+            info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
+            info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
 
         return obs, rew, done, info
 
@@ -85,8 +97,10 @@ class AirHockeyPlanarDefend(AirHockeyBase):
 
         # default metrics
         info["has_hit"] = 0
+        info["has_goal"] = 0
         info["has_success"] = 0
         info["has_hit_step"] = self.horizon
+        info["has_goal_step"] = self.horizon
         info["has_success_step"] = self.horizon
         info["current_episode_length"] = self.horizon
         info["max_j_pos_violation"] = 10
@@ -410,8 +424,58 @@ class AirHockeyPlanarDefend(AirHockeyBase):
         r -= 0.001 * np.linalg.norm(action)
         return r
 
+    @staticmethod
+    def plannar_defend_sparse_reward_zeqi(base_env: AirHockeyDefend, obs, action, obs_, done):
+        # env info
+        env_info = base_env.env_info
+
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+            return 0
+
+        traj_ee_pos = np.vstack(base_env.ee_pos_history)
+        traj_ee_vel = np.vstack(base_env.ee_vel_history)
+        traj_puck_pos = np.vstack(base_env.puck_pos_history)
+        traj_puck_vel = np.vstack(base_env.puck_vel_history)
+
+        # ee constr violation and jerk constr violation
+        pass
+
+        if base_env.has_goal:
+            return 0
+
+        # puck pos between [-0.8, -0.3] puck vel < 0.1
+        last_puck_pos = traj_puck_pos[-1]
+        last_puck_vel = traj_puck_pos[-1]
+        success_pos = [-0.55, 0]
+        success_vel = [0, 0]
+        if -0.8 < last_puck_pos[0] < -0.3:
+            success_rate_pos = np.abs(last_puck_pos[0] - success_pos[0])
+            success_rate_vel = np.abs(last_puck_vel[0] - success_vel[0])
+            if base_env.has_hit:
+                return 5 + (1 - success_rate_pos) + (1 - success_rate_vel) # [7, 9]
+            else:
+                return 5 + (1 - success_rate_pos) + (1 - success_rate_vel) # [5, 7]
+
+        # hit the puck
+        if base_env.has_hit:
+            has_hit_step = base_env.has_hit_step
+            max_puck_vel_after_hit = np.max(traj_puck_vel[has_hit_step:, 0])
+            mean_puck_vel_after_hit = np.mean(traj_puck_vel[has_hit_step:, 0])
+            if traj_ee_pos[has_hit_step, 0] < traj_puck_pos[has_hit_step, 0]:
+                return 3 + (1 - np.tanh(max_puck_vel_after_hit)) + (1 - np.tanh(mean_puck_vel_after_hit)) # [3, 5]
+            else:
+                return 1 + (1 - np.tanh(max_puck_vel_after_hit)) + (1 - np.tanh(mean_puck_vel_after_hit)) # [1, 3]
+
+        # no hit and no success
+        idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
+        min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
+        min_dist_puck_success = np.linalg.norm(last_puck_pos - success_pos)
+        return (1 - np.tanh(min_dist_ee_puck)) + (1 - np.tanh(min_dist_puck_success)) # [0, 1]
+
+
 reward_functions = {
     'DongxuV5': AirHockeyPlanarDefend.planar_defend_DongxuV5,
+    'ZeqiV0': AirHockeyPlanarDefend.plannar_defend_sparse_reward_zeqi,
     'FavorSuccessRegion': AirHockeyPlanarDefend.planar_defend_sparse_FavorSuccessRegion,
 }
 
