@@ -2,11 +2,11 @@ from itertools import chain
 from types import FunctionType
 from typing import Tuple, Type, Union, Optional
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pytest
-from gym import register
-from gym.core import ActType, ObsType
+from gymnasium import register
+from gymnasium.core import ActType, ObsType
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
