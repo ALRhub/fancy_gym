@@ -6,19 +6,20 @@ from setuptools import setup, find_packages
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
-    'dmc': ['dm_control>=1.0.1'],
+    'dmc': ['dm_control>=1.0.1', 'shimmy[dm-control]'],
     'metaworld': ['metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@3ced29c8cee6445386eba32e92870d664ad5e6e3#egg=metaworld',
                   'mujoco-py<2.2,>=2.1',
                   ],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
-    'testing': ['pytest'],
-    "mujoco": ["gymnasium[mujoco]"],
+    'mujoco': ['gymnasium[mujoco]>0.26.0'],
 }
 
 # All dependencies
 all_groups = set(extras.keys())
 extras["all"] = list(set(itertools.chain.from_iterable(
     map(lambda group: extras[group], all_groups))))
+
+extras['testing'] = extras["all"] + ['pytest']
 
 
 def find_package_data(extensions_to_include: List[str]) -> List[str]:
