@@ -21,8 +21,8 @@ class TimeAwareObservation(gym.ObservationWrapper, gym.utils.RecordConstructorAr
         gym.ObservationWrapper.__init__(self, env)
         assert isinstance(env.observation_space, Box)
         if enforce_dtype_float32:
-            assert env.observation_space.dtype == np.float32,
-            'TimeAwareObservation was given an environment with a dtype!=np.float32 ('+str(env.observation_space.dtype)+'). This requirement can be removed by setting enforce_dtype_float32=False.'
+            assert env.observation_space.dtype == np.float32, 'TimeAwareObservation was given an environment with a dtype!=np.float32 ('+str(
+                env.observation_space.dtype)+'). This requirement can be removed by setting enforce_dtype_float32=False.'
         dtype = env.observation_space.dtype
         low = np.append(self.observation_space.low, 0.0)
         high = np.append(self.observation_space.high, np.inf)
@@ -38,7 +38,7 @@ class TimeAwareObservation(gym.ObservationWrapper, gym.utils.RecordConstructorAr
         Returns:
             The observation with the time step appended to (relative to total number of steps)
         """
-        return np.append(observation, self.t / getattr(self.env, '_max_episode_steps')
+        return np.append(observation, self.t / getattr(self.env, '_max_episode_steps'))
 
     def step(self, action):
         """Steps through the environment, incrementing the time step.
@@ -61,5 +61,5 @@ class TimeAwareObservation(gym.ObservationWrapper, gym.utils.RecordConstructorAr
         Returns:
             The reset environment
         """
-        self.t=0
+        self.t = 0
         return super().reset(**kwargs)
