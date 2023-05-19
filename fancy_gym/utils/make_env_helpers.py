@@ -200,10 +200,6 @@ def get_env_duration(env: gym.Env):
     try:
         duration = env.spec.max_episode_steps * env.dt
     except (AttributeError, TypeError) as e:
-        # TODO Remove if this information is in the compatibility class
-        logging.error(f'Attributes env.spec.max_episode_steps and env.dt are not available. '
-                      f'Assuming you are using dm_control. Please make sure you have ran '
-                      f'"pip install shimmy[dm_control]" for that.')
         if env.env_type is EnvType.COMPOSER:
             max_episode_steps = ceil(env.unwrapped._time_limit / env.dt)
         elif env.env_type is EnvType.RL_CONTROL:
