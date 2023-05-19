@@ -12,7 +12,7 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.time_aware_observation import TimeAwareObservation
 
 SEED = 1
-ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch', 'metaworld:reach-v2', 'Reacher-v2']
+ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
 ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
@@ -229,14 +229,15 @@ def test_learn_tau(mp_type: str, tau: float):
                             {'basis_generator_type': basis_generator_type,
                              }, seed=SEED)
 
-    d = True
+    done = True
     for i in range(5):
-        if d:
+        if done:
             env.reset()
         action = env.action_space.sample()
         action[0] = tau
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps
@@ -274,14 +275,15 @@ def test_learn_delay(mp_type: str, delay: float):
                             {'basis_generator_type': basis_generator_type,
                              }, seed=SEED)
 
-    d = True
+    done = True
     for i in range(5):
-        if d:
+        if done:
             env.reset()
         action = env.action_space.sample()
         action[0] = delay
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(env.action_space.sample())
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps
