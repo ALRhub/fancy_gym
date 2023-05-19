@@ -2,13 +2,13 @@ import os
 from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
+from fancy_gym.envs.mujoco.hopper_jump.hopper_jump import HopperEnvCustomXML
 from gymnasium.core import ObsType
 
 MAX_EPISODE_STEPS_HOPPERTHROWINBASKET = 250
 
 
-class HopperThrowInBasketEnv(HopperEnv):
+class HopperThrowInBasketEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.0
@@ -66,7 +66,7 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         is_in_basket_x = ball_pos[0] >= basket_pos[0] and ball_pos[0] <= basket_pos[0] + self.basket_size
         is_in_basket_y = ball_pos[1] >= basket_pos[1] - (self.basket_size / 2) and ball_pos[1] <= basket_pos[1] + (
-                self.basket_size / 2)
+            self.basket_size / 2)
         is_in_basket_z = ball_pos[2] < 0.1
         is_in_basket = is_in_basket_x and is_in_basket_y and is_in_basket_z
         if is_in_basket:
@@ -136,6 +136,3 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         observation = self._get_obs()
         return observation
-
-
-

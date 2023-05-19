@@ -2,8 +2,12 @@ import os
 from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gymnasium.envs.mujoco.walker2d_v4 import Walker2dEnv
+from gymnasium.envs.mujoco.walker2d_v4 import Walker2dEnv, DEFAULT_CAMERA_CONFIG
 from gymnasium.core import ObsType
+
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
 
@@ -11,6 +15,67 @@ MAX_EPISODE_STEPS_WALKERJUMP = 300
 # TODO: Right now this environment only considers jumping to a specific height, which is not nice. It should be extended
 #  to the same structure as the Hopper, where the angles are randomized (->contexts) and the agent should jump as height
 #  as possible, while landing at a specific target position
+
+class Walker2dEnvCustomXML(Walker2dEnv):
+    def __init__(
+        self,
+        xml_file,
+        forward_reward_weight=1.0,
+        ctrl_cost_weight=1e-3,
+        healthy_reward=1.0,
+        terminate_when_unhealthy=True,
+        healthy_z_range=(0.8, 2.0),
+        healthy_angle_range=(-1.0, 1.0),
+        reset_noise_scale=5e-3,
+        exclude_current_positions_from_observation=True,
+        **kwargs,
+    ):
+        utils.EzPickle.__init__(
+            self,
+            xml_file,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            healthy_reward,
+            terminate_when_unhealthy,
+            healthy_z_range,
+            healthy_angle_range,
+            reset_noise_scale,
+            exclude_current_positions_from_observation,
+            **kwargs,
+        )
+
+        self._forward_reward_weight = forward_reward_weight
+        self._ctrl_cost_weight = ctrl_cost_weight
+
+        self._healthy_reward = healthy_reward
+        self._terminate_when_unhealthy = terminate_when_unhealthy
+
+        self._healthy_z_range = healthy_z_range
+        self._healthy_angle_range = healthy_angle_range
+
+        self._reset_noise_scale = reset_noise_scale
+
+        self._exclude_current_positions_from_observation = (
+            exclude_current_positions_from_observation
+        )
+
+        if exclude_current_positions_from_observation:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(17,), dtype=np.float64
+            )
+        else:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+            )
+
+        MujocoEnv.__init__(
+            self,
+            xml_file,
+            4,
+            observation_space=observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
 
 
 class Walker2dJumpEnv(Walker2dEnv):
@@ -100,4 +165,3 @@ class Walker2dJumpEnv(Walker2dEnv):
 
         observation = self._get_obs()
         return observation
-

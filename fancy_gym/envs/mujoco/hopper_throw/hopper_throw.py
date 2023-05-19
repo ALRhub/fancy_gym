@@ -3,12 +3,12 @@ from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
 from gymnasium.core import ObsType
-from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
+from fancy_gym.envs.mujoco.hopper_jump.hopper_jump import HopperEnvCustomXML
 
 MAX_EPISODE_STEPS_HOPPERTHROW = 250
 
 
-class HopperThrowEnv(HopperEnv):
+class HopperThrowEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.0 -> 0.1
@@ -104,5 +104,3 @@ class HopperThrowEnv(HopperEnv):
 
         observation = self._get_obs()
         return observation
-
-

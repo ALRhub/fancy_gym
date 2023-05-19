@@ -1,12 +1,92 @@
 import os
 
 import numpy as np
-from gymnasium.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv, DEFAULT_CAMERA_CONFIG
+
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
 
-class HopperJumpEnv(HopperEnv):
+class HopperEnvCustomXML(HopperEnv):
+    """
+    Initialization changes to normal Hopper:
+    - terminate_when_unhealthy: True -> False
+    - healthy_reward: 1.0 -> 2.0
+    - healthy_z_range: (0.7, float('inf')) -> (0.5, float('inf'))
+    - healthy_angle_range: (-0.2, 0.2) -> (-float('inf'), float('inf'))
+    - exclude_current_positions_from_observation: True -> False
+    """
+
+    def __init__(
+            self,
+            xml_file,
+            forward_reward_weight=1.0,
+            ctrl_cost_weight=1e-3,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_state_range=(-100.0, 100.0),
+            healthy_z_range=(0.7, float("inf")),
+            healthy_angle_range=(-0.2, 0.2),
+            reset_noise_scale=5e-3,
+            exclude_current_positions_from_observation=True,
+            **kwargs,
+    ):
+        xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
+        utils.EzPickle.__init__(
+            self,
+            xml_file,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            healthy_reward,
+            terminate_when_unhealthy,
+            healthy_state_range,
+            healthy_z_range,
+            healthy_angle_range,
+            reset_noise_scale,
+            exclude_current_positions_from_observation,
+            **kwargs
+        )
+
+        self._forward_reward_weight = forward_reward_weight
+
+        self._ctrl_cost_weight = ctrl_cost_weight
+
+        self._healthy_reward = healthy_reward
+        self._terminate_when_unhealthy = terminate_when_unhealthy
+
+        self._healthy_state_range = healthy_state_range
+        self._healthy_z_range = healthy_z_range
+        self._healthy_angle_range = healthy_angle_range
+
+        self._reset_noise_scale = reset_noise_scale
+
+        self._exclude_current_positions_from_observation = (
+            exclude_current_positions_from_observation
+        )
+
+        if exclude_current_positions_from_observation:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(11,), dtype=np.float64
+            )
+        else:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(12,), dtype=np.float64
+            )
+
+        MujocoEnv.__init__(
+            self,
+            xml_file,
+            4,
+            observation_space=observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
+
+
+class HopperJumpEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - terminate_when_unhealthy: True -> False
@@ -141,8 +221,8 @@ class HopperJumpEnv(HopperEnv):
         noise_high[5] = 0.785
 
         qpos = (
-                self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq) +
-                self.init_qpos
+            self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq) +
+            self.init_qpos
         )
         qvel = (
             # self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv) +
