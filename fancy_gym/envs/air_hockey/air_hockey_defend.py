@@ -15,7 +15,7 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 
 
 
 class AirHockeyPlanarDefend(AirHockeyBase):
-    def __init__(self, reward_function: Union[str, None] = None, invtraj=0):
+    def __init__(self, dt=0.02, reward_function: Union[str, None] = None, invtraj=0):
         super().__init__(env_id="3dof-defend", reward_function=reward_functions[reward_function])
 
         obs_dim = 12
@@ -23,7 +23,7 @@ class AirHockeyPlanarDefend(AirHockeyBase):
         obs_high = np.ones(obs_dim) * 10000
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
-        self.dt = 0.001
+        self.dt = dt
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
 
         self.invtraj = invtraj
@@ -479,8 +479,10 @@ reward_functions = {
     'FavorSuccessRegion': AirHockeyPlanarDefend.planar_defend_sparse_FavorSuccessRegion,
 }
 
+
 def angle_2d(v0, v1):
-    return np.math.atan2(np.linalg.det([v1,v0]),np.dot(v0,v1))
+    return np.math.atan2(np.linalg.det([v1, v0]), np.dot(v0, v1))
+
 
 def mp(text):
     def inner(x):

@@ -882,23 +882,8 @@ register(
     kwargs={}
 )
 
-# Air Hockey Planar Robot with Sparse Reward
-register(
-    id="3dof-hit-sparse",
-    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHit',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
-    kwargs={'sparse_reward': True}
-)
-
-register(
-    id="3dof-defend-sparse",
-    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend,
-    kwargs={'reward_function': 'ZeqiV0'}
-)
-
 # ProMP Env for 3dof-hit Task
-_versions = ["3dof-hit", "3dof-hit-sparse"]
+_versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -925,7 +910,7 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # ProMP Env for 3dof-defend Task
-_versions = ["3dof-defend", "3dof-defend-sparse"]
+_versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
@@ -952,7 +937,7 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # ProDMP Env for 3dof-hit Task
-_versions = ["3dof-hit", "3dof-hit-sparse"]
+_versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-prodmp'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
@@ -983,7 +968,7 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
 
 # ProDMP Replan Env for 3dof-hit Task
-_versions = ["3dof-hit", "3dof-hit-sparse"]
+_versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-prodmp-replan'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)

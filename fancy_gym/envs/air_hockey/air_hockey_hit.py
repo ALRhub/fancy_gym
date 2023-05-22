@@ -14,18 +14,21 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 
 
 
 class AirHockeyPlanarHit(AirHockeyBase):
-    def __init__(self, sparse_reward=False):
-        if sparse_reward:
-            super().__init__(env_id="3dof-hit", reward_function=self.planar_hit_sparse_reward)
-        else:
-            super().__init__(env_id="3dof-hit", reward_function=self.planar_hit_reward)
+    def __init__(self, dt=0.02, reward_function: Union[str, None] = 'HitSparseRewardV0'):
+
+        reward_functions = {
+            'HitDefaultReward': self.planar_hit_reward,
+            'HitSparseRewardV0': self.planar_hit_sparse_reward
+        }
+
+        super().__init__(env_id="3dof-hit", reward_function=reward_functions[reward_function])
 
         obs_dim = 12
         obs_low = np.ones(obs_dim) * -10000
         obs_high = np.ones(obs_dim) * 10000
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
-        # self.dt = 0.001
+        self.dt = dt
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
@@ -224,3 +227,4 @@ class AirHockeyPlanarHit(AirHockeyBase):
         coef = traj_cos_ee_puck_goal[idx]
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
         return coef * (1 - np.tanh(min_dist_ee_puck))  # [0, 1]
+

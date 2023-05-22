@@ -1,6 +1,4 @@
-import os
 import copy
-import random
 import numpy as np
 from typing import Union, Tuple, Optional
 
@@ -9,10 +7,10 @@ from gym import spaces, utils
 from gym.core import ObsType, ActType
 
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
-from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
+# from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
-MAX_EPISODE_STEPS_AIR_HOCKEY = 150
-# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 120  # default is 500, recommended 120
+MAX_EPISODE_STEPS_AIR_HOCKEY = 200
+# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 150
 # MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
 
 
@@ -39,8 +37,8 @@ class AirHockeyBase(gym.Env):
         self.dof = self.env_info["robot"]["n_joints"]
 
         # mujoco model and data
-        self._model = self.base_env._model
-        self._data = self.base_env._data
+        # self._model = self.base_env._model
+        # self._data = self.base_env._data
         self.robot_model = self.env_info["robot"]["robot_model"]
         self.robot_data = self.env_info["robot"]["robot_data"]
 
