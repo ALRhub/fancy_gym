@@ -15,7 +15,7 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 
 
 
 class AirHockeyPlanarHit(AirHockeyBase):
-    def __init__(self, dt=0.02, action_type="pos-vel", reward_function='HitSparseRewardV0'):
+    def __init__(self, dt=0.02, reward_function: Union[str, None] = 'HitSparseRewardV0'):
 
         reward_functions = {
             'HitRewardDefault': self.planar_hit_reward_default,
@@ -33,10 +33,15 @@ class AirHockeyPlanarHit(AirHockeyBase):
         self.dt = dt
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
-        action_types = ['pos-vel', 'vel-acc', 'acc-jerk']
-        if action_type not in action_types:
-            raise "Action Type Unknown"
-        self.action_type = action_type
+    def reset(self, **kwargs):
+        self.last_acceleration = np.array([0, 0, 0], dtype=np.float64)
+        self.received_hit_rew = False
+        self.received_sparse_reward = False
+        self.last_observation = super().reset(**kwargs)
+        self.last_observation = np.hstack([self.last_observation, self.last_acceleration])
+        self.interp_pos = self.last_observation[[6, 7, 8]]
+        self.interp_vel = self.last_observation[[9, 10, 11]]
+        return self.last_observation
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
@@ -241,7 +246,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and done is False:
             return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -273,4 +278,46 @@ class AirHockeyPlanarHit(AirHockeyBase):
         idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
         coef = traj_cos_ee_puck_goal[idx]
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
-        return 1 - np.tanh(min_dist_ee_puck)   # [0, 1]
+        return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
+
+    @staticmethod
+    def planar_hit_reward_enes(base_env: AirHockeyHit, obs, act, obs_, done):
+        env_info = base_env.env_info
+        positive_reward_coef = 100
+        rew = 0.0001 * positive_reward_coef
+
+        ee_pos, ee_vel = base_env.get_ee()  # current ee state
+        puck_pos, puck_vel = base_env.get_puck(obs_)  # current puck state
+        if not base_env.has_hit:
+            old_ee_pos_in_robot, _ = forward_kinematics(env_info["robot"]["robot_model"],
+                                                        env_info["robot"]["robot_data"],
+                                                        base_env.get_joints(obs)[0])
+            old_ee_pos_in_world, _ = robot_to_world(env_info["robot"]["base_frame"][0], old_ee_pos_in_robot)
+            ee_puck_dis = np.linalg.norm(ee_pos[:2] - puck_pos[:2])
+            old_ee_puck_dis = np.linalg.norm(old_ee_pos_in_world[:2] - puck_pos[:2])
+            rew += 0.01 * np.exp(-5 * ee_puck_dis) * (old_ee_puck_dis - ee_puck_dis > 0) * positive_reward_coef
+        else:
+            rew += 0.01 * positive_reward_coef
+
+        vel_comp = np.tanh(1/2 * np.abs(puck_vel[0]))
+        if base_env.has_scored:
+            rew += (100 * vel_comp) * positive_reward_coef
+            rew += 100 * positive_reward_coef
+            # self.received_sparse_reward = True
+        elif base_env.has_bounce_rim_away:
+            # Can still score so wait for the next steps
+            if puck_vel[0] > 0:
+                return rew
+            # Bounced back from opponent
+            else:
+                env_info = base_env.env_info
+                goal_width = env_info["table"]["goal_width"] / 2
+                dist_comp = 1 - np.tanh(3 * (np.abs(puck_pos[1]) - goal_width))
+                rew += (10 + 5 * dist_comp + 5 * vel_comp) * positive_reward_coef
+                # self.received_sparse_reward = True
+        # We hit the puck backwards
+        elif not base_env.has_bounce_rim_away and puck_vel[0] < 0:
+            rew += -1 * positive_reward_coef
+            # self.received_sparse_reward = True
+
+        return rew
