@@ -112,7 +112,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5,):
     random.seed(seed)
     np.random.seed(seed)
 
-    env_kwargs = {'dt': 0.001, 'reward_function': 'HitSparseRewardV0'}
+    env_kwargs = {'dt': 0.02, 'reward_function': 'HitSparseRewardV0'}
     env = fancy_gym.make(env_id=env_id, seed=12, **env_kwargs)
 
     # ProMP samples
@@ -124,14 +124,14 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5,):
                           -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
 
     # ProDMP samples
-    # act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
-    #                       +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
-    #             np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
-    #                       +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
-    #             np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
-    #                       +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
-    #             np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
-    #                       +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
+    act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
+                          +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
+                np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
+                          +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
+                np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
+                          +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
+                np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
+                          +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
 
     for i in range(iteration):
         print("*"*20, i, "*"*20)
@@ -153,7 +153,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5,):
                 traj_pos, traj_vel = compute_pos_vel(traj_pos, traj_vel)
                 # traj_pos = np.vstack([current_pos, traj_pos])
                 # traj_vel = np.vstack([current_vel, traj_vel])
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=150, plot_sampling=True, plot_constrs=True)
+                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=150, plot_sampling=False, plot_constrs=True)
 
             if done:
                 print('Return: ', np.sum(rew))
@@ -164,20 +164,23 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5,):
                 break
 
 
-def compute_pos_vel(traj_acc, traj_jerk):
+def compute_pos_vel(traj_1, traj_2):
+    dt = 0.02
     init_pos = [-1.1557, +1.3002, +1.4428]
     init_vel = [0, 0, 0]
 
+    # traj_vel = traj_vel[19::20]
     # traj_acc = traj_acc[19::20]
-    # traj_jerk = traj_jerk[19::20]
+    traj_acc = traj_1
+    traj_jerk = traj_2
 
     last_pos = init_pos
     last_vel = init_vel
-    traj_pos = np.zeros_like(traj_acc)
-    traj_vel = np.zeros_like(traj_acc)
-    for i in range(traj_acc.shape[0]):
-        traj_vel[i] = last_vel + traj_acc[i] * 0.001 + 1/2 * traj_jerk[i] * 0.001**2
-        traj_pos[i] = last_pos + traj_vel[i] * 0.001 + 1/2 * traj_acc[i] * 0.001**2 + 1/6 * traj_jerk[i] * 0.001**3
+    traj_pos = np.zeros_like(traj_1)
+    traj_vel = np.zeros_like(traj_1)
+    for i in range(traj_1.shape[0]):
+        traj_vel[i] = last_vel + traj_acc[i] * dt + 1/2 * traj_jerk[i] * dt**2
+        traj_pos[i] = last_pos + traj_vel[i] * dt + 1/2 * traj_acc[i] * dt**2 + 1/6 * traj_jerk[i] * dt**3
         last_vel = traj_vel[i]
         last_pos = traj_pos[i]
 
@@ -187,4 +190,4 @@ def compute_pos_vel(traj_acc, traj_jerk):
 
 
 if __name__ == "__main__":
-    test_mp_env(env_id="3dof-hit-promp", seed=1, iteration=3)
+    test_mp_env(env_id="3dof-hit-prodmp", seed=1, iteration=3)
