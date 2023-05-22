@@ -164,17 +164,21 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5,):
                 break
 
 
-def compute_pos_vel(traj_vel, traj_acc):
+def compute_pos_vel(traj_acc, traj_jerk):
     init_pos = [-1.1557, +1.3002, +1.4428]
     init_vel = [0, 0, 0]
 
-    # traj_vel = traj_vel[19::20]
     # traj_acc = traj_acc[19::20]
+    # traj_jerk = traj_jerk[19::20]
 
     last_pos = init_pos
-    traj_pos = np.zeros_like(traj_vel)
-    for i in range(traj_vel.shape[0]):
-        traj_pos[i] = last_pos + traj_vel[i] * 0.001 + 0.5 * traj_acc[i] * 0.001**2
+    last_vel = init_vel
+    traj_pos = np.zeros_like(traj_acc)
+    traj_vel = np.zeros_like(traj_acc)
+    for i in range(traj_acc.shape[0]):
+        traj_vel[i] = last_vel + traj_acc[i] * 0.001 + 1/2 * traj_jerk[i] * 0.001**2
+        traj_pos[i] = last_pos + traj_vel[i] * 0.001 + 1/2 * traj_acc[i] * 0.001**2 + 1/6 * traj_jerk[i] * 0.001**3
+        last_vel = traj_vel[i]
         last_pos = traj_pos[i]
 
     traj_pos = np.vstack([init_pos, traj_pos])
