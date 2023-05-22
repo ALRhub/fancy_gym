@@ -47,3 +47,13 @@ class HitMPWrapper(RawInterfaceWrapper):
         return obs, trajectory_return, done, infos
 
 
+class DefendMPWrapper(HitMPWrapper):
+
+    @property
+    def context_mask(self) -> np.ndarray:
+        return np.hstack([
+            [True, True, False],  # puck position [x, y, theta]
+            [True, True, False],  # puck velocity [dx, dy, dtheta]
+            [False] * 3,  # joint position
+            [False] * 3,  # joint velocity
+        ])

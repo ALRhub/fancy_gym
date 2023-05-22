@@ -894,7 +894,7 @@ register(
     id="3dof-defend-sparse",
     entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
     max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend,
-    kwargs={'sparse_reward': True}
+    kwargs={'reward_function': 'ZeqiV0'}
 )
 
 # ProMP Env for 3dof-hit Task
@@ -916,6 +916,33 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_promp['name'] = _v
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+# ProMP Env for 3dof-defend Task
+_versions = ["3dof-defend", "3dof-defend-sparse"]
+for _v in _versions:
+    _env_id = _v + '-promp'
+    kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.DefendMPWrapper)
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 5
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 3
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
+    kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3.6
     kwargs_dict_ah_promp['name'] = _v
     register(
         id=_env_id,
