@@ -14,8 +14,8 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 120
 MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
 
 
-class AirHockeyPlanarHit(AirHockeyBase):
-    def __init__(self, dt=0.02, reward_function: Union[str, None] = 'HitSparseRewardV0'):
+class AirHockeyPlanarHitEnes(AirHockeyBase):
+    def __init__(self, dt=0.02, toleration=0.1):
 
         reward_functions = {
             'HitRewardDefault': self.planar_hit_reward_default,
@@ -23,7 +23,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             'HitSparseRewardV1': self.planar_hit_sparse_reward_v1,
         }
 
-        super().__init__(env_id="3dof-hit", reward_function=reward_functions[reward_function])
+        super().__init__(env_id="3dof-hit", reward_function=lambda *args: self.planar_hit_reward(*args))
 
         obs_dim = 12
         obs_low = np.ones(obs_dim) * -10000
@@ -33,23 +33,29 @@ class AirHockeyPlanarHit(AirHockeyBase):
         self.dt = dt
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
-    def reset(self, **kwargs):
-        self.last_acceleration = np.array([0, 0, 0], dtype=np.float64)
+        self.toleration = toleration
+        self.positive_reward_coef = 100
         self.received_hit_rew = False
-        self.received_sparse_reward = False
-        self.last_observation = super().reset(**kwargs)
-        self.last_observation = np.hstack([self.last_observation, self.last_acceleration])
-        self.interp_pos = self.last_observation[[6, 7, 8]]
-        self.interp_vel = self.last_observation[[9, 10, 11]]
-        return self.last_observation
+        self.received_sparse_rew = False
+
+    def reset(self, **kwargs):
+        # self.last_acceleration = np.array([0, 0, 0], dtype=np.float64)
+        self.received_hit_rew = False
+        self.received_sparse_rew = False
+        # self.last_observation = super().reset(**kwargs)
+        # self.last_observation = np.hstack([self.last_observation, self.last_acceleration])
+        # self.interp_pos = self.last_observation[[6, 7, 8]]
+        # self.interp_vel = self.last_observation[[9, 10, 11]]
+        return super().reset(**kwargs)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
+        valid = self.check_step_validity(obs, action, np.max(info['jerk']))
 
-        if self._episode_steps >= self.horizon:
-            done = True
-        else:
-            done = False
+        # if self._episode_steps >= self.horizon:
+        #     done = True
+        # else:
+        #     done = False
 
         if self.env.base_env.n_agents == 1:
             info["has_hit"] = 1 if info["has_hit"] else 0
@@ -62,6 +68,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
             info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
             info["validity"] = 1
 
+        if not valid:
+            return obs, 0, True, info
         return obs, rew, done, info
 
     @staticmethod
@@ -75,7 +83,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
         invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
         if invalid_tau or invalid_j_pos or invalid_j_vel:
-            return False, pos_traj, vel_traj
+            return True, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
     @staticmethod
@@ -129,6 +137,38 @@ class AirHockeyPlanarHit(AirHockeyBase):
         info['trajectory_length'] = self.horizon
 
         return obs, self.get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
+
+    def check_step_validity(self, obs, abs_act, jerk):
+        abs_diff = np.abs(obs[6:12] - abs_act)
+        mismatch = np.maximum(abs_diff - self.toleration, 0)
+        mismatch_penalty = np.sum(np.abs(mismatch))
+        if mismatch_penalty != 0:
+            return False
+
+        if np.any(np.abs(jerk) > 10000):
+            return False
+
+        action = abs_act.flatten()
+        q = action[[0, 1, 2]]
+        qd = action[[3, 4, 5]]
+        constraint_values = self.env_info["constraints"].fun(q, qd)
+
+        j_pos_constr = constraint_values["joint_pos_constr"]
+        if j_pos_constr.max() > 0:
+            return False
+
+        j_vel_constr = constraint_values["joint_vel_constr"]
+        if j_vel_constr.max() > 0:
+            return False
+
+        ee_constr = constraint_values["ee_constr"]
+        if ee_constr.max() > 0:
+            return False
+
+        return True
+
+    def planar_hit_reward(self, *args):
+        return self.planar_hit_reward_enes(*args)
 
     @staticmethod
     def planar_hit_reward_default(base_env: AirHockeyHit, obs, act, obs_, done):
@@ -280,10 +320,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
         return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
 
-    @staticmethod
-    def planar_hit_reward_enes(base_env: AirHockeyHit, obs, act, obs_, done):
+    # @staticmethod
+    def planar_hit_reward_enes(self, base_env: AirHockeyHit, obs, act, obs_, done):
         env_info = base_env.env_info
-        positive_reward_coef = 100
+        positive_reward_coef = self.positive_reward_coef
         rew = 0.0001 * positive_reward_coef
 
         ee_pos, ee_vel = base_env.get_ee()  # current ee state
@@ -299,11 +339,18 @@ class AirHockeyPlanarHit(AirHockeyBase):
         else:
             rew += 0.01 * positive_reward_coef
 
+        if base_env.has_hit and not self.received_hit_rew:
+            self.received_hit_rew = True
+            rew += (1 + puck_vel[0] ** 2) * positive_reward_coef
+
+        if self.received_sparse_rew:
+            return rew
+
         vel_comp = np.tanh(1/2 * np.abs(puck_vel[0]))
         if base_env.has_scored:
             rew += (100 * vel_comp) * positive_reward_coef
             rew += 100 * positive_reward_coef
-            # self.received_sparse_reward = True
+            self.received_sparse_rew = True
         elif base_env.has_bounce_rim_away:
             # Can still score so wait for the next steps
             if puck_vel[0] > 0:
@@ -314,10 +361,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
                 goal_width = env_info["table"]["goal_width"] / 2
                 dist_comp = 1 - np.tanh(3 * (np.abs(puck_pos[1]) - goal_width))
                 rew += (10 + 5 * dist_comp + 5 * vel_comp) * positive_reward_coef
-                # self.received_sparse_reward = True
+                self.received_sparse_rew = True
         # We hit the puck backwards
         elif not base_env.has_bounce_rim_away and puck_vel[0] < 0:
             rew += -1 * positive_reward_coef
-            # self.received_sparse_reward = True
+            self.received_sparse_rew = True
 
         return rew

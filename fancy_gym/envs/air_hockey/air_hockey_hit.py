@@ -1,5 +1,5 @@
 from typing import Union, Tuple, Optional
-
+import copy
 import numpy as np
 from gym import spaces, utils
 from gym.core import ObsType, ActType
@@ -38,55 +38,98 @@ class AirHockeyPlanarHit(AirHockeyBase):
             raise "Action Type Unknown"
         self.action_type = action_type
 
+        self.last_j_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
+        self.last_j_vel = np.array([0, 0, 0])
+
+    def reset(self, **kwargs):
+        self.last_j_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
+        self.last_j_vel = np.array([0, 0, 0])
+        return super().reset(**kwargs)
+
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
 
-        if self._episode_steps >= self.horizon:
-            done = True
-        else:
-            done = False
+        # if self._episode_steps >= self.horizon:
+        #     done = True
+        # else:
+        #     done = False
 
         if self.env.base_env.n_agents == 1:
             info["has_hit"] = 1 if info["has_hit"] else 0
             info["has_hit_step"] = self.horizon if info["has_hit_step"] == 500 else info["has_hit_step"]
             info["has_scored"] = 1 if info["has_scored"] else 0
             info["has_scored_step"] = self.horizon if info["has_scored_step"] == 500 else info["has_scored_step"]
+
+            info["validity"] = 1
+            info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
             info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
             info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
             info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
-            info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
-            info["validity"] = 1
 
         return obs, rew, done, info
 
-    @staticmethod
-    def check_traj_validity(action, pos_traj, vel_traj):
+    # @staticmethod
+    def check_traj_validity(self, action, traj_pos, traj_vel):
+        # check tau
         invalid_tau = False
         if action.shape[0] % 3 != 0:
             tau_bound = [1.5, 3.0]
             invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
+
+        # init state and full traj
+        init_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
+        init_vel = np.array([0, 0, 0])
+        traj_pos_full = np.vstack([init_pos, traj_pos])
+        traj_vel_full = np.vstack([init_vel, traj_vel])
+
+        # check ee constr
+        self.robot_data = copy.deepcopy(self.env_info['robot']['robot_data'])
+        self.robot_model = copy.deepcopy(self.env_info['robot']['robot_model'])
+        invalid_ee = False
+
+        # check jerk constr
+        invalid_jerk = False
+
+        # check joint constr
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
         constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
-        invalid_j_pos = np.any(pos_traj < constr_j_pos[:, 0]) or np.any(pos_traj > constr_j_pos[:, 1])
-        invalid_j_vel = np.any(vel_traj < constr_j_vel[:, 0]) or np.any(vel_traj > constr_j_vel[:, 1])
-        if invalid_tau or invalid_j_pos or invalid_j_vel:
-            return False, pos_traj, vel_traj
-        return True, pos_traj, vel_traj
+        invalid_j_pos = np.any(traj_pos < constr_j_pos[:, 0]) or np.any(traj_vel > constr_j_pos[:, 1])
+        invalid_j_vel = np.any(traj_vel < constr_j_vel[:, 0]) or np.any(traj_pos > constr_j_vel[:, 1])
 
-    @staticmethod
-    def get_invalid_traj_penalty(action, traj_pos, traj_vel):
-        violate_tau_bound_error = 0
+        if invalid_tau or invalid_ee or invalid_jerk or invalid_j_pos or invalid_j_vel:
+            return False, traj_pos, traj_vel
+        return True, traj_pos, traj_vel
+
+    # @staticmethod
+    def get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
+        # violate tau penalty
+        violate_tau_penalty = 0
         if action.shape[0] % 3 != 0:
             tau_bound = [1.5, 3.0]
-            violate_tau_bound_error = np.max([0, action[0] - tau_bound[1]]) + \
-                                      np.max([0, tau_bound[0] - action[0]])
+            violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
+
+        # init state and full traj
+        init_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
+        init_vel = np.array([0, 0, 0])
+        traj_pos_full = np.vstack([init_pos, traj_pos])
+        traj_vel_full = np.vstack([init_vel, traj_vel])
+
+        # violate ee penalty
+        self.robot_data = copy.deepcopy(self.env_info['robot']['robot_data'])
+        self.robot_model = copy.deepcopy(self.env_info['robot']['robot_model'])
+        violate_ee_penalty = 0
+
+        # violate jerk penalty
+        violate_jerk_penalty = 0
+
+        # violate joint penalty
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
         constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
         violate_low_bound_error = np.mean(np.maximum(constr_j_pos[:, 0] - traj_pos, 0)) + \
                                   np.mean(np.maximum(constr_j_vel[:, 0] - traj_vel, 0))
         violate_high_bound_error = np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)) + \
                                    np.mean(np.maximum(traj_vel - constr_j_vel[:, 1], 0))
-        invalid_penalty = violate_tau_bound_error + violate_low_bound_error + violate_high_bound_error
+        invalid_penalty = violate_tau_penalty + violate_low_bound_error + violate_high_bound_error
         return -invalid_penalty
 
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):

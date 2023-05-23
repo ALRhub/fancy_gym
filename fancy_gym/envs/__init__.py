@@ -876,6 +876,13 @@ register(
 )
 
 register(
+    id="3dof-hit-enes",
+    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHitEnes',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
+    kwargs={}
+)
+
+register(
     id="3dof-defend",
     entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
     max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend,
@@ -883,7 +890,7 @@ register(
 )
 
 # ProMP Env for 3dof-hit Task
-_versions = ["3dof-hit"]
+_versions = ["3dof-hit", "3dof-hit-enes"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)

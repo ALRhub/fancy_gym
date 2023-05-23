@@ -186,7 +186,8 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     random.seed(seed)
     np.random.seed(seed)
 
-    env = fancy_gym.make(env_id=env_id, seed=12)
+    env_kwargs = {'dt': 0.001}
+    env = fancy_gym.make(env_id=env_id, seed=12, **env_kwargs)
 
     # ProMP samples
     act_list = [np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
@@ -212,7 +213,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
         if i == 0:
             env.render(mode="human")
         while True:
-            # act = env.action_space.sample()
+            act = env.action_space.sample()
             act = act_list[i]
             obs, rew, done, info = env.step(act)
 
@@ -287,6 +288,6 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-defend-sparse-promp", seed=1, iteration=3)
+    test_mp_env(env_id="3dof-hit-enes-promp", seed=1, iteration=3)
     # test_replan_env(env_id="3dof-hit-sparse-prodmp-replan", seed=1, iteration=3)
 
