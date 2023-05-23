@@ -944,7 +944,7 @@ for _v in _versions:
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
 
 # ProDMP Env for 3dof-hit Task
-_versions = ["3dof-hit"]
+_versions = ["3dof-hit", "3dof-hit-enes"]
 for _v in _versions:
     _env_id = _v + '-prodmp'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
