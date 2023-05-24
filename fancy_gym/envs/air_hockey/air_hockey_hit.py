@@ -143,8 +143,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
         info["num_ee_z_violation"] = self.horizon
         info["num_jerk_violation"] = self.horizon
 
-        # for k, v in info.items():
-        #     info[k] = [v] * self.horizon
+        for k, v in info.items():
+            info[k] = [v] * self.horizon
 
         info['trajectory_length'] = 1
 
