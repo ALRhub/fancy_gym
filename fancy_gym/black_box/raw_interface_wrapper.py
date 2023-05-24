@@ -52,8 +52,38 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return self.env.dt
 
-    def episode_callback(self, action: np.ndarray, traj_gen: MPInterface) -> Tuple[
-        np.ndarray, Union[np.ndarray, None]]:
+    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) \
+            -> Tuple[bool, np.ndarray, np.ndarray]:
+        """
+        Used to preprocess the action and check if the desired trajectory is valid.
+        Args:
+            action:  a vector instance of the whole action space, includes traj_gen parameters and additional parameters if
+            specified, else only traj_gen parameters
+            pos_traj: a vector instance of the raw position trajectory
+            vel_traj: a vector instance of the raw velocity trajectory
+        Returns:
+            validity flag: bool, True if the raw trajectory is valid, False if not
+            pos_traj: a vector instance of the preprocessed position trajectory 
+            vel_traj: a vector instance of the preprocessed velocity trajectory
+        """
+        return True, pos_traj, vel_traj
+
+    def set_episode_arguments(self, action, pos_traj, vel_traj):
+        """
+        Used to set the arguments for env that valid for the whole episode
+        deprecated, replaced by preprocessing_and_validity_callback
+        Args:
+            action:  a vector instance of the whole action space, includes traj_gen parameters and additional parameters if
+            specified, else only traj_gen parameters
+            pos_traj: a vector instance of the raw position trajectory
+            vel_traj: a vector instance of the raw velocity trajectory
+        Returns:
+            pos_traj: a vector instance of the preprocessed position trajectory
+            vel_traj: a vector instance of the preprocessed velocity trajectory
+        """
+        return pos_traj, vel_traj
+
+    def episode_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.array) -> Tuple[bool]:
         """
         Used to extract the parameters for the movement primitive and other parameters from an action array which might
         include other actions like ball releasing time for the beer pong environment.
@@ -65,4 +95,20 @@ class RawInterfaceWrapper(gym.Wrapper):
         Returns:
             Tuple: mp_arguments and other arguments
         """
-        return action, None
+        return True
+
+    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
+        """
+        Used to return a artificial return from the env if the desired trajectory is invalid.
+        Args:
+            action:  a vector instance of the whole action space, includes traj_gen parameters and additional parameters if
+            specified, else only traj_gen parameters
+            pos_traj: a vector instance of the raw position trajectory
+            vel_traj: a vector instance of the raw velocity trajectory
+        Returns:
+            obs: artificial observation if the trajectory is invalid, by default a zero vector
+            reward: artificial reward if the trajectory is invalid, by default 0
+            done: artificial done if the trajectory is invalid, by default True
+            info: artificial info if the trajectory is invalid, by default empty dict
+        """
+        return np.zeros(1), 0, True, {}
