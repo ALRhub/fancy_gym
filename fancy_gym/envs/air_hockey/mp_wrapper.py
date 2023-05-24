@@ -9,7 +9,7 @@ class HitMPWrapper(RawInterfaceWrapper):
     @property
     def context_mask(self) -> np.ndarray:
         return np.hstack([
-            [True, True, False],  # puck position [x, y, theta]
+            [True, True, True],  # puck position [x, y, theta]
             [False] * 3,  # puck velocity [dx, dy, dtheta]
             [False] * 3,  # joint position
             [False] * 3,  # joint velocity
@@ -52,8 +52,8 @@ class DefendMPWrapper(HitMPWrapper):
     @property
     def context_mask(self) -> np.ndarray:
         return np.hstack([
-            [True, True, False],  # puck position [x, y, theta]
-            [True, True, False],  # puck velocity [dx, dy, dtheta]
+            [True, True, True],  # puck position [x, y, theta]
+            [True, True, True],  # puck velocity [dx, dy, dtheta]
             [False] * 3,  # joint position
             [False] * 3,  # joint velocity
         ])

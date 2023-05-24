@@ -15,7 +15,7 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 
 
 
 class AirHockeyPlanarHit(AirHockeyBase):
-    def __init__(self, dt=0.02, action_type="pos-vel", reward_function='HitSparseRewardV0'):
+    def __init__(self, dt=0.02, reward_function='HitSparseRewardV0'):
 
         reward_functions = {
             'HitRewardDefault': self.planar_hit_reward_default,
@@ -33,26 +33,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
         self.dt = dt
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
 
-        action_types = ['pos-vel', 'vel-acc', 'acc-jerk']
-        if action_type not in action_types:
-            raise "Action Type Unknown"
-        self.action_type = action_type
-
-        self.last_j_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
-        self.last_j_vel = np.array([0, 0, 0])
-
-    def reset(self, **kwargs):
-        self.last_j_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
-        self.last_j_vel = np.array([0, 0, 0])
-        return super().reset(**kwargs)
-
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
-
-        # if self._episode_steps >= self.horizon:
-        #     done = True
-        # else:
-        #     done = False
 
         if self.env.base_env.n_agents == 1:
             info["has_hit"] = 1 if info["has_hit"] else 0
@@ -60,35 +42,42 @@ class AirHockeyPlanarHit(AirHockeyBase):
             info["has_scored"] = 1 if info["has_scored"] else 0
             info["has_scored_step"] = self.horizon if info["has_scored_step"] == 500 else info["has_scored_step"]
 
-            info["validity"] = 1
-            info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
-            info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
-            info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
-            info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
-
+        # check step validity
+        step_validity, step_penalty = self.check_step_validity(info)
+        if not step_validity:
+            return obs, step_penalty, True, info
         return obs, rew, done, info
 
-    # @staticmethod
-    def check_traj_validity(self, action, traj_pos, traj_vel):
+    def check_step_validity(self, info):
+        validity = True
+        coef = (self.horizon - self._episode_steps) / self.horizon
+
+        # ee constr
+        ee_constr = np.array(np.any(info['constraints_value']['ee_constr'] > 0), dtype=np.float32)
+
+        # jerk constr
+        jerk_constr = np.array((info['jerk'] > 1e4), dtype=np.float32).mean()
+
+        penalty = coef * (ee_constr + np.tanh(jerk_constr))
+
+        if penalty > 0:
+            validity = False
+
+        info["validity"] = 1 if validity else 0
+        info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+        info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
+        info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
+        info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
+
+        return validity, -penalty
+
+    @staticmethod
+    def check_traj_validity(action, traj_pos, traj_vel):
         # check tau
         invalid_tau = False
         if action.shape[0] % 3 != 0:
             tau_bound = [1.5, 3.0]
             invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
-
-        # init state and full traj
-        init_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
-        init_vel = np.array([0, 0, 0])
-        traj_pos_full = np.vstack([init_pos, traj_pos])
-        traj_vel_full = np.vstack([init_vel, traj_vel])
-
-        # check ee constr
-        self.robot_data = copy.deepcopy(self.env_info['robot']['robot_data'])
-        self.robot_model = copy.deepcopy(self.env_info['robot']['robot_model'])
-        invalid_ee = False
-
-        # check jerk constr
-        invalid_jerk = False
 
         # check joint constr
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
@@ -96,56 +85,49 @@ class AirHockeyPlanarHit(AirHockeyBase):
         invalid_j_pos = np.any(traj_pos < constr_j_pos[:, 0]) or np.any(traj_vel > constr_j_pos[:, 1])
         invalid_j_vel = np.any(traj_vel < constr_j_vel[:, 0]) or np.any(traj_pos > constr_j_vel[:, 1])
 
-        if invalid_tau or invalid_ee or invalid_jerk or invalid_j_pos or invalid_j_vel:
+        if invalid_tau or invalid_j_pos or invalid_j_vel:
             return False, traj_pos, traj_vel
         return True, traj_pos, traj_vel
 
-    # @staticmethod
-    def get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
+    @staticmethod
+    def get_invalid_traj_penalty(action, traj_pos, traj_vel):
         # violate tau penalty
         violate_tau_penalty = 0
         if action.shape[0] % 3 != 0:
             tau_bound = [1.5, 3.0]
             violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
-        # init state and full traj
-        init_pos = np.array([-1.15570723,  1.30024401,  1.44280414])
-        init_vel = np.array([0, 0, 0])
-        traj_pos_full = np.vstack([init_pos, traj_pos])
-        traj_vel_full = np.vstack([init_vel, traj_vel])
-
-        # violate ee penalty
-        self.robot_data = copy.deepcopy(self.env_info['robot']['robot_data'])
-        self.robot_model = copy.deepcopy(self.env_info['robot']['robot_model'])
-        violate_ee_penalty = 0
-
-        # violate jerk penalty
-        violate_jerk_penalty = 0
-
         # violate joint penalty
         constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
         constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
-        violate_low_bound_error = np.mean(np.maximum(constr_j_pos[:, 0] - traj_pos, 0)) + \
-                                  np.mean(np.maximum(constr_j_vel[:, 0] - traj_vel, 0))
-        violate_high_bound_error = np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)) + \
-                                   np.mean(np.maximum(traj_vel - constr_j_vel[:, 1], 0))
-        invalid_penalty = violate_tau_penalty + violate_low_bound_error + violate_high_bound_error
-        return -invalid_penalty
+        num_violate_j_pos_constr = np.array((traj_pos - constr_j_pos[:, 0] < 0), dtype=np.float32).mean() + \
+                                   np.array((traj_pos - constr_j_pos[:, 1] > 0), dtype=np.float32).mean()
+        num_violate_j_vel_constr = np.array((traj_vel - constr_j_vel[:, 0] < 0), dtype=np.float32).mean() + \
+                                   np.array((traj_vel - constr_j_vel[:, 1] > 0), dtype=np.float32).mean()
+        max_violate_j_pos_constr = np.maximum(constr_j_pos[:, 0] - traj_pos, 0).mean() + \
+                                   np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)).mean()
+        max_violate_j_vel_constr = np.maximum(constr_j_vel[:, 0] - traj_vel, 0).mean() + \
+                                   np.maximum(traj_vel - constr_j_vel[:, 1], 0).mean()
+        violate_j_pos_penalty = num_violate_j_pos_constr + max_violate_j_pos_constr
+        violate_j_vel_penalty = num_violate_j_vel_constr + max_violate_j_vel_constr
+
+        traj_invalid_penalty = violate_tau_penalty + violate_j_pos_penalty + violate_j_vel_penalty
+        return -3 * traj_invalid_penalty
 
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
 
         # in fancy gym added metrics
-        info["has_hit"] = 0
-        info["has_scored"] = 0
+        info["validity"] = 0
+        info["ee_violation"] = 1
         info["jerk_violation"] = 1
         info["j_pos_violation"] = 1
         info["j_vel_violation"] = 1
-        info["ee_violation"] = 1
-        info["validity"] = 0
 
         # default metrics
+        info["has_hit"] = 0
         info["has_hit_step"] = self.horizon
+        info["has_scored"] = 0
         info["has_scored_step"] = self.horizon
         info["current_episode_length"] = self.horizon
         info["max_j_pos_violation"] = 10
@@ -161,10 +143,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
         info["num_ee_z_violation"] = self.horizon
         info["num_jerk_violation"] = self.horizon
 
-        for k, v in info.items():
-            info[k] = [v] * self.horizon
+        # for k, v in info.items():
+        #     info[k] = [v] * self.horizon
 
-        info['trajectory_length'] = self.horizon
+        info['trajectory_length'] = 1
 
         return obs, self.get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
 
@@ -284,7 +266,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
             return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -293,17 +275,11 @@ class AirHockeyPlanarHit(AirHockeyBase):
         traj_puck_vel = np.vstack(base_env.puck_vel_history)
         traj_cos_ee_puck_goal = np.stack(base_env.cos_ee_puck_goal_history)
 
-        # ee constr violation and jerk constr violation
-        pass
-
         # get score
         if base_env.has_scored:
             coef = np.clip(1.0 - (base_env.has_scored_step - 50) / 100, 0, 1)
             success_reward = 6
             return 4 + coef * success_reward  # [4, 10]
-
-        # if base_env.has_bounce:
-        #     pass
 
         if base_env.has_hit:
             has_hit_step = base_env.has_hit_step
@@ -316,4 +292,4 @@ class AirHockeyPlanarHit(AirHockeyBase):
         idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
         coef = traj_cos_ee_puck_goal[idx]
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
-        return 1 - np.tanh(min_dist_ee_puck)   # [0, 1]
+        return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
