@@ -100,8 +100,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # check joint constr
         constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
         constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
-        invalid_j_pos = np.any(traj_pos < constr_j_pos[:, 0]) or np.any(traj_vel > constr_j_pos[:, 1])
-        invalid_j_vel = np.any(traj_vel < constr_j_vel[:, 0]) or np.any(traj_pos > constr_j_vel[:, 1])
+        invalid_j_pos = np.any(traj_pos < constr_j_pos[:, 0]) or np.any(traj_pos > constr_j_pos[:, 1])
+        invalid_j_vel = np.any(traj_vel < constr_j_vel[:, 0]) or np.any(traj_vel > constr_j_vel[:, 1])
 
         if invalid_tau or invalid_j_pos or invalid_j_vel:
             return False, traj_pos, traj_vel
@@ -123,7 +123,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         num_violate_j_vel_constr = np.array((traj_vel - constr_j_vel[:, 0] < 0), dtype=np.float32).mean() + \
                                    np.array((traj_vel - constr_j_vel[:, 1] > 0), dtype=np.float32).mean()
         max_violate_j_pos_constr = np.maximum(constr_j_pos[:, 0] - traj_pos, 0).mean() + \
-                                   np.mean(np.maximum(traj_pos - constr_j_pos[:, 1], 0)).mean()
+                                   np.maximum(traj_pos - constr_j_pos[:, 1], 0).mean()
         max_violate_j_vel_constr = np.maximum(constr_j_vel[:, 0] - traj_vel, 0).mean() + \
                                    np.maximum(traj_vel - constr_j_vel[:, 1], 0).mean()
         violate_j_pos_penalty = num_violate_j_pos_constr + max_violate_j_pos_constr
