@@ -68,7 +68,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         ee_constr = np.array(np.any(info['constraints_value']['ee_constr'] > 0), dtype=np.float32)
 
         # jerk constr
-        jerk_constr = np.array((info['jerk'] > 1e4), dtype=np.float32).mean()
+        # jerk_constr = np.array((info['jerk'] > 1e4), dtype=np.float32).mean()
 
         # j_pos constr
         j_pos_constr = np.array((info['constraints_value']['joint_pos_constr'] > 0), dtype=np.float32).mean()
@@ -76,7 +76,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # j_vel constr
         j_vel_constr = np.array((info['constraints_value']['joint_vel_constr'] > 0), dtype=np.float32).mean()
 
-        penalty = coef * (ee_constr + np.tanh(jerk_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr))
+        penalty = coef * (ee_constr + np.tanh(j_pos_constr) + np.tanh(j_vel_constr))
 
         if penalty > 0:
             validity = False

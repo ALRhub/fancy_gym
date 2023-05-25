@@ -954,12 +954,13 @@ for _v in _versions:
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 25
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 15
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['action_dim'] = 3
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    # kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = True
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
