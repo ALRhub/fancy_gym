@@ -58,7 +58,13 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # jerk constr
         jerk_constr = np.array((info['jerk'] > 1e4), dtype=np.float32).mean()
 
-        penalty = coef * (ee_constr + np.tanh(jerk_constr))
+        # j_pos constr
+        j_pos_constr = np.array((info['constraints_value']['joint_pos_constr'] > 0), dtype=np.float32).mean()
+
+        # j_vel constr
+        j_vel_constr = np.array((info['constraints_value']['joint_vel_constr'] > 0), dtype=np.float32).mean()
+
+        penalty = coef * (ee_constr + np.tanh(jerk_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr))
 
         if penalty > 0:
             validity = False
@@ -80,8 +86,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
             invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
 
         # check joint constr
-        constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
-        constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
+        constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
+        constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
         invalid_j_pos = np.any(traj_pos < constr_j_pos[:, 0]) or np.any(traj_vel > constr_j_pos[:, 1])
         invalid_j_vel = np.any(traj_vel < constr_j_vel[:, 0]) or np.any(traj_pos > constr_j_vel[:, 1])
 
@@ -98,8 +104,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
             violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
         # violate joint penalty
-        constr_j_pos = np.array([[-2.8, +2.8], [-1.8, +1.8], [-2.0, +2.0]])
-        constr_j_vel = np.array([[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]])
+        constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
+        constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
         num_violate_j_pos_constr = np.array((traj_pos - constr_j_pos[:, 0] < 0), dtype=np.float32).mean() + \
                                    np.array((traj_pos - constr_j_pos[:, 1] > 0), dtype=np.float32).mean()
         num_violate_j_vel_constr = np.array((traj_vel - constr_j_vel[:, 0] < 0), dtype=np.float32).mean() + \
@@ -144,7 +150,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         info["num_jerk_violation"] = self.horizon
 
         for k, v in info.items():
-            info[k] = [v] * self.horizon
+            info[k] = [v] * 20
 
         info['trajectory_length'] = 1
 
@@ -223,8 +229,8 @@ class AirHockeyPlanarHit(AirHockeyBase):
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT:
-            return 0
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
+            return 0.01
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
         traj_ee_vel = np.vstack(base_env.ee_vel_history)
@@ -232,27 +238,17 @@ class AirHockeyPlanarHit(AirHockeyBase):
         traj_puck_vel = np.vstack(base_env.puck_vel_history)
         traj_cos_ee_puck_goal = np.stack(base_env.cos_ee_puck_goal_history)
 
-        # ee constr violation and jerk constr violation
-        pass
-
         # get score
         if base_env.has_scored:
-            # min_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 2
-            # max_success_step = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT / 1
             coef = np.clip(1.0 - (100 - base_env.has_scored_step) / 50, 0, 1)
-            success_reward = 6
+            success_reward = 16
             return 4 + coef * success_reward
-
-        # if base_env.has_bounce:
-        #     pass
 
         if base_env.has_hit:
             has_hit_step = base_env.has_hit_step
             cos_ee_puck_goal = traj_cos_ee_puck_goal[has_hit_step]
             min_dist_puck_goal = base_env.min_dist_puck_goal
             max_p_vel_x = np.max(traj_puck_vel[:, 0])
-            # p_pos_y = np.abs(traj_puck_pos[idx, 1])
-            # p_vel_x = traj_puck_vel[idx, 0] if traj_puck_vel[idx, 0] > 0 else 0
             return 1 + 1.0 * cos_ee_puck_goal + 1.0 * (1 - np.tanh(min_dist_puck_goal)) + 1.0 * np.tanh(max_p_vel_x)
 
         idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
@@ -267,7 +263,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
         if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
-            return 0
+            return 0.01
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
         traj_ee_vel = np.vstack(base_env.ee_vel_history)
@@ -278,7 +274,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # get score
         if base_env.has_scored:
             coef = np.clip(1.0 - (base_env.has_scored_step - 50) / 100, 0, 1)
-            success_reward = 6
+            success_reward = 16
             return 4 + coef * success_reward  # [4, 10]
 
         if base_env.has_hit:
