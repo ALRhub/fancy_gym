@@ -186,7 +186,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5):
     random.seed(seed)
     np.random.seed(seed)
 
-    env_kwargs = {'dt': 0.001, 'reward_function': 'HitSparseRewardV1'}
+    env_kwargs = {'dt': 0.001, 'reward_function': 'HitSparseRewardEnes'}
     env = fancy_gym.make(env_id=env_id, seed=12, **env_kwargs)
 
     # ProMP samples
