@@ -92,7 +92,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
 
         length = info['trajectory_length']
 
-        if not d:
+        if not done:
             assert length == np.round(action[0] / env.dt)
             assert length == np.round(env.traj_gen.tau.numpy() / env.dt)
         else:
