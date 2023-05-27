@@ -8,6 +8,7 @@ from typing import Iterable, Type, Union, Optional
 import gymnasium as gym
 import numpy as np
 from gymnasium.envs.registration import register, registry
+from gymnasium.wrappers import FlattenObservation
 
 from fancy_gym.utils.env_compatibility import EnvCompatibility
 
@@ -164,6 +165,10 @@ def make_bb(
         wrappers.insert(0, TimeAwareObservation)
 
     env = _make_wrapped_env(env_id=env_id, wrappers=wrappers, seed=seed, **kwargs)
+
+    # BB expects a spaces.Box to be exposed, need to convert for dict-observations
+    if type(env.observation_space) == gym.spaces.dict.Dict:
+        env = FlattenObservation(env)
 
     traj_gen_kwargs['action_dim'] = traj_gen_kwargs.get('action_dim', np.prod(env.action_space.shape).item())
 
