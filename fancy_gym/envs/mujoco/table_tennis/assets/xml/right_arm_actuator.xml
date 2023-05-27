@@ -1,0 +1,54 @@
+<mujocoinclude>
+    <actuator>
+
+<!--                        <position ctrlrange="-2.6 2.6" joint="wam/base_yaw_joint_right" kp="100.0" />-->
+<!--                        <position ctrlrange="-1.985 1.985" joint="wam/shoulder_pitch_joint_right" kp="162.0" />-->
+<!--                        <position ctrlrange="-2.8 2.8" joint="wam/shoulder_yaw_joint_right" kp="100.0" />-->
+<!--                        <position ctrlrange="-0.9 3.14159" joint="wam/elbow_pitch_joint_right" kp="122.0" />-->
+<!--                        <position ctrlrange="-4.55 1.25" joint="wam/wrist_yaw_joint_right" kp="100.0" />-->
+<!--                        <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint_right" kp="102.0" />-->
+<!--                        <position ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kp="100.0" />-->
+
+<!--                <position ctrlrange="-2.6 2.6" joint="wam/base_yaw_joint_right" kp="151.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-1.985 1.985" joint="wam/shoulder_pitch_joint_right" kp="125.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-2.8 2.8" joint="wam/shoulder_yaw_joint_right" kp="122.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-0.9 3.14159" joint="wam/elbow_pitch_joint_right" kp="121.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-4.55 1.25" joint="wam/wrist_yaw_joint_right" kp="99.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint_right" kp="103.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kp="99.0" ctrllimited="true"/>-->
+
+<!--                        <position ctrlrange="-2.6 2.6" joint="wam/base_yaw_joint_right" kp="100.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-1.985 1.985" joint="wam/shoulder_pitch_joint_right" kp="600.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-2.8 2.8" joint="wam/shoulder_yaw_joint_right" kp="122.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-0.9 3.14159" joint="wam/elbow_pitch_joint_right" kp="500.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-4.55 1.25" joint="wam/wrist_yaw_joint_right" kp="99.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint_right" kp="103.0" ctrllimited="true"/>-->
+<!--                <position ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kp="99.0" ctrllimited="true"/>-->
+
+                <position ctrlrange="-2.6 2.6" joint="wam/base_yaw_joint_right" kp="800.0" ctrllimited="true"/>
+                <position ctrlrange="-1.985 1.985" joint="wam/shoulder_pitch_joint_right" kp="800.0" ctrllimited="true"/>
+                <position ctrlrange="-2.8 2.8" joint="wam/shoulder_yaw_joint_right" kp="800.0" ctrllimited="true"/>
+                <position ctrlrange="-0.9 3.14159" joint="wam/elbow_pitch_joint_right" kp="800.0" ctrllimited="true"/>
+                <position ctrlrange="-4.55 1.25" joint="wam/wrist_yaw_joint_right" kp="100.0" ctrllimited="true"/>
+                <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint_right" kp="1000.0" ctrllimited="true"/>
+                <position ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kp="100.0" ctrllimited="true"/>
+
+                <velocity ctrlrange="-3 3" joint="wam/base_yaw_joint_right" kv="0.1" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/shoulder_pitch_joint_right" kv="0.1" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/shoulder_yaw_joint_right" kv="0.1" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/elbow_pitch_joint_right" kv="0.01" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/wrist_yaw_joint_right" kv="0.01" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/wrist_pitch_joint_right" kv="0.1" ctrllimited="true"/>
+                <velocity ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kv="0.1" ctrllimited="true"/>
+
+<!--        <position ctrlrange="-2.6 2.6" joint="wam/base_yaw_joint_right" kp="1600.0" ctrllimited="true"/>-->
+<!--&lt;!&ndash;        <velocity ctrlrange="-50 50" joint="wam/base_yaw_joint_right" kv="100" ctrllimited="true"/>&ndash;&gt;-->
+
+<!--        <position ctrlrange="-1.985 1.985" joint="wam/shoulder_pitch_joint_right" kp="2000.0" ctrllimited="true"/>-->
+<!--        <position ctrlrange="-2.8 2.8" joint="wam/shoulder_yaw_joint_right" kp="800.0" ctrllimited="true"/>-->
+<!--        <position ctrlrange="-0.9 3.14159" joint="wam/elbow_pitch_joint_right" kp="1200.0" ctrllimited="true"/>-->
+<!--        <position ctrlrange="-4.55 1.25" joint="wam/wrist_yaw_joint_right" kp="100.0" ctrllimited="true"/>-->
+<!--        <position ctrlrange="-1.5707 1.5707" joint="wam/wrist_pitch_joint_right" kp="2000.0" ctrllimited="true"/>-->
+<!--        <position ctrlrange="-3 3" joint="wam/palm_yaw_joint_right" kp="100.0" ctrllimited="true"/>-->
+    </actuator>
+</mujocoinclude>

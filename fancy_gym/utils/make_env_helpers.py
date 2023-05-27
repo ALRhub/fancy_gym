@@ -183,11 +183,11 @@ def make_bb(
 
     # set tau bounds to minimum of two env steps otherwise computing the velocity is not possible.
     # maximum is full duration of one episode.
-    if phase_kwargs.get('learn_tau'):
+    if phase_kwargs.get('learn_tau') and phase_kwargs.get('tau_bound') is None:
         phase_kwargs["tau_bound"] = [env.dt * 2, black_box_kwargs['duration']]
 
     # Max delay is full duration minus two steps due to above reason
-    if phase_kwargs.get('learn_delay'):
+    if phase_kwargs.get('learn_delay') and phase_kwargs.get('delay_bound') is None:
         phase_kwargs["delay_bound"] = [0, black_box_kwargs['duration'] - env.dt * 2]
 
     phase_gen = get_phase_generator(**phase_kwargs)
