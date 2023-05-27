@@ -78,7 +78,7 @@ class Walker2dEnvCustomXML(Walker2dEnv):
         )
 
 
-class Walker2dJumpEnv(Walker2dEnv):
+class Walker2dJumpEnv(Walker2dEnvCustomXML):
     """
     healthy reward 1.0 -> 0.005 -> 0.0025 not from alex
     penalty 10 -> 0 not from alex
