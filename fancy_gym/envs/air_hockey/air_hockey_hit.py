@@ -21,6 +21,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             'HitRewardDefault': self.planar_hit_reward_default,
             'HitSparseRewardV0': self.planar_hit_sparse_reward_v0,
             'HitSparseRewardV1': self.planar_hit_sparse_reward_v1,
+            'HitSparseRewardV2': self.planar_hit_sparse_reward_v2,
             'HitSparseRewardEnes': lambda *args: self.planar_hit_reward_enes(*args)
         }
 
@@ -300,6 +301,43 @@ class AirHockeyPlanarHit(AirHockeyBase):
         idx = np.argmin(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
         coef = traj_cos_ee_puck_goal[idx]
         min_dist_ee_puck = np.linalg.norm(traj_puck_pos[idx] - traj_ee_pos[idx])
+        return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
+
+    @staticmethod
+    def planar_hit_sparse_reward_v2(base_env: AirHockeyHit, obs, act, obs_, done):
+        # init reward and env info
+        env_info = base_env.env_info
+        goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
+
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
+            return 0.01
+
+        traj_ee_pos = np.vstack(base_env.ee_pos_history)
+        traj_ee_vel = np.vstack(base_env.ee_vel_history)
+        traj_puck_pos = np.vstack(base_env.puck_pos_history)
+        traj_puck_vel = np.vstack(base_env.puck_vel_history)
+        traj_cos_ee_puck_goal = np.stack(base_env.cos_ee_puck_goal_history)
+        traj_cos_ee_puck_bouncing_point = np.stack(base_env.cos_ee_puck_bouncing_point_history)
+
+        # get score
+        if base_env.has_scored:
+            coef = np.clip(1.0 - (base_env.has_scored_step - 80) / 100, 0, 1)
+            coef_rew = 5
+            success_rew = 10
+            return 5 + coef * coef_rew + 1.0 * success_rew  # [5, 20]
+
+        if base_env.has_hit:
+            has_hit_step = base_env.has_hit_step
+            cos_ee_puck_goal = traj_cos_ee_puck_goal[has_hit_step]
+            cos_ee_puck_bouncing_point = traj_cos_ee_puck_bouncing_point[has_hit_step]
+            cos_rew = np.max([cos_ee_puck_goal, cos_ee_puck_bouncing_point])
+            min_dist_puck_goal = base_env.min_dist_puck_goal
+            max_puck_vel_after_hit = base_env.max_puck_vel_after_hit
+            mean_puck_vel_after_hit = base_env.mean_puck_vel_after_hit
+            return 1 + 1.0 * cos_rew + 1.0 * (1 - np.tanh(min_dist_puck_goal)) + \
+                1.0 * np.tanh(max_puck_vel_after_hit) + 1.0 * np.tanh(mean_puck_vel_after_hit)  # [1, 5]
+
+        min_dist_ee_puck = np.min(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
         return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
 
     def planar_hit_reward_enes(self, *args):
