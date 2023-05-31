@@ -902,6 +902,7 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_promp['name'] = _v
+    kwargs_dict_ah_promp['dt'] = 0.001
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -929,6 +930,7 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3.6
     kwargs_dict_ah_promp['name'] = _v
+    kwargs_dict_ah_promp['dt'] = 0.001
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -961,6 +963,7 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_prodmp['name'] = _v
+    kwargs_dict_ah_prodmp['dt'] = 0.02
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -993,6 +996,7 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_prodmp['name'] = _v
+    kwargs_dict_ah_prodmp['dt'] = 0.02
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -1028,6 +1032,8 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
     kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
     kwargs_dict_ah_prodmp['name'] = _v
+    kwargs_dict_ah_prodmp['dt'] = 0.02
+    kwargs_dict_ah_prodmp['replan_steps'] = 25
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',

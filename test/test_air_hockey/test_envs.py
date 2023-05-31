@@ -241,7 +241,7 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_r
     random.seed(seed)
     np.random.seed(seed)
 
-    env_kwargs = {'dt': 0.02, 'reward_function': 'HitSparseRewardV2', 'replan_steps': 25}
+    env_kwargs = {'dt': 0.02, 'reward_function': 'HitSparseRewardV2'}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     for i in range(iteration):
