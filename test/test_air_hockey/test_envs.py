@@ -246,6 +246,7 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
     for i in range(iteration):
         print("*"*20, i, "*"*20)
         obs = env.reset()
+        print(obs)
         done = False
         env.render(mode="human")
         pos_list = []
@@ -257,6 +258,7 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
+            print(obs)
 
             # plot trajs
             # print("weights: ", np.round(act, 2))
@@ -271,11 +273,11 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
                 print('constr_j_vel: ', np.sum(info['j_vel_violation']))
                 print('constr_ee: ', np.sum(info['ee_violation']))
             if done:
-                step = np.linspace(0.02, 3, 150) - 1
-                colors = ['r', 'g', 'b']
+                step = np.linspace(0.02, 3, 150) - 0.5
+                colors = ['r', 'g', 'b', 'y', 'black']
                 idx = 0
                 for pos, vel in zip(pos_list, vel_list):
-                    step += 1
+                    step += 0.5
 
                     plt.subplot(1, 2, 1)
                     plt.plot(step, pos[:, 0], color=colors[idx])
@@ -291,6 +293,6 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5):
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit-sparse', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-promp", seed=1, iteration=3)
-    # test_replan_env(env_id="3dof-hit-sparse-prodmp-replan", seed=1, iteration=3)
+    # test_mp_env(env_id="3dof-hit-sparse-prodmp", seed=1, iteration=3)
+    test_replan_env(env_id="3dof-hit-prodmp-replan", seed=1, iteration=3)
 
