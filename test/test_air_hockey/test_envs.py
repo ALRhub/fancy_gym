@@ -198,14 +198,14 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
                           -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
 
     # ProDMP samples
-    act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
-                          +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
-                np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
-                          +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
-                np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
-                          +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
-                np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
-                          +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
+    # act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
+    #                       +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
+    #             np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
+    #                       +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
+    #             np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
+    #                       +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
+    #             np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
+    #                       +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
 
     for i in range(iteration):
         print("*"*20, i, "*"*20)
@@ -214,7 +214,10 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
             env.render(mode="human")
         while True:
             # act = env.action_space.sample()
-            act = act_list[3]
+            # act = act_list[3]
+            # act = np.ones(8) * 0.1
+            act = (2 * np.random.rand(8) - 1) * 0.5
+            # act = np.random.rand(8) * 0.5
 
             # plot trajs
             if plot_result:
@@ -291,6 +294,6 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_r
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-prodmp", seed=1, iteration=3)
+    test_mp_env(env_id="3dof-hit-cart-promp", seed=1, iteration=100, plot_result=False)
     # test_replan_env(env_id="3dof-hit-prodmp-replan", seed=1, iteration=3)
 

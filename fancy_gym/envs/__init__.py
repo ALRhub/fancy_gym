@@ -1044,3 +1044,44 @@ for _v in _versions:
         kwargs=kwargs_dict_ah_prodmp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
+
+
+#######################################################################################################################
+# Air Hockey Challenge
+# Air Hockey Planar Robot in Cart Space
+register(
+    id="3dof-hit-cart",
+    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHitCart',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
+    kwargs={}
+)
+
+# ProMP Env for 3dof-hit Task
+_versions = ["3dof-hit-cart"]
+for _v in _versions:
+    _env_id = _v + '-promp'
+    kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.HitCartMPWrapper)
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 3.0
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0
+    kwargs_dict_ah_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 2
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_promp['controller_kwargs']['dof'] = 2
+    kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_promp['name'] = _v
+    kwargs_dict_ah_promp['dt'] = 0.001
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)

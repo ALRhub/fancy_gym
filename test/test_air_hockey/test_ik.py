@@ -177,68 +177,68 @@ def test_cart_agent(env_id='3dof-hit', seed=0):
     traj_gen = TrajectoryGenerator(env_info)
     traj_opt = TrajectoryOptimizer(env_info)
 
-    # plt.vlines(-env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
-    # plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
-    # plt.hlines(-env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
-    # plt.hlines(+env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
-    # for _ in range(200):
-    #     weights = 2 * np.random.rand(10) - 1
-    #     pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
-    #     plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
-    # plt.show()
-
+    plt.vlines(-env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
+    plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
+    plt.hlines(-env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
+    plt.hlines(+env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
     for _ in range(10):
-        # weights = np.ones(10) * 0.1
-        weights = 2 * np.random.random(10) - 1
+        weights = 0.5 * (2 * np.random.rand(10) - 1)
         pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
-        traj_c = np.hstack([pos, vel])
-
-        success, j_pos_traj = traj_opt.optimize_trajectory(traj_c, init_j_pos, init_j_vel, None)
-        t = np.linspace(0, j_pos_traj.shape[0], j_pos_traj.shape[0] + 1) * 0.02
-        f = CubicSpline(t, np.vstack([init_j_pos, j_pos_traj]), axis=0, bc_type=((1, init_j_vel),
-                                                                                (2, np.zeros_like(init_j_vel))))
-        df = f.derivative(1)
-        traj_j = np.stack([f(t[1:]), df(t[1:])]).swapaxes(0, 1)
-
-        c_pos = np.zeros([traj_j.shape[0], 3])
-        for i, j in enumerate(traj_j):
-            c_pos[i] = forward_kinematics(env_info['robot']['robot_model'], env_info['robot']['robot_data'], j[0])[0]
-
-        plot_trajs(np.vstack([init_j_pos, traj_j[:, 0]]), np.vstack([init_j_vel, traj_j[:, 1]]), 0, 150, False, True)
-        #
-        plt.vlines(-env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
-        plt.vlines(+env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
-        plt.hlines(-env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
-        plt.hlines(+env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
         plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
-        plt.plot(c_pos[:, 0] - 1.51, c_pos[:, 1])
-        # t = np.linspace(0.02, 3, pos.shape[0])
-        # plt.plot(t, pos[:, 0])
-        plt.show()
-        print(weights)
+    plt.show()
 
-        rews = []
-        jerks = []
-        constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
-        obs = env.reset()
-        for j in traj_j:
-            act = np.hstack([j[0], j[1]])
-            obs_, rew, done, info = env.step(act)
-            env.render(mode="human")
-
-            rews.append(rew)
-            jerks.append(info['jerk_violation'])
-            constrs['j_pos'].append(info['j_pos_violation'])
-            constrs['j_vel'].append(info['j_vel_violation'])
-            constrs['ee'].append(info['ee_violation'])
-
-            if done:
-                print('Return: ', np.sum(rews))
-                print('Jerks: ', np.sum(jerks))
-                print('constr_j_pos: ', np.sum(constrs['j_pos']))
-                print('constr_j_vel: ', np.sum(constrs['j_vel']))
-                print('constr_ee: ', np.sum(constrs['ee']))
-                break
+    # for _ in range(10):
+    #     # weights = np.ones(10) * 0.1
+    #     weights = 2 * np.random.random(10) - 1
+    #     pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
+    #     traj_c = np.hstack([pos, vel])
+    #
+    #     success, j_pos_traj = traj_opt.optimize_trajectory(traj_c, init_j_pos, init_j_vel, None)
+    #     t = np.linspace(0, j_pos_traj.shape[0], j_pos_traj.shape[0] + 1) * 0.02
+    #     f = CubicSpline(t, np.vstack([init_j_pos, j_pos_traj]), axis=0, bc_type=((1, init_j_vel),
+    #                                                                             (2, np.zeros_like(init_j_vel))))
+    #     df = f.derivative(1)
+    #     traj_j = np.stack([f(t[1:]), df(t[1:])]).swapaxes(0, 1)
+    #
+    #     c_pos = np.zeros([traj_j.shape[0], 3])
+    #     for i, j in enumerate(traj_j):
+    #         c_pos[i] = forward_kinematics(env_info['robot']['robot_model'], env_info['robot']['robot_data'], j[0])[0]
+    #
+    #     plot_trajs(np.vstack([init_j_pos, traj_j[:, 0]]), np.vstack([init_j_vel, traj_j[:, 1]]), 0, 150, False, True)
+    #     #
+    #     plt.vlines(-env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
+    #     plt.vlines(+env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
+    #     plt.hlines(-env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
+    #     plt.hlines(+env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
+    #     plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
+    #     plt.plot(c_pos[:, 0] - 1.51, c_pos[:, 1])
+    #     # t = np.linspace(0.02, 3, pos.shape[0])
+    #     # plt.plot(t, pos[:, 0])
+    #     plt.show()
+    #     print(weights)
+    #
+    #     rews = []
+    #     jerks = []
+    #     constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
+    #     obs = env.reset()
+    #     for j in traj_j:
+    #         act = np.hstack([j[0], j[1]])
+    #         obs_, rew, done, info = env.step(act)
+    #         env.render(mode="human")
+    #
+    #         rews.append(rew)
+    #         jerks.append(info['jerk_violation'])
+    #         constrs['j_pos'].append(info['j_pos_violation'])
+    #         constrs['j_vel'].append(info['j_vel_violation'])
+    #         constrs['ee'].append(info['ee_violation'])
+    #
+    #         if done:
+    #             print('Return: ', np.sum(rews))
+    #             print('Jerks: ', np.sum(jerks))
+    #             print('constr_j_pos: ', np.sum(constrs['j_pos']))
+    #             print('constr_j_vel: ', np.sum(constrs['j_vel']))
+    #             print('constr_ee: ', np.sum(constrs['ee']))
+    #             break
 
 
 if __name__ == "__main__":
