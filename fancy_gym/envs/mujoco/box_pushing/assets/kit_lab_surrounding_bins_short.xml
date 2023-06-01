@@ -140,7 +140,7 @@
             </body>
         </body>
       <body name="ref" pos="0.6 0.0 -0.2">
-       <site name="ref" rgba='1 1 1 1' size='0.020'/>
+       <site name="ref" rgba='1 1 1 1' size='0.02'/>
       </body>
     </worldbody>
 </mujoco>
