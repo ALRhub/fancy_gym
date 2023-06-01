@@ -405,3 +405,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             self.received_sparse_rew = True
 
         return rew
+
+
+class AirHockeyPlanarHitWork(AirHockeyPlanarHit):
+    pass
