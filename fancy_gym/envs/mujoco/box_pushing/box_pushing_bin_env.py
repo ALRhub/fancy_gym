@@ -61,6 +61,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self.init_qpos_box_pushing = np.zeros(7 + MAX_NUM_BOXES * 7)
         self.init_qvel_box_pushing = np.zeros(7 + MAX_NUM_BOXES * 6)
         self.boxes = ["box_" + str(i) for i in range(num_boxes)]
+        self.centers = ["center_" + str(i) for i in range(num_boxes)]
         self.joints = ["box_joint_" + str(i) for i in range(num_boxes)]
         self.hidden = ["box_joint_" + str(i) for i in range(num_boxes, MAX_NUM_BOXES)]
         self.boxes_out_bins = np.arange(num_boxes)
@@ -131,7 +132,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self._episode_energy += np.sum(np.square(action))
         episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING_BIN else False
 
-        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
         box_pos_xyz = [b[:3] for b in box_pos]
         box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
@@ -173,7 +174,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
                         break
             self.data.joint(joint).qpos = new_pos
             positions.append(new_pos)
-        self.boxes_out_bins = np.arange(len(self.boxes))  # assume all boxes out
+        self.boxes_out_bins = np.arange(self.num_boxes)  # assume all boxes out
 
         # Robot out of the way of boxes before dropping them
         self.data.qpos[:7] = START_POS + np.array([0, 0, 0, np.pi*5/8, 0, 0, 0])
@@ -229,7 +230,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         return {"joint_rew": joint_penalty_reward, "energy_rew": energy_cost}
 
     def _get_obs(self):
-        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
         box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
 
         rots = [Rotation.from_quat(quat) for quat in box_quat]
@@ -253,7 +254,10 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         return self.data.qpos[:7].copy()  # joint position
 
     def pos_behind_box(self):
-        box_pos = np.array(self.data.body(self.boxes[0]).xpos.copy()[:3])
+        if len(self.boxes_out_bins) == 0:
+            return np.array([0.5, 0.0, 0.15])
+        box_center = self.centers[self.boxes_out_bins[0]]
+        box_pos = self.data.site(box_center).xpos.copy()
         box_pos[0] -= 0.08
         return box_pos
 
@@ -457,7 +461,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         return robot_joint_pos, outside_robot_reach_penalty, dist_to_tcp_rew
 
     def dist_boxes_to_tcp(self):
-        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
         box_pos_xyz = np.array([b[:3] for b in box_pos])
         box_pos_xyz[:, 0] -= 0.08
         parallel_tcp_pos = np.repeat(
@@ -545,7 +549,7 @@ class BoxPushingBinSparse(BoxPushingBin):
         self.boxes_out_bins = np.delete(  # Remove boxes that fell in bin after box init
             self.boxes_out_bins,
             self.boxes_in_bin(
-                np.array([self.data.body(box).xpos.copy() for box in self.boxes])\
+                np.array([self.data.site(c).xpos.copy() for c in self.centers])\
                     [self.boxes_out_bins]
             )
         )
@@ -612,7 +616,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         return obs
 
     def dist_boxes_to_bins(self):
-        box_pos = [self.data.body(box).xpos.copy() for box in self.boxes]
+        box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
         box_pos_xyz = [b[:2] for b in box_pos]
 
         # Parallelize calculating mahalanobis distance by casting both box positions and
