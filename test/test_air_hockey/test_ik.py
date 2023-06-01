@@ -16,7 +16,8 @@ from fancy_gym.black_box.factory.phase_generator_factory import get_phase_genera
 from fancy_gym.black_box.factory.basis_generator_factory import get_basis_generator
 from fancy_gym.black_box.factory.trajectory_generator_factory import get_trajectory_generator
 
-phase_generator_kwargs = {'phase_generator_type': 'linear'}
+phase_generator_kwargs = {'phase_generator_type': 'linear',
+                          'tau': 3}
 basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
                           'num_basis': 5,
                           'num_basis_zero_start': 3,
@@ -25,6 +26,20 @@ basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
 trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
                                'action_dim': 2,
                                'weights_scale': 1}
+# phase_generator_kwargs = {'phase_generator_type': 'exp',
+#                           'tau': 3,
+#                           'alpha_phase': 3}
+# basis_generator_kwargs = {'basis_generator_type': 'prodmp',
+#                           'num_basis': 4,
+#                           'alpha': 25,
+#                           'basis_bandwidth_factor': 3.0}
+# trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
+#                                'action_dim': 2,
+#                                'weights_scale': 1.0,
+#                                'goal_scale': 1.0,
+#                                'disable_goal': False,
+#                                'relative_goal': False,
+#                                'auto_scale_basis': True}
 
 
 def get_numpy(x: torch.Tensor):
@@ -40,12 +55,12 @@ def get_numpy(x: torch.Tensor):
 
 
 class TrajectoryGenerator:
-    def __init__(self, env__info):
-        self.env_info = env__info
+    def __init__(self, env_info):
+        self.env_info = env_info
 
-        self.init_time = np.array(0)
-        self.init_pos = np.array([6.49932054e-01, 2.05280684e-05, 1.00000000e-01])
+        self.init_pos = np.array([6.49932e-01, 2.05280e-05, 1.00000e-01])
         self.init_vel = np.array([0, 0, 0])
+        self.init_time = np.array(0)
 
         self.dt = 0.001
         self.duration = 3.0
@@ -54,7 +69,10 @@ class TrajectoryGenerator:
         basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_generator_kwargs)
         self.traj_gen = get_trajectory_generator(basis_generator=basis_gen, **trajectory_generator_kwargs)
 
-    def generate_trajectory(self, weights):
+    def generate_trajectory(self, weights, init_pos, init_vel):
+        self.init_pos = init_pos
+        self.init_vel = init_vel
+
         self.traj_gen.reset()
         self.traj_gen.set_params(weights)
         self.traj_gen.set_initial_conditions(self.init_time, self.init_pos[:2], self.init_vel[:2])
@@ -67,6 +85,9 @@ class TrajectoryGenerator:
         if self.dt == 0.001:
             position = position[19::20].copy()
             velocity = velocity[19::20].copy()
+
+        position = np.hstack([position, 1e-1 * np.ones([position.shape[0], 1])])
+        velocity = np.hstack([velocity, np.zeros([velocity.shape[0], 1])])
 
         return position, velocity
 
@@ -115,15 +136,18 @@ class TrajectoryOptimizer:
         x_cur = forward_kinematics(self.robot_model, self.robot_data, q_cur)[0]
         jac = jacobian(self.robot_model, self.robot_data, q_cur)[:3, :self.n_joints]
         N_J = scipy.linalg.null_space(jac)
-        b = np.linalg.lstsq(jac, ((x_des - x_cur) / self.env_info['dt']), rcond=None)[0]
+        b = np.linalg.lstsq(jac, v_des + ((x_des - x_cur) / self.env_info['dt']), rcond=None)[0]
 
         P = (N_J.T @ np.diag(self.anchor_weights) @ N_J) / 2
         q = (b - dq_anchor).T @ np.diag(self.anchor_weights) @ N_J
         A = N_J.copy()
-        u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
-                       (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
-        l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
-                       (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
+        # u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
+        #                (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
+        # l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
+        #                (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
+
+        u = self.env_info['robot']['joint_vel_limit'][1] * 0.92 - b
+        l = self.env_info['robot']['joint_vel_limit'][0] * 0.92 - b
 
         solver = osqp.OSQP()
         solver.setup(P=sparse.csc_matrix(P), q=q, A=sparse.csc_matrix(A), l=l, u=u, verbose=False, polish=False)
@@ -134,59 +158,87 @@ class TrajectoryOptimizer:
         else:
             vel_u = self.env_info['robot']['joint_vel_limit'][1] * 0.92
             vel_l = self.env_info['robot']['joint_vel_limit'][0] * 0.92
-            return False, np.clip(b, vel_l, vel_u)
+            # return False, np.clip(b, vel_l, vel_u)
+            return False, b
 
 
 def test_cart_agent(env_id='3dof-hit', seed=0):
+    # create env
     env = fancy_gym.make(env_id=env_id, seed=seed)
     env_info = env.env_info
+
+    # init condition
+    init_c_pos = np.array([6.49932e-01, 2.05280e-05, 1.00000e-01])
+    init_c_vel = np.array([0, 0, 0])
+    init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
+    init_j_vel = np.array([0, 0, 0])
+    # q_anchor = np.array([-1.15570723, 1.30024401, 1.44280414])
 
     traj_gen = TrajectoryGenerator(env_info)
     traj_opt = TrajectoryOptimizer(env_info)
 
+    # plt.vlines(-env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
+    # plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
+    # plt.hlines(-env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
+    # plt.hlines(+env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
+    # for _ in range(200):
+    #     weights = 2 * np.random.rand(10) - 1
+    #     pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
+    #     plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
+    # plt.show()
+
     for _ in range(10):
         # weights = np.ones(10) * 0.1
-        weights = np.random.random(10) * 0.5
-        pos, vel = traj_gen.generate_trajectory(weights)
+        weights = 2 * np.random.random(10) - 1
+        pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
+        traj_c = np.hstack([pos, vel])
 
-        pos = np.hstack([pos, 1e-1 * np.ones([pos.shape[0], 1])])
-        vel = np.hstack([vel, np.zeros([vel.shape[0], 1])])
-        c_traj = np.hstack([pos, vel])
+        success, j_pos_traj = traj_opt.optimize_trajectory(traj_c, init_j_pos, init_j_vel, None)
+        t = np.linspace(0, j_pos_traj.shape[0], j_pos_traj.shape[0] + 1) * 0.02
+        f = CubicSpline(t, np.vstack([init_j_pos, j_pos_traj]), axis=0, bc_type=((1, init_j_vel),
+                                                                                (2, np.zeros_like(init_j_vel))))
+        df = f.derivative(1)
+        traj_j = np.stack([f(t[1:]), df(t[1:])]).swapaxes(0, 1)
 
-        q_start = np.array([-1.1557072, 1.300244, 1.4428041])
-        q_anchor = np.array([-1.15570723, 1.30024401, 1.44280414])
-        dq_start = np.array([0, 0, 0])
+        c_pos = np.zeros([traj_j.shape[0], 3])
+        for i, j in enumerate(traj_j):
+            c_pos[i] = forward_kinematics(env_info['robot']['robot_model'], env_info['robot']['robot_data'], j[0])[0]
 
-        actions = []
-        for i in range(1):
-            s = 150 * (i + 0)
-            e = 150 * (i + 1)
-            success, j_pos_traj = traj_opt.optimize_trajectory(c_traj[s:e], q_start, dq_start, None)
-            t = np.linspace(0, j_pos_traj.shape[0], j_pos_traj.shape[0] + 1) * 0.02
-            f = CubicSpline(t, np.vstack([q_start, j_pos_traj]), axis=0, bc_type=((1, dq_start),
-                                                                                  (2, np.zeros_like(dq_start))))
-            df = f.derivative(1)
-            j_traj = np.stack([f(t[1:]), df(t[1:])]).swapaxes(0, 1)
-            q_start = j_traj[0, 0]
-            dq_start = j_traj[0, 1]
-            actions.append(j_traj)
-            # print(success)
-
-        actions = np.vstack(actions)
-        c_pos = np.zeros([actions.shape[0], 3])
-        for j, a in enumerate(actions):
-            c_pos[j] = forward_kinematics(env_info['robot']['robot_model'], env_info['robot']['robot_data'], a[0])[0]
-
-        plot_trajs(actions[:, 0], actions[:, 1], 0, 149, False, True)
-
+        plot_trajs(np.vstack([init_j_pos, traj_j[:, 0]]), np.vstack([init_j_vel, traj_j[:, 1]]), 0, 150, False, True)
+        #
         plt.vlines(-env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
         plt.vlines(+env_info['table']['length']/2, ymin=-0.6, ymax=+0.6)
         plt.hlines(-env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
         plt.hlines(+env_info['table']['width']/2, xmin=-1.1, xmax=+1.1)
         plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
         plt.plot(c_pos[:, 0] - 1.51, c_pos[:, 1])
+        # t = np.linspace(0.02, 3, pos.shape[0])
+        # plt.plot(t, pos[:, 0])
         plt.show()
         print(weights)
+
+        rews = []
+        jerks = []
+        constrs = {'j_pos': [], 'j_vel': [], 'ee': []}
+        obs = env.reset()
+        for j in traj_j:
+            act = np.hstack([j[0], j[1]])
+            obs_, rew, done, info = env.step(act)
+            env.render(mode="human")
+
+            rews.append(rew)
+            jerks.append(info['jerk_violation'])
+            constrs['j_pos'].append(info['j_pos_violation'])
+            constrs['j_vel'].append(info['j_vel_violation'])
+            constrs['ee'].append(info['ee_violation'])
+
+            if done:
+                print('Return: ', np.sum(rews))
+                print('Jerks: ', np.sum(jerks))
+                print('constr_j_pos: ', np.sum(constrs['j_pos']))
+                print('constr_j_vel: ', np.sum(constrs['j_vel']))
+                print('constr_ee: ', np.sum(constrs['ee']))
+                break
 
 
 if __name__ == "__main__":

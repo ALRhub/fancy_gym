@@ -949,6 +949,7 @@ for _v in _versions:
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 3.0
     kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 25
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
@@ -982,6 +983,7 @@ for _v in _versions:
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 3.0
     kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 25
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
@@ -1015,6 +1017,7 @@ for _v in _versions:
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 3.0
     kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 25
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
