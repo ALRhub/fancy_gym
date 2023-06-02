@@ -16,30 +16,30 @@ from fancy_gym.black_box.factory.phase_generator_factory import get_phase_genera
 from fancy_gym.black_box.factory.basis_generator_factory import get_basis_generator
 from fancy_gym.black_box.factory.trajectory_generator_factory import get_trajectory_generator
 
-phase_generator_kwargs = {'phase_generator_type': 'linear',
-                          'tau': 3}
-basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
-                          'num_basis': 5,
-                          'num_basis_zero_start': 3,
-                          'num_basis_zero_goal': 0,
-                          'basis_bandwidth_factor': 3.0}
-trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
-                               'action_dim': 2,
-                               'weights_scale': 1}
-# phase_generator_kwargs = {'phase_generator_type': 'exp',
-#                           'tau': 3,
-#                           'alpha_phase': 3}
-# basis_generator_kwargs = {'basis_generator_type': 'prodmp',
-#                           'num_basis': 4,
-#                           'alpha': 25,
+# phase_generator_kwargs = {'phase_generator_type': 'linear',
+#                           'tau': 3}
+# basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
+#                           'num_basis': 10,
+#                           'num_basis_zero_start': 3,
+#                           'num_basis_zero_goal': 0,
 #                           'basis_bandwidth_factor': 3.0}
-# trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
+# trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
 #                                'action_dim': 2,
-#                                'weights_scale': 1.0,
-#                                'goal_scale': 1.0,
-#                                'disable_goal': False,
-#                                'relative_goal': False,
-#                                'auto_scale_basis': True}
+#                                'weights_scale': 1}
+phase_generator_kwargs = {'phase_generator_type': 'exp',
+                          'tau': 2,
+                          'alpha_phase': 3}
+basis_generator_kwargs = {'basis_generator_type': 'prodmp',
+                          'num_basis': 10,
+                          'alpha': 25,
+                          'basis_bandwidth_factor': 3.0}
+trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
+                               'action_dim': 2,
+                               'weights_scale': 1.0,
+                               'goal_scale': 1.0,
+                               'disable_goal': True,
+                               'relative_goal': False,
+                               'auto_scale_basis': True}
 
 
 def get_numpy(x: torch.Tensor):
@@ -181,8 +181,8 @@ def test_cart_agent(env_id='3dof-hit', seed=0):
     plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
     plt.hlines(-env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
     plt.hlines(+env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
-    for _ in range(10):
-        weights = 0.5 * (2 * np.random.rand(10) - 1)
+    for _ in range(1):
+        weights = 0.5 * (2 * np.random.rand(20) - 1)
         pos, vel = traj_gen.generate_trajectory(weights, init_c_pos, init_c_vel)
         plt.plot(pos[:, 0] - 1.51, pos[:, 1], color='red')
     plt.show()

@@ -257,10 +257,13 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_r
         current_pos, current_vel = env.current_pos, env.current_vel
         pos_list, vel_list = [current_pos], [current_vel]
         pos_list, vel_list = [], []
+        act = np.array([-1.15570, +1.30024, +1.44280])
         while True:
-            act = env.action_space.sample()
-            act = np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
-                            +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196])
+            # act = env.action_space.sample() * 0.01
+            # init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
+            # act = np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
+            #                 +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196])
+            act = act - 0.05
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
@@ -294,6 +297,6 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_r
 if __name__ == "__main__":
     # test_baseline(env_id='3dof-hit', iteration=1)
     # test_env(env_id="3dof-hit-sparse", iteration=10)
-    test_mp_env(env_id="3dof-hit-cart-promp", seed=1, iteration=100, plot_result=False)
-    # test_replan_env(env_id="3dof-hit-prodmp-replan", seed=1, iteration=3)
+    # test_mp_env(env_id="3dof-hit-cart-promp", seed=1, iteration=100, plot_result=False)
+    test_replan_env(env_id="3dof-hit-prodmp-replan", seed=1, iteration=3)
 

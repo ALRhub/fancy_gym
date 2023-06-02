@@ -96,9 +96,9 @@ class AirHockeyPlanarHit(AirHockeyBase):
     def check_traj_validity(self, action, traj_pos, traj_vel):
         # check tau
         invalid_tau = False
-        if action.shape[0] % 3 != 0:
-            tau_bound = [1.5, 3.0]
-            invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
+        # if action.shape[0] % 3 != 0:
+        #     tau_bound = [1.5, 3.0]
+        #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
 
         if self.replan_steps != -1:
             valid_pos = traj_pos[:self.replan_steps]
@@ -120,9 +120,9 @@ class AirHockeyPlanarHit(AirHockeyBase):
     def get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
         # violate tau penalty
         violate_tau_penalty = 0
-        if action.shape[0] % 3 != 0:
-            tau_bound = [1.5, 3.0]
-            violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
+        # if action.shape[0] % 3 != 0:
+        #     tau_bound = [1.5, 3.0]
+        #     violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
         if self.replan_steps != -1:
             valid_pos = traj_pos[:self.replan_steps]
