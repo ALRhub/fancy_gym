@@ -325,7 +325,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
         if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
-            return 0.01
+            if base_env.episode_steps < 100:
+                return 0.01
+            else:
+                return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
         traj_ee_vel = np.vstack(base_env.ee_vel_history)
@@ -337,9 +340,12 @@ class AirHockeyPlanarHit(AirHockeyBase):
         # get score
         if base_env.has_scored:
             coef = np.clip(1.0 - (base_env.has_scored_step - 80) / 100, 0, 1)
-            coef_rew = 5
-            success_rew = 10
-            return 5 + coef * coef_rew + 1.0 * success_rew  # [5, 20]
+            coef_rew = 6
+            success_rew = 8
+            max_puck_vel_after_hit = base_env.max_puck_vel_after_hit
+            mean_puck_vel_after_hit = base_env.mean_puck_vel_after_hit
+            return 6 + 1.0 * np.tanh(max_puck_vel_after_hit) + 1.0 * np.tanh(mean_puck_vel_after_hit) + \
+                coef * coef_rew + 1.0 * success_rew  # [4, 20]
 
         if base_env.has_hit:
             has_hit_step = base_env.has_hit_step
@@ -347,13 +353,10 @@ class AirHockeyPlanarHit(AirHockeyBase):
             cos_ee_puck_bouncing_point = traj_cos_ee_puck_bouncing_point[has_hit_step]
             cos_rew = np.max([cos_ee_puck_goal, cos_ee_puck_bouncing_point])
             min_dist_puck_goal = base_env.min_dist_puck_goal
-            max_puck_vel_after_hit = base_env.max_puck_vel_after_hit
-            mean_puck_vel_after_hit = base_env.mean_puck_vel_after_hit
-            return 1 + 1.0 * cos_rew + 1.0 * (1 - np.tanh(min_dist_puck_goal)) + \
-                1.0 * np.tanh(max_puck_vel_after_hit) + 1.0 * np.tanh(mean_puck_vel_after_hit)  # [1, 5]
+            return 1 * (1 + 1.0 * cos_rew + 2.0 * (1 - np.tanh(min_dist_puck_goal)))  # [1, 4]
 
         min_dist_ee_puck = np.min(np.linalg.norm(traj_puck_pos - traj_ee_pos, axis=1))
-        return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
+        return 1 * (1 - np.tanh(min_dist_ee_puck))  # [0, 1]
 
     def planar_hit_reward_enes(self, *args):
         return self._planar_hit_reward_enes(*args)
