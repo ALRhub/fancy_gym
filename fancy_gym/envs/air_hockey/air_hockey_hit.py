@@ -320,15 +320,16 @@ class AirHockeyPlanarHit(AirHockeyBase):
 
     @staticmethod
     def planar_hit_sparse_reward_v2(base_env: AirHockeyHit, obs, act, obs_, done):
-        # init reward and env info
-        env_info = base_env.env_info
-        goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
-
+        # sparse reward
         if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
             if base_env.episode_steps < 100:
                 return 0.01
             else:
                 return 0
+
+        # init env info
+        env_info = base_env.env_info
+        goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
         traj_ee_vel = np.vstack(base_env.ee_vel_history)
@@ -344,14 +345,15 @@ class AirHockeyPlanarHit(AirHockeyBase):
             success_rew = 8
             max_puck_vel_after_hit = base_env.max_puck_vel_after_hit
             mean_puck_vel_after_hit = base_env.mean_puck_vel_after_hit
-            return 6 + 1.0 * np.tanh(max_puck_vel_after_hit) + 1.0 * np.tanh(mean_puck_vel_after_hit) + \
+            return 4 + 1.0 * np.tanh(max_puck_vel_after_hit) + 1.0 * np.tanh(mean_puck_vel_after_hit) + \
                 coef * coef_rew + 1.0 * success_rew  # [4, 20]
 
         if base_env.has_hit:
             has_hit_step = base_env.has_hit_step
             cos_ee_puck_goal = traj_cos_ee_puck_goal[has_hit_step]
             cos_ee_puck_bouncing_point = traj_cos_ee_puck_bouncing_point[has_hit_step]
-            cos_rew = np.max([cos_ee_puck_goal, cos_ee_puck_bouncing_point])
+            # cos_rew = np.max([cos_ee_puck_goal, cos_ee_puck_bouncing_point])
+            cos_rew = cos_ee_puck_goal
             min_dist_puck_goal = base_env.min_dist_puck_goal
             return 1 * (1 + 1.0 * cos_rew + 2.0 * (1 - np.tanh(min_dist_puck_goal)))  # [1, 4]
 

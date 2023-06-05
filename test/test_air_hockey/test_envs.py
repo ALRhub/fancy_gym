@@ -269,7 +269,7 @@ def test_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_r
             obs, rew, done, info = env.step(act)
 
             if True:
-                print('*'*20, 'segment_', len(pos_list)-1, '*'*20)
+                print('*'*20, 'segment', len(pos_list)-1, '*'*20)
                 print('Return: ', np.sum(rew))
                 print('Jerks: ', np.sum(info['jerk_violation']))
                 print('constr_j_pos: ', np.sum(info['j_pos_violation']))
