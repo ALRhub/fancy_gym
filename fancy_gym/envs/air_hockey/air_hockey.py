@@ -12,7 +12,7 @@ from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 MAX_EPISODE_STEPS_AIR_HOCKEY = 200
 
 
-class AirHockeyBase(gym.Env):
+class AirHockeyGymBase(gym.Env):
     """
     Base Environment for Air Hockey Challenge 2023
     """
@@ -26,6 +26,7 @@ class AirHockeyBase(gym.Env):
                                              custom_reward_function=custom_reward_function,
                                              **kwargs)
         self.base_env = self.env.base_env
+        self.interpolate_order = interpolation_order
 
         # air hockey env info
         self.mdp_info = self.env.info
@@ -77,6 +78,7 @@ class AirHockeyBase(gym.Env):
             return obs
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
+
         act = np.reshape(action, [2, -1])
         obs, rew, done, info = self.env.step(act)
         obs = np.array(obs, dtype=np.float32)

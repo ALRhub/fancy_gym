@@ -3,44 +3,56 @@ import copy
 import numpy as np
 from gym import spaces, utils
 from gym.core import ObsType, ActType
-from fancy_gym.envs.air_hockey.air_hockey import AirHockeyBase
+from fancy_gym.envs.air_hockey.air_hockey import AirHockeyGymBase
 
 # from air_hockey_challenge.utils import robot_to_world
 # from air_hockey_challenge.framework import AirHockeyChallengeWrapper
-from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
+# from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 from air_hockey_challenge.utils import forward_kinematics, robot_to_world
 
 MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT = 150  # default is 500, recommended 120
+MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT = 150  # default is 500, recommended 120
 
 
-class AirHockey3DofHit(AirHockeyBase):
-    def __init__(self, dt=0.02, reward_function='HitSparseRewardV0', replan_steps=-1):
+class AirHockeyGymHit(AirHockeyGymBase):
+    def __init__(self, env_id=None,
+                 interpolation_order=None,
+                 custom_reward_function=None,
+                 dt=0.02,
+                 replan_steps=-1):
 
-        reward_functions = {
+        custom_reward_functions = {
             'HitRewardDefault': self.planar_hit_reward_default,
             'HitSparseRewardV0': self.planar_hit_sparse_reward_v0,
             'HitSparseRewardV1': self.planar_hit_sparse_reward_v1,
             'HitSparseRewardV2': self.planar_hit_sparse_reward_v2,
             'HitSparseRewardEnes': lambda *args: self.planar_hit_reward_enes(*args)
         }
+        super().__init__(env_id=env_id,
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_functions[custom_reward_function])
 
-        super().__init__(env_id="3dof-hit", reward_function=reward_functions[reward_function])
+        # modify observation space
+        if '3dof' in env_id:
+            obs_dim = 12
+        else:
+            obs_dim = 20
+        obs_l = np.ones(obs_dim) * -10000
+        obs_u = np.ones(obs_dim) * +10000
+        self.observation_space = spaces.Box(low=obs_l, high=obs_u, dtype=np.float32)
 
-        obs_dim = 12
-        obs_low = np.ones(obs_dim) * -10000
-        obs_high = np.ones(obs_dim) * 10000
-        self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
-
+        # mp wrapper related term
         self.dt = dt
-        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
+        self.replan_steps = replan_steps
+        if '3dof' in env_id:
+            self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
+        else:
+            self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT
 
-        # enes rew related term
+        # reward related terms
         self.positive_reward_coef = 1
         self.received_hit_rew = False
         self.received_sparse_rew = False
-
-        # replan_steps
-        self.replan_steps = replan_steps
 
     def reset(self, **kwargs):
         self.received_hit_rew = False
@@ -50,12 +62,6 @@ class AirHockey3DofHit(AirHockeyBase):
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
-
-        if self.env.base_env.n_agents == 1:
-            info["has_hit"] = 1 if info["has_hit"] else 0
-            info["has_hit_step"] = self.horizon if info["has_hit_step"] == 500 else info["has_hit_step"]
-            info["has_scored"] = 1 if info["has_scored"] else 0
-            info["has_scored_step"] = self.horizon if info["has_scored_step"] == 500 else info["has_scored_step"]
 
         # check step validity
         step_validity, step_penalty = self.check_step_validity(info)
@@ -184,7 +190,7 @@ class AirHockey3DofHit(AirHockeyBase):
         return obs, self.get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
 
     @staticmethod
-    def planar_hit_reward_default(base_env: AirHockeyHit, obs, act, obs_, done):
+    def planar_hit_reward_default(base_env, obs, act, obs_, done):
         # init reward and env info
         rew = 0
         env_info = base_env.env_info
@@ -251,12 +257,12 @@ class AirHockey3DofHit(AirHockeyBase):
         return rew
 
     @staticmethod
-    def planar_hit_sparse_reward_v0(base_env: AirHockeyHit, obs, act, obs_, done):
+    def planar_hit_sparse_reward_v0(base_env, obs, act, obs_, done):
         # init reward and env info
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT and not done:
             return 0.01
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -284,12 +290,12 @@ class AirHockey3DofHit(AirHockeyBase):
         return coef * (1 - np.tanh(min_dist_ee_puck))  # [0, 1]
 
     @staticmethod
-    def planar_hit_sparse_reward_v1(base_env: AirHockeyHit, obs, act, obs_, done):
+    def planar_hit_sparse_reward_v1(base_env, obs, act, obs_, done):
         # init reward and env info
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT and not done:
             return 0.01
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -318,9 +324,9 @@ class AirHockey3DofHit(AirHockeyBase):
         return 1 - np.tanh(min_dist_ee_puck)  # [0, 1]
 
     @staticmethod
-    def planar_hit_sparse_reward_v2(base_env: AirHockeyHit, obs, act, obs_, done):
+    def planar_hit_sparse_reward_v2(base_env, obs, act, obs_, done):
         # sparse reward
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT and not done:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT and not done:
             if base_env.episode_steps < 100:
                 return 0.01
             else:
@@ -362,7 +368,7 @@ class AirHockey3DofHit(AirHockeyBase):
     def planar_hit_reward_enes(self, *args):
         return self._planar_hit_reward_enes(*args)
 
-    def _planar_hit_reward_enes(self, base_env: AirHockeyHit, obs, act, obs_, done):
+    def _planar_hit_reward_enes(self, base_env, obs, act, obs_, done):
         env_info = base_env.env_info
         positive_reward_coef = self.positive_reward_coef
         rew = 0.0001 * positive_reward_coef
@@ -387,7 +393,7 @@ class AirHockey3DofHit(AirHockeyBase):
         if self.received_sparse_rew:
             return rew
 
-        vel_comp = np.tanh(1/2 * np.abs(puck_vel[0]))
+        vel_comp = np.tanh(1 / 2 * np.abs(puck_vel[0]))
         if base_env.has_scored:
             rew += (100 * vel_comp) * positive_reward_coef
             rew += 100 * positive_reward_coef
@@ -411,5 +417,21 @@ class AirHockey3DofHit(AirHockeyBase):
         return rew
 
 
-class AirHockey7DofHit(AirHockey3DofHit):
-    pass
+class AirHockey3DofHit(AirHockeyGymHit):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0', dt=0.02, replan_steps=-1):
+
+        super().__init__(env_id="3dof-hit",
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_function,
+                         dt=dt,
+                         replan_steps=replan_steps)
+
+
+class AirHockey7DofHit(AirHockeyGymHit):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0', dt=0.02, replan_steps=-1):
+
+        super().__init__(env_id="7dof-hit",
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_function,
+                         dt=dt,
+                         replan_steps=replan_steps)
