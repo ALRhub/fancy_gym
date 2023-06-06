@@ -21,8 +21,8 @@ from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTempo
 from .mujoco.table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching, \
                                                 MAX_EPISODE_STEPS_TABLE_TENNIS
 from .air_hockey.air_hockey import AirHockeyBase, MAX_EPISODE_STEPS_AIR_HOCKEY
-from .air_hockey.air_hockey_hit import AirHockeyPlanarHit, MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
-from .air_hockey.air_hockey_defend import AirHockeyPlanarDefend, MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
+from .air_hockey.air_hockey_hit import AirHockey3DofHit, MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
+from .air_hockey.air_hockey_defend import AirHockey3DofDefend, MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
@@ -870,15 +870,15 @@ for i in _vs:
 # Air Hockey Planar Robot with Dense Reward
 register(
     id="3dof-hit",
-    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHit',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
+    entry_point='fancy_gym.envs.air_hockey:AirHockey3DofHit',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT,
     kwargs={}
 )
 
 register(
     id="3dof-defend",
-    entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarDefend',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend,
+    entry_point='fancy_gym.envs.air_hockey:AirHockey3DofDefend',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend,
     kwargs={}
 )
 
@@ -1046,6 +1046,45 @@ for _v in _versions:
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
 
+# ProDMP Replan Env for 3dof-defend Task
+_versions = ["3dof-defend"]
+for _v in _versions:
+    _env_id = _v + '-prodmp-replan'
+    kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.HitMPWrapper)
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 3.0
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 15
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['action_dim'] = 3
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_weights'] = True
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
+    kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_prodmp['black_box_kwargs']['max_planning_times'] = 4
+    kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
+    kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_ah_prodmp['name'] = _v
+    kwargs_dict_ah_prodmp['dt'] = 0.02
+    kwargs_dict_ah_prodmp['replan_steps'] = 25
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_prodmp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
+
 
 #######################################################################################################################
 # Air Hockey Challenge
@@ -1053,7 +1092,7 @@ for _v in _versions:
 register(
     id="3dof-hit-cart",
     entry_point='fancy_gym.envs.air_hockey:AirHockeyPlanarHitCart',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT,
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT,
     kwargs={}
 )
 
@@ -1086,3 +1125,14 @@ for _v in _versions:
         kwargs=kwargs_dict_ah_promp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+
+#######################################################################################################################
+# Air Hockey Challenge
+# Air Hockey KUKA IIWA in Joint Space
+register(
+    id="7dof-hit",
+    entry_point='fancy_gym.envs.air_hockey:AirHockey3DofHit',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT,
+    kwargs={}
+)

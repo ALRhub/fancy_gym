@@ -10,11 +10,10 @@ from air_hockey_challenge.utils import robot_to_world
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 120
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
+MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend = 180  # default is 500, recommended 180
 
 
-class AirHockeyPlanarDefend(AirHockeyBase):
+class AirHockey3DofDefend(AirHockeyBase):
     def __init__(self, dt=0.02, reward_function: Union[str, None] = None, invtraj=0):
         super().__init__(env_id="3dof-defend", reward_function=reward_functions[reward_function])
 
@@ -24,7 +23,7 @@ class AirHockeyPlanarDefend(AirHockeyBase):
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
         self.dt = dt
-        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend
 
         self.invtraj = invtraj
 

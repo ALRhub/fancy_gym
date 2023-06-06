@@ -10,11 +10,10 @@ from fancy_gym.envs.air_hockey.air_hockey import AirHockeyBase
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 from air_hockey_challenge.utils import forward_kinematics, robot_to_world
 
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 120
-MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
+MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT = 150  # default is 500, recommended 120
 
 
-class AirHockeyPlanarHit(AirHockeyBase):
+class AirHockey3DofHit(AirHockeyBase):
     def __init__(self, dt=0.02, reward_function='HitSparseRewardV0', replan_steps=-1):
 
         reward_functions = {
@@ -33,7 +32,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
         self.observation_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float32)
 
         self.dt = dt
-        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
 
         # enes rew related term
         self.positive_reward_coef = 1
@@ -410,3 +409,7 @@ class AirHockeyPlanarHit(AirHockeyBase):
             self.received_sparse_rew = True
 
         return rew
+
+
+class AirHockey7DofHit(AirHockey3DofHit):
+    pass

@@ -10,8 +10,6 @@ from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 # from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
 MAX_EPISODE_STEPS_AIR_HOCKEY = 200
-# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_HIT = 150  # default is 500, recommended 150
-# MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend = 180  # default is 500, recommended 180
 
 
 class AirHockeyBase(gym.Env):
@@ -20,19 +18,20 @@ class AirHockeyBase(gym.Env):
     """
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, env_id, reward_function, **kwargs):
+    def __init__(self, env_id, interpolation_order=3, custom_reward_function=None, **kwargs):
         super().__init__()
         # base environment
-        self.env = AirHockeyChallengeWrapper(env=env_id, action_type="position-velocity",
-                                             interpolation_order=3,
-                                             custom_reward_function=reward_function, **kwargs)
+        self.env = AirHockeyChallengeWrapper(env=env_id,
+                                             interpolation_order=interpolation_order,
+                                             custom_reward_function=custom_reward_function,
+                                             **kwargs)
         self.base_env = self.env.base_env
 
         # air hockey env info
         self.mdp_info = self.env.info
         self.env_info = self.env.env_info
 
-        # dt 0.02 or 0.001 ?
+        # dt and dof
         self.dt = self.env_info["dt"]
         self.dof = self.env_info["robot"]["n_joints"]
 
@@ -58,8 +57,8 @@ class AirHockeyBase(gym.Env):
         self._episode_steps = 0
 
         # max steps
-        # self.horizon = self.mdp_info.horizon
-        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
+        self.horizon = self.mdp_info.horizon
+        # self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
     def reset(
         self,
