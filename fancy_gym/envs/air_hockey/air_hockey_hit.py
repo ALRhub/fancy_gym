@@ -18,8 +18,9 @@ class AirHockeyGymHit(AirHockeyGymBase):
     def __init__(self, env_id=None,
                  interpolation_order=None,
                  custom_reward_function=None,
-                 dt=0.02,
-                 replan_steps=-1):
+                 check_step=True,
+                 check_traj=True,
+                 check_traj_length=-1):
 
         custom_reward_functions = {
             'HitRewardDefault': self.planar_hit_reward_default,
@@ -36,23 +37,40 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if '3dof' in env_id:
             obs_dim = 12
         else:
-            obs_dim = 20
+            obs_dim = 23
         obs_l = np.ones(obs_dim) * -10000
-        obs_u = np.ones(obs_dim) * +10000
-        self.observation_space = spaces.Box(low=obs_l, high=obs_u, dtype=np.float32)
+        obs_h = np.ones(obs_dim) * +10000
+        self.observation_space = spaces.Box(low=obs_l, high=obs_h, dtype=np.float32)
 
         # mp wrapper related term
-        self.dt = dt
-        self.replan_steps = replan_steps
+        if interpolation_order is None:
+            self.dt = 0.001
+        else:
+            self.dt = 0.001
+        self.check_traj_length = check_traj_length
         if '3dof' in env_id:
             self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
         else:
             self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT
 
+        # constraints
+        if '3dof' in env_id:
+            self.constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
+            self.constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
+        else:
+            self.constr_j_pos = np.array([[-2.967, +2.967], [-2.094, +2.094], [-2.967, +2.967], [-2.094, +2.094],
+                                          [-2.967, +2.967], [-2.094, +2.094], [-3.053, +3.054]])
+            self.constr_j_vel = np.array([[-1.483, +1.483], [-1.483, +1.483], [-1.745, +1.745], [-1.308, +1.308],
+                                          [-2.268, +2.268], [-2.356, +2.356], [-2.356, +2.356]])
+
         # reward related terms
         self.positive_reward_coef = 1
         self.received_hit_rew = False
         self.received_sparse_rew = False
+
+        # validity checking
+        self.check_step = check_step
+        self.check_traj = check_traj
 
     def reset(self, **kwargs):
         self.received_hit_rew = False
@@ -70,6 +88,15 @@ class AirHockeyGymHit(AirHockeyGymBase):
         return obs, rew, done, info
 
     def check_step_validity(self, info):
+        # info["validity"] = 1 if validity else 0
+        info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
+        info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
+        info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
+        info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
+
+        if not self.check_step:
+            return True, 0
+
         validity = True
         coef = (self.horizon - self._episode_steps) / self.horizon
 
@@ -90,31 +117,34 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if penalty > 0:
             validity = False
 
-        info["validity"] = 1 if validity else 0
-        info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
-        info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
-        info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
-        info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
-
         return validity, -penalty
 
+    def get_invalid_step_penalty(self, info):
+        pass
+
+    def get_invalid_step_return(self, info):
+        pass
+
     def check_traj_validity(self, action, traj_pos, traj_vel):
+        if not self.check_traj:
+            return True, traj_pos, traj_vel
+
         # check tau
         invalid_tau = False
         # if action.shape[0] % 3 != 0:
         #     tau_bound = [1.5, 3.0]
         #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
 
-        if self.replan_steps != -1:
-            valid_pos = traj_pos[:self.replan_steps]
-            valid_vel = traj_vel[:self.replan_steps]
+        if self.check_traj_length != -1:
+            valid_pos = traj_pos[:self.check_traj_length]
+            valid_vel = traj_vel[:self.check_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
 
         # check joint constr
-        constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
-        constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
+        constr_j_pos = self.constr_j_pos
+        constr_j_vel = self.constr_j_vel
         invalid_j_pos = np.any(valid_pos < constr_j_pos[:, 0]) or np.any(valid_pos > constr_j_pos[:, 1])
         invalid_j_vel = np.any(valid_vel < constr_j_vel[:, 0]) or np.any(valid_vel > constr_j_vel[:, 1])
 
@@ -137,8 +167,8 @@ class AirHockeyGymHit(AirHockeyGymBase):
             valid_vel = traj_vel
 
         # violate joint penalty
-        constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
-        constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
+        constr_j_pos = self.constr_j_pos
+        constr_j_vel = self.constr_j_vel
         num_violate_j_pos_constr = np.array((valid_pos - constr_j_pos[:, 0] < 0), dtype=np.float32).mean() + \
                                    np.array((valid_pos - constr_j_pos[:, 1] > 0), dtype=np.float32).mean()
         num_violate_j_vel_constr = np.array((valid_vel - constr_j_vel[:, 0] < 0), dtype=np.float32).mean() + \
@@ -418,20 +448,22 @@ class AirHockeyGymHit(AirHockeyGymBase):
 
 
 class AirHockey3DofHit(AirHockeyGymHit):
-    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0', dt=0.02, replan_steps=-1):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
+                 check_step=True, check_traj=True):
 
         super().__init__(env_id="3dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
-                         dt=dt,
-                         replan_steps=replan_steps)
+                         check_step=check_step,
+                         check_traj=check_traj)
 
 
 class AirHockey7DofHit(AirHockeyGymHit):
-    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0', dt=0.02, replan_steps=-1):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
+                 check_step=True, check_traj=True):
 
         super().__init__(env_id="7dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
-                         dt=dt,
-                         replan_steps=replan_steps)
+                         check_step=check_step,
+                         check_traj=check_traj)

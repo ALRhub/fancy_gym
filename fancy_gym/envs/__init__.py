@@ -20,8 +20,9 @@ from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTempo
                                                 BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
 from .mujoco.table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching, \
                                                 MAX_EPISODE_STEPS_TABLE_TENNIS
-from .air_hockey.air_hockey import AirHockeyBase, MAX_EPISODE_STEPS_AIR_HOCKEY
+from .air_hockey.air_hockey import AirHockeyGymBase, MAX_EPISODE_STEPS_AIR_HOCKEY
 from .air_hockey.air_hockey_hit import AirHockey3DofHit, MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
+from .air_hockey.air_hockey_hit import AirHockey7DofHit, MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT
 from .air_hockey.air_hockey_defend import AirHockey3DofDefend, MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend
 
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
@@ -887,7 +888,7 @@ _versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_ah_promp['wrappers'].append(air_hockey.HitMPWrapper)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.AirHockey3DofHitMPWrapper)
     # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
@@ -903,7 +904,6 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_promp['name'] = _v
-    kwargs_dict_ah_promp['dt'] = 0.001
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -931,7 +931,6 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3.6
     kwargs_dict_ah_promp['name'] = _v
-    kwargs_dict_ah_promp['dt'] = 0.001
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -944,7 +943,7 @@ _versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-prodmp'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.HitMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey3DofHitMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -965,7 +964,6 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_prodmp['name'] = _v
-    kwargs_dict_ah_prodmp['dt'] = 0.02
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -978,7 +976,7 @@ _versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-prodmp'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.HitMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.DefendMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -999,7 +997,6 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 3
     kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_prodmp['name'] = _v
-    kwargs_dict_ah_prodmp['dt'] = 0.02
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -1012,7 +1009,7 @@ _versions = ["3dof-hit"]
 for _v in _versions:
     _env_id = _v + '-prodmp-replan'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.HitMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey3DofHitMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -1037,8 +1034,6 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
     kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
     kwargs_dict_ah_prodmp['name'] = _v
-    kwargs_dict_ah_prodmp['dt'] = 0.02
-    kwargs_dict_ah_prodmp['replan_steps'] = 25
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -1051,7 +1046,7 @@ _versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-prodmp-replan'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.HitMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.DefendMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -1076,8 +1071,6 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
     kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
     kwargs_dict_ah_prodmp['name'] = _v
-    kwargs_dict_ah_prodmp['dt'] = 0.02
-    kwargs_dict_ah_prodmp['replan_steps'] = 25
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -1118,7 +1111,6 @@ for _v in _versions:
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 2
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
     kwargs_dict_ah_promp['name'] = _v
-    kwargs_dict_ah_promp['dt'] = 0.001
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
@@ -1132,7 +1124,35 @@ for _v in _versions:
 # Air Hockey KUKA IIWA in Joint Space
 register(
     id="7dof-hit",
-    entry_point='fancy_gym.envs.air_hockey:AirHockey3DofHit',
-    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT,
+    entry_point='fancy_gym.envs.air_hockey:AirHockey7DofHit',
+    max_episode_steps=MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT,
     kwargs={}
 )
+
+# ProMP Env for 3dof-hit Task
+_versions = ["7dof-hit"]
+for _v in _versions:
+    _env_id = _v + '-promp'
+    kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.AirHockey7DofHitMPWrapper)
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 5
+    kwargs_dict_ah_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 7
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_promp['controller_kwargs']['dof'] = 7
+    kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_promp['name'] = _v
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_promp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)

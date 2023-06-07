@@ -26,7 +26,7 @@ class AirHockeyGymBase(gym.Env):
                                              custom_reward_function=custom_reward_function,
                                              **kwargs)
         self.base_env = self.env.base_env
-        self.interpolate_order = interpolation_order
+        self.interpolation_order = interpolation_order
 
         # air hockey env info
         self.mdp_info = self.env.info
@@ -61,31 +61,38 @@ class AirHockeyGymBase(gym.Env):
         self.horizon = self.mdp_info.horizon
         # self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
-    def reset(
-        self,
-        *,
-        seed: Optional[int] = None,
-        return_info: bool = False,
-        options: Optional[dict] = None,
-    ) -> Union[ObsType, Tuple[ObsType, dict]]:
-        self._episode_steps = 0
+    def reset(self, **kwargs) -> Union[ObsType, Tuple[ObsType, dict]]:
 
-        obs = np.array(self.env.reset(), dtype=np.float32)
-        info = {}
-        if return_info:
-            return obs, info
-        else:
-            return obs
+        self._episode_steps = 0
+        return np.array(self.env.reset(), dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
 
-        act = np.reshape(action, [2, -1])
+        if self.interpolation_order is None:
+            pos = action[:, :self.dof].copy()
+            vel = action[:, self.dof:].copy()
+            acc = np.diff(vel, axis=0, append=vel[-1]-vel[-2]) / self.dt
+            act = np.vstack([pos, vel, acc], axis=0)
+        else:
+            act = action
+            if self.interpolation_order == -1:
+                act = np.reshape(action, [2, -1])
+            if self.interpolation_order == +1:
+                act = np.reshape(action, [1, -1])
+            if self.interpolation_order == +2:
+                act = np.reshape(action, [1, -1])
+            if self.interpolation_order == +3:
+                act = np.reshape(action, [2, -1])
+            if self.interpolation_order == +4:
+                act = np.reshape(action, [2, -1])
+            if self.interpolation_order == +5:
+                act = np.reshape(action, [3, -1])
+
         obs, rew, done, info = self.env.step(act)
         obs = np.array(obs, dtype=np.float32)
 
         self._episode_steps += 1
-        if self._episode_steps >= self.horizon:
-            done = True
+        done = True if self._episode_steps >= self.horizon else done
 
         return obs, rew, done, info
 

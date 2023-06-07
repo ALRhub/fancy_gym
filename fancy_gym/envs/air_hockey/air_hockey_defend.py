@@ -4,16 +4,17 @@ from typing import Union, Tuple, Optional
 import numpy as np
 from gym import spaces, utils
 from gym.core import ObsType, ActType
-from fancy_gym.envs.air_hockey.air_hockey import AirHockeyBase
+from fancy_gym.envs.air_hockey.air_hockey import AirHockeyGymBase
 
 from air_hockey_challenge.utils import robot_to_world
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
 from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
 MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend = 180  # default is 500, recommended 180
+MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_Defend = 180  # default is 500, recommended 180
 
 
-class AirHockey3DofDefend(AirHockeyBase):
+class AirHockey3DofDefend(AirHockeyGymBase):
     def __init__(self, dt=0.02, reward_function: Union[str, None] = None, invtraj=0):
         super().__init__(env_id="3dof-defend", reward_function=reward_functions[reward_function])
 
@@ -173,7 +174,7 @@ class AirHockey3DofDefend(AirHockeyBase):
         env_info = base_env.env_info
 
 
-        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -222,7 +223,7 @@ class AirHockey3DofDefend(AirHockeyBase):
         base_env.traj_puck_pos.append(puck_pos)
         base_env.traj_puck_vel.append(puck_vel)
 
-        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         # traj_ee_pos = np.vstack(base_env.traj_ee_pos)
@@ -272,7 +273,7 @@ class AirHockey3DofDefend(AirHockeyBase):
     def planar_defend_sparse_SuperSimple(base_env: AirHockeyDefend, state, action, next_state, absorbing):
         env_info = base_env.env_info
 
-        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         # get score
@@ -288,7 +289,7 @@ class AirHockey3DofDefend(AirHockeyBase):
 
         # no need to collect trajectories as we only reward based on the end state of the puck
 
-        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.ep_step < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         r = 0
@@ -305,7 +306,7 @@ class AirHockey3DofDefend(AirHockeyBase):
     def planar_defend_sparse_FavorSuccessRegion(base_env: AirHockeyDefend, state, action, next_state, absorbing):
         env_info = base_env.env_info
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -428,7 +429,7 @@ class AirHockey3DofDefend(AirHockeyBase):
         # env info
         env_info = base_env.env_info
 
-        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_PLANAR_Defend:
+        if base_env.episode_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_Defend:
             return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history)
@@ -473,9 +474,9 @@ class AirHockey3DofDefend(AirHockeyBase):
 
 
 reward_functions = {
-    'DongxuV5': AirHockeyPlanarDefend.planar_defend_DongxuV5,
-    'ZeqiV0': AirHockeyPlanarDefend.plannar_defend_sparse_reward_zeqi,
-    'FavorSuccessRegion': AirHockeyPlanarDefend.planar_defend_sparse_FavorSuccessRegion,
+    'DongxuV5': AirHockey3DofDefend.planar_defend_DongxuV5,
+    'ZeqiV0': AirHockey3DofDefend.plannar_defend_sparse_reward_zeqi,
+    'FavorSuccessRegion': AirHockey3DofDefend.planar_defend_sparse_FavorSuccessRegion,
 }
 
 

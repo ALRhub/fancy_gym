@@ -1,14 +1,14 @@
 import numpy as np
 from typing import Union, Tuple
 
-from .air_hockey_hit import AirHockeyPlanarHit
+from .air_hockey_hit import AirHockey3DofHit, AirHockey7DofHit
 from .air_hockey_utils import TrajectoryOptimizer
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.time_aware_observation import TimeAwareObservation
 from scipy.interpolate import CubicSpline
 
 
-class AirHockeyPlanarHitCart(AirHockeyPlanarHit):
+class AirHockeyPlanarHitCart(AirHockey3DofHit):
     def __init__(self, dt=0.02, reward_function='HitSparseRewardV0', replan_steps=-1):
         super().__init__(dt, reward_function, replan_steps)
 
