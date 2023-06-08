@@ -48,7 +48,7 @@ def test_env(env_id="3dof-hit", seed=0, iteration=5):
 
 def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
     env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
-                  'check_step': False, 'check_traj': False, 'check_traj_length': -1}
+                  'check_step': False, 'check_traj': False, 'check_traj_length': [-1]}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     # ProMP samples
@@ -106,7 +106,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
 
 def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_result=True):
     env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
-                  'check_step': False, 'check_traj': False, 'check_traj_length': 25}
+                  'check_step': False, 'check_traj': False, 'check_traj_length': [25, 25, 25, 75]}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     for i in range(iteration):
@@ -164,6 +164,6 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
 
 if __name__ == "__main__":
     # test_env(env_id="7dof-hit", iteration=10)
-    test_mp_env(env_id="3dof-hit-cart-prodmp", seed=1, iteration=100, plot_result=False)
-    # test_mp_replan_env(env_id="3dof-hit-cart-prodmp-replan", seed=1, iteration=3, plot_result=False)
+    # test_mp_env(env_id="3dof-hit-cart-prodmp", seed=1, iteration=100, plot_result=False)
+    test_mp_replan_env(env_id="3dof-hit-cart-prodmp-replan", seed=1, iteration=3, plot_result=False)
 

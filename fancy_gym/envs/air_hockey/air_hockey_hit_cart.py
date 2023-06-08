@@ -19,6 +19,7 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
 
         self.traj_opt = TrajectoryOptimizer(self.env_info)
 
+        self.sub_traj_idx = 0
         if self.dof == 3:
             self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
             self.dq_prev = np.zeros([3])
@@ -29,6 +30,7 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
             self.ddq_prev = np.zeros(([7]))
 
     def reset(self, **kwargs):
+        self.sub_traj_idx = 0
         if self.dof == 3:
             self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
             self.dq_prev = np.zeros([3])
@@ -47,12 +49,14 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         #     tau_bound = [1.5, 3.0]
         #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
 
-        if self.check_traj_length != -1:
-            valid_pos = traj_pos[:self.check_traj_length]
-            valid_vel = traj_vel[:self.check_traj_length]
+        sub_traj_length = self.check_traj_length[self.sub_traj_idx]
+        if sub_traj_length != -1:
+            valid_pos = traj_pos[:sub_traj_length]
+            valid_vel = traj_vel[:sub_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
+        self.sub_traj_idx += 1
 
         # check ee constr
         constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
