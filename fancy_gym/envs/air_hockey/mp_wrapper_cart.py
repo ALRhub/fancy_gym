@@ -22,8 +22,12 @@ class AirHockeyCartMPWrapper(RawInterfaceWrapper):
         # return np.array([0, 0, 0])[:2]
 
     def set_episode_arguments(self, action, pos_traj, vel_traj):
-        pos_traj = np.hstack([pos_traj, 1e-1 * np.ones([pos_traj.shape[0], 1])])
-        vel_traj = np.hstack([vel_traj, np.zeros([vel_traj.shape[0], 1])])
+        if self.dof == 3:
+            pos_traj = np.hstack([pos_traj, 1.0e-1 * np.ones([pos_traj.shape[0], 1])])
+            vel_traj = np.hstack([vel_traj, np.zeros([vel_traj.shape[0], 1])])
+        else:
+            pos_traj = np.hstack([pos_traj, 1.645e-1 * np.ones([pos_traj.shape[0], 1])])
+            vel_traj = np.hstack([vel_traj, np.zeros([vel_traj.shape[0], 1])])
         if self.dt == 0.001:
             return pos_traj[19::20].copy(), vel_traj[19::20].copy()
         return pos_traj.copy(), vel_traj.copy()

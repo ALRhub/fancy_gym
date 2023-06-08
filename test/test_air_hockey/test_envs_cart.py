@@ -122,14 +122,17 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
         if '3dof' in env_id:
             act = np.array([6.49932e-01, 2.05280e-05, 1.00000e-01])[:2]
         else:
-            act = np.array([+4.02979867e-22, -1.96067345e-01, +2.56756848e-21, -1.84363898e+00,
-                            -1.86530826e-21, +9.70422238e-01, +4.75070145e-21])
+            act = np.array([6.49932e-01, 2.05280e-05, 1.00000e-01])[:2]
+
         while True:
             # act = env.action_space.sample() * 0.01
             # init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
             # act = np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
             #                 +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196])
-            act = act + 0.05
+            # while True:
+            #     act = np.random.rand(2)
+            #     break
+            act = act + 0.5
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
@@ -165,5 +168,5 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
 if __name__ == "__main__":
     # test_env(env_id="7dof-hit", iteration=10)
     # test_mp_env(env_id="3dof-hit-cart-prodmp", seed=1, iteration=100, plot_result=False)
-    test_mp_replan_env(env_id="3dof-hit-cart-prodmp-replan", seed=1, iteration=3, plot_result=False)
+    test_mp_replan_env(env_id="7dof-hit-cart-prodmp-replan", seed=1, iteration=3, plot_result=False)
 

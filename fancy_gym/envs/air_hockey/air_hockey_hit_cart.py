@@ -25,18 +25,25 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
             self.dq_prev = np.zeros([3])
             self.ddq_prev = np.zeros([3])
         else:
-            self.q_prev = np.zeros([7])
+            self.q_prev = np.array([0., -0.1961, 0., -1.8436, 0., +0.9704, 0.])
             self.dq_prev = np.zeros([7])
             self.ddq_prev = np.zeros(([7]))
 
+        # constr
+        if self.dof == 3:
+            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
+        else:
+            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.1445, +0.1845]])
+
     def reset(self, **kwargs):
+
         self.sub_traj_idx = 0
         if self.dof == 3:
             self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
             self.dq_prev = np.zeros([3])
             self.ddq_prev = np.zeros([3])
         else:
-            self.q_prev = np.zeros([7])
+            self.q_prev = np.array([0., -0.1961, 0., -1.8436, 0., +0.9704, 0.])
             self.dq_prev = np.zeros([7])
             self.ddq_prev = np.zeros(([7]))
 
@@ -59,11 +66,13 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         self.sub_traj_idx += 1
 
         # check ee constr
-        constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
+        constr_ee = self.constr_ee
         invalid_ee = np.any(valid_pos < constr_ee[:, 0]) or np.any(valid_pos > constr_ee[:, 1])
 
         if invalid_tau or invalid_ee:
-            return False, traj_pos, traj_vel
+            # traj_pos = np.stack([self.q_prev] * valid_pos.shape[0], axis=0)
+            # traj_vel = np.stack([self.dq_prev] * valid_vel.shape[0], axis=0)
+            return False, valid_pos, valid_vel
 
         # optimize traj
         q_start = self.q_prev
@@ -89,15 +98,16 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         #     tau_bound = [1.5, 3.0]
         #     violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
-        if self.check_traj_length != -1:
-            valid_pos = traj_pos[:self.check_traj_length]
-            valid_vel = traj_vel[:self.check_traj_length]
+        sub_traj_length = self.check_traj_length[self.sub_traj_idx-1]
+        if sub_traj_length != -1:
+            valid_pos = traj_pos[:sub_traj_length]
+            valid_vel = traj_vel[:sub_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
 
         # violate ee penalty
-        constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
+        constr_ee = self.constr_ee
         num_violate_ee_constr = np.array((valid_pos - constr_ee[:, 0] < 0), dtype=np.float32).mean() + \
                                 np.array((valid_pos - constr_ee[:, 1] > 0), dtype=np.float32).mean()
         max_violate_ee_constr = np.maximum(constr_ee[:, 0] - valid_pos, 0).mean() + \
@@ -106,6 +116,42 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
 
         traj_invalid_penalty = violate_tau_penalty + violate_ee_penalty
         return -3 * traj_invalid_penalty
+
+    def get_invalid_traj_return(self, action, traj_pos, traj_vel):
+        obs, rew, done, info = self.step(np.hstack([self.q_prev, self.dq_prev]))
+
+        # in fancy gym added metrics
+        info["validity"] = 0
+        info["ee_violation"] = 1
+        info["jerk_violation"] = 1
+        info["j_pos_violation"] = 1
+        info["j_vel_violation"] = 1
+
+        # default metrics
+        info["has_hit"] = 0
+        info["has_hit_step"] = self.horizon
+        info["has_scored"] = 0
+        info["has_scored_step"] = self.horizon
+        info["current_episode_length"] = self.horizon
+        info["max_j_pos_violation"] = 10
+        info["max_j_vel_violation"] = 10
+        info["max_ee_x_violation"] = 10
+        info["max_ee_y_violation"] = 10
+        info["max_ee_z_violation"] = 10
+        info["max_jerk_violation"] = 10
+        info["num_j_pos_violation"] = self.horizon
+        info["num_j_vel_violation"] = self.horizon
+        info["num_ee_x_violation"] = self.horizon
+        info["num_ee_y_violation"] = self.horizon
+        info["num_ee_z_violation"] = self.horizon
+        info["num_jerk_violation"] = self.horizon
+
+        for k, v in info.items():
+            info[k] = [v] * 25
+
+        info['trajectory_length'] = 1
+
+        return obs, self.get_invalid_traj_penalty(action, traj_pos, traj_vel), True, info
 
 
 class AirHockey3DofHitCart(AirHockeyGymHitCart):
