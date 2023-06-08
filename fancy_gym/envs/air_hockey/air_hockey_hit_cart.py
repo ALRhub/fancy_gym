@@ -1,29 +1,55 @@
 import numpy as np
 from typing import Union, Tuple
 
-from .air_hockey_hit import AirHockey3DofHit, AirHockey7DofHit
+from .air_hockey_hit import AirHockeyGymHit
 from .air_hockey_utils import TrajectoryOptimizer
-from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.utils.time_aware_observation import TimeAwareObservation
 from scipy.interpolate import CubicSpline
 
 
-class AirHockeyPlanarHitCart(AirHockey3DofHit):
-    def __init__(self, dt=0.02, reward_function='HitSparseRewardV0', replan_steps=-1):
-        super().__init__(dt, reward_function, replan_steps)
+class AirHockeyGymHitCart(AirHockeyGymHit):
+    def __init__(self, env_id=None,
+                 interpolation_order=3, custom_reward_function='HitSparseRewardV0',
+                 check_step=True, check_traj=True, check_traj_length=-1):
+        super().__init__(env_id=env_id,
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_function,
+                         check_step=check_step,
+                         check_traj=check_traj,
+                         check_traj_length=check_traj_length)
 
         self.traj_opt = TrajectoryOptimizer(self.env_info)
+
+        if self.dof == 3:
+            self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
+            self.dq_prev = np.zeros([3])
+            self.ddq_prev = np.zeros([3])
+        else:
+            self.q_prev = np.zeros([7])
+            self.dq_prev = np.zeros([7])
+            self.ddq_prev = np.zeros(([7]))
+
+    def reset(self, **kwargs):
+        if self.dof == 3:
+            self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
+            self.dq_prev = np.zeros([3])
+            self.ddq_prev = np.zeros([3])
+        else:
+            self.q_prev = np.zeros([7])
+            self.dq_prev = np.zeros([7])
+            self.ddq_prev = np.zeros(([7]))
+
+        return super().reset(**kwargs)
 
     def check_traj_validity(self, action, traj_pos, traj_vel):
         # check tau
         invalid_tau = False
-        if action.shape[0] % 2 != 0:
-            tau_bound = [1.5, 3.0]
-            invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
+        # if action.shape[0] % 2 != 0:
+        #     tau_bound = [1.5, 3.0]
+        #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
 
-        if self.replan_steps != -1:
-            valid_pos = traj_pos[:self.replan_steps]
-            valid_vel = traj_vel[:self.replan_steps]
+        if self.check_traj_length != -1:
+            valid_pos = traj_pos[:self.check_traj_length]
+            valid_vel = traj_vel[:self.check_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
@@ -36,27 +62,32 @@ class AirHockeyPlanarHitCart(AirHockey3DofHit):
             return False, traj_pos, traj_vel
 
         # optimize traj
-        q_start = np.array([-1.15570, +1.30024, +1.44280])
-        dq_start = np.array([0, 0, 0])
-        success, traj_q_opt = self.traj_opt.optimize_trajectory(np.hstack([valid_pos, valid_vel]), q_start, dq_start, None)
+        q_start = self.q_prev
+        dq_start = self.dq_prev
+        ddq_start = self.ddq_prev
+        success, traj_q_opt = self.traj_opt.optimize_trajectory(np.hstack([valid_pos, valid_vel]),
+                                                                q_start, dq_start, None)
         t = np.linspace(0, traj_q_opt.shape[0], traj_q_opt.shape[0] + 1) * 0.02
-        f = CubicSpline(t, np.vstack([q_start, traj_q_opt]), axis=0, bc_type=((1, dq_start),
-                                                                              (2, np.zeros_like(dq_start))))
+        f = CubicSpline(t, np.vstack([q_start, traj_q_opt]), axis=0, bc_type=((1, dq_start), (2, ddq_start)))
         df = f.derivative(1)
+        ddf = f.derivative(2)
         traj_pos = np.array(f(t[1:]))
         traj_vel = np.array(df(t[1:]))
+        self.q_prev = np.array(f(t[-1]))
+        self.dq_prev = np.array(df(t[-1]))
+        self.ddq_prev = np.array(ddf(t[-1]))
         return True, traj_pos, traj_vel
 
     def get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
         # violate tau penalty
         violate_tau_penalty = 0
-        if action.shape[0] % 2 != 0:
-            tau_bound = [1.5, 3.0]
-            violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
+        # if action.shape[0] % 2 != 0:
+        #     tau_bound = [1.5, 3.0]
+        #     violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
-        if self.replan_steps != -1:
-            valid_pos = traj_pos[:self.replan_steps]
-            valid_vel = traj_vel[:self.replan_steps]
+        if self.check_traj_length != -1:
+            valid_pos = traj_pos[:self.check_traj_length]
+            valid_vel = traj_vel[:self.check_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
@@ -73,40 +104,23 @@ class AirHockeyPlanarHitCart(AirHockey3DofHit):
         return -3 * traj_invalid_penalty
 
 
-class HitCartMPWrapper(RawInterfaceWrapper):
+class AirHockey3DofHitCart(AirHockeyGymHitCart):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
+                 check_step=True, check_traj=True, check_traj_length=-1):
+        super().__init__(env_id="3dof-hit",
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_function,
+                         check_step=check_step,
+                         check_traj=check_traj,
+                         check_traj_length=check_traj_length)
 
-    @property
-    def context_mask(self) -> np.ndarray:
-        return np.hstack([
-            [True, True, True],  # puck position [x, y, theta]
-            [False] * 3,  # puck velocity [dx, dy, dtheta]
-            [False] * 3,  # joint position
-            [False] * 3,  # joint velocity
-        ])
 
-    @property
-    def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
-        # return self.unwrapped.base_env.get_ee()[0][:2]
-        return np.array([6.49932e-01, 2.05280e-05, 1.00000e-01])[:2]
-
-    @property
-    def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
-        # return self.unwrapped.base_env.get_ee()[1][:2]
-        return np.array([0, 0, 0])[:2]
-
-    def set_episode_arguments(self, action, pos_traj, vel_traj):
-        pos_traj = np.hstack([pos_traj, 1e-1 * np.ones([pos_traj.shape[0], 1])])
-        vel_traj = np.hstack([vel_traj, np.zeros([vel_traj.shape[0], 1])])
-        if self.dt == 0.001:
-            return pos_traj[19::20].copy(), vel_traj[19::20].copy()
-        return pos_traj.copy(), vel_traj.copy()
-
-    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray):
-        return self.check_traj_validity(action, pos_traj, vel_traj)
-
-    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
-                              return_contextual_obs):
-        obs, trajectory_return, done, infos = self.get_invalid_traj_return(action, pos_traj, vel_traj)
-        if issubclass(self.env.__class__, TimeAwareObservation):
-            obs = np.append(obs, np.array([0], dtype=obs.dtype))
-        return obs, trajectory_return, done, infos
+class AirHockey7DofHitCart(AirHockeyGymHitCart):
+    def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
+                 check_step=True, check_traj=True, check_traj_length=-1):
+        super().__init__(env_id="7dof-hit",
+                         interpolation_order=interpolation_order,
+                         custom_reward_function=custom_reward_function,
+                         check_step=check_step,
+                         check_traj=check_traj,
+                         check_traj_length=check_traj_length)
