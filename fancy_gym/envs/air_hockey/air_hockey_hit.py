@@ -47,7 +47,6 @@ class AirHockeyGymHit(AirHockeyGymBase):
             self.dt = 0.001
         else:
             self.dt = 0.001
-        self.check_traj_length = check_traj_length
         if '3dof' in env_id:
             self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
         else:
@@ -71,6 +70,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
         # validity checking
         self.check_step = check_step
         self.check_traj = check_traj
+        self.check_traj_length = check_traj_length
 
     def reset(self, **kwargs):
         self.received_hit_rew = False
@@ -159,9 +159,9 @@ class AirHockeyGymHit(AirHockeyGymBase):
         #     tau_bound = [1.5, 3.0]
         #     violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
 
-        if self.replan_steps != -1:
-            valid_pos = traj_pos[:self.replan_steps]
-            valid_vel = traj_vel[:self.replan_steps]
+        if self.check_traj_length != -1:
+            valid_pos = traj_pos[:self.check_traj_length]
+            valid_vel = traj_vel[:self.check_traj_length]
         else:
             valid_pos = traj_pos
             valid_vel = traj_vel
@@ -181,7 +181,12 @@ class AirHockeyGymHit(AirHockeyGymBase):
         violate_j_vel_penalty = num_violate_j_vel_constr + max_violate_j_vel_constr
 
         traj_invalid_penalty = violate_tau_penalty + violate_j_pos_penalty + violate_j_vel_penalty
-        return -3 * traj_invalid_penalty
+
+        if self.interpolation_order is None:
+            coef = 20 * self.dof
+        else:
+            coef = self.dof
+        return -coef * traj_invalid_penalty
 
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
         obs, rew, done, info = self.step(np.hstack([traj_pos[0], traj_vel[0]]))
@@ -449,21 +454,23 @@ class AirHockeyGymHit(AirHockeyGymBase):
 
 class AirHockey3DofHit(AirHockeyGymHit):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True):
+                 check_step=True, check_traj=True, check_traj_length=-1):
 
         super().__init__(env_id="3dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
-                         check_traj=check_traj)
+                         check_traj=check_traj,
+                         check_traj_length=check_traj_length)
 
 
 class AirHockey7DofHit(AirHockeyGymHit):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True):
+                 check_step=True, check_traj=True, check_traj_length=-1):
 
         super().__init__(env_id="7dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
-                         check_traj=check_traj)
+                         check_traj=check_traj,
+                         check_traj_length=check_traj_length)

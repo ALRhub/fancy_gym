@@ -104,7 +104,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
 
 def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_result=True):
     env_kwargs = {'interpolation_order': None, 'custom_reward_function': 'HitSparseRewardV2',
-                  'check_step': False, 'check_traj': False, 'check_traj_length': 25}
+                  'check_step': True, 'check_traj': True, 'check_traj_length': 25}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     for i in range(iteration):
@@ -127,7 +127,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
             # init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
             # act = np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
             #                 +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196])
-            act = act - 0.05
+            act = act - 0.5
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
