@@ -24,7 +24,7 @@ class AirHockeyMPWrapper(RawInterfaceWrapper):
 
     def set_episode_arguments(self, action, pos_traj, vel_traj):
         if self.interpolation_order is None:
-            return pos_traj.reshape([-1, 20, self.dof]).copy(), pos_traj.reshape([-1, 20, self.dof]).copy()
+            return pos_traj.reshape([-1, 20, self.dof]).copy(), vel_traj.reshape([-1, 20, self.dof]).copy()
 
         if self.dt == 0.001:
             return pos_traj[19::20].copy(), vel_traj[19::20].copy()
@@ -69,7 +69,7 @@ class AirHockey7DofHitMPWrapper(AirHockeyMPWrapper):
         return self.unwrapped.base_env.q_vel_prev[:7]
 
 
-class DefendMPWrapper(AirHockeyMPWrapper):
+class AirHockey3DofDefendMPWrapper(AirHockeyMPWrapper):
 
     @property
     def context_mask(self) -> np.ndarray:
@@ -78,4 +78,13 @@ class DefendMPWrapper(AirHockeyMPWrapper):
             [True, True, True],  # puck velocity [dx, dy, dtheta]
             [False] * 3,  # joint position
             [False] * 3,  # joint velocity
+        ])
+
+
+class AirHockey7DofDefendMPWrapper(AirHockeyMPWrapper):
+
+    @property
+    def context_mask(self) -> np.ndarray:
+        return np.hstack([
+            [True] * 23
         ])

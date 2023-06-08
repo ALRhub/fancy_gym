@@ -916,7 +916,7 @@ _versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_ah_promp['wrappers'].append(air_hockey.DefendMPWrapper)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.AirHockey3DofDefendMPWrapper)
     # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
@@ -976,7 +976,7 @@ _versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-prodmp'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.DefendMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey3DofDefendMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -1046,7 +1046,7 @@ _versions = ["3dof-defend"]
 for _v in _versions:
     _env_id = _v + '-prodmp-replan'
     kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.DefendMPWrapper)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey3DofDefendMPWrapper)
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
@@ -1140,12 +1140,13 @@ for _v in _versions:
     # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 2.0
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 5
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0
     kwargs_dict_ah_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 7
-    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_promp['trajectory_generator_kwargs']['weights_scale'] = 0.5
     kwargs_dict_ah_promp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_promp['controller_kwargs']['dof'] = 7
     kwargs_dict_ah_promp['black_box_kwargs']['duration'] = 3
@@ -1156,3 +1157,73 @@ for _v in _versions:
         kwargs=kwargs_dict_ah_promp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProMP"].append(_env_id)
+
+# ProDMP Env for 3dof-hit Task
+_versions = ["7dof-hit"]
+for _v in _versions:
+    _env_id = _v + '-prodmp'
+    kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey7DofHitMPWrapper)
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 2.0
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 15
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['action_dim'] = 7
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    # kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
+    kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 7
+    kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_prodmp['name'] = _v
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_prodmp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
+
+# ProDMP Replan Env for 3dof-hit Task
+_versions = ["7dof-hit"]
+for _v in _versions:
+    _env_id = _v + '-prodmp-replan'
+    kwargs_dict_ah_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
+    kwargs_dict_ah_prodmp['wrappers'].append(air_hockey.AirHockey7DofHitMPWrapper)
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_tau'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['learn_delay'] = True
+    # kwargs_dict_ah_prodmp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['tau'] = 2.0
+    kwargs_dict_ah_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['alpha'] = 15
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
+    kwargs_dict_ah_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['action_dim'] = 7
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_weights'] = True
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'
+    kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 7
+    kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
+    kwargs_dict_ah_prodmp['black_box_kwargs']['max_planning_times'] = 4
+    kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
+    kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_ah_prodmp['name'] = _v
+    register(
+        id=_env_id,
+        entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
+        kwargs=kwargs_dict_ah_prodmp
+    )
+    ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)

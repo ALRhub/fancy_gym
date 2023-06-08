@@ -52,12 +52,12 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     # ProMP samples
-    # act_list = [np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
-    #                       -0.1360, -0.3141, -0.4803, -0.9457, -0.5832, -0.3209]),
-    #             np.array([+0.3490, +0.0597, +0.1681, +0.2891, -0.3729, -0.6172,
-    #                       -0.4291, -0.3400, -0.5428, -0.8549, -0.5452, -0.2657]),
-    #             np.array([+0.0796, +0.1585, +0.1650, +0.2431, -0.5435, -0.5349,
-    #                       -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
+    act_list = [np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
+                          -0.1360, -0.3141, -0.4803, -0.9457, -0.5832, -0.3209]),
+                np.array([+0.3490, +0.0597, +0.1681, +0.2891, -0.3729, -0.6172,
+                          -0.4291, -0.3400, -0.5428, -0.8549, -0.5452, -0.2657]),
+                np.array([+0.0796, +0.1585, +0.1650, +0.2431, -0.5435, -0.5349,
+                          -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
 
     # ProDMP samples
     # act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
@@ -76,9 +76,9 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
             env.render(mode="human")
         while True:
             # act = env.action_space.sample()
-            # act = act_list[0]
+            act = act_list[0]
             # act = np.ones(8) * 0.1
-            act = (2 * np.random.rand(28) - 1) * 0.0
+            # act = (2 * np.random.rand(28) - 1) * 0.1
             # act = np.random.rand(8) * 0.5
 
             # plot trajs
@@ -103,10 +103,8 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
 
 
 def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_result=True):
-    random.seed(seed)
-    np.random.seed(seed)
-
-    env_kwargs = {'dt': 0.02, 'reward_function': 'HitSparseRewardV2'}
+    env_kwargs = {'interpolation_order': None, 'custom_reward_function': 'HitSparseRewardV2',
+                  'check_step': False, 'check_traj': False, 'check_traj_length': 25}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     for i in range(iteration):
@@ -119,7 +117,11 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
         current_pos, current_vel = env.current_pos, env.current_vel
         pos_list, vel_list = [current_pos], [current_vel]
         pos_list, vel_list = [], []
-        act = np.array([-1.15570, +1.30024, +1.44280])
+        if '3dof' in env_id:
+            act = np.array([-1.15570, +1.30024, +1.44280])
+        else:
+            act = np.array([+4.02979867e-22, -1.96067345e-01, +2.56756848e-21, -1.84363898e+00,
+                            -1.86530826e-21, +9.70422238e-01, +4.75070145e-21])
         while True:
             # act = env.action_space.sample() * 0.01
             # init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
@@ -139,7 +141,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                 print('constr_ee: ', np.sum(info['ee_violation']))
 
             if done:
-                step = np.linspace(0.02, 3, 150) - 0.5
+                step = np.linspace(0.001, 3, 3000) - 0.5
                 colors = ['r', 'g', 'b', 'y', 'black']
                 idx = 0
                 for pos, vel in zip(pos_list, vel_list):
@@ -158,6 +160,6 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
 
 if __name__ == "__main__":
     # test_env(env_id="7dof-hit", iteration=10)
-    test_mp_env(env_id="7dof-hit-promp", seed=1, iteration=100, plot_result=False)
-    # test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=1, iteration=3)
+    # test_mp_env(env_id="3dof-hit-promp", seed=1, iteration=100, plot_result=False)
+    test_mp_replan_env(env_id="7dof-hit-prodmp-replan", seed=1, iteration=3, plot_result=False)
 

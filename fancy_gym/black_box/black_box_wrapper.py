@@ -101,6 +101,10 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
         condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
 
+        if len(condition_pos.shape) != 1 and len(condition_vel.shape) != 1:
+            condition_pos = condition_pos[-1]
+            condition_vel = condition_vel[-1]
+
         self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
         # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)

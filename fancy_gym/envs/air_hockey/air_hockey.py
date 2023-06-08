@@ -7,7 +7,6 @@ from gym import spaces, utils
 from gym.core import ObsType, ActType
 
 from air_hockey_challenge.framework import AirHockeyChallengeWrapper
-# from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 
 MAX_EPISODE_STEPS_AIR_HOCKEY = 200
 
@@ -61,7 +60,11 @@ class AirHockeyGymBase(gym.Env):
         self.horizon = self.mdp_info.horizon
         # self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
+        # action related
+        self.prev_vel = np.zeros([1, self.dof])
+
     def reset(self, **kwargs) -> Union[ObsType, Tuple[ObsType, dict]]:
+        self.prev_vel = np.zeros([1, self.dof])
 
         self._episode_steps = 0
         return np.array(self.env.reset(), dtype=np.float32)
@@ -71,8 +74,9 @@ class AirHockeyGymBase(gym.Env):
         if self.interpolation_order is None:
             pos = action[:, :self.dof].copy()
             vel = action[:, self.dof:].copy()
-            acc = np.diff(vel, axis=0, append=vel[-1]-vel[-2]) / self.dt
-            act = np.vstack([pos, vel, acc], axis=0)
+            acc = np.diff(vel, axis=0, prepend=self.prev_vel) / self.dt
+            self.prev_vel[0] = vel[-1]
+            act = np.stack([pos, vel, acc], axis=1)
         else:
             act = action
             if self.interpolation_order == -1:

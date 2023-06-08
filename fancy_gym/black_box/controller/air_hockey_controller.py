@@ -9,4 +9,3 @@ class AirHockeyController(BaseController):
 
     def get_action(self, des_pos, des_vel, c_pos, c_vel):
         return np.hstack([des_pos, des_vel])
-        # return np.stack()

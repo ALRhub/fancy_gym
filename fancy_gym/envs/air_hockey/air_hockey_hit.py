@@ -90,7 +90,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
     def check_step_validity(self, info):
         # info["validity"] = 1 if validity else 0
         info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
-        info["jerk_violation"] = np.any(info['jerk'] > 1e4).astype(int)
+        info["jerk_violation"] = np.any(info['jerk'][:self.dof] > 1e4).astype(int)
         info["j_pos_violation"] = np.any(info['constraints_value']['joint_pos_constr'] > 0).astype(int)
         info["j_vel_violation"] = np.any(info['constraints_value']['joint_vel_constr'] > 0).astype(int)
 
