@@ -132,11 +132,11 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
             # while True:
             #     act = np.random.rand(2)
             #     break
-            act = act + 0.5
+            act = act + 0.05
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
-
+            print(info['compute_time_ms'])
             if True:
                 print('*'*20, 'segment', len(pos_list)-1, '*'*20)
                 print('Return: ', np.sum(rew))

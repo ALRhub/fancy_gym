@@ -50,12 +50,6 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         return super().reset(**kwargs)
 
     def check_traj_validity(self, action, traj_pos, traj_vel):
-        # check tau
-        invalid_tau = False
-        # if action.shape[0] % 2 != 0:
-        #     tau_bound = [1.5, 3.0]
-        #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
-
         sub_traj_length = self.check_traj_length[self.sub_traj_idx]
         if sub_traj_length != -1:
             valid_pos = traj_pos[:sub_traj_length]
@@ -65,14 +59,22 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
             valid_vel = traj_vel
         self.sub_traj_idx += 1
 
-        # check ee constr
-        constr_ee = self.constr_ee
-        invalid_ee = np.any(valid_pos < constr_ee[:, 0]) or np.any(valid_pos > constr_ee[:, 1])
+        if self.check_traj:
 
-        if invalid_tau or invalid_ee:
-            # traj_pos = np.stack([self.q_prev] * valid_pos.shape[0], axis=0)
-            # traj_vel = np.stack([self.dq_prev] * valid_vel.shape[0], axis=0)
-            return False, valid_pos, valid_vel
+            # check tau
+            invalid_tau = False
+            # if action.shape[0] % 2 != 0:
+            #     tau_bound = [1.5, 3.0]
+            #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
+
+            # check ee constr
+            constr_ee = self.constr_ee
+            invalid_ee = np.any(valid_pos < constr_ee[:, 0]) or np.any(valid_pos > constr_ee[:, 1])
+
+            if invalid_tau or invalid_ee:
+                # traj_pos = np.stack([self.q_prev] * valid_pos.shape[0], axis=0)
+                # traj_vel = np.stack([self.dq_prev] * valid_vel.shape[0], axis=0)
+                return False, valid_pos, valid_vel
 
         # optimize traj
         q_start = self.q_prev

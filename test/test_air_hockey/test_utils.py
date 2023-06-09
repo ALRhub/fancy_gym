@@ -123,6 +123,8 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
             obs_, rew, done, info = env.step(act)
             env.render(mode="human")
 
+            print(info['compute_time_ms'])
+
             rews.append(rew)
             j_pos.append(act[:3])
             j_vel.append(act[3:])
@@ -140,4 +142,4 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
 
 
 if __name__ == "__main__":
-    test_baseline(env_id='7dof-hit', iteration=10)
+    test_baseline(env_id='3dof-hit', iteration=10)
