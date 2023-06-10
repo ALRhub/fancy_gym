@@ -69,11 +69,11 @@ class HopperEnvCustomXML(HopperEnv):
 
         if exclude_current_positions_from_observation:
             observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(11,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(13,), dtype=np.float64
             )
         else:
             observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(12,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(14,), dtype=np.float64
             )
 
         MujocoEnv.__init__(
