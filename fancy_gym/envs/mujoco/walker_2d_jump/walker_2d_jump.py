@@ -68,6 +68,8 @@ class Walker2dEnvCustomXML(Walker2dEnv):
                 low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
             )
 
+        self.observation_space = observation_space
+
         MujocoEnv.__init__(
             self,
             xml_file,
