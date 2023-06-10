@@ -124,12 +124,12 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
 
-    for _ in range(5):
+    for i in range(5):
         env.reset()
         _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
         length = info['trajectory_length']
 
-        assert length == env.spec.max_episode_steps
+        assert length == env.spec.max_episode_steps, f'Expcted total simulation length ({length}) to be equal to spec.max_episode_steps ({env.spec.max_episode_steps}), but was not during test nr. {i}'
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
