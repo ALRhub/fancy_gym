@@ -93,6 +93,14 @@ def make(env_id: str, seed: int, **kwargs):
     else:
         env = make_gym(env_id, seed, **kwargs)
 
+    if not env.spec.max_episode_steps == None:
+        # Hack: Some envs violate the gym spec in that they don't correctly expose the maximum episode steps
+        # Gymnasium disallows accessing private attributes, so we have to get creative to read the internal values
+        # TODO: Remove this, when all supported envs correctly implement this themselves
+        unwrapped = env.unwrapped if hasattr(env, 'unwrapped') else env
+        if hasattr(unwrapped, '_max_episode_steps'):
+            env.spec.max_episode_steps = unwrapped.__getattribute__('_max_episode_steps')
+
     # try:
     env.reset(seed=seed)
     # except TypeError:
