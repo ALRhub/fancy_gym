@@ -33,6 +33,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             "rgb_array",
             "depth_array",
         ],
+        "render_fps": 50
     }
 
     def __init__(self, frame_skip: int = 10):

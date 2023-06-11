@@ -62,6 +62,8 @@ class DMCWrapper(gym.Env):
                  env: Callable[[], Union[composer.Environment, control.Environment]],
                  ):
 
+        raise Exception('The fancy_gym dmc-wrapper is deprecated; shimmy should be used instead.')
+
         # TODO: Currently this is required to be a function because dmc does not allow to copy composers environments
         self._env = env()
 

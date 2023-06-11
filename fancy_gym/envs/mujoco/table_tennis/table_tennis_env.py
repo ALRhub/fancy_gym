@@ -29,6 +29,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             "rgb_array",
             "depth_array",
         ],
+        "render_fps": 125
     }
 
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,

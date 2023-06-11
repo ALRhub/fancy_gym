@@ -38,6 +38,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             "rgb_array",
             "depth_array",
         ],
+        "render_fps": 100
     }
 
     def __init__(self, **kwargs):
