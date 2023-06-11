@@ -158,9 +158,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         done = False
 
         if not traj_is_valid:
-            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
-                                                                                 self.return_context_observation)
-            return self.observation(obs), trajectory_return, done, infos
+            obs, trajectory_return, terminated, truncated, infos = self.env.invalid_traj_callback(action, position, velocity,
+                                                                                                  self.return_context_observation)
+            return self.observation(obs), trajectory_return, terminated, truncated, infos
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):

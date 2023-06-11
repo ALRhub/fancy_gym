@@ -108,7 +108,8 @@ class RawInterfaceWrapper(gym.Wrapper):
         Returns:
             obs: artificial observation if the trajectory is invalid, by default a zero vector
             reward: artificial reward if the trajectory is invalid, by default 0
-            done: artificial done if the trajectory is invalid, by default True
+            terminated: artificial terminated if the trajectory is invalid, by default True
+            truncated: artificial truncated if the trajectory is invalid, by default False
             info: artificial info if the trajectory is invalid, by default empty dict
         """
-        return np.zeros(1), 0, True, {}
+        return np.zeros(1), 0, True, False, {}
