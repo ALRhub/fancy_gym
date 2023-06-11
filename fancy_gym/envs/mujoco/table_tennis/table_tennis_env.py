@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from gym import utils, spaces
-from gym.envs.mujoco import MujocoEnv
+from gymnasium import utils, spaces
+from gymnasium.envs.mujoco import MujocoEnv
 
 from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import is_init_state_valid, magnus_force
 from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import jnt_pos_low, jnt_pos_high, delay_bound, tau_bound
@@ -60,9 +60,10 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         self._artificial_force = 0.
 
-        self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(9,), dtype=np.float64
-        )
+        if not hasattr(self, 'observation_space'):
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
+            )
 
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
@@ -146,13 +147,17 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         land_dist_err = np.linalg.norm(self._ball_landing_pos[:-1] - self._goal_pos) \
             if self._ball_landing_pos is not None else 10.
 
-        return self._get_obs(), reward, self._terminated, {
+        info = {
             "hit_ball": self._hit_ball,
             "ball_returned_success": self._ball_return_success,
             "land_dist_error": land_dist_err,
             "is_success": self._ball_return_success and land_dist_err < 0.2,
             "num_steps": self._steps,
         }
+
+        terminated, truncated = self._terminated, False
+
+        return self._get_obs(), reward, terminated, truncated, info
 
     def _contact_checker(self, id_1, id_2):
         for coni in range(0, self.data.ncon):
@@ -251,7 +256,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     def get_invalid_traj_step_return(self, action, pos_traj, contextual_obs):
         obs = self._get_obs() if contextual_obs else np.concatenate([self._get_obs(), np.array([0])])  # 0 for invalid traj
         penalty = self._get_traj_invalid_penalty(action, pos_traj)
-        return obs, penalty, True, {
+        return obs, penalty, True, False, {
             "hit_ball": [False],
             "ball_returned_success": [False],
             "land_dist_error": [10.],
@@ -271,6 +276,9 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
 class TableTennisWind(TableTennisEnv):
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4):
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(22,), dtype=np.float64
+        )
         super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip, enable_artificial_wind=True)
 
     def _get_obs(self):

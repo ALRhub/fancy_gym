@@ -77,7 +77,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
 
         self.observation_space = Box(
-            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float64
+            low=-np.inf, high=np.inf, shape=(29,), dtype=np.float64
         )
 
         MujocoEnv.__init__(

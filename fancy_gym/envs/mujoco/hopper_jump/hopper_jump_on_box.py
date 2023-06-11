@@ -40,11 +40,11 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
 
         if exclude_current_positions_from_observation:
             self.observation_space = spaces.Box(
-                low=-np.inf, high=np.inf, shape=(13,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(12,), dtype=np.float64
             )
         else:
             self.observation_space = spaces.Box(
-                low=-np.inf, high=np.inf, shape=(14,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(13,), dtype=np.float64
             )
 
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
@@ -136,7 +136,9 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
             'goal': self.box_x,
         }
 
-        return observation, reward, terminated, info
+        truncated = self.current_step >= self.max_episode_steps and not terminated
+
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.box_x)

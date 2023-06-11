@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from gym import utils, spaces
-from gym.envs.mujoco import MujocoEnv
+from gymnasium import utils, spaces
+from gymnasium.envs.mujoco import MujocoEnv
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
@@ -51,7 +51,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._episode_energy = 0.
 
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float64
+            low=-np.inf, high=np.inf, shape=(28,), dtype=np.float64
         )
 
         MujocoEnv.__init__(self,
@@ -103,7 +103,11 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
             'num_steps': self._steps
         }
-        return obs, reward, episode_end, infos
+
+        terminated = episode_end and infos['is_success']
+        truncated = episode_end and not infos['is_success']
+
+        return obs, reward, terminated, truncated, infos
 
     def reset_model(self):
         # rest box to initial position
