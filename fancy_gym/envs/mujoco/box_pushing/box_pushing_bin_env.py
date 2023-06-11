@@ -31,6 +31,7 @@ ROBOT_RADIUS = 0.788
 BOX_IN_REWARD = 1000
 OUTSIDE_REACH_PENALTY = -100
 BOX_DIST_BIN_COEFF = 180.0
+BOX_UNDER_BIN_COEFF = -1000
 BOX_DIST_TCP_COEFF = 1.0
 
 
@@ -53,8 +54,9 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self._steps = 0
         self.frame_skip = frame_skip
         self.num_boxes = num_boxes
-        global BOX_IN_REWARD
+        global BOX_IN_REWARD, BOX_UNDER_BIN_COEFF
         BOX_IN_REWARD /= num_boxes
+        BOX_UNDER_BIN_COEFF /= num_boxes
         self._q_max, self._q_min, self._q_dot_max = q_max, q_min, q_dot_max
         self.width, self.height = width, height
 
@@ -147,7 +149,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         else:
             reward_info = {"reward_unstable_sim": -50}
             reward = -50
-        episode_end = episode_end or len(self.boxes_out_bins) == 0
+        # episode_end = episode_end or len(self.boxes_out_bins) == 0
 
         obs = self._get_obs()
         infos = {
@@ -617,7 +619,6 @@ class BoxPushingBinDense(BoxPushingBinSparse):
 
     def dist_boxes_to_bins(self):
         box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
-        box_pos_xyz = [b[:2] for b in box_pos]
 
         # Parallelize calculating mahalanobis distance by casting both box positions and
         # bin pos to (num_boxes, num_bins, 2 coordinates x and y)
@@ -626,7 +627,18 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         parallel_bin_pos = np.repeat(
             np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
         )
-        return np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
+        bin_box_dist = np.abs(parallel_box_pos - parallel_bin_pos)
+        bin_box_dist[:, :, 0] = 0.05 * bin_box_dist[:, :, 0]
+        bin_box_dist[:, :, 1] = 0.95 * bin_box_dist[:, :, 1]
+        return np.sum(bin_box_dist)
+
+    def box_under_bin(self):
+        box_pos = np.array([self.data.site(c).xpos.copy()[-1] for c in self.centers])
+        bin_z_bound = self.bin_pos[0][-1]
+        boxes_under_bin = np.where(box_pos < bin_z_bound)
+        # boxes under bins cannot be recuperated
+        self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_under_bin)
+        return len(boxes_under_bin)
 
     def _get_reward(self, action, qpos, qvel, box_pos):
         """
@@ -648,14 +660,16 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         sparse_reward = super()._get_reward(action, qpos, qvel, box_pos)
         dense_reward = sparse_reward
 
-        dist_to_tcp, dist_to_bin = 0.0, 0.0
-        if len(box_pos) > 0:
+        dist_to_tcp, dist_to_bin_rew, box_under_bin = 0.0, 0.0, 0.0
+        if len(self.boxes_out_bins) > 0:
             dist_to_tcp = self.dist_boxes_to_tcp()
-            new_dist_to_bin =self.dist_boxes_to_bins()
+            new_dist_to_bin = self.dist_boxes_to_bins()
+            box_under_bin = self.box_under_bin()  # box on ground or under bin and falling
 
             dist_to_bin_rew = self.last_dist_to_bin - new_dist_to_bin
             self.last_dist_to_bin = new_dist_to_bin
 
         dense_reward.update({"dist_to_tcp": BOX_DIST_TCP_COEFF * -dist_to_tcp})
         dense_reward.update({"dist_to_bin": BOX_DIST_BIN_COEFF * dist_to_bin_rew})
+        dense_reward.update({"box_under_bin": BOX_UNDER_BIN_COEFF * box_under_bin})
         return dense_reward
