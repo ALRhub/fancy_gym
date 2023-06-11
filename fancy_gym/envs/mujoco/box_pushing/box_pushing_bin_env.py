@@ -635,7 +635,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
     def box_under_bin(self):
         box_pos = np.array([self.data.site(c).xpos.copy()[-1] for c in self.centers])
         bin_z_bound = self.bin_pos[0][-1]
-        boxes_under_bin = np.where(box_pos < bin_z_bound)
+        boxes_under_bin = np.where(box_pos < bin_z_bound)[0]
         # boxes under bins cannot be recuperated
         self.boxes_out_bins = np.delete(self.boxes_out_bins, boxes_under_bin)
         return len(boxes_under_bin)
