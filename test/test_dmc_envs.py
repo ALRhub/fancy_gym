@@ -3,7 +3,6 @@ from typing import Callable
 
 import gymnasium as gym
 import pytest
-from dm_control import suite, manipulation
 
 import fancy_gym
 from test.utils import run_env, run_env_determinism
