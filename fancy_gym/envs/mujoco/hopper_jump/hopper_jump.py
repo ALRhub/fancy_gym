@@ -67,20 +67,21 @@ class HopperEnvCustomXML(HopperEnv):
             exclude_current_positions_from_observation
         )
 
-        if exclude_current_positions_from_observation:
-            observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(13,), dtype=np.float64
-            )
-        else:
-            observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(14,), dtype=np.float64
-            )
+        if not hasattr(self, 'observation_space'):
+            if exclude_current_positions_from_observation:
+                self.observation_space = Box(
+                    low=-np.inf, high=np.inf, shape=(15,), dtype=np.float64
+                )
+            else:
+                self.observation_space = Box(
+                    low=-np.inf, high=np.inf, shape=(16,), dtype=np.float64
+                )
 
         MujocoEnv.__init__(
             self,
             xml_file,
             4,
-            observation_space=observation_space,
+            observation_space=self.observation_space,
             default_camera_config=DEFAULT_CAMERA_CONFIG,
             **kwargs,
         )

@@ -4,6 +4,7 @@ from typing import Optional, Any, Dict, Tuple
 import numpy as np
 from gymnasium.core import ObsType
 from fancy_gym.envs.mujoco.hopper_jump.hopper_jump import HopperEnvCustomXML
+from gymnasium import spaces
 
 MAX_EPISODE_STEPS_HOPPERTHROW = 250
 
@@ -37,6 +38,16 @@ class HopperThrowEnv(HopperEnvCustomXML):
         self.max_episode_steps = max_episode_steps
         self.context = context
         self.goal = 0
+
+        if not hasattr(self, 'observation_space'):
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+            )
+        else:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
+            )
+
         super().__init__(xml_file=xml_file,
                          forward_reward_weight=forward_reward_weight,
                          ctrl_cost_weight=ctrl_cost_weight,

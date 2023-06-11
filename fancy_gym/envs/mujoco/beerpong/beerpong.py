@@ -5,6 +5,7 @@ import numpy as np
 from gymnasium import utils
 from gymnasium.core import ObsType
 from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_BEERPONG = 300
 FIXED_RELEASE_STEP = 62  # empirically evaluated for frame_skip=2!
@@ -31,6 +32,14 @@ CUP_COLLISION_OBJ = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "c
 
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+    }
+
     def __init__(self, **kwargs):
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
@@ -65,6 +74,10 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.ball_cup_contact = False
         self.ball_in_cup = False
         self.dist_ground_cup = -1  # distance floor to cup if first floor contact
+
+        self.observation_space = Box(
+            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float64
+        )
 
         MujocoEnv.__init__(
             self,
@@ -208,13 +221,13 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
                     min_dist_coeff, final_dist_coeff, ground_contact_dist_coeff, rew_offset = 0, 1, 0, 0
             action_cost = 1e-4 * np.mean(action_cost)
             reward = rew_offset - min_dist_coeff * min_dist ** 2 - final_dist_coeff * final_dist ** 2 - \
-                     action_cost - ground_contact_dist_coeff * self.dist_ground_cup ** 2
+                action_cost - ground_contact_dist_coeff * self.dist_ground_cup ** 2
             # release step punishment
             min_time_bound = 0.1
             max_time_bound = 1.0
             release_time = self.release_step * self.dt
             release_time_rew = int(release_time < min_time_bound) * (-30 - 10 * (release_time - min_time_bound) ** 2) + \
-                               int(release_time > max_time_bound) * (-30 - 10 * (release_time - max_time_bound) ** 2)
+                int(release_time > max_time_bound) * (-30 - 10 * (release_time - max_time_bound) ** 2)
             reward += release_time_rew
             success = self.ball_in_cup
         else:

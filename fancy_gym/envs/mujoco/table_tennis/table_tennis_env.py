@@ -23,6 +23,14 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
     7 DoF table tennis environment
     """
 
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+    }
+
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
                  goal_switching_step: int = None,
                  enable_artificial_wind: bool = False):
@@ -51,9 +59,14 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         self._artificial_force = 0.
 
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(9,), dtype=np.float64
+        )
+
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
-                           frame_skip=frame_skip,)
+                           frame_skip=frame_skip,
+                           observation_space=self.observation_space)
 
         if ctxt_dim == 2:
             self.context_bounds = CONTEXT_BOUNDS_2DIMS

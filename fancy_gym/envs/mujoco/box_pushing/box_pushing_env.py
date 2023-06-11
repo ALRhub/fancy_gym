@@ -27,6 +27,14 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     3. time-spatial-depend sparse reward
     """
 
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+    }
+
     def __init__(self, frame_skip: int = 10):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
@@ -40,9 +48,15 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._desired_rod_quat = desired_rod_quat
 
         self._episode_energy = 0.
+
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(10,), dtype=np.float64
+        )
+
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "box_pushing.xml"),
-                           frame_skip=self.frame_skip)
+                           frame_skip=self.frame_skip,
+                           observation_space=self.observation_space)
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
     def step(self, action):

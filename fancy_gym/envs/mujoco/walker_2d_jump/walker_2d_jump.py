@@ -61,11 +61,11 @@ class Walker2dEnvCustomXML(Walker2dEnv):
 
         if exclude_current_positions_from_observation:
             observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(17,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
             )
         else:
             observation_space = Box(
-                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
             )
 
         self.observation_space = observation_space
