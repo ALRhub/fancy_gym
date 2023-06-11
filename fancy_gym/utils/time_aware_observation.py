@@ -28,10 +28,10 @@ class TimeAwareObservation(gym.ObservationWrapper, gym.utils.RecordConstructorAr
 
         assert env.observation_space.__class__ in allowed_classes, str(env.observation_space)+' is not supported. Only Box or Dict'
 
-        low = np.append(env.observation_space.low, 0.0)
-        high = np.append(env.observation_space.high, 1.0)
-
         if env.observation_space.__class__ in [Box, OldBox]:
+            low = np.append(env.observation_space.low, 0.0)
+            high = np.append(env.observation_space.high, 1.0)
+
             self.observation_space = Box(low, high, dtype=dtype)
         else:
             import pdb
@@ -49,7 +49,7 @@ class TimeAwareObservation(gym.ObservationWrapper, gym.utils.RecordConstructorAr
         Returns:
             The observation with the time step appended to (relative to total number of steps)
         """
-        return np.append(observation, self.t / getattr(self.env, '_max_episode_steps'))
+        return np.append(observation, self.t / self.env.spec.max_episode_steps)
 
     def step(self, action):
         """Steps through the environment, incrementing the time step.
