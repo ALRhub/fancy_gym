@@ -57,13 +57,14 @@ class TrajectoryOptimizer:
         P = (N_J.T @ np.diag(self.anchor_weights) @ N_J) / 2
         q = (b - dq_anchor).T @ np.diag(self.anchor_weights) @ N_J
         A = N_J.copy()
-        # u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
-        #                (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
-        # l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
-        #                (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
+        u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
+                       (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
+        l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
+                       (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
 
-        u = self.env_info['robot']['joint_vel_limit'][1] * 0.92 - b
-        l = self.env_info['robot']['joint_vel_limit'][0] * 0.92 - b
+        if np.any(u <= l):
+            u = self.env_info['robot']['joint_vel_limit'][1] * 0.92 - b
+            l = self.env_info['robot']['joint_vel_limit'][0] * 0.92 - b
 
         solver = osqp.OSQP()
         solver.setup(P=sparse.csc_matrix(P), q=q, A=sparse.csc_matrix(A), l=l, u=u, verbose=False, polish=False)

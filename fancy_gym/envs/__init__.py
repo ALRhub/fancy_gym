@@ -1315,15 +1315,15 @@ _versions = ["7dof-hit-cart"]
 for _v in _versions:
     _env_id = _v + '-promp'
     kwargs_dict_ah_promp = deepcopy(DEFAULT_BB_DICT_ProMP)
-    kwargs_dict_ah_promp['wrappers'].append(air_hockey.AirHockey3DofHitCartMPWrapper)
+    kwargs_dict_ah_promp['wrappers'].append(air_hockey.AirHockey7DofHitCartMPWrapper)
     # kwargs_dict_ah_promp['phase_generator_kwargs']['basis_generator_type'] = 'exp'
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_tau'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['tau_bound'] = [1.8, 2.8]
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 3.0
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 5
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0
     kwargs_dict_ah_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 2

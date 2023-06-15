@@ -5,15 +5,15 @@ import fancy_gym
 from baseline.baseline_agent.baseline_agent import build_agent
 
 
-def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True):
+def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True, dof=3):
     if plot_sampling:
         dt = 0.001
     else:
         dt = 0.02
     pos = position
     vel = velocity
-    acc = np.diff(vel, n=1, axis=0, append=np.zeros([1, 3])) / dt
-    jer = np.diff(acc, n=1, axis=0, append=np.zeros([1, 3])) / dt
+    acc = np.diff(vel, n=1, axis=0, append=np.zeros([1, dof])) / dt
+    jer = np.diff(acc, n=1, axis=0, append=np.zeros([1, dof])) / dt
     jer = np.abs(jer)
 
     # down sampling
@@ -35,9 +35,9 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
     for i in range(pos.shape[0] - 1):
         coef = np.array([[1, 0, 0, 0], [1, tf, tf ** 2, tf ** 3], [0, 1, 0, 0], [0, 1, 2 * tf, 3 * tf ** 2]])
         results = np.vstack([prev_pos, pos[i+1], prev_vel, vel[i+1]])
-        A = scipy.linalg.block_diag(*[coef] * 3)
+        A = scipy.linalg.block_diag(*[coef] * dof)
         y = results.reshape(-1, order='F')
-        weights = np.linalg.solve(A, y).reshape(3, 4)
+        weights = np.linalg.solve(A, y).reshape(dof, 4)
         weights_d = np.polynomial.polynomial.polyder(weights, axis=1)
         weights_dd = np.polynomial.polynomial.polyder(weights_d, axis=1)
 
@@ -55,9 +55,16 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
             interp_vel.append(qd)
             interp_acc.append(qdd)
 
-    constr_j_pos = [[-2.9, +2.9], [-1.8, +1.8], [-2.0, +2.0]]
-    constr_j_vel = [[-1.5, +1.5], [-1.5, +1.5], [-2.0, +2.0]]
-    constr_j_jerk = [[0, 1e4]] * 3
+    if dof == 3:
+        constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
+        constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
+        constr_j_jerk = [[0, 1e4]] * 3
+    else:
+        constr_j_pos = np.array([[-2.967, +2.967], [-2.094, +2.094], [-2.967, +2.967], [-2.094, +2.094],
+                                 [-2.967, +2.967], [-2.094, +2.094], [-3.053, +3.054]])
+        constr_j_vel = np.array([[-1.483, +1.483], [-1.483, +1.483], [-1.745, +1.745], [-1.308, +1.308],
+                                 [-2.268, +2.268], [-2.356, +2.356], [-2.356, +2.356]])
+        constr_j_jerk = [[0, 1e4]] * 7
 
     interp_pos = np.array(interp_pos)
     interp_vel = np.array(interp_vel)
@@ -71,8 +78,8 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
     ss = 20 * s
     e = end_index
     ee = 20 * (e - 1) + 1
-    for d in range(3):
-        plt.subplot(3, 4, 4 * d + 1)
+    for d in range(dof):
+        plt.subplot(dof, 4, 4 * d + 1)
         if d == 0:
             plt.title("mp_pos vs. interp_pos")
         plt.plot(step[s:e], pos[s:e, d], color='blue')
@@ -80,7 +87,7 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
         if plot_constrs:
             plt.hlines(constr_j_pos[d], xmin=step[s], xmax=step[e], colors="r")
 
-        plt.subplot(3, 4, 4 * d + 2)
+        plt.subplot(dof, 4, 4 * d + 2)
         if d == 0:
             plt.title("mp_vel vs. interp_vel")
         plt.plot(step[s:e], vel[s:e, d], color='blue')
@@ -88,13 +95,13 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
         if plot_constrs:
             plt.hlines(constr_j_vel[d], xmin=step[s], xmax=step[e], colors="r")
 
-        plt.subplot(3, 4, 4 * d + 3)
+        plt.subplot(dof, 4, 4 * d + 3)
         if d == 0:
             plt.title("mp_acc vs. interp_acc")
         plt.plot(interp_step[ss:ee], interp_acc[ss:ee, d], color='green')
         plt.plot(step[s:e], acc[s:e, d], color='blue')
 
-        plt.subplot(3, 4, 4 * d + 4)
+        plt.subplot(dof, 4, 4 * d + 4)
         if d == 0:
             plt.title("mp_jerk vs. interp_jerk")
         plt.plot(step[s:e], jer[s:e, d], color='blue')
@@ -102,6 +109,7 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
         if plot_constrs:
             plt.hlines(constr_j_jerk[d], xmin=step[s], xmax=step[e], colors='r')
     plt.show()
+
 
 
 def test_baseline(env_id="3dof-hit", seed=0, iteration=5):

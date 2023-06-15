@@ -33,7 +33,7 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         if self.dof == 3:
             self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
         else:
-            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.1445, +0.1845]])
+            self.constr_ee = np.array([[+0.585, +1.685], [-0.470, +0.470], [+0.1245, +0.2045]])
 
     def reset(self, **kwargs):
 
