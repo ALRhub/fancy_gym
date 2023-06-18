@@ -115,6 +115,11 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
 def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
+    if not env.spec.max_episode_steps:
+        # Not all envs expose a max_episode_steps.
+        # To use those with MPs, they could be put in a time_limit-wrapper.
+        return True
+
     basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
 
     env_id, wrapper_class = env_wrap
