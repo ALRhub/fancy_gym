@@ -7,6 +7,8 @@ from gymnasium.core import ObsType
 from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.spaces import Box
 
+import mujoco
+
 MAX_EPISODE_STEPS_BEERPONG = 300
 FIXED_RELEASE_STEP = 62  # empirically evaluated for frame_skip=2!
 
@@ -61,9 +63,9 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         self.repeat_action = 2
         # TODO: If accessing IDs is easier in the (new) official mujoco bindings, remove this
         self.model = None
-        self.geom_id = lambda x: self._mujoco_bindings.mj_name2id(self.model,
-                                                                  self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                                  x)
+        self.geom_id = lambda x: mujoco.mj_name2id(self.model,
+                                                   mujoco.mjtObj.mjOBJ_GEOM,
+                                                   x)
 
         # for reward calculation
         self.dists = []

@@ -7,6 +7,8 @@ from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
 from gymnasium.spaces import Box
 
+import mujoco
+
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
 
@@ -244,12 +246,12 @@ class HopperJumpEnv(HopperEnvCustomXML):
         # floor_geom_id = self.model.geom_name2id('floor')
         # foot_geom_id = self.model.geom_name2id('foot_geom')
         # TODO: do this properly over a sensor in the xml file, see dmc hopper
-        floor_geom_id = self._mujoco_bindings.mj_name2id(self.model,
-                                                         self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                         'floor')
-        foot_geom_id = self._mujoco_bindings.mj_name2id(self.model,
-                                                        self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                        'foot_geom')
+        floor_geom_id = mujoco.mj_name2id(self.model,
+                                          mujoco.mjtObj.mjOBJ_GEOM,
+                                          'floor')
+        foot_geom_id = mujoco.mj_name2id(self.model,
+                                         mujoco.mjtObj.mjOBJ_GEOM,
+                                         'foot_geom')
         for i in range(self.data.ncon):
             contact = self.data.contact[i]
             collision = contact.geom1 == floor_geom_id and contact.geom2 == foot_geom_id
