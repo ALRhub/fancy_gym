@@ -78,7 +78,7 @@ def test_missing_local_state(mp_type: str):
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
+    env.reset(seed=SEED)
     with pytest.raises(NotImplementedError):
         env.step(env.action_space.sample())
 
@@ -95,7 +95,7 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
+    env.reset(seed=SEED)
     _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
     info_keys = list(info.keys())
 
@@ -125,7 +125,7 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
                             {'basis_generator_type': basis_generator_type})
 
     for i in range(5):
-        env.reset()
+        env.reset(seed=SEED)
         _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
         length = info['trajectory_length']
 
@@ -141,7 +141,7 @@ def test_aggregation(mp_type: str, reward_aggregation: Callable[[np.ndarray], fl
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
+    env.reset(seed=SEED)
     # ToyEnv only returns 1 as reward
     _obs, reward, _terminated, _truncated, _info = env.step(env.action_space.sample())
     assert reward == reward_aggregation(np.ones(50, ))
@@ -232,7 +232,7 @@ def test_learn_tau(mp_type: str, tau: float):
     done = True
     for i in range(5):
         if done:
-            env.reset()
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = tau
 
@@ -278,7 +278,7 @@ def test_learn_delay(mp_type: str, delay: float):
     done = True
     for i in range(5):
         if done:
-            env.reset()
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = delay
 
@@ -327,7 +327,7 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
     done = True
     for i in range(5):
         if done:
-            env.reset()
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = tau
         action[1] = delay

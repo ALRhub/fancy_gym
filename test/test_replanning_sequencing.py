@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 from gymnasium import register
 from gymnasium.core import ActType, ObsType
+from gymnasium import spaces
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
@@ -85,7 +86,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
 
     for i in range(25):
         if done:
-            env.reset()
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         _obs, _reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
@@ -131,7 +132,7 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
     assert env.observation_space == env_step.observation_space
 
-    env.reset()
+    env.reset(seed=SEED)
 
     episode_steps = env_step.spec.max_episode_steps // replanning_time
     # Make 3 episodes, total steps depend on the replanning steps
@@ -146,7 +147,7 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
             # Check if number of steps until termination match the replanning interval
             print(done, (i + 1), episode_steps)
             assert (i + 1) % episode_steps == 0
-            env.reset()
+            env.reset(seed=SEED)
 
         assert replanning_schedule(None, None, None, None, length)
 
@@ -171,7 +172,7 @@ def test_max_planning_times(mp_type: str, max_planning_times: int, sub_segment_s
                             {'basis_generator_type': basis_generator_type,
                              },
                             seed=SEED)
-    _ = env.reset()
+    _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
     while not done:
@@ -203,7 +204,7 @@ def test_replanning_with_learn_tau(mp_type: str, max_planning_times: int, sub_se
                             {'basis_generator_type': basis_generator_type,
                              },
                             seed=SEED)
-    _ = env.reset()
+    _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
     while not done:
@@ -236,7 +237,7 @@ def test_replanning_with_learn_delay(mp_type: str, max_planning_times: int, sub_
                             {'basis_generator_type': basis_generator_type,
                              },
                             seed=SEED)
-    _ = env.reset()
+    _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
     while not done:
@@ -291,7 +292,7 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
                             {'basis_generator_type': basis_generator_type,
                              },
                             seed=SEED)
-    _ = env.reset()
+    _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
     while not done:
@@ -340,7 +341,7 @@ def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_
                             {'basis_generator_type': basis_generator_type,
                              },
                             seed=SEED)
-    _ = env.reset()
+    _ = env.reset(seed=SEED)
     for i in range(max_planning_times):
         action = env.action_space.sample()
         _obs, _reward, terminated, truncated, _info = env.step(action)

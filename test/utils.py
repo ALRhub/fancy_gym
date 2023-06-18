@@ -30,7 +30,7 @@ def run_env(env_id: str, iterations: int = None, seed: int = 0, wrappers: List[T
     actions = []
     terminations = []
     truncations = []
-    obs, _ = env.reset()
+    obs, _ = env.reset(seed=seed)
     verify_observations(obs, env.observation_space, "reset()")
 
     iterations = iterations or (env.spec.max_episode_steps or 1)
