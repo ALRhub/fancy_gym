@@ -100,3 +100,13 @@ def verify_reward(reward):
 def verify_done(done):
     assert isinstance(
         done, bool), f"Returned {done} as done flag, expected bool."
+
+
+def ugly_hack_to_mitigate_metaworld_bug(env):
+    head = env
+    try:
+        for i in range(16):
+            head.curr_path_length = 0
+            head = head.env
+    except:
+        pass

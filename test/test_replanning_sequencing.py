@@ -13,6 +13,7 @@ import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.wrappers import TimeAwareObservation
 from fancy_gym.utils.make_env_helpers import ensure_finite_time
+from test.utils import ugly_hack_to_mitigate_metaworld_bug
 
 SEED = 1
 ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
@@ -155,19 +156,9 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
             print(done, (i + 1), episode_steps)
             assert (i + 1) % episode_steps == 0
             env.reset(seed=SEED)
-            ugly_hack_to_mitigate_metaworld_bug(env)
+            ugly_hack_to_mitigate_metaworld_bug(env)  # TODO: Remove, when metaworld fixed it upstream
 
         assert replanning_schedule(None, None, None, None, length)
-
-
-def ugly_hack_to_mitigate_metaworld_bug(env):
-    head = env
-    try:
-        for i in range(16):
-            head.curr_path_length = 0
-            head = head.env
-    except:
-        pass
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])

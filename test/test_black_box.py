@@ -10,6 +10,7 @@ from gymnasium.core import ActType, ObsType
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.wrappers import TimeAwareObservation
+from test.utils import ugly_hack_to_mitigate_metaworld_bug
 
 SEED = 1
 ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
@@ -128,6 +129,7 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
 
     for i in range(5):
         env.reset(seed=SEED)
+        ugly_hack_to_mitigate_metaworld_bug(env)  # TODO: Remove, when metaworld fixed it upstream
         _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
         length = info['trajectory_length']
 
@@ -330,6 +332,7 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
     for i in range(5):
         if done:
             env.reset(seed=SEED)
+            ugly_hack_to_mitigate_metaworld_bug(env)
         action = env.action_space.sample()
         action[0] = tau
         action[1] = delay
