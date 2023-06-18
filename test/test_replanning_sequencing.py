@@ -11,13 +11,16 @@ from gymnasium import spaces
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.utils.time_aware_observation import TimeAwareObservation
+from fancy_gym.utils.wrappers import TimeAwareObservation
+from fancy_gym.utils.make_env_helpers import ensure_finite_time
 
 SEED = 1
 ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
 ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+
+MAX_STEPS_FALLBACK = 100
 
 
 class ToyEnv(gym.Env):
@@ -64,7 +67,7 @@ def setup():
 def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                                 add_time_aware_wrapper_before: bool):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(fancy_gym.make(env_id, SEED))
+    env_step = TimeAwareObservation(ensure_finite_time(fancy_gym.make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
@@ -75,15 +78,14 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'}, seed=SEED)
+                            {'basis_generator_type': 'rbf'}, seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
 
     assert env.learn_sub_trajectories
+    assert env.spec.max_episode_steps
+    assert env_step.spec.max_episode_steps
     assert env.traj_gen.learn_tau
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
-    if env.observation_space.__class__ in [spaces.Dict]:
-        assert spaces.flatten_space(env.observation_space) == env_step.observation_space
-    else:
-        assert env.observation_space == env_step.observation_space
+    assert spaces.flatten_space(env_step.observation_space) == spaces.flatten_space(env.observation_space)
 
     done = True
 
@@ -112,7 +114,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
 def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                          add_time_aware_wrapper_before: bool, replanning_time: int):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(fancy_gym.make(env_id, SEED))
+    env_step = TimeAwareObservation(ensure_finite_time(fancy_gym.make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
@@ -128,15 +130,14 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': phase_generator_type},
-                            {'basis_generator_type': basis_generator_type}, seed=SEED)
+                            {'basis_generator_type': basis_generator_type}, seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
 
     assert env.do_replanning
+    assert env.spec.max_episode_steps
+    assert env_step.spec.max_episode_steps
     assert callable(env.replanning_schedule)
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
-    if env.observation_space.__class__ in [spaces.Dict]:
-        assert spaces.flatten_space(env.observation_space) == env_step.observation_space
-    else:
-        assert env.observation_space == env_step.observation_space
+    assert spaces.flatten_space(env_step.observation_space) == spaces.flatten_space(env.observation_space)
 
     env.reset(seed=SEED)
 
@@ -177,7 +178,7 @@ def test_max_planning_times(mp_type: str, max_planning_times: int, sub_segment_s
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
+                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -209,7 +210,7 @@ def test_replanning_with_learn_tau(mp_type: str, max_planning_times: int, sub_se
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
+                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -242,7 +243,7 @@ def test_replanning_with_learn_delay(mp_type: str, max_planning_times: int, sub_
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
+                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -297,7 +298,7 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
+                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -346,7 +347,7 @@ def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
+                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
     _ = env.reset(seed=SEED)
     for i in range(max_planning_times):
         action = env.action_space.sample()

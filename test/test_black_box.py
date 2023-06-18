@@ -9,13 +9,15 @@ from gymnasium.core import ActType, ObsType
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.utils.time_aware_observation import TimeAwareObservation
+from fancy_gym.utils.wrappers import TimeAwareObservation
 
 SEED = 1
 ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
 ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+
+MAX_STEPS_FALLBACK = 500
 
 
 class Object(object):
@@ -115,11 +117,6 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('env_wrap', zip(ENV_IDS, WRAPPERS))
 def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
-    if not env.spec.max_episode_steps:
-        # Not all envs expose a max_episode_steps.
-        # To use those with MPs, they could be put in a time_limit-wrapper.
-        return True
-
     basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
 
     env_id, wrapper_class = env_wrap
@@ -127,7 +124,7 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': basis_generator_type})
+                            {'basis_generator_type': basis_generator_type}, fallback_max_steps=MAX_STEPS_FALLBACK)
 
     for i in range(5):
         env.reset(seed=SEED)
