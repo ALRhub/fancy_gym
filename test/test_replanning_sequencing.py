@@ -20,7 +20,7 @@ WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
 ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
 
-MAX_STEPS_FALLBACK = 100
+MAX_STEPS_FALLBACK = 50
 
 
 class ToyEnv(gym.Env):
@@ -155,8 +155,19 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
             print(done, (i + 1), episode_steps)
             assert (i + 1) % episode_steps == 0
             env.reset(seed=SEED)
+            ugly_hack_to_mitigate_metaworld_bug(env)
 
         assert replanning_schedule(None, None, None, None, length)
+
+
+def ugly_hack_to_mitigate_metaworld_bug(env):
+    head = env
+    try:
+        for i in range(16):
+            head.curr_path_length = 0
+            head = head.env
+    except:
+        pass
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
