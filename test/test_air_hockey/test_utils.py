@@ -111,9 +111,9 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
     plt.show()
 
 
-
 def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
-    env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2'}
+    env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
+                  'check_traj': False, 'check_step': False}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
     env_info = env.env_info
     agent = build_agent(env_info)
@@ -131,11 +131,12 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
             obs_, rew, done, info = env.step(act)
             env.render(mode="human")
 
-            print(info['compute_time_ms'])
+            # print(info['compute_time_ms'])
 
             rews.append(rew)
-            j_pos.append(act[:3])
-            j_vel.append(act[3:])
+            n_joints = env_info['robot']['n_joints']
+            j_pos.append(act[:n_joints])
+            j_vel.append(act[n_joints:])
 
             if done:
                 print('Return: ', np.sum(rews))
@@ -150,4 +151,4 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
 
 
 if __name__ == "__main__":
-    test_baseline(env_id='3dof-hit', iteration=10)
+    test_baseline(env_id='7dof-hit', iteration=10)
