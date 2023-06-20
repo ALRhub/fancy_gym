@@ -111,6 +111,10 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
     plt.show()
 
 
+def plot_c_trajs():
+    pass
+
+
 def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
     env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
                   'check_traj': False, 'check_step': False}
@@ -122,12 +126,18 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
         rews = []
         j_pos = []
         j_vel = []
+        ee_pos = []
+        ee_vel = []
+        puck_pos = []
+        puck_vel = []
 
         agent.reset()
         obs = env.reset()
         env.render(mode="human")
         while True:
             act = agent.draw_action(obs).reshape([-1])
+            # act[:] = 0
+            # act[0] = 0.5
             obs_, rew, done, info = env.step(act)
             env.render(mode="human")
 
@@ -137,6 +147,12 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
             n_joints = env_info['robot']['n_joints']
             j_pos.append(act[:n_joints])
             j_vel.append(act[n_joints:])
+            pos, vel = env.base_env.get_ee()
+            ee_pos.append(pos)
+            ee_vel.append(vel[-3:])
+            pos, vel = env.base_env.get_puck(obs_)
+            puck_pos.append(pos)
+            puck_vel.append(vel)
 
             if done:
                 print('Return: ', np.sum(rews))
@@ -146,7 +162,9 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
                 print('num_jerk_violation: ', info['num_jerk_violation'])
                 print('num_j_pos_violation: ', info['num_j_pos_violation'])
                 print('num_j_vel_violation: ', info['num_j_vel_violation'])
-                # plot_trajs(np.array(j_pos), np.array(j_vel))
+                plot_trajs(np.array(j_pos), np.array(j_vel), plot_constrs=True, plot_sampling=False, dof=7)
+                plot_trajs(np.array(ee_pos), np.array(ee_vel), plot_constrs=False, plot_sampling=False, dof=3)
+                plot_trajs(np.array(puck_pos), np.array(puck_vel), plot_constrs=False, plot_sampling=False, dof=3)
                 break
 
 

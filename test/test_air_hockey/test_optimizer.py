@@ -22,6 +22,7 @@ class TrajectoryOptimizer:
             self.anchor_weights = np.ones(3)
         else:
             self.anchor_weights = np.array([10., 1., 10., 1., 10., 10., 1.])
+            # self.anchor_weights = np.array([10., 1., 10., 1., 10., 1., 1.])
 
     def optimize_trajectory(self, cart_traj, q_start, dq_start, q_anchor):
         joint_trajectory = np.tile(np.concatenate([q_start]), (cart_traj.shape[0], 1))
@@ -80,3 +81,48 @@ class TrajectoryOptimizer:
             vel_l = self.env_info['robot']['joint_vel_limit'][0] * 0.92
             # return False, np.clip(b, vel_l, vel_u)
             return False, b
+
+
+class JointTrajectoryOptimizer:
+    def __int__(self, env_info):
+        self.env_info = env_info
+        self.robot_model = copy.deepcopy(env_info['robot']['robot_model'])
+        self.robot_data = copy.deepcopy(env_info['robot']['robot_data'])
+        self.n_joints = self.env_info['robot']['n_joints']
+        if self.n_joints == 3:
+            self.weights = np.ones(3)
+        else:
+            self.weights = np.array([10., 1., 10., 1., 10., 1., 10.])
+
+        self.q_start = np.zeros(self.n_joints)
+        self.dq_start = np.zeros(self.n_joints)
+
+    def optimize_joint_trajectory(self, q_traj, dq_traj, q_start=None, dq_start=None):
+        q_start = self.q_start if q_start is None else q_start
+        dq_start = self.dq_start if dq_start is None else dq_start
+        q_traj_opt = np.tile(np.concatenate([q_start]), (q_traj.shape[0], 1))
+        dq_traj_opt = np.tile(np.concatenate([dq_start]), (dq_traj.shape[0], 1))
+
+        q_cur = q_start
+        dq_cur = dq_start
+        for i, q_des, dq_des in enumerate(zip(q_traj, dq_traj)):
+            success, q_next, dq_next = self._solve_qp(q_des, dq_des, q_cur, dq_cur)
+            if success:
+                q_traj_opt[i] = q_next
+                dq_traj_opt[i] = dq_next
+
+    def _solve_qp(self, q_des, dq_des, q_cur, dq_cur):
+        jac = jacobian(self.robot_model, self.robot_data, q_cur)
+        # todo
+
+        q_opt = q_des
+        dq_opt = dq_des
+        return True, q_opt, dq_opt
+
+
+if __name__ == '__main__':
+    env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
+                  'check_traj': False, 'check_step': False}
+    env = fancy_gym.make(env_id='7dof-hit', seed=0, **env_kwargs)
+    env_info = env.env_info
+
