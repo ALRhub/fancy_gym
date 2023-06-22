@@ -121,7 +121,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
                 p_v_l = np.sqrt(p_v_x ** 2 + p_v_y ** 2)
         # print(self.wait_puck_steps)
 
-        return obs
+        return np.array(obs, dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
@@ -135,6 +135,11 @@ class AirHockeyGymHit(AirHockeyGymBase):
         return obs, rew, done, info
 
     def check_step_validity(self, info):
+        info["has_hit"] = 1 if info["has_hit"] else 0
+        info["has_hit_step"] = self.horizon if info["has_hit_step"] == 500 else info["has_hit_step"]
+        info["has_scored"] = 1 if info["has_scored"] else 0
+        info["has_scored_step"] = self.horizon if info["has_scored_step"] == 500 else info["has_scored_step"]
+
         # info["validity"] = 1 if validity else 0
         info["ee_violation"] = np.any(info['constraints_value']['ee_constr'] > 0).astype(int)
         info["jerk_violation"] = np.any(info['jerk'][:self.dof] > 1e4).astype(int)
@@ -449,13 +454,16 @@ class AirHockeyGymHit(AirHockeyGymBase):
         # sparse reward
         if base_env.episode_steps - self.wait_puck_steps < MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT and not done:
             if base_env.episode_steps - self.wait_puck_steps < 100:
-                return 0
+                return 0.01
             else:
                 return 0
 
         # init env info
         env_info = base_env.env_info
         goal_pos = np.array([env_info["table"]["length"] / 2, 0, 0])
+
+        if self.wait_puck_steps >= len(base_env.ee_pos_history):
+            return 0
 
         traj_ee_pos = np.vstack(base_env.ee_pos_history[self.wait_puck_steps:])
         traj_ee_vel = np.vstack(base_env.ee_vel_history[self.wait_puck_steps:])
@@ -466,7 +474,9 @@ class AirHockeyGymHit(AirHockeyGymBase):
 
         # get score
         if base_env.has_scored:
-            has_scored_step = base_env.has_scored - self.wait_puck_steps
+            if self.wait_puck_steps >= base_env.has_scored_step:
+                return 0
+            has_scored_step = base_env.has_scored_step - self.wait_puck_steps
             coef = np.clip(1.0 - (has_scored_step - 80) / 100, 0, 1)
             coef_rew = 6
             success_rew = 8
@@ -476,6 +486,8 @@ class AirHockeyGymHit(AirHockeyGymBase):
                 coef * coef_rew + 1.0 * success_rew  # [4, 20]
 
         if base_env.has_hit:
+            if self.wait_puck_steps >= base_env.has_hit_step:
+                return 0
             has_hit_step = base_env.has_hit_step - self.wait_puck_steps
             cos_ee_puck_goal = traj_cos_ee_puck_goal[has_hit_step]
             cos_ee_puck_bouncing_point = traj_cos_ee_puck_bouncing_point[has_hit_step]

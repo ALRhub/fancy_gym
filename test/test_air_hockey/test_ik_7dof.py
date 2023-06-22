@@ -32,7 +32,7 @@ phase_generator_kwargs = {'phase_generator_type': 'exp',
                           'alpha_phase': 3}
 basis_generator_kwargs = {'basis_generator_type': 'prodmp',
                           'num_basis': 4,
-                          'alpha': 25,
+                          'alpha': 15,
                           'basis_bandwidth_factor': 3.0}
 trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
                                'action_dim': 2,
@@ -70,7 +70,7 @@ class TrajectoryGenerator:
         self.init_time = np.array(0)
 
         self.dt = 0.001
-        self.duration = 4.0
+        self.duration = 3.0
 
         phase_gen = get_phase_generator(**phase_generator_kwargs)
         basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_generator_kwargs)
@@ -197,14 +197,14 @@ def test_traj_generator(env_id='7dof-hit', seed=0):
     plt.vlines(-env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
     plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
 
-    init_time = [0, 0.5, 1.0, 1.5, 2.0]
-    traj_length = [25, 25, 25, 25, 100]
+    init_time = [0, 0.5, 1.0, 1.5]
+    traj_length = [25, 25, 25, 75]
     colors = ['red', 'blue', 'black', 'green', 'yellow']
     cur_pos = init_c_pos
     cur_vel = init_c_vel
     j_pos = []
     j_vel = []
-    for i in range(5):
+    for i in range(4):
         t = init_time[i]
         l = traj_length[i]
         c = colors[i]
@@ -247,8 +247,8 @@ def test_traj_optimizer(env_id='7dof-hit', seed=0):
     traj_gen = TrajectoryGenerator(env_info)
     traj_opt = TrajectoryOptimizer(env_info)
 
-    init_time = [0, 0.5, 1.0, 1.5, 2.0]
-    traj_length = [25, 25, 25, 25, 100]
+    init_time = [0, 0.5, 1.0, 1.5]
+    traj_length = [25, 25, 25, 75]
     colors = ['red', 'blue', 'black', 'green', 'yellow']
     cur_c_pos = init_c_pos
     cur_c_vel = init_c_vel
@@ -261,7 +261,7 @@ def test_traj_optimizer(env_id='7dof-hit', seed=0):
     list_j_pos = []
     list_j_vel = []
     obs = env.reset()
-    for i in range(5):
+    for i in range(4):
         init_t = init_time[i]
         traj_l = traj_length[i]
 
@@ -273,49 +273,49 @@ def test_traj_optimizer(env_id='7dof-hit', seed=0):
         list_c_vel.append(c_vel[:traj_l])
         cur_c_pos = c_pos[traj_l - 1].copy()
         cur_c_vel = c_vel[traj_l - 1].copy()
-        # success, j_pos = traj_opt.optimize_trajectory(np.hstack([c_pos[:traj_l], c_vel[:traj_l]]),
-        #                                               cur_j_pos, cur_j_vel, None)
-        # t = np.linspace(0, j_pos.shape[0], j_pos.shape[0] + 1) * 0.02
-        # f = CubicSpline(t, np.vstack([cur_j_pos, j_pos]), axis=0, bc_type=((1, cur_j_vel), (2, cur_j_acc)))
-        # df = f.derivative(1)
-        # ddf = f.derivative(2)
+        success, j_pos = traj_opt.optimize_trajectory(np.hstack([c_pos[:traj_l], c_vel[:traj_l]]),
+                                                      cur_j_pos, cur_j_vel, None)
+        t = np.linspace(0, j_pos.shape[0], j_pos.shape[0] + 1) * 0.02
+        f = CubicSpline(t, np.vstack([cur_j_pos, j_pos]), axis=0, bc_type=((1, cur_j_vel), (2, cur_j_acc)))
+        df = f.derivative(1)
+        ddf = f.derivative(2)
 
-        # j_pos = f(t[1:])
-        # j_vel = df(t[1:])
-        # j_acc = ddf(t[1:])
-        #
-        # cur_j_pos = j_pos[-1]
-        # cur_j_vel = j_vel[-1]
-        # cur_j_acc = np.zeros(7)
+        j_pos = f(t[1:])
+        j_vel = df(t[1:])
+        j_acc = ddf(t[1:])
 
-        # list_j_pos.append(j_pos)
-        # list_j_vel.append(j_vel)
+        cur_j_pos = j_pos[-1]
+        cur_j_vel = j_vel[-1]
+        cur_j_acc = np.zeros(7)
 
-        # for p, v in zip(j_pos, j_vel):
-        #     act = np.hstack([p, v])
-        #     obs_, rew, done, info = env.step(act)
-        #     env.render(mode="human")
+        list_j_pos.append(j_pos)
+        list_j_vel.append(j_vel)
 
-    c_pos = np.concatenate(list_c_pos)
-    c_vel = np.concatenate(list_c_vel)
-    success, j_pos = traj_opt.optimize_trajectory(np.hstack([c_pos, c_vel]),
-                                                  cur_j_pos, cur_j_vel, None)
-    t = np.linspace(0, j_pos.shape[0], j_pos.shape[0] + 1) * 0.02
-    f = CubicSpline(t, np.vstack([cur_j_pos, j_pos]), axis=0, bc_type=((1, cur_j_vel), (2, cur_j_acc)))
-    df = f.derivative(1)
-    ddf = f.derivative(2)
+        for p, v in zip(j_pos, j_vel):
+            act = np.hstack([p, v])
+            obs_, rew, done, info = env.step(act)
+            env.render(mode="human")
 
-    j_pos = f(t[1:])
-    j_vel = df(t[1:])
-    j_acc = ddf(t[1:])
-
-    list_j_pos.append(j_pos)
-    list_j_vel.append(j_vel)
+    # c_pos = np.concatenate(list_c_pos)
+    # c_vel = np.concatenate(list_c_vel)
+    # success, j_pos = traj_opt.optimize_trajectory(np.hstack([c_pos, c_vel]),
+    #                                               cur_j_pos, cur_j_vel, None)
+    # t = np.linspace(0, j_pos.shape[0], j_pos.shape[0] + 1) * 0.02
+    # f = CubicSpline(t, np.vstack([cur_j_pos, j_pos]), axis=0, bc_type=((1, cur_j_vel), (2, cur_j_acc)))
+    # df = f.derivative(1)
+    # ddf = f.derivative(2)
     #
-    for p, v in zip(j_pos, j_vel):
-        act = np.hstack([p, v])
-        obs_, rew, done, info = env.step(act)
-        env.render(mode="human")
+    # j_pos = f(t[1:])
+    # j_vel = df(t[1:])
+    # j_acc = ddf(t[1:])
+    #
+    # list_j_pos.append(j_pos)
+    # list_j_vel.append(j_vel)
+    # #
+    # for p, v in zip(j_pos, j_vel):
+    #     act = np.hstack([p, v])
+    #     obs_, rew, done, info = env.step(act)
+    #     env.render(mode="human")
 
     plot_trajs(np.concatenate(list_j_pos, axis=0), np.concatenate(list_j_vel, axis=0),
                plot_constrs=True, plot_sampling=False, dof=7)
