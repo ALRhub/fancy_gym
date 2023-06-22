@@ -57,8 +57,8 @@ class AirHockeyGymBase(gym.Env):
         self._episode_steps = 0
 
         # max steps
-        self.horizon = self.mdp_info.horizon
-        # self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
+        # self.horizon = self.mdp_info.horizon
+        self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
         # action related
         self.prev_vel = np.zeros([1, self.dof])

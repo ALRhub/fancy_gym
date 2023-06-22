@@ -1101,8 +1101,8 @@ for _v in _versions:
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 3.0
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 4
-    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 2
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 5
+    kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0
     kwargs_dict_ah_promp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_ah_promp['trajectory_generator_kwargs']['action_dim'] = 2
@@ -1322,7 +1322,7 @@ for _v in _versions:
     # kwargs_dict_ah_promp['phase_generator_kwargs']['learn_delay'] = True
     # kwargs_dict_ah_promp['phase_generator_kwargs']['delay_bound'] = [0, 1.4]
     kwargs_dict_ah_promp['phase_generator_kwargs']['tau'] = 3.0
-    kwargs_dict_ah_promp['phase_generator_kwargs']['delay'] = 0.4
+    # kwargs_dict_ah_promp['phase_generator_kwargs']['delay'] = 0
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis'] = 5
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_start'] = 3
     kwargs_dict_ah_promp['basis_generator_kwargs']['num_basis_zero_goal'] = 0

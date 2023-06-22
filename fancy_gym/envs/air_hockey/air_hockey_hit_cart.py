@@ -1,5 +1,7 @@
 import numpy as np
 from typing import Union, Tuple
+from gym import spaces, utils
+from gym.core import ObsType, ActType
 
 from .air_hockey_hit import AirHockeyGymHit
 from .air_hockey_utils import TrajectoryOptimizer
@@ -9,114 +11,85 @@ from scipy.interpolate import CubicSpline
 class AirHockeyGymHitCart(AirHockeyGymHit):
     def __init__(self, env_id=None,
                  interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1):
+                 check_step=True, check_traj=True, check_traj_length=-1,
+                 early_stop=False, wait_puck=False):
         super().__init__(env_id=env_id,
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
                          check_traj=check_traj,
-                         check_traj_length=check_traj_length)
+                         check_traj_length=check_traj_length,
+                         early_stop=early_stop,
+                         wait_puck=wait_puck)
 
         self.traj_opt = TrajectoryOptimizer(self.env_info)
 
-        self.sub_traj_idx = 0
-        if self.dof == 3:
-            self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
-            self.dq_prev = np.zeros([3])
-            self.ddq_prev = np.zeros([3])
-        else:
-            self.q_prev = np.array([0., -0.1961, 0., -1.8436, 0., +0.9704, 0.])
-            self.dq_prev = np.zeros([7])
-            self.ddq_prev = np.zeros(([7]))
+    def optimize_traj(self, traj_c_pos, traj_c_vel):
+        # boundary condition
+        q_start = self.q_prev
+        dq_start = self.dq_prev
+        ddq_start = self.ddq_prev
 
-        # constr
-        if self.dof == 3:
-            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
-        else:
-            self.constr_ee = np.array([[+0.585, +1.685], [-0.470, +0.470], [+0.1245, +0.2045]])
+        # solve optimization
+        traj_c = np.hstack([traj_c_pos, traj_c_vel])
+        success, traj_q_opt = self.traj_opt.optimize_trajectory(traj_c, q_start, dq_start, None)
 
-    def reset(self, **kwargs):
+        # fit cubic-spline
+        t = np.linspace(0, traj_q_opt.shape[0], traj_q_opt.shape[0] + 1) * 0.02
+        f = CubicSpline(t, np.vstack([q_start, traj_q_opt]), axis=0, bc_type=((1, dq_start), (2, ddq_start)))
+        df = f.derivative(1)
+        ddf = f.derivative(2)
 
-        self.sub_traj_idx = 0
-        if self.dof == 3:
-            self.q_prev = np.array([-1.15570, +1.30024, +1.44280])
-            self.dq_prev = np.zeros([3])
-            self.ddq_prev = np.zeros([3])
-        else:
-            self.q_prev = np.array([0., -0.1961, 0., -1.8436, 0., +0.9704, 0.])
-            self.dq_prev = np.zeros([7])
-            self.ddq_prev = np.zeros(([7]))
+        # save boundary condition
+        self.q_prev = np.array(f(t[-1]))
+        self.dq_prev = np.array(df(t[-1]))
+        self.ddq_prev = np.array(ddf(t[-1]))
 
-        return super().reset(**kwargs)
+        return np.array(f(t[1:])), np.array(df(t[1:]))
 
     def check_traj_validity(self, action, traj_pos, traj_vel):
         sub_traj_length = self.check_traj_length[self.sub_traj_idx]
-        if sub_traj_length != -1:
-            valid_pos = traj_pos[:sub_traj_length]
-            valid_vel = traj_vel[:sub_traj_length]
-        else:
-            valid_pos = traj_pos
-            valid_vel = traj_vel
+        sub_traj_c_pos = traj_pos[:sub_traj_length] if sub_traj_length != -1 else traj_pos[:]
+        sub_traj_c_vel = traj_vel[:sub_traj_length] if sub_traj_length != -1 else traj_vel[:]
         self.sub_traj_idx += 1
 
         if self.check_traj:
 
             # check tau
             invalid_tau = False
-            # if action.shape[0] % 2 != 0:
-            #     tau_bound = [1.5, 3.0]
-            #     invalid_tau = action[0] < tau_bound[0] or action[0] > tau_bound[1]
+            invalid_delay = False
 
             # check ee constr
             constr_ee = self.constr_ee
-            invalid_ee = np.any(valid_pos < constr_ee[:, 0]) or np.any(valid_pos > constr_ee[:, 1])
+            invalid_ee = np.any(sub_traj_c_pos < constr_ee[:, 0]) or np.any(sub_traj_c_pos > constr_ee[:, 1])
 
-            if invalid_tau or invalid_ee:
-                # traj_pos = np.stack([self.q_prev] * valid_pos.shape[0], axis=0)
-                # traj_vel = np.stack([self.dq_prev] * valid_vel.shape[0], axis=0)
-                return False, valid_pos, valid_vel
+            if invalid_tau or invalid_delay or invalid_ee:
+                return False, sub_traj_c_pos, sub_traj_c_vel
 
         # optimize traj
-        q_start = self.q_prev
-        dq_start = self.dq_prev
-        ddq_start = self.ddq_prev
-        success, traj_q_opt = self.traj_opt.optimize_trajectory(np.hstack([valid_pos, valid_vel]),
-                                                                q_start, dq_start, None)
-        t = np.linspace(0, traj_q_opt.shape[0], traj_q_opt.shape[0] + 1) * 0.02
-        f = CubicSpline(t, np.vstack([q_start, traj_q_opt]), axis=0, bc_type=((1, dq_start), (2, ddq_start)))
-        df = f.derivative(1)
-        ddf = f.derivative(2)
-        traj_pos = np.array(f(t[1:]))
-        traj_vel = np.array(df(t[1:]))
-        self.q_prev = np.array(f(t[-1]))
-        self.dq_prev = np.array(df(t[-1]))
-        self.ddq_prev = np.array(ddf(t[-1]))
-        return True, traj_pos, traj_vel
+        sub_traj_j_pos, sub_traj_j_vel = self.optimize_traj(sub_traj_c_pos, sub_traj_c_vel)
+        return True, sub_traj_j_pos, sub_traj_j_vel
 
     def get_invalid_traj_penalty(self, action, traj_pos, traj_vel):
         # violate tau penalty
         violate_tau_penalty = 0
-        # if action.shape[0] % 2 != 0:
-        #     tau_bound = [1.5, 3.0]
-        #     violate_tau_penalty = np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]])
+
+        # violate delay penalty
+        violate_delay_penalty = 0
 
         sub_traj_length = self.check_traj_length[self.sub_traj_idx-1]
-        if sub_traj_length != -1:
-            valid_pos = traj_pos[:sub_traj_length]
-            valid_vel = traj_vel[:sub_traj_length]
-        else:
-            valid_pos = traj_pos
-            valid_vel = traj_vel
+        sub_traj_c_pos = traj_pos[:sub_traj_length] if sub_traj_length != -1 else traj_pos[:]
+        sub_traj_c_vel = traj_vel[:sub_traj_length] if sub_traj_length != -1 else traj_vel[:]
 
         # violate ee penalty
         constr_ee = self.constr_ee
-        num_violate_ee_constr = np.array((valid_pos - constr_ee[:, 0] < 0), dtype=np.float32).mean() + \
-                                np.array((valid_pos - constr_ee[:, 1] > 0), dtype=np.float32).mean()
-        max_violate_ee_constr = np.maximum(constr_ee[:, 0] - valid_pos, 0).mean() + \
-                                np.maximum(valid_pos - constr_ee[:, 1], 0).mean()
+        num_violate_ee_constr = np.array((sub_traj_c_pos - constr_ee[:, 0] < 0), dtype=np.float32).mean() + \
+                                np.array((sub_traj_c_pos - constr_ee[:, 1] > 0), dtype=np.float32).mean()
+        max_violate_ee_constr = np.maximum(constr_ee[:, 0] - sub_traj_c_pos, 0).mean() + \
+                                np.maximum(sub_traj_c_pos - constr_ee[:, 1], 0).mean()
         violate_ee_penalty = num_violate_ee_constr + max_violate_ee_constr
 
-        traj_invalid_penalty = violate_tau_penalty + violate_ee_penalty
+        traj_invalid_penalty = violate_tau_penalty + violate_delay_penalty + violate_ee_penalty
         return -3 * traj_invalid_penalty
 
     def get_invalid_traj_return(self, action, traj_pos, traj_vel):
@@ -148,8 +121,10 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         info["num_ee_z_violation"] = self.horizon
         info["num_jerk_violation"] = self.horizon
 
+        sub_traj_length = self.check_traj_length[self.sub_traj_idx-1]
+        sub_traj_length = self.horizon if sub_traj_length == -1 else sub_traj_length
         for k, v in info.items():
-            info[k] = [v] * 25
+            info[k] = [v] * sub_traj_length
 
         info['trajectory_length'] = 1
 
@@ -158,21 +133,27 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
 
 class AirHockey3DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1):
+                 check_step=True, check_traj=True, check_traj_length=-1,
+                 early_stop=False, wait_puck=False):
         super().__init__(env_id="3dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
                          check_traj=check_traj,
-                         check_traj_length=check_traj_length)
+                         check_traj_length=check_traj_length,
+                         early_stop=early_stop,
+                         wait_puck=wait_puck)
 
 
 class AirHockey7DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1):
+                 check_step=True, check_traj=True, check_traj_length=-1,
+                 early_stop=False, wait_puck=False):
         super().__init__(env_id="7dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
                          check_traj=check_traj,
-                         check_traj_length=check_traj_length)
+                         check_traj_length=check_traj_length,
+                         early_stop=early_stop,
+                         wait_puck=wait_puck)

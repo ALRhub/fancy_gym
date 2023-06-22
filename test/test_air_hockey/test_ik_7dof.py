@@ -27,7 +27,7 @@ from fancy_gym.black_box.factory.trajectory_generator_factory import get_traject
 #                                'action_dim': 2,
 #                                'weights_scale': 1}
 phase_generator_kwargs = {'phase_generator_type': 'exp',
-                          'delay': 0.5,
+                          'delay': 0,
                           'tau': 3.0,
                           'alpha_phase': 3}
 basis_generator_kwargs = {'basis_generator_type': 'prodmp',
@@ -266,8 +266,8 @@ def test_traj_optimizer(env_id='7dof-hit', seed=0):
         traj_l = traj_length[i]
 
         weights = 0.1 * (2 * np.random.rand(10) - 1)
-        weights[4] = np.random.rand(1) + 0.5
-        weights[9] = 0.5 * (2 * np.random.rand(1) - 1)
+        weights[4] = (np.random.rand(1) + 0.5)
+        weights[9] = (0.5 * (2 * np.random.rand(1) - 1))
         c_pos, c_vel = traj_gen.generate_trajectory(weights, init_t, cur_c_pos, cur_c_vel)
         list_c_pos.append(c_pos[:traj_l])
         list_c_vel.append(c_vel[:traj_l])

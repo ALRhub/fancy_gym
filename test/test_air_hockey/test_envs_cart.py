@@ -47,27 +47,10 @@ def test_env(env_id="3dof-hit", seed=0, iteration=5):
 
 
 def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
-    env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
-                  'check_step': True, 'check_traj':  True, 'check_traj_length': [-1]}
+    env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardWaitPuck',
+                  'check_step': True, 'check_traj':  True, 'check_traj_length': [-1],
+                  'early_stop': True, 'wait_puck': True}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
-
-    # ProMP samples
-    # act_list = [np.array([+0.4668, +0.2761, +0.2246, -0.0090, -0.0328, -0.5161,
-    #                       -0.1360, -0.3141, -0.4803, -0.9457, -0.5832, -0.3209]),
-    #             np.array([+0.3490, +0.0597, +0.1681, +0.2891, -0.3729, -0.6172,
-    #                       -0.4291, -0.3400, -0.5428, -0.8549, -0.5452, -0.2657]),
-    #             np.array([+0.0796, +0.1585, +0.1650, +0.2431, -0.5435, -0.5349,
-    #                       -0.3300, -0.3566, -0.5377, -1.0708, -0.5976, -0.3642])]
-
-    # ProDMP samples
-    # act_list = [np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
-    #                       +0.1311,  0.6478,  0.8111,  0.4709, -0.0475,  0.3196]),
-    #             np.array([-0.6474, -0.7177, -0.2084, -0.7114,  0.6966,  0.5063,
-    #                       +0.1093,  0.6917,  0.7944,  0.4167, -0.1352,  0.2618]),
-    #             np.array([-0.7244, -0.9313, -0.5614, -0.6715,  0.8473,  0.6448,
-    #                       +0.3539,  0.7362,  1.0081,  0.8292,  0.3983,  0.9509]),
-    #             np.array([-0.6087, -0.7917, -0.7176, -0.5665,  0.9401,  0.7882,
-    #                       +0.5042,  0.9186,  0.9234,  0.9408,  0.5915,  0.7980])]
 
     _act = np.array([6.49932e-01, 2.05280e-05, 0.1645])[:2]
     for i in range(iteration):
@@ -100,7 +83,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
                 print('Return: ', np.sum(rew))
                 print('jerk_violation: ', np.sum(info['jerk_violation']))
                 print('j_pos_violation: ', np.sum(info['j_pos_violation']))
-                print('j_vel-violation: ', np.sum(info['j_vel_violation']))
+                print('j_vel_violation: ', np.sum(info['j_vel_violation']))
                 print('ee_violation: ', np.sum(info['ee_violation']))
                 break
 
@@ -168,6 +151,6 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
 
 if __name__ == "__main__":
     # test_env(env_id="7dof-hit", iteration=10)
-    test_mp_env(env_id="7dof-hit-cart-promp", seed=1, iteration=100, plot_result=False)
+    test_mp_env(env_id="7dof-hit-cart-promp", seed=1, iteration=10, plot_result=False)
     # test_mp_replan_env(env_id="7dof-hit-cart-promp-replan", seed=1, iteration=3, plot_result=False)
 
