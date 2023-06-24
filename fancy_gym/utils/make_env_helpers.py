@@ -14,7 +14,7 @@ from fancy_gym.utils.env_compatibility import EnvCompatibility
 from fancy_gym.utils.wrappers import FlattenObservation
 
 try:
-    from dm_control import suite, manipulation
+    import shimmy
     from shimmy.dm_control_compatibility import EnvType
 except ImportError:
     pass
