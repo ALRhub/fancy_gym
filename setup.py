@@ -35,7 +35,7 @@ def find_package_data(extensions_to_include: List[str]) -> List[str]:
 setup(
     author='Fabian Otto, Onur Celik',
     name='fancy_gym',
-    version='0.3',
+    version='0.4',
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Science/Research',
