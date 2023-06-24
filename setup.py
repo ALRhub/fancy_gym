@@ -6,12 +6,12 @@ from setuptools import setup, find_packages
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
-    'dmc': ['dm_control>=1.0.1', 'shimmy[dm-control]'],
+    'dmc': ['dm_control>=1.0.1', 'shimmy[dm-control]', 'Shimmy==1.0.0'],
     'metaworld': ['metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@43abf981b97c01669af898833a740fb63605b8ac#egg=metaworld',
-                  'mujoco-py<2.2,>=2.1',
+                  'mujoco-py<2.2,>=2.1', 'gym>=0.15.4'
                   ],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
-    'mujoco': ['gymnasium[mujoco]>0.26.0'],
+    'mujoco': ['mujoco==2.3.5', 'gymnasium[mujoco]>0.26.0'],
 }
 
 # All dependencies
