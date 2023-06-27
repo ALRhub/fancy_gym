@@ -27,6 +27,11 @@ class TrajectoryOptimizer:
         else:
             self.weights = np.array([10., 1., 10., 1., 10., 10., 1.])
 
+        self.init_j_acc = np.zeros(self.n_joints)
+
+    def reset(self):
+        self.init_j_acc = np.zeros(self.n_joints)
+
     def optimize_trajectory(self, traj_c_pos, traj_c_vel, init_j_pos, init_j_vel):
         traj_j_pos = np.tile(np.concatenate([init_j_pos]), (traj_c_pos.shape[0], 1))
         traj_j_vel = np.tile(np.concatenate([init_j_vel]), (traj_c_vel.shape[0], 1))
@@ -34,7 +39,7 @@ class TrajectoryOptimizer:
         cur_j_pos = init_j_pos.copy()
         cur_j_vel = init_j_vel.copy()
 
-        for i, des_c_pos, des_c_vel in enumerate(zip(traj_c_pos, traj_c_vel)):
+        for i, [des_c_pos, des_c_vel] in enumerate(zip(traj_c_pos, traj_c_vel)):
             success, next_j_vel = self._solve_qp(des_c_pos, des_c_vel, cur_j_pos, cur_j_vel)
 
             cur_j_pos = (cur_j_vel + next_j_vel) / 2 * self.dt
@@ -42,6 +47,12 @@ class TrajectoryOptimizer:
 
             traj_j_pos[i] = cur_j_pos.copy()
             traj_j_vel[i] = cur_j_vel.copy()
+
+        # t = np.linspace(0, traj_j_pos.shape[0], traj_j_pos.shape[0] + 1) * self.dt
+        # f = CubicSpline(t, np.vstack([cur_j_pos, traj_j_pos]), axis=0, bc_type=((1, init_j_vel),
+        #                                                                         (2, self.init_j_acc)))
+        # df = f.derivative(1)
+        # ddf = f.derivative(2)
 
         return True, traj_j_pos, traj_j_vel
 

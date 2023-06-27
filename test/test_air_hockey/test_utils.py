@@ -112,8 +112,8 @@ def plot_trajs(position: list, velocity: list, start_index=0, end_index=100, plo
 
 
 def plot_trajs_cart(position, velocity, start_index=0, end_index=100):
-    table_width = 1.0
-    table_length = 2.0
+    table_width = 1.038
+    table_length = 1.948
 
     plt.hlines(-table_width / 2, xmin=-1.1, xmax=+1.1)
     plt.hlines(+table_width / 2, xmin=-1.1, xmax=+1.1)
