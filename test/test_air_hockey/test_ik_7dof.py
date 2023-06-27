@@ -93,7 +93,7 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
         # generate trajectory
         weight = weights[i]
         traj_c_pos, traj_c_vel = traj_gen.generate_trajectory(weight, cur_t, cur_c_pos, cur_c_vel)
-        # cur_t = cur_t + 0.02 * l
+        # cur_t = cur_t + 0.001 * l
         # cur_c_pos = traj_c_pos[l-1]
         # cur_c_vel = traj_c_vel[l-1]
 
@@ -129,7 +129,7 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
                 print('constr_ee: ', np.sum(constrs['ee']))
                 break
 
-        cur_t = cur_t + 0.02 * l
+        cur_t = cur_t + 0.001 * l
         ee_pos_world = env.base_env.get_ee()[0]
         ee_pos_robot = world_to_robot(env_info["robot"]["base_frame"][0], ee_pos_world)[0]
         cur_c_pos = ee_pos_robot

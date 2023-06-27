@@ -45,7 +45,7 @@ class TrajectoryGenerator:
 
     def reset(self):
         self.traj_gen.reset()
-        # self.traj_gen.set_duration(self.duration, self.dt)
+        self.traj_gen.set_duration(self.duration, self.dt)
 
         # reset boundary condition
         self.prev_t = self.init_t
@@ -130,7 +130,7 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
     plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
 
     replan_time = [0, 0.5, 1.0, 1.5]
-    traj_length = [25, 25, 25, 75]
+    traj_length = [25, 25, 25, 150]
     colors = ['red', 'green', 'blue', 'yellow']
     list_c_pos = []
     list_c_vel = []

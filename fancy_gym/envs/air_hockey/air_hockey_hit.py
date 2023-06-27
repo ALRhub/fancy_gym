@@ -49,7 +49,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if interpolation_order is None:
             self.dt = 0.001
         else:
-            self.dt = 0.001
+            self.dt = 0.02
         if '3dof' in env_id:
             self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
         else:
