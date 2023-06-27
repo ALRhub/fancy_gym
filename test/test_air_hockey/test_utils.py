@@ -5,7 +5,7 @@ import fancy_gym
 from baseline.baseline_agent.baseline_agent import build_agent
 
 
-def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True, dof=3):
+def plot_trajs(position: list, velocity: list, start_index=0, end_index=100, plot_sampling=True, plot_constrs=True, dof=3):
     if plot_sampling:
         dt = 0.001
     else:
@@ -111,8 +111,22 @@ def plot_trajs(position, velocity, start_index=0, end_index=100, plot_sampling=T
     plt.show()
 
 
-def plot_c_trajs():
-    pass
+def plot_trajs_cart(position, velocity, start_index=0, end_index=100):
+    table_width = 1.0
+    table_length = 2.0
+
+    plt.hlines(-table_width / 2, xmin=-1.1, xmax=+1.1)
+    plt.hlines(+table_width / 2, xmin=-1.1, xmax=+1.1)
+    plt.vlines(-table_length / 2, ymin=-0.6, ymax=+0.6)
+    plt.vlines(+table_length / 2, ymin=-0.6, ymax=+0.6)
+
+    colors = ['red', 'green', 'blue', 'yellow']
+
+    for i, pos, vel in enumerate(zip(position, velocity)):
+        plt.plot(pos[:, 0] - 1.51, pos[:, 1], color=colors[i % 4])
+    for i, pos, vel in enumerate(zip(position, velocity)):
+        plt.scatter(pos[-1, 0] - 1.51, pos[-1, 1], marker='1', s=100)
+    plt.show()
 
 
 def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
