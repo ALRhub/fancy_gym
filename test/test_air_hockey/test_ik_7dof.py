@@ -10,6 +10,8 @@ from test_utils import plot_trajs, plot_trajs_cart
 from test_traj_generator import TrajectoryGenerator
 from test_traj_optimizer import TrajectoryOptimizer
 
+from air_hockey_challenge.utils import world_to_robot, robot_to_world
+
 # phase_generator_kwargs = {'phase_generator_type': 'linear',
 #                           'tau': 3.0}
 # basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
@@ -91,14 +93,13 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
         # generate trajectory
         weight = weights[i]
         traj_c_pos, traj_c_vel = traj_gen.generate_trajectory(weight, cur_t, cur_c_pos, cur_c_vel)
-        cur_t = cur_t + 0.02 * l
-        cur_c_pos = traj_c_pos[l-1]
-        cur_c_vel = traj_c_vel[l-1]
+        # cur_t = cur_t + 0.02 * l
+        # cur_c_pos = traj_c_pos[l-1]
+        # cur_c_vel = traj_c_vel[l-1]
 
         # optimize trajectory
-        traj_c_pos = traj_c_pos[:l].copy()
-        traj_c_vel = traj_c_vel[:l].copy()
-        success, traj_j_pos, traj_j_vel = traj_opt.optimize_trajectory(traj_c_pos, traj_c_vel, cur_j_pos, cur_j_vel)
+        traj_c = np.hstack([traj_c_pos[:l], traj_c_vel[:l]])
+        success, traj_j_pos = traj_opt.optimize_trajectory(traj_c, cur_j_pos, cur_j_vel, None)
         t = np.linspace(0, traj_j_pos.shape[0], traj_j_pos.shape[0] + 1) * 0.02
         f = CubicSpline(t, np.vstack([cur_j_pos, traj_j_pos]), axis=0, bc_type=((1, cur_j_vel),  (2, cur_j_acc)))
         df = f.derivative(1)
@@ -127,6 +128,14 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
                 print('constr_j_vel: ', np.sum(constrs['j_vel']))
                 print('constr_ee: ', np.sum(constrs['ee']))
                 break
+
+        cur_t = cur_t + 0.02 * l
+        ee_pos_world = env.base_env.get_ee()[0]
+        ee_pos_robot = world_to_robot(env_info["robot"]["base_frame"][0], ee_pos_world)[0]
+        cur_c_pos = ee_pos_robot
+        ee_vel_world = env.base_env.get_ee()[1][3:]
+        ee_vel_robot = ee_vel_world
+        cur_c_vel = ee_vel_robot
 
 
 if __name__ == "__main__":

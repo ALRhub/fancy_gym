@@ -93,6 +93,16 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                   'check_step': False, 'check_traj': False, 'check_traj_length': [25, 25, 25, 75]}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
+    # weights
+    weights = [np.array([+0.7409, -0.7242, +1.0680, -0.7881, -0.3357,
+                         +0.1106, +0.1621, +1.7260, -0.5713, +0.0182]),
+               np.array([+0.8588, -0.1287, +1.2832, -0.9561, +0.2516,
+                         +0.0689, +0.5649, +0.9032, +1.5058, -0.3095]),
+               np.array([-0.0678, +0.2216, -0.2608, +0.4018, +0.3771,
+                         +0.1719, +0.1977, -0.4107, +0.9944, +0.0578]),
+               np.array([+0.8626, +0.4412, +1.4282, -3.4969, +0.1617,
+                         -0.1037, +0.3568, -0.2880, +2.9234, -0.3282])]
+
     for i in range(iteration):
         print("*"*20, i, "*"*20)
         obs = env.reset()
@@ -108,7 +118,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
         else:
             act = np.array([6.49932e-01, 2.05280e-05, 0.1645])[:2]
 
-        while True:
+        for weight in weights:
             # act = env.action_space.sample() * 0.01
             # init_j_pos = np.array([-1.15570, +1.30024, +1.44280])
             # act = np.array([-0.6244, -0.6889, -0.2778, -0.6943,  0.6887,  0.5214,
@@ -116,7 +126,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
             # while True:
             #     act = np.random.rand(2)
             #     break
-            act = act + 0.05
+            act = weight
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
@@ -128,6 +138,11 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                 print('constr_j_pos: ', np.sum(info['j_pos_violation']))
                 print('constr_j_vel: ', np.sum(info['j_vel_violation']))
                 print('constr_ee: ', np.sum(info['ee_violation']))
+
+            plt.hlines(-1.0 / 2, xmin=-1.1, xmax=+1.1)
+            plt.hlines(+1.0 / 2, xmin=-1.1, xmax=+1.1)
+            plt.vlines(-2.0 / 2, ymin=-0.6, ymax=+0.6)
+            plt.vlines(+2.0 / 2, ymin=-0.6, ymax=+0.6)
 
             if done:
                 step = np.linspace(0.001, 3, 3000) - 0.5
@@ -142,15 +157,16 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                     # plt.subplot(1, 2, 2)
                     # plt.plot(step, vel[:, 0], color=colors[idx])
 
-                    plt.plot(pos[:, 0], pos[:, 1], color=colors[idx])
+                    plt.plot(pos[:500, 0] - 1.51, pos[:500, 1], color=colors[idx])
 
                     idx += 1
+                plt.plot(pos_list[-1][:1500, 0] - 1.51, pos_list[-1][:1500, 1], color=colors[3])
                 plt.show()
                 break
 
 
 if __name__ == "__main__":
     # test_env(env_id="7dof-hit", iteration=10)
-    test_mp_env(env_id="7dof-hit-cart-promp", seed=1, iteration=10, plot_result=False)
-    # test_mp_replan_env(env_id="7dof-hit-cart-promp-replan", seed=1, iteration=3, plot_result=False)
+    # test_mp_env(env_id="7dof-hit-cart-promp", seed=1, iteration=10, plot_result=False)
+    test_mp_replan_env(env_id="7dof-hit-cart-prodmp-replan", seed=1, iteration=3, plot_result=False)
 

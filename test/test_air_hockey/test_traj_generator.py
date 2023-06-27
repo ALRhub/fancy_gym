@@ -52,6 +52,7 @@ class TrajectoryGenerator:
         self.prev_c_pos = self.init_c_pos
         self.prev_c_vel = self.init_c_vel
 
+    @torch.no_grad()
     def generate_trajectory(self, weights, prev_t=None, prev_c_pos=None, prev_c_vel=None):
         prev_t = self.prev_t if prev_t is None else prev_t
         prev_c_pos = self.prev_c_pos if prev_c_pos is None else prev_c_pos
@@ -151,17 +152,19 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
 
 
 phase_generator_kwargs = {'phase_generator_type': 'exp',
-                          'delay': 0,
+                          # 'delay': 0,
                           'tau': 3.0,
                           'alpha_phase': 3}
 basis_generator_kwargs = {'basis_generator_type': 'prodmp',
                           'num_basis': 4,
                           'alpha': 15,
-                          'basis_bandwidth_factor': 3.0}
+                          'basis_bandwidth_factor': 3}
 trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
+                               'duration': 2.0,
                                'action_dim': 2,
                                'weights_scale': 1.0,
                                'goal_scale': 1.0,
+                               'goal_offset': 1.0,
                                'disable_weights': False,
                                'disable_goal': False,
                                'relative_goal': False,

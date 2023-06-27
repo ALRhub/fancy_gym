@@ -23,55 +23,60 @@ class TrajectoryOptimizer:
         self.optimizer_kwargs = optimizer_kwargs
 
         if self.n_joints == 3:
-            self.weights = np.ones(3)
+            self.anchor_weights = np.ones(3)
         else:
-            self.weights = np.array([10., 1., 10., 1., 10., 10., 1.])
+            self.anchor_weights = np.array([10., 1., 10., 1., 10., 10., 1.])
 
         self.init_j_acc = np.zeros(self.n_joints)
 
     def reset(self):
         self.init_j_acc = np.zeros(self.n_joints)
 
-    def optimize_trajectory(self, traj_c_pos, traj_c_vel, init_j_pos, init_j_vel):
-        traj_j_pos = np.tile(np.concatenate([init_j_pos]), (traj_c_pos.shape[0], 1))
-        traj_j_vel = np.tile(np.concatenate([init_j_vel]), (traj_c_vel.shape[0], 1))
+    def optimize_trajectory(self, cart_traj, q_start, dq_start, q_anchor):
+        joint_trajectory = np.tile(np.concatenate([q_start]), (cart_traj.shape[0], 1))
+        if len(cart_traj) > 0:
+            q_cur = q_start.copy()
+            dq_cur = dq_start.copy()
 
-        cur_j_pos = init_j_pos.copy()
-        cur_j_vel = init_j_vel.copy()
+            for i, des_point in enumerate(cart_traj):
+                if q_anchor is None:
+                    dq_anchor = 0
+                else:
+                    dq_anchor = (q_anchor - q_cur)
 
-        for i, [des_c_pos, des_c_vel] in enumerate(zip(traj_c_pos, traj_c_vel)):
-            success, next_j_vel = self._solve_qp(des_c_pos, des_c_vel, cur_j_pos, cur_j_vel)
+                success, dq_next = self._solve_aqp(des_point[:3], des_point[3:6], q_cur, dq_anchor)
+                if not success:
+                    # return success, []
+                    q_cur += (dq_cur + dq_next) / 2 * self.env_info['dt']
+                    # q_cur += dq_next * self.env_info['dt']
+                    dq_cur = dq_next
+                    joint_trajectory[i] = q_cur.copy()
+                else:
+                    q_cur += (dq_cur + dq_next) / 2 * self.env_info['dt']
+                    # q_cur += dq_next * self.env_info['dt']
+                    dq_cur = dq_next
+                    joint_trajectory[i] = q_cur.copy()
+            return True, joint_trajectory
+        else:
+            return False, []
 
-            cur_j_pos = (cur_j_vel + next_j_vel) / 2 * self.dt
-            cur_j_vel = next_j_vel
-
-            traj_j_pos[i] = cur_j_pos.copy()
-            traj_j_vel[i] = cur_j_vel.copy()
-
-        # t = np.linspace(0, traj_j_pos.shape[0], traj_j_pos.shape[0] + 1) * self.dt
-        # f = CubicSpline(t, np.vstack([cur_j_pos, traj_j_pos]), axis=0, bc_type=((1, init_j_vel),
-        #                                                                         (2, self.init_j_acc)))
-        # df = f.derivative(1)
-        # ddf = f.derivative(2)
-
-        return True, traj_j_pos, traj_j_vel
-
-    def _solve_qp(self, des_c_pos, des_c_vel, cur_j_pos, cur_j_vel):
-        cur_c_pos = forward_kinematics(self.robot_model, self.robot_data, cur_j_pos)[0]
-        jac = jacobian(self.robot_model, self.robot_data, cur_j_pos)[:3, :self.n_joints]
+    def _solve_aqp(self, x_des, v_des, q_cur, dq_anchor):
+        x_cur = forward_kinematics(self.robot_model, self.robot_data, q_cur)[0]
+        jac = jacobian(self.robot_model, self.robot_data, q_cur)[:3, :self.n_joints]
         N_J = scipy.linalg.null_space(jac)
-        b = np.linalg.lstsq(jac, des_c_vel + ((des_c_pos - cur_c_pos) / self.dt), rcond=None)[0]
+        b = np.linalg.lstsq(jac, v_des + ((x_des - x_cur) / self.env_info['dt']), rcond=None)[0]
 
-        P = (N_J.T @ np.diag(self.weights) @ N_J) / 2
-        q = b.T @ np.diag(self.weights) @ N_J
+        P = (N_J.T @ np.diag(self.anchor_weights) @ N_J) / 2
+        q = (b - dq_anchor).T @ np.diag(self.anchor_weights) @ N_J
         A = N_J.copy()
-        # u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
-        #                (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
-        # l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
-        #                (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
+        u = np.minimum(self.env_info['robot']['joint_vel_limit'][1] * 0.92,
+                       (self.env_info['robot']['joint_pos_limit'][1] * 0.92 - q_cur) / self.env_info['dt']) - b
+        l = np.maximum(self.env_info['robot']['joint_vel_limit'][0] * 0.92,
+                       (self.env_info['robot']['joint_pos_limit'][0] * 0.92 - q_cur) / self.env_info['dt']) - b
 
-        u = self.env_info['robot']['joint_vel_limit'][1] * 0.92 - b
-        l = self.env_info['robot']['joint_vel_limit'][0] * 0.92 - b
+        if np.any(u <= l):
+            u = self.env_info['robot']['joint_vel_limit'][1] * 0.92 - b
+            l = self.env_info['robot']['joint_vel_limit'][0] * 0.92 - b
 
         solver = osqp.OSQP()
         solver.setup(P=sparse.csc_matrix(P), q=q, A=sparse.csc_matrix(A), l=l, u=u, verbose=False, polish=False)
