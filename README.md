@@ -233,5 +233,5 @@ for i in range(5):
         obs = env.reset()
 ```
 
-### Icon Attribution
+## Icon Attribution
 The icon is based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) icon as can be found [here](https://gymnasium.farama.org/_static/img/gymnasium_black.svg).
