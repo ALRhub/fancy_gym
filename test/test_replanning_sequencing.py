@@ -93,6 +93,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
     for i in range(25):
         if done:
             env.reset(seed=SEED)
+            ugly_hack_to_mitigate_metaworld_bug(env)  # TODO: Remove, when metaworld fixed it upstream
         action = env.action_space.sample()
         _obs, _reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
