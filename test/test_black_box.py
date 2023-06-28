@@ -286,7 +286,7 @@ def test_learn_delay(mp_type: str, delay: float):
         action = env.action_space.sample()
         action[0] = delay
 
-        _obs, _reward, terminated, truncated, info = env.step(env.action_space.sample())
+        _obs, _reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 
         length = info['trajectory_length']
