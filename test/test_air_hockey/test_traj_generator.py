@@ -6,12 +6,12 @@ from fancy_gym.black_box.factory.trajectory_generator_factory import get_traject
 
 import fancy_gym
 import matplotlib.pyplot as plt
+from test_utils import plot_trajs, plot_trajs_cart
 
 
 class TrajectoryGenerator:
-    def __init__(self, env_info, generator_kwargs):
+    def __init__(self, env_info, **kwargs):
         self.env_info = env_info
-        self.generator_kwargs = generator_kwargs
 
         # init condition
         self.init_t = np.array([0])
@@ -30,11 +30,11 @@ class TrajectoryGenerator:
         self.prev_c_vel = self.init_c_vel
 
         # setting for mp_pytorch
-        self.dt = 0.001
-        self.duration = 3.0
-        phase_generator_kwargs = generator_kwargs['phase_generator_kwargs']
-        basis_generator_kwargs = generator_kwargs['basis_generator_kwargs']
-        trajectory_generator_kwargs = generator_kwargs['trajectory_generator_kwargs']
+        self.dt = 0.02
+        self.duration = 2.0
+        phase_generator_kwargs = kwargs['phase_generator_kwargs']
+        basis_generator_kwargs = kwargs['basis_generator_kwargs']
+        trajectory_generator_kwargs = kwargs['trajectory_generator_kwargs']
         phase_gen = get_phase_generator(**phase_generator_kwargs)
         basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_generator_kwargs)
         self.traj_gen = get_trajectory_generator(basis_generator=basis_gen, **trajectory_generator_kwargs)
@@ -111,7 +111,7 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
     env_info = env.env_info
 
     # create trajectory generator
-    traj_gen = TrajectoryGenerator(env_info, traj_gen_kwargs)
+    traj_gen = TrajectoryGenerator(env_info, **traj_gen_kwargs)
 
     # weights
     weights = [np.array([+0.7409, -0.7242, +1.0680, -0.7881, -0.3357,
@@ -130,7 +130,7 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
     plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
 
     replan_time = [0, 0.5, 1.0, 1.5]
-    traj_length = [25, 25, 25, 150]
+    traj_length = [25, 25, 25, 25]
     colors = ['red', 'green', 'blue', 'yellow']
     list_c_pos = []
     list_c_vel = []
@@ -141,6 +141,7 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
         weight = weights[i]
         cur_t = t
         traj_c_pos, traj_c_vel = traj_gen.generate_trajectory(weight, cur_t, cur_c_pos, cur_c_vel)
+        # plot_trajs(traj_c_pos, traj_c_vel, 0, 99, False, False, 3)
         plt.plot(traj_c_pos[:l, 0] - 1.51, traj_c_pos[:l, 1], color=colors[i])
         cur_c_pos = traj_c_pos[l-1]
         cur_c_vel = traj_c_vel[l-1]

@@ -65,14 +65,14 @@ def test_mp():
 
 def test_prodmp():
     for phase_type in ['exp']:
-        phase_kwargs = {'phase_generator_type': phase_type, 'tau': 3.0, 'delay': 0.0}
+        phase_kwargs = {'phase_generator_type': phase_type, 'tau': 2.0, 'delay': 0.0, 'alpha_phase': 4}
         phase_gen = get_phase_generator(**phase_kwargs)
-        duration = 3.0
+        duration = 2.0
         dt = 0.02
         times = tc.linspace(0, duration, round(duration/dt)+1)
         phase = phase_gen.phase(times)
-        # plt.plot(steps, phase)
-        # plt.show()
+        plt.plot(times, phase)
+        plt.show()
 
         for basis_type in ['prodmp']:
             basis_kwargs = {'basis_generator_type': basis_type,

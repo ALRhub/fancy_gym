@@ -6,7 +6,7 @@ import numpy as np
 from scipy.interpolate import CubicSpline
 import matplotlib.pyplot as plt
 
-from test_utils import plot_trajs, plot_trajs_cart
+from test_utils import plot_trajs_j, plot_trajs_c
 from test_traj_generator import TrajectoryGenerator
 from test_traj_optimizer import TrajectoryOptimizer
 
@@ -42,7 +42,7 @@ trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
 traj_gen_kwargs = {'phase_generator_kwargs': phase_generator_kwargs,
                    'basis_generator_kwargs': basis_generator_kwargs,
                    'trajectory_generator_kwargs': trajectory_generator_kwargs}
-traj_opt_kwargs = None
+traj_opt_kwargs = {}
 
 
 def test_cart_agent(env_id='7dof-hit', seed=0):
@@ -53,8 +53,8 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
     env_info = env.env_info
 
     # create traj_generator and traj_optimizer
-    traj_gen = TrajectoryGenerator(env_info, traj_gen_kwargs)
-    traj_opt = TrajectoryOptimizer(env_info, traj_opt_kwargs)
+    traj_gen = TrajectoryGenerator(env_info, **traj_gen_kwargs)
+    traj_opt = TrajectoryOptimizer(env_info, **traj_opt_kwargs)
 
     # init condition
     init_t = 0
@@ -89,6 +89,8 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
     cur_j_pos = init_j_pos
     cur_j_vel = init_j_vel
     cur_j_acc = init_j_acc
+    list_traj_c = []
+    list_traj_j = []
     for i, l in enumerate(traj_length):
         # generate trajectory
         weight = weights[i]
@@ -99,6 +101,7 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
 
         # optimize trajectory
         traj_c = np.hstack([traj_c_pos[:l], traj_c_vel[:l]])
+        list_traj_c.append(traj_c.reshape([traj_c.shape[0], 2, -1]).copy())
         success, traj_j_pos = traj_opt.optimize_trajectory(traj_c, cur_j_pos, cur_j_vel, None)
         t = np.linspace(0, traj_j_pos.shape[0], traj_j_pos.shape[0] + 1) * 0.02
         f = CubicSpline(t, np.vstack([cur_j_pos, traj_j_pos]), axis=0, bc_type=((1, cur_j_vel),  (2, cur_j_acc)))
@@ -110,6 +113,7 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
 
         # execute traj
         traj_j = np.stack([f(t[1:]), df(t[1:])]).swapaxes(0, 1)
+        list_traj_j.append(traj_j)
         for j in traj_j:
             act = np.hstack([j[0], j[1]])
             obs_, rew, done, info = env.step(act)
@@ -136,6 +140,12 @@ def test_cart_agent(env_id='7dof-hit', seed=0):
         ee_vel_world = env.base_env.get_ee()[1][3:]
         ee_vel_robot = ee_vel_world
         cur_c_vel = ee_vel_robot
+
+    traj_c = np.vstack(list_traj_c)
+    traj_j = np.vstack(list_traj_j)
+    np.save('test_acc_action/traj_c.npy', traj_c)
+    np.save('test_acc_action/traj_j.npy', traj_j)
+    print("done")
 
 
 if __name__ == "__main__":

@@ -13,14 +13,12 @@ from air_hockey_challenge.utils.kinematics import forward_kinematics, inverse_ki
 
 
 class TrajectoryOptimizer:
-    def __init__(self, env_info, optimizer_kwargs=None):
+    def __init__(self, env_info, **kwargs):
         self.env_info = env_info
         self.robot_model = copy.deepcopy(env_info['robot']['robot_model'])
         self.robot_data = copy.deepcopy(env_info['robot']['robot_data'])
         self.n_joints = self.env_info['robot']['n_joints']
         self.dt = env_info['dt']
-
-        self.optimizer_kwargs = optimizer_kwargs
 
         if self.n_joints == 3:
             self.anchor_weights = np.ones(3)
