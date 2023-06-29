@@ -189,9 +189,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             replan = self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
                                               t + 1 + self.current_traj_steps)
             if done or (replan and self.plan_steps < self.max_planning_times):
+
                 self.condition_pos = self.current_des_pos if self.condition_on_desired else None
                 self.condition_vel = self.current_des_vel if self.condition_on_desired else None
-                print(self.condition_pos, self.condition_vel)
                 break
 
         infos.update({k: v[:t + 1] for k, v in infos.items()})
