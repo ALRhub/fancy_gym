@@ -62,7 +62,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
-
         self.observation_space = self._get_observation_space()
 
         # rendering
@@ -107,14 +106,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
-        # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
+
         position = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
-
-        # if self.do_replanning:
-        #     # Remove first part of trajectory as this is already over
-        #     position = position[self.current_traj_steps:]
-        #     velocity = velocity[self.current_traj_steps:]
 
         return position, velocity
 
@@ -192,16 +186,15 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 else:
                     self.env.render(**self.render_kwargs)
 
-            if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                t + 1 + self.current_traj_steps)
-                    and self.plan_steps < self.max_planning_times):
-
-                self.condition_pos = pos if self.condition_on_desired else None
-                self.condition_vel = vel if self.condition_on_desired else None
-
+            replan = self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
+                                              t + 1 + self.current_traj_steps)
+            if done or (replan and self.plan_steps < self.max_planning_times):
+                self.condition_pos = self.current_des_pos if self.condition_on_desired else None
+                self.condition_vel = self.current_des_vel if self.condition_on_desired else None
+                print(self.condition_pos, self.condition_vel)
                 break
 
-        infos.update({k: v[:t+1] for k, v in infos.items()})
+        infos.update({k: v[:t + 1] for k, v in infos.items()})
         self.current_traj_steps += t + 1
 
         if len(frames) != 0:
@@ -227,6 +220,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.current_traj_steps = 0
         self.plan_steps = 0
         self.traj_gen.reset()
-        self.condition_vel = None
         self.condition_pos = None
+        self.condition_vel = None
         return super(BlackBoxWrapper, self).reset()

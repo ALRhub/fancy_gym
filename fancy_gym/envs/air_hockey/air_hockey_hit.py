@@ -5,9 +5,7 @@ from gym import spaces, utils
 from gym.core import ObsType, ActType
 from fancy_gym.envs.air_hockey.air_hockey import AirHockeyGymBase
 
-# from air_hockey_challenge.utils import robot_to_world
 # from air_hockey_challenge.framework import AirHockeyChallengeWrapper
-# from air_hockey_challenge.environments.planar import AirHockeyHit, AirHockeyDefend
 from air_hockey_challenge.utils import forward_kinematics, robot_to_world
 
 MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT = 150  # default is 500, recommended 120
@@ -15,13 +13,14 @@ MAX_EPISODE_STEPS_AIR_HOCKEY_7DOF_HIT = 150  # default is 500, recommended 120
 
 
 class AirHockeyGymHit(AirHockeyGymBase):
-    def __init__(self, env_id=None,
+    def __init__(self,
+                 env_id=None,
                  interpolation_order=None,
                  custom_reward_function=None,
-                 check_step=True,
-                 check_traj=True,
-                 check_traj_length=-1,
-                 early_stop=False,
+                 check_step: bool = True,
+                 check_step_stop: bool = False,
+                 check_traj: bool = True,
+                 check_traj_length: list = None,
                  wait_puck=False):
 
         custom_reward_functions = {
@@ -49,7 +48,9 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if interpolation_order is None:
             self.dt = 0.001
         else:
-            self.dt = 0.02
+            self.dt = 0.001
+
+        # horizon
         if '3dof' in env_id:
             self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY_3DOF_HIT
         else:
@@ -84,12 +85,13 @@ class AirHockeyGymHit(AirHockeyGymBase):
 
         # validity checking
         self.check_step = check_step
+        self.check_step_stop = check_step_stop
         self.check_traj = check_traj
+        self.check_traj_length = [-1] if check_traj_length is None else check_traj_length
         self.step_penalty_coef = 0.05
         self.traj_penalty_coef = 1
-        self.check_traj_length = check_traj_length
 
-        self.early_stop = early_stop
+        # if wait puck
         self.wait_puck = wait_puck
         self.wait_puck_steps = 0
 
@@ -128,7 +130,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
 
         # check step validity
         step_validity, step_penalty = self.check_step_validity(info)
-        if not step_validity and self.early_stop:
+        if not step_validity and self.check_step_stop:
             return obs, step_penalty, True, info
 
         rew = rew if step_validity else rew + step_penalty
@@ -149,7 +151,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
         validity, penalty = True, 0
         if self.check_step:
             coef = (self.horizon - self._episode_steps) / self.horizon
-            if self.early_stop:
+            if self.check_step_stop:
                 ee_constr = np.array(np.any(info['constraints_value']['ee_constr'] > 0), dtype=np.float32)
                 # jerk_constr = np.array((info['jerk'] > 1e4), dtype=np.float32).mean()
                 j_pos_constr = np.array((info['constraints_value']['joint_pos_constr'] > 0), dtype=np.float32).mean()

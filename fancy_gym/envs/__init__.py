@@ -1400,9 +1400,10 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'
     kwargs_dict_ah_prodmp['controller_kwargs']['dof'] = 7
     kwargs_dict_ah_prodmp['black_box_kwargs']['duration'] = 3
-    kwargs_dict_ah_prodmp['black_box_kwargs']['max_planning_times'] = 3
+    kwargs_dict_ah_prodmp['black_box_kwargs']['max_planning_times'] = 4
     kwargs_dict_ah_prodmp['black_box_kwargs']['replanning_schedule'] = lambda pos, vel, obs, action, t: t % 25 == 0
-    kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = False
+    kwargs_dict_ah_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_ah_prodmp['black_box_kwargs']['verbose'] = 2
     kwargs_dict_ah_prodmp['name'] = _v
     register(
         id=_env_id,

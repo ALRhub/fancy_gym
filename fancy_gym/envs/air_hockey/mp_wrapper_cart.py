@@ -21,6 +21,14 @@ class AirHockeyCartMPWrapper(RawInterfaceWrapper):
         return ee_vel_robot[:2]
         # return np.array([0, 0, 0])[:2]
 
+    @property
+    def current_des_pos(self):
+        return self.prev_c_pos[:2]
+
+    @property
+    def current_des_vel(self):
+        return self.prev_c_vel[:2]
+
     def set_episode_arguments(self, action, pos_traj, vel_traj):
         if self.dof == 3:
             pos_traj = np.hstack([pos_traj, 1.0e-1 * np.ones([pos_traj.shape[0], 1])])
@@ -36,7 +44,7 @@ class AirHockeyCartMPWrapper(RawInterfaceWrapper):
         return self.check_traj_validity(action, pos_traj, vel_traj)
 
     def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
-                              return_contextual_obs):
+                              return_contextual_obs=True):
         obs, trajectory_return, done, infos = self.get_invalid_traj_return(action, pos_traj, vel_traj)
         if issubclass(self.env.__class__, TimeAwareObservation):
             obs = np.append(obs, np.array([0], dtype=obs.dtype))

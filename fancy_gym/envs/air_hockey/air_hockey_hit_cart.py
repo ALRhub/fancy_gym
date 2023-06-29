@@ -11,18 +11,38 @@ from scipy.interpolate import CubicSpline
 class AirHockeyGymHitCart(AirHockeyGymHit):
     def __init__(self, env_id=None,
                  interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1,
-                 early_stop=False, wait_puck=False):
+                 check_step=True, check_step_stop=False,
+                 check_traj=True, check_traj_length=-1,
+                 wait_puck=False):
         super().__init__(env_id=env_id,
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
+                         check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
-                         early_stop=early_stop,
                          wait_puck=wait_puck)
 
         self.traj_opt = TrajectoryOptimizer(self.env_info)
+
+        if self.dof == 3:
+            self.prev_c_pos = np.array([0.65, 0., 0.1645])
+            self.prev_c_vel = np.array([0, 0, 0])
+        else:
+            self.prev_c_pos = np.array([0.65, 0., 0.1000])
+            self.prev_c_vel = np.array([0, 0, 0])
+
+        if interpolation_order is not None:
+            self.dt = 0.02
+
+    def reset(self, **kwargs):
+        if self.dof == 3:
+            self.prev_c_pos = np.array([0.65, 0., 0.1645])
+            self.prev_c_vel = np.zeros([0, 0, 0])
+        else:
+            self.prev_c_pos = np.array([0.65, 0., 0.1000])
+            self.prev_c_vel = np.zeros([0, 0, 0])
+        return super().reset(**kwargs)
 
     def optimize_traj(self, traj_c_pos, traj_c_vel):
         # boundary condition
@@ -66,6 +86,8 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
             if invalid_tau or invalid_delay or invalid_ee:
                 return False, sub_traj_c_pos, sub_traj_c_vel
 
+        self.prev_c_pos = sub_traj_c_pos[-1]
+        self.prev_c_vel = sub_traj_c_vel[-1]
         # optimize traj
         sub_traj_j_pos, sub_traj_j_vel = self.optimize_traj(sub_traj_c_pos, sub_traj_c_vel)
         return True, sub_traj_j_pos, sub_traj_j_vel
@@ -133,27 +155,29 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
 
 class AirHockey3DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1,
-                 early_stop=False, wait_puck=False):
+                 check_step=True, check_step_stop=False,
+                 check_traj=True, check_traj_length=-1,
+                 wait_puck=False):
         super().__init__(env_id="3dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
+                         check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
-                         early_stop=early_stop,
                          wait_puck=wait_puck)
 
 
 class AirHockey7DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
-                 check_step=True, check_traj=True, check_traj_length=-1,
-                 early_stop=False, wait_puck=False):
+                 check_step=True, check_step_stop=False,
+                 check_traj=True, check_traj_length=-1,
+                 wait_puck=False):
         super().__init__(env_id="7dof-hit",
                          interpolation_order=interpolation_order,
                          custom_reward_function=custom_reward_function,
                          check_step=check_step,
+                         check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
-                         early_stop=early_stop,
                          wait_puck=wait_puck)

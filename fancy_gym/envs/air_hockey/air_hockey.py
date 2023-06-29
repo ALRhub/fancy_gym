@@ -61,12 +61,13 @@ class AirHockeyGymBase(gym.Env):
         self.horizon = MAX_EPISODE_STEPS_AIR_HOCKEY
 
         # action related
+        self.prev_pos = np.zeros([1, self.dof])
         self.prev_vel = np.zeros([1, self.dof])
 
     def reset(self, **kwargs) -> Union[ObsType, Tuple[ObsType, dict]]:
-        self.prev_vel = np.zeros([1, self.dof])
-
         self._episode_steps = 0
+        self.prev_pos = np.zeros([1, self.dof])
+        self.prev_vel = np.zeros([1, self.dof])
         return np.array(self.env.reset(), dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
@@ -93,12 +94,11 @@ class AirHockeyGymBase(gym.Env):
                 act = np.reshape(action, [3, -1])
 
         obs, rew, done, info = self.env.step(act)
-        obs = np.array(obs, dtype=np.float32)
 
         self._episode_steps += 1
         done = True if self._episode_steps >= self.horizon else done
 
-        return obs, rew, done, info
+        return np.array(obs, dtype=np.float32), rew, done, info
 
     def render(self, mode="human"):
         if mode == "human":

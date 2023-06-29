@@ -97,7 +97,7 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return True
 
-    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
+    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray, **kwargs) -> Tuple[np.ndarray, float, bool, dict]:
         """
         Used to return a artificial return from the env if the desired trajectory is invalid.
         Args:

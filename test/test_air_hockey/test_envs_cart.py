@@ -3,7 +3,7 @@ import time
 import random
 import numpy as np
 
-from test_utils import plot_trajs
+from test_utils import plot_trajs_j, plot_trajs_c
 import fancy_gym
 
 import matplotlib.pyplot as plt
@@ -75,7 +75,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
                 traj_pos, traj_vel = env.get_trajectory(act)
                 traj_pos = np.vstack([current_pos, traj_pos])
                 traj_vel = np.vstack([current_vel, traj_vel])
-                plot_trajs(traj_pos, traj_vel, start_index=0, end_index=150, plot_sampling=True, plot_constrs=True, dof=7)
+                plot_trajs_j(traj_pos, traj_vel, start_index=0, end_index=150, plot_sampling=True, plot_constrs=True, dof=7)
 
             obs, rew, done, info = env.step(act)
 
@@ -130,7 +130,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
             pos, vel = env.get_trajectory(act)
             pos_list.append(pos), vel_list.append(vel)
             obs, rew, done, info = env.step(act)
-            print(info['compute_time_ms'])
+            # print(info['compute_time_ms'])
             if True:
                 print('*'*20, 'segment', len(pos_list)-1, '*'*20)
                 print('Return: ', np.sum(rew))
