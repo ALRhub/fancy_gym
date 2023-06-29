@@ -17,7 +17,8 @@ class AirHockeyGymBase(gym.Env):
     """
     metadata = {"render_modes": ["human", "rgb_array"]}
 
-    def __init__(self, env_id, interpolation_order=3, custom_reward_function=None, **kwargs):
+    def __init__(self, env_id, interpolation_order=3, custom_reward_function=None,
+                 add_obs_noise=False, use_obs_estimator=False, **kwargs):
         super().__init__()
         # base environment
         self.env = AirHockeyChallengeWrapper(env=env_id,
@@ -64,11 +65,19 @@ class AirHockeyGymBase(gym.Env):
         self.prev_pos = np.zeros([1, self.dof])
         self.prev_vel = np.zeros([1, self.dof])
 
+        # sim-to-real
+        self.add_obs_noise = add_obs_noise
+        self.use_obs_estimator = use_obs_estimator
+
     def reset(self, **kwargs) -> Union[ObsType, Tuple[ObsType, dict]]:
         self._episode_steps = 0
         self.prev_pos = np.zeros([1, self.dof])
         self.prev_vel = np.zeros([1, self.dof])
-        return np.array(self.env.reset(), dtype=np.float32)
+
+        obs = np.array(self.env.reset(), dtype=np.float32)
+        obs = self.add_noise(obs) if self.add_obs_noise else obs
+
+        return np.array(obs, dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
 
@@ -94,6 +103,8 @@ class AirHockeyGymBase(gym.Env):
                 act = np.reshape(action, [3, -1])
 
         obs, rew, done, info = self.env.step(act)
+        obs = np.array(obs, dtype=np.float32)
+        obs = self.add_noise(obs) if self.add_obs_noise else obs
 
         self._episode_steps += 1
         done = True if self._episode_steps >= self.horizon else done
@@ -110,6 +121,12 @@ class AirHockeyGymBase(gym.Env):
 
     def seed(self, seed=None):
         self.base_env.seed(seed)
+
+    def add_noise(self, obs):
+        # only add noise to puck pos and puck vel
+        obs[0:3] += np.random.normal(loc=0, scale=0.005, size=3)
+        obs[3:6] += np.random.normal(loc=0, scale=0.050, size=3)
+        return obs
 
 
 if __name__ == "__main__":

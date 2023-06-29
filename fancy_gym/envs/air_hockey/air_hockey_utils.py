@@ -77,3 +77,8 @@ class TrajectoryOptimizer:
             vel_l = self.env_info['robot']['joint_vel_limit'][0] * 0.92
             # return False, np.clip(b, vel_l, vel_u)
             return False, b
+
+
+class KalmanFilter():
+    def __init__(self):
+        pass

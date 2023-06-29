@@ -13,6 +13,7 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
                  interpolation_order=3, custom_reward_function='HitSparseRewardV0',
                  check_step=True, check_step_stop=False,
                  check_traj=True, check_traj_length=-1,
+                 add_obs_noise: bool = False, use_obs_estimator: bool = False,
                  wait_puck=False):
         super().__init__(env_id=env_id,
                          interpolation_order=interpolation_order,
@@ -21,6 +22,8 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
                          check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
+                         add_obs_noise=add_obs_noise,
+                         use_obs_estimator=use_obs_estimator,
                          wait_puck=wait_puck)
 
         self.traj_opt = TrajectoryOptimizer(self.env_info)
@@ -157,6 +160,7 @@ class AirHockey3DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
                  check_step=True, check_step_stop=False,
                  check_traj=True, check_traj_length=-1,
+                 add_obs_noise: bool = False, use_obs_estimator: bool = False,
                  wait_puck=False):
         super().__init__(env_id="3dof-hit",
                          interpolation_order=interpolation_order,
@@ -165,6 +169,8 @@ class AirHockey3DofHitCart(AirHockeyGymHitCart):
                          check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
+                         add_obs_noise=add_obs_noise,
+                         use_obs_estimator=use_obs_estimator,
                          wait_puck=wait_puck)
 
 
@@ -172,6 +178,7 @@ class AirHockey7DofHitCart(AirHockeyGymHitCart):
     def __init__(self, interpolation_order=3, custom_reward_function='HitSparseRewardV0',
                  check_step=True, check_step_stop=False,
                  check_traj=True, check_traj_length=-1,
+                 add_obs_noise: bool = False, use_obs_estimator: bool = False,
                  wait_puck=False):
         super().__init__(env_id="7dof-hit",
                          interpolation_order=interpolation_order,
@@ -180,4 +187,6 @@ class AirHockey7DofHitCart(AirHockeyGymHitCart):
                          check_step_stop=check_step_stop,
                          check_traj=check_traj,
                          check_traj_length=check_traj_length,
+                         add_obs_noise=add_obs_noise,
+                         use_obs_estimator=use_obs_estimator,
                          wait_puck=wait_puck)

@@ -21,6 +21,8 @@ class AirHockeyGymHit(AirHockeyGymBase):
                  check_step_stop: bool = False,
                  check_traj: bool = True,
                  check_traj_length: list = None,
+                 add_obs_noise: bool = False,
+                 use_obs_estimator: bool = False,
                  wait_puck=False):
 
         custom_reward_functions = {
@@ -33,7 +35,9 @@ class AirHockeyGymHit(AirHockeyGymBase):
         }
         super().__init__(env_id=env_id,
                          interpolation_order=interpolation_order,
-                         custom_reward_function=custom_reward_functions[custom_reward_function])
+                         custom_reward_function=custom_reward_functions[custom_reward_function],
+                         add_obs_noise=add_obs_noise,
+                         use_obs_estimator=use_obs_estimator)
 
         # modify observation space
         if '3dof' in env_id:

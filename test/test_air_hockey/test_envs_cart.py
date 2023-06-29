@@ -90,7 +90,9 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
 
 def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_result=True):
     env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
-                  'check_step': False, 'check_traj': False, 'check_traj_length': [25, 25, 25, 75]}
+                  'check_step': False, 'check_step_stop': False,
+                  'check_traj': False, 'check_traj_length': [25, 25, 25, 75],
+                  'add_obs_noise':True, 'use_obs_estimator': False}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
     # weights
