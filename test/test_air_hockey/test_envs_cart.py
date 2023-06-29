@@ -159,7 +159,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                     # plt.subplot(1, 2, 2)
                     # plt.plot(step, vel[:, 0], color=colors[idx])
 
-                    plt.plot(pos[:25, 0] - 1.51, pos[:25, 1], color=colors[idx])
+                    plt.plot(pos[:500, 0] - 1.51, pos[:500, 1], color=colors[idx])
 
                     idx += 1
                 plt.plot(pos_list[-1][:75, 0] - 1.51, pos_list[-1][:75, 1], color=colors[3])
