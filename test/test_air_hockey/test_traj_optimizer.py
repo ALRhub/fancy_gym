@@ -62,7 +62,7 @@ class TrajectoryOptimizer:
         x_cur = forward_kinematics(self.robot_model, self.robot_data, q_cur)[0]
         jac = jacobian(self.robot_model, self.robot_data, q_cur)[:3, :self.n_joints]
         N_J = scipy.linalg.null_space(jac)
-        b = np.linalg.lstsq(jac, v_des + ((x_des - x_cur) / self.env_info['dt']), rcond=None)[0]
+        b = np.linalg.lstsq(jac, ((x_des - x_cur) / self.env_info['dt']), rcond=None)[0]
 
         P = (N_J.T @ np.diag(self.anchor_weights) @ N_J) / 2
         q = (b - dq_anchor).T @ np.diag(self.anchor_weights) @ N_J

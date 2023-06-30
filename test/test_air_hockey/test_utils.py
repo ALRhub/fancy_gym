@@ -177,9 +177,9 @@ def test_baseline(env_id="3dof-hit", seed=0, iteration=5):
                 print('num_jerk_violation: ', info['num_jerk_violation'])
                 print('num_j_pos_violation: ', info['num_j_pos_violation'])
                 print('num_j_vel_violation: ', info['num_j_vel_violation'])
-                plot_trajs(np.array(j_pos), np.array(j_vel), plot_constrs=True, plot_sampling=False, dof=7)
-                plot_trajs(np.array(ee_pos), np.array(ee_vel), plot_constrs=False, plot_sampling=False, dof=3)
-                plot_trajs(np.array(puck_pos), np.array(puck_vel), plot_constrs=False, plot_sampling=False, dof=3)
+                plot_trajs_j(np.array(j_pos), np.array(j_vel), plot_constrs=True, plot_sampling=False, dof=7)
+                plot_trajs_j(np.array(ee_pos), np.array(ee_vel), plot_constrs=False, plot_sampling=False, dof=3)
+                plot_trajs_j(np.array(puck_pos), np.array(puck_vel), plot_constrs=False, plot_sampling=False, dof=3)
                 break
 
 

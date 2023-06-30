@@ -35,8 +35,8 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
             self.prev_c_pos = np.array([0.65, 0., 0.1000])
             self.prev_c_vel = np.array([0, 0, 0])
 
-        # if interpolation_order is not None:
-        #     self.dt = 0.02
+        if interpolation_order is not None:
+            self.dt = 0.02
 
     def reset(self, **kwargs):
         if self.dof == 3:

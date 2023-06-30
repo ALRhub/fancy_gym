@@ -6,7 +6,9 @@ from fancy_gym.black_box.factory.trajectory_generator_factory import get_traject
 
 import fancy_gym
 import matplotlib.pyplot as plt
-from test_utils import plot_trajs, plot_trajs_cart
+from test_utils import plot_trajs_j, plot_trajs_c
+
+from scipy.interpolate import CubicSpline
 
 
 class TrajectoryGenerator:
@@ -31,7 +33,7 @@ class TrajectoryGenerator:
 
         # setting for mp_pytorch
         self.dt = 0.02
-        self.duration = 2.0
+        self.duration = 3.0
         phase_generator_kwargs = kwargs['phase_generator_kwargs']
         basis_generator_kwargs = kwargs['basis_generator_kwargs']
         trajectory_generator_kwargs = kwargs['trajectory_generator_kwargs']
@@ -123,6 +125,15 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
                np.array([+0.8626, +0.4412, +1.4282, -3.4969, +0.1617,
                          -0.1037, +0.3568, -0.2880, +2.9234, -0.3282])]
 
+    weights = [np.array([+0.6314, +0.4084, -0.0947, +0.3854, -0.6449,
+				         -0.0692, -0.6694, -0.3800, -0.7310, +0.4509]),
+               np.array([+0.8584, +1.0769, -0.2566, +0.4282, +0.4002,
+                         +0.0615, -0.1882, -0.2196, -0.4647,  0.0995]),
+               np.array([+0.0195,  0.5872,  0.2718,  0.7773, -0.0873,
+                         -0.1504,  0.4428, -0.0797, -0.0560, -0.2223]),
+               np.array([+0.6983,  1.3430, -0.2153,  0.7500,  -0.6024,
+                        +0.5774, -0.0146, -0.0507,  0.2924, -0.2909])]
+
     # plot
     plt.hlines(-env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
     plt.hlines(+env_info['table']['width'] / 2, xmin=-1.1, xmax=+1.1)
@@ -130,45 +141,65 @@ def test_traj_generator(env_id='7dof-hit', seed=0, traj_gen_kwargs=None):
     plt.vlines(+env_info['table']['length'] / 2, ymin=-0.6, ymax=+0.6)
 
     replan_time = [0, 0.5, 1.0, 1.5]
-    traj_length = [25, 25, 25, 25]
+    traj_length = [25, 25, 25, 75]
     colors = ['red', 'green', 'blue', 'yellow']
     list_c_pos = []
     list_c_vel = []
     traj_gen.reset()
     cur_c_pos = np.array([0.65, 0., 0.1645])
     cur_c_vel = np.array([0, 0, 0])
+    cur_c_acc = np.array([0, 0, 0])
+    list_c_pos.append(cur_c_pos)
+    list_c_vel.append(cur_c_vel)
     for i, [t, l] in enumerate(zip(replan_time, traj_length)):
         weight = weights[i]
         cur_t = t
         traj_c_pos, traj_c_vel = traj_gen.generate_trajectory(weight, cur_t, cur_c_pos, cur_c_vel)
-        # plot_trajs(traj_c_pos, traj_c_vel, 0, 99, False, False, 3)
-        plt.plot(traj_c_pos[:l, 0] - 1.51, traj_c_pos[:l, 1], color=colors[i])
-        cur_c_pos = traj_c_pos[l-1]
-        cur_c_vel = traj_c_vel[l-1]
+        traj_c_pos, traj_c_vel = traj_c_pos[:l], traj_c_vel[:l]
+
+        t = np.linspace(0, traj_c_pos.shape[0], traj_c_pos.shape[0] + 1) * 0.02
+        f = CubicSpline(t, np.vstack([cur_c_pos, traj_c_pos]), axis=0, bc_type=((1, cur_c_vel),  (2, cur_c_acc)))
+        df = f.derivative(1)
+        ddf = f.derivative(2)
+
+        # plot_trajs_j(traj_c_pos, traj_c_vel, 0, 99, False, False, 3)
+        # plt.plot(f(t[1:])[:, 0] - 1.51, f(t[1:])[:, 1], color=colors[i])
+        plt.plot(f(t[1:])[:, 0] - 1.51, f(t[1:])[:, 1], color=colors[i])
+        # cur_c_pos = f(t[-1])
+        # cur_c_vel = df(t[-1])
+        # cur_c_acc = ddf(t[-1])
+        #
+        # list_c_pos.append(f(t[1:]))
+        # list_c_vel.append(df(t[1:]))
+        #
+        cur_c_pos = traj_c_pos[-1]
+        cur_c_vel = traj_c_vel[-1]
+        cur_c_acc = ddf(t[-1])
+
+        list_c_pos.append(traj_c_pos)
+        list_c_vel.append(traj_c_vel)
         # plt.scatter(pos[-1, 0] - 1.51, pos[-1, 1], marker='1', s=100)
         # plot_trajs(position=pos[:150], velocity=vel[:150], plot_constrs=False, plot_sampling=False, dof=3)
     plt.show()
-    # plot_trajs(np.concatenate(j_pos, axis=0), np.concatenate(j_vel, axis=0),
-    #            plot_constrs=False, plot_sampling=False, dof=3)
-
+    # plot_trajs_j(np.vstack(list_c_pos), np.vstack(list_c_vel), 0, 140, False, False, 3)
 
 phase_generator_kwargs = {'phase_generator_type': 'exp',
-                          # 'delay': 0,
+                          'delay': 0,
                           'tau': 3.0,
                           'alpha_phase': 3}
 basis_generator_kwargs = {'basis_generator_type': 'prodmp',
                           'num_basis': 4,
                           'alpha': 15,
-                          'basis_bandwidth_factor': 3}
+                          'basis_bandwidth_factor': 3.0}
 trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
-                               'duration': 2.0,
+                               'duration': 3.0,
                                'action_dim': 2,
-                               'weights_scale': 1.0,
-                               'goal_scale': 1.0,
+                               'weights_scale': 0.4,
+                               'goal_scale': 0.4,
                                'goal_offset': 1.0,
                                'disable_weights': False,
                                'disable_goal': False,
-                               'relative_goal': False,
+                               'relative_goal': True,
                                'auto_scale_basis': True}
 
 if __name__ == '__main__':
