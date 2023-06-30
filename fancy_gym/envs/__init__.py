@@ -1390,11 +1390,11 @@ for _v in _versions:
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['num_basis'] = 4
     kwargs_dict_ah_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['action_dim'] = 2
-    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 1.0
-    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 1.0
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.5
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.5
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_weights'] = False
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['disable_goal'] = False
-    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = False
+    kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['relative_goal'] = True
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
     kwargs_dict_ah_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
     kwargs_dict_ah_prodmp['controller_kwargs']['controller_type'] = 'air_hockey'

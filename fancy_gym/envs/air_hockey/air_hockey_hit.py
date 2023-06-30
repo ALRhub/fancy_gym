@@ -64,13 +64,13 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if '3dof' in env_id:
             self.constr_j_pos = np.array([[-2.81, +2.81], [-1.70, +1.70], [-1.98, +1.98]])
             self.constr_j_vel = np.array([[-1.49, +1.49], [-1.49, +1.49], [-1.98, +1.98]])
-            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.080, +0.120]])
+            self.constr_ee = np.array([[+0.585, +1.285], [-0.470, +0.470], [+0.080, +0.120]])
         else:
             self.constr_j_pos = np.array([[-2.967, +2.967], [-2.094, +2.094], [-2.967, +2.967], [-2.094, +2.094],
                                           [-2.967, +2.967], [-2.094, +2.094], [-3.053, +3.054]])
             self.constr_j_vel = np.array([[-1.483, +1.483], [-1.483, +1.483], [-1.745, +1.745], [-1.308, +1.308],
                                           [-2.268, +2.268], [-2.356, +2.356], [-2.356, +2.356]])
-            self.constr_ee = np.array([[+0.585, +1.585], [-0.470, +0.470], [+0.1245, +0.2045]])
+            self.constr_ee = np.array([[+0.585, +1.285], [-0.470, +0.470], [+0.1445, +0.1845]])
 
         self.sub_traj_idx = 0
         if self.dof == 3:
@@ -166,7 +166,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
                 # jerk_constr = np.maximum(info['jerk'] - 1e4, 0).mean()
                 j_pos_constr = np.maximum(info['constraints_value']['joint_pos_constr'], 0).mean()
                 j_vel_constr = np.maximum(info['constraints_value']['joint_vel_constr'], 0).mean()
-                penalty = coef * (np.tanh(ee_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr)) / 20
+                penalty = coef * (np.tanh(ee_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr)) / 5
             validity = False if penalty > 0 else True
             penalty = -penalty if penalty > 0 else 0
 
