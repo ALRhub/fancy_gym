@@ -29,10 +29,10 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
         self.traj_opt = TrajectoryOptimizer(self.env_info)
 
         if self.dof == 3:
-            self.prev_c_pos = np.array([0.65, 0., 0.1645])
+            self.prev_c_pos = np.array([0.65, 0., 0.1000])
             self.prev_c_vel = np.array([0, 0, 0])
         else:
-            self.prev_c_pos = np.array([0.65, 0., 0.1000])
+            self.prev_c_pos = np.array([0.65, 0., 0.1645])
             self.prev_c_vel = np.array([0, 0, 0])
 
         if interpolation_order is not None:
@@ -40,11 +40,11 @@ class AirHockeyGymHitCart(AirHockeyGymHit):
 
     def reset(self, **kwargs):
         if self.dof == 3:
-            self.prev_c_pos = np.array([0.65, 0., 0.1645])
-            self.prev_c_vel = np.zeros([0, 0, 0])
-        else:
             self.prev_c_pos = np.array([0.65, 0., 0.1000])
-            self.prev_c_vel = np.zeros([0, 0, 0])
+            self.prev_c_vel = np.array([0, 0, 0])
+        else:
+            self.prev_c_pos = np.array([0.65, 0., 0.1645])
+            self.prev_c_vel = np.array([0, 0, 0])
         return super().reset(**kwargs)
 
     def optimize_traj(self, traj_c_pos, traj_c_vel):
