@@ -91,7 +91,7 @@ def test_mp_env(env_id="3dof-hit-promp", seed=0, iteration=5, plot_result=True):
 def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plot_result=True):
     env_kwargs = {'interpolation_order': 3, 'custom_reward_function': 'HitSparseRewardV2',
                   'check_step': False, 'check_step_stop': False,
-                  'check_traj': False, 'check_traj_length': [25, 25, 25, 75],
+                  'check_traj': False, 'check_traj_length': [25, 25, 100],
                   'add_obs_noise':True, 'use_obs_estimator': False}
     env = fancy_gym.make(env_id=env_id, seed=seed, **env_kwargs)
 
@@ -159,7 +159,7 @@ def test_mp_replan_env(env_id="3dof-hit-prodmp-replan", seed=0, iteration=5, plo
                     # plt.subplot(1, 2, 2)
                     # plt.plot(step, vel[:, 0], color=colors[idx])
 
-                    plt.plot(pos[:500, 0] - 1.51, pos[:500, 1], color=colors[idx])
+                    plt.plot(pos[:25, 0] - 1.51, pos[:25, 1], color=colors[idx])
 
                     idx += 1
                 plt.plot(pos_list[-1][:75, 0] - 1.51, pos_list[-1][:75, 1], color=colors[3])

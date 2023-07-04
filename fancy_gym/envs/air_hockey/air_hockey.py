@@ -77,7 +77,7 @@ class AirHockeyGymBase(gym.Env):
         obs = np.array(self.env.reset(), dtype=np.float32)
         obs = self.add_noise(obs) if self.add_obs_noise else obs
 
-        return np.array(obs, dtype=np.float32)
+        return np.array(obs[:20], dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
 
@@ -109,7 +109,7 @@ class AirHockeyGymBase(gym.Env):
         self._episode_steps += 1
         done = True if self._episode_steps >= self.horizon else done
 
-        return np.array(obs, dtype=np.float32), rew, done, info
+        return np.array(obs[:20], dtype=np.float32), rew, done, info
 
     def render(self, mode="human"):
         if mode == "human":

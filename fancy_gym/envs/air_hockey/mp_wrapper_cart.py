@@ -66,5 +66,5 @@ class AirHockey7DofHitCartMPWrapper(AirHockeyCartMPWrapper):
     @property
     def context_mask(self) -> np.ndarray:
         return np.hstack([
-            [True] * 23
+            [True] * 20
         ])

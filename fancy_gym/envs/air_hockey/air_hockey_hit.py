@@ -43,7 +43,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
         if '3dof' in env_id:
             obs_dim = 12
         else:
-            obs_dim = 23
+            obs_dim = 20
         obs_l = np.ones(obs_dim) * -10000
         obs_h = np.ones(obs_dim) * +10000
         self.observation_space = spaces.Box(low=obs_l, high=obs_h, dtype=np.float32)
@@ -127,7 +127,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
                 p_v_l = np.sqrt(p_v_x ** 2 + p_v_y ** 2)
         # print(self.wait_puck_steps)
 
-        return np.array(obs, dtype=np.float32)
+        return np.array(obs[:20], dtype=np.float32)
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
         obs, rew, done, info = super().step(action)
@@ -138,7 +138,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
             return obs, step_penalty, True, info
 
         rew = rew if step_validity else rew + step_penalty
-        return obs, rew, done, info
+        return obs[:20], rew, done, info
 
     def check_step_validity(self, info):
         info["has_hit"] = 1 if info["has_hit"] else 0
@@ -166,7 +166,7 @@ class AirHockeyGymHit(AirHockeyGymBase):
                 # jerk_constr = np.maximum(info['jerk'] - 1e4, 0).mean()
                 j_pos_constr = np.maximum(info['constraints_value']['joint_pos_constr'], 0).mean()
                 j_vel_constr = np.maximum(info['constraints_value']['joint_vel_constr'], 0).mean()
-                penalty = coef * (np.tanh(ee_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr)) / 5
+                penalty = coef * (np.tanh(ee_constr) + np.tanh(j_pos_constr) + np.tanh(j_vel_constr)) / 10
             validity = False if penalty > 0 else True
             penalty = -penalty if penalty > 0 else 0
 
