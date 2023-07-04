@@ -239,7 +239,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         box_angles = np.array([r.as_euler("xzy", degrees=True) for r in rots])
         box_angles = box_angles[:, 0] - box_angles[:, 1] + box_angles[:, 2]
         orient = [
-            np.array([np.sin(((angle % 90 + 90) % 90) * np.pi / 180.)])
+            np.array([np.sin(((angle % 90 + 90) % 90 - 45) * np.pi / 180.)])
             for angle in box_angles
         ]
         obs = np.concatenate([
@@ -538,7 +538,7 @@ class BoxPushingBinSparse(BoxPushingBin):
         height: int = 244,
     ):
         self.bin_borders = np.random.rand(NUM_BINS, 6)  # 3 dims, each 2 border values
-        self.bin_pos = np.random.rand(NUM_BINS, 2)  # 3 dims, each 2 border values
+        self.bin_pos = np.random.rand(NUM_BINS, 2)
         super(BoxPushingBinSparse, self).__init__(num_boxes, frame_skip, width, height)
         self.bin_pos = np.array(
                 [self.data.body("bin_" + str(b)).xpos[:3] for b in range(NUM_BINS)]
@@ -627,10 +627,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         parallel_bin_pos = np.repeat(
             np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
         )
-        bin_box_dist = np.abs(parallel_box_pos - parallel_bin_pos)
-        bin_box_dist[:, :, 0] = 0.05 * bin_box_dist[:, :, 0]
-        bin_box_dist[:, :, 1] = 0.95 * bin_box_dist[:, :, 1]
-        return np.sum(bin_box_dist)
+        return np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
 
     def box_under_bin(self):
         box_pos = np.array([self.data.site(c).xpos.copy()[-1] for c in self.centers])
