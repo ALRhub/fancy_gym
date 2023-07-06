@@ -105,6 +105,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             condition_vel = condition_vel[-1]
 
         self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
+        # self.traj_gen.set_initial_conditions(0, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
 
         position = get_numpy(self.traj_gen.get_traj_pos())
@@ -142,7 +143,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
-
+        self.traj_gen.phase_gn.reset()
         position, velocity = self.get_trajectory(action)
         position, velocity = self.env.set_episode_arguments(action, position, velocity)
         traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity)
