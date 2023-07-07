@@ -9,7 +9,7 @@
 
 `fancy_gym` offers a large variety of reinforcement learning environments under the unifying interface of [Gymnasium](https://gymnasium.farama.org/).
 
-We provide support (under the Gymnasium interface) for the benchmark suites [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) (DMC) and [Metaworld](https://meta-world.github.io/). If those are not sufficient and you want to create your own custom gym environments, use [this guide] https://www.gymlibrary.dev/content/environment_creation/). We highly appreciate it, if you would then submit a PR for this environment to become part of `fancy_gym`.
+We provide support (under the Gymnasium interface) for the benchmark suites [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) (DMC) and [Metaworld](https://meta-world.github.io/). If those are not sufficient and you want to create your own custom gym environments, use [this guide](https://www.gymlibrary.dev/content/environment_creation/). We highly appreciate it, if you would then submit a PR for this environment to become part of `fancy_gym`.
 
 In comparison to existing libraries, we additionally support to control agents with movement primitives, such as Dynamic Movement Primitives (DMPs) and Probabilistic Movement Primitives (ProMP).
 
