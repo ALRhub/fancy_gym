@@ -11,7 +11,7 @@ extras = {
                   'mujoco-py<2.2,>=2.1', 'gym>=0.15.4'
                   ],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
-    'mujoco': ['mujoco==2.3.6', 'gymnasium[mujoco]>0.26.0'],
+    'mujoco': ['mujoco==2.3.3', 'gymnasium[mujoco]>0.26.0'],
 }
 
 # All dependencies
