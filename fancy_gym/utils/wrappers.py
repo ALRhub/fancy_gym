@@ -1,5 +1,8 @@
 from gymnasium.spaces import Box, Dict, flatten, flatten_space
-from gym.spaces import Box as OldBox
+try:
+    from gym.spaces import Box as OldBox
+except ImportError:
+    OldBox = None
 import gymnasium as gym
 import numpy as np
 import copy
