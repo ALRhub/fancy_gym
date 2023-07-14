@@ -114,12 +114,15 @@ def register_mp(id, mp_type):
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS[mp_type].append(fancy_id)
 
 
-def bb_env_constructor(underlying_id, mp_type, step_based_kwargs={}, mp_config_override={}):
-    underlying_env = gym_make(underlying_id, **step_based_kwargs)
+def bb_env_constructor(underlying_id, mp_type, mp_config_override={}, **kwargs):
+    underlying_env = gym_make(underlying_id, **kwargs)
     env_metadata = underlying_env.metadata
 
-    config = copy.deepcopy(_BB_DEFAULTS[mp_type])
-    metadata_config = env_metadata.get('mp_config', {})
+    metadata_config = copy.deepcopy(env_metadata.get('mp_config', {}).get(mp_type, {}))
+    global_inherit_defaults = env_metadata.get('mp_config', {}).get('inherit_defaults', True)
+    inherit_defaults = metadata_config.pop('inherit_defaults', global_inherit_defaults)
+
+    config = copy.deepcopy(_BB_DEFAULTS[mp_type]) if inherit_defaults else {}
     nested_update(config, metadata_config)
     nested_update(config, mp_config_override)
 
