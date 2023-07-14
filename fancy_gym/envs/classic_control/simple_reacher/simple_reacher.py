@@ -6,6 +6,7 @@ from gymnasium import spaces
 from gymnasium.core import ObsType
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher_torque import BaseReacherTorqueEnv
+from . import MPWrapper
 
 
 class SimpleReacherEnv(BaseReacherTorqueEnv):
@@ -14,6 +15,32 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     Returns no reward until 150 time steps. This allows the agent to explore the space, but requires precise actions
     towards the end of the trajectory.
     """
+
+    metadata = {
+        'mp_config': {
+            'ProMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'p_gains': 0.6,
+                    'd_gains': 0.075,
+                },
+            },
+            'DMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'p_gains': 0.6,
+                    'd_gains': 0.075,
+                },
+                'trajectory_generator_kwargs': {
+                    'weight_scale': 50,
+                },
+                'phase_generator_kwargs': {
+                    'alpha_phase': 2,
+                },
+            },
+            'ProDMP': {},
+        }
+    }
 
     def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True,
                  allow_self_collision: bool = False, ):
@@ -126,4 +153,3 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
 
         self.fig.canvas.draw()
         self.fig.canvas.flush_events()
-

@@ -8,11 +8,41 @@ from gymnasium.core import ObsType
 from matplotlib import patches
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from . import MPWrapper
 
 MAX_EPISODE_STEPS_HOLEREACHER = 200
 
 
 class HoleReacherEnv(BaseReacherDirectEnv):
+
+    metadata = {
+        'mp_config': {
+            'ProMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'controller_type': 'velocity',
+                },
+                'trajectory_generator_kwargs': {
+                    'weight_scale': 2,
+                },
+            },
+            'DMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'controller_type': 'velocity',
+                },
+                'trajectory_generator_kwargs': {
+                    # TODO: Before it was weight scale 50 and goal scale 0.1. We now only have weight scale and thus set it to 500. Check
+                    'weight_scale': 500,
+                },
+                'phase_generator_kwargs': {
+                    'alpha_phase': 2.5,
+                },
+            },
+            'ProDMP': {},
+        }
+    }
+
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
                  allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
@@ -166,7 +196,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         # all points that are above the hole
         r, c = np.where((line_points[:, :, 0] > (self._tmp_x - self._tmp_width / 2)) & (
-                line_points[:, :, 0] < (self._tmp_x + self._tmp_width / 2)))
+            line_points[:, :, 0] < (self._tmp_x + self._tmp_width / 2)))
 
         # check if any of those points are below surface
         nr_line_points_below_surface_in_hole = np.sum(line_points[r, c, 1] < -self._tmp_depth)

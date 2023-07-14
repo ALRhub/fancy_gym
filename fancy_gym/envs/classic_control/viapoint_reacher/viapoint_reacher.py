@@ -7,9 +7,34 @@ from gymnasium import spaces
 from gymnasium.core import ObsType
 
 from fancy_gym.envs.classic_control.base_reacher.base_reacher_direct import BaseReacherDirectEnv
+from . import MPWrapper
 
 
 class ViaPointReacherEnv(BaseReacherDirectEnv):
+
+    metadata = {
+        'mp_config': {
+            'ProMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'controller_type': 'velocity',
+                },
+            },
+            'DMP': {
+                'wrappers': [MPWrapper],
+                'controller_kwargs': {
+                    'controller_type': 'velocity',
+                },
+                'trajectory_generator_kwargs': {
+                    'weight_scale': 50,
+                },
+                'phase_generator_kwargs': {
+                    'alpha_phase': 2,
+                },
+            },
+            'ProDMP': {},
+        }
+    }
 
     def __init__(self, n_links, random_start: bool = False, via_target: Union[None, Iterable] = None,
                  target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):
@@ -184,5 +209,3 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
                 plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k')
 
                 plt.pause(0.01)
-
-
