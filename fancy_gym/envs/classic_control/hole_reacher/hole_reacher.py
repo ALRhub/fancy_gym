@@ -15,34 +15,6 @@ MAX_EPISODE_STEPS_HOLEREACHER = 200
 
 class HoleReacherEnv(BaseReacherDirectEnv):
 
-    metadata = {
-        'mp_config': {
-            'ProMP': {
-                'wrappers': [MPWrapper],
-                'controller_kwargs': {
-                    'controller_type': 'velocity',
-                },
-                'trajectory_generator_kwargs': {
-                    'weight_scale': 2,
-                },
-            },
-            'DMP': {
-                'wrappers': [MPWrapper],
-                'controller_kwargs': {
-                    'controller_type': 'velocity',
-                },
-                'trajectory_generator_kwargs': {
-                    # TODO: Before it was weight scale 50 and goal scale 0.1. We now only have weight scale and thus set it to 500. Check
-                    'weight_scale': 500,
-                },
-                'phase_generator_kwargs': {
-                    'alpha_phase': 2.5,
-                },
-            },
-            'ProDMP': {},
-        }
-    }
-
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
                  allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):

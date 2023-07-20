@@ -142,14 +142,14 @@ def register_mp(id, mp_wrapper, mp_type):
 def bb_env_constructor(underlying_id, mp_wrapper, mp_type, mp_config_override={}, **kwargs):
     raw_underlying_env = gym_make(underlying_id, **kwargs)
     underlying_env = mp_wrapper(raw_underlying_env)
-    env_metadata = underlying_env.metadata
 
-    metadata_config = copy.deepcopy(env_metadata.get('mp_config', {}).get(mp_type, {}))
-    global_inherit_defaults = env_metadata.get('mp_config', {}).get('inherit_defaults', True)
-    inherit_defaults = metadata_config.pop('inherit_defaults', global_inherit_defaults)
+    mp_config = underlying_env.get('mp_config', {})
+    active_mp_config = copy.deepcopy(mp_config.get(mp_type, {}))
+    global_inherit_defaults = mp_config.get('inherit_defaults', True)
+    inherit_defaults = active_mp_config.pop('inherit_defaults', global_inherit_defaults)
 
     config = copy.deepcopy(_BB_DEFAULTS[mp_type]) if inherit_defaults else {}
-    nested_update(config, metadata_config)
+    nested_update(config, active_mp_config)
     nested_update(config, mp_config_override)
 
     wrappers = config.pop("wrappers")

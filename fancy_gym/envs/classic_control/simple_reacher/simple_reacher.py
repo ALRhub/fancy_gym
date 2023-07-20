@@ -16,32 +16,6 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     towards the end of the trajectory.
     """
 
-    metadata = {
-        'mp_config': {
-            'ProMP': {
-                'wrappers': [MPWrapper],
-                'controller_kwargs': {
-                    'p_gains': 0.6,
-                    'd_gains': 0.075,
-                },
-            },
-            'DMP': {
-                'wrappers': [MPWrapper],
-                'controller_kwargs': {
-                    'p_gains': 0.6,
-                    'd_gains': 0.075,
-                },
-                'trajectory_generator_kwargs': {
-                    'weight_scale': 50,
-                },
-                'phase_generator_kwargs': {
-                    'alpha_phase': 2,
-                },
-            },
-            'ProDMP': {},
-        }
-    }
-
     def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True,
                  allow_self_collision: bool = False, ):
         super().__init__(n_links, random_start, allow_self_collision)
