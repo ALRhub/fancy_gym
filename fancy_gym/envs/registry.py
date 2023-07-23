@@ -35,69 +35,69 @@ class DefaultMPWrapper(RawInterfaceWrapper):
 
 _BB_DEFAULTS = {
     'ProMP': {
-        "wrappers": [],
-        "trajectory_generator_kwargs": {
+        'wrappers': [],
+        'trajectory_generator_kwargs': {
             'trajectory_generator_type': 'promp'
         },
-        "phase_generator_kwargs": {
+        'phase_generator_kwargs': {
             'phase_generator_type': 'linear'
         },
-        "controller_kwargs": {
+        'controller_kwargs': {
             'controller_type': 'motor',
-            "p_gains": 1.0,
-            "d_gains": 0.1,
+            'p_gains': 1.0,
+            'd_gains': 0.1,
         },
-        "basis_generator_kwargs": {
+        'basis_generator_kwargs': {
             'basis_generator_type': 'zero_rbf',
             'num_basis': 5,
             'num_basis_zero_start': 1,
             'basis_bandwidth_factor': 3.0,
         },
-        "black_box_kwargs": {
+        'black_box_kwargs': {
         }
     },
     'DMP': {
-        "wrappers": [],
-        "trajectory_generator_kwargs": {
+        'wrappers': [],
+        'trajectory_generator_kwargs': {
             'trajectory_generator_type': 'dmp'
         },
-        "phase_generator_kwargs": {
+        'phase_generator_kwargs': {
             'phase_generator_type': 'exp'
         },
-        "controller_kwargs": {
+        'controller_kwargs': {
             'controller_type': 'motor',
-            "p_gains": 1.0,
-            "d_gains": 0.1,
+            'p_gains': 1.0,
+            'd_gains': 0.1,
         },
-        "basis_generator_kwargs": {
+        'basis_generator_kwargs': {
             'basis_generator_type': 'rbf',
             'num_basis': 5
         },
-        "black_box_kwargs": {
+        'black_box_kwargs': {
         }
     },
     'ProDMP': {
-        "wrappers": [],
-        "trajectory_generator_kwargs": {
+        'wrappers': [],
+        'trajectory_generator_kwargs': {
             'trajectory_generator_type': 'prodmp',
             'duration': 2.0,
             'weights_scale': 1.0,
         },
-        "phase_generator_kwargs": {
+        'phase_generator_kwargs': {
             'phase_generator_type': 'exp',
             'tau': 1.5,
         },
-        "controller_kwargs": {
+        'controller_kwargs': {
             'controller_type': 'motor',
-            "p_gains": 1.0,
-            "d_gains": 0.1,
+            'p_gains': 1.0,
+            'd_gains': 0.1,
         },
-        "basis_generator_kwargs": {
+        'basis_generator_kwargs': {
             'basis_generator_type': 'prodmp',
             'alpha': 10,
             'num_basis': 5,
         },
-        "black_box_kwargs": {
+        'black_box_kwargs': {
         }
     }
 }
@@ -116,7 +116,7 @@ def register(
         **kwargs
 ):
     if not callable(mp_wrapper):  # mp_wrapper can be given as a String (same notation as for entry_point)
-        mod_name, attr_name = mp_wrapper.split(":")
+        mod_name, attr_name = mp_wrapper.split(':')
         mod = importlib.import_module(mod_name)
         mp_wrapper = getattr(mod, attr_name)
     if register_step_based:
@@ -162,13 +162,13 @@ def bb_env_constructor(underlying_id, mp_wrapper, mp_type, mp_config_override={}
     nested_update(config, _mp_config_override_register)
     nested_update(config, mp_config_override)
 
-    wrappers = config.pop("wrappers")
+    wrappers = config.pop('wrappers')
 
-    traj_gen_kwargs = config.pop("trajectory_generator_kwargs", {})
+    traj_gen_kwargs = config.pop('trajectory_generator_kwargs', {})
     black_box_kwargs = config.pop('black_box_kwargs', {})
-    contr_kwargs = config.pop("controller_kwargs", {})
-    phase_kwargs = config.pop("phase_generator_kwargs", {})
-    basis_kwargs = config.pop("basis_generator_kwargs", {})
+    contr_kwargs = config.pop('controller_kwargs', {})
+    phase_kwargs = config.pop('phase_generator_kwargs', {})
+    basis_kwargs = config.pop('basis_generator_kwargs', {})
 
     return make_bb(underlying_env,
                    wrappers=wrappers,
