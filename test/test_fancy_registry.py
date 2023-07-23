@@ -47,9 +47,9 @@ def setup():
 
 
 @pytest.mark.parametrize('env_id', ENV_IDS)
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
+@pytest.mark.parametrize('mp_type', ['ProMP', 'DMP', 'ProDMP'])
 def test_make_mp(env_id: str, mp_type: str):
-    parts = id.split('-')
+    parts = env_id.split('-')
     assert len(parts) >= 2 and parts[-1].startswith('v'), 'Malformed env id, must end in -v{int}.'
     fancy_id = '-'.join(parts[:-1]+[mp_type, parts[-1]])
 
@@ -60,10 +60,8 @@ def test_make_raw_toy():
     make('toy2-v0')
 
 
-@pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
+@pytest.mark.parametrize('mp_type', ['ProMP', 'DMP', 'ProDMP'])
 def test_make_mp_toy(mp_type: str):
-    parts = id.split('-')
-    assert len(parts) >= 2 and parts[-1].startswith('v'), 'Malformed env id, must end in -v{int}.'
     fancy_id = '-'.join(['toy2', mp_type, 'v0'])
 
     make(fancy_id)
