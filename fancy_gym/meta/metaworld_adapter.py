@@ -1,6 +1,7 @@
+from typing import Iterable, Type, Union, Optional
+
 import numpy as np
 from gymnasium import register as gym_register
-from fancy_gym import register
 
 import uuid
 
