@@ -1,9 +1,15 @@
+from typing import Iterable, Type, Union, Optional
+
 from copy import deepcopy
 
 from gymnasium import register
 
 from . import goal_object_change_mp_wrapper, goal_change_mp_wrapper, goal_endeffector_change_mp_wrapper, \
     object_change_mp_wrapper
+
+from . import metaworld_adapter
+
+metaworld_adapter.register_all_ML1()
 
 ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {"DMP": [], "ProMP": [], "ProDMP": []}
 
