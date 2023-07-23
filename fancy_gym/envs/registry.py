@@ -152,7 +152,7 @@ def bb_env_constructor(underlying_id, mp_wrapper, mp_type, mp_config_override={}
     raw_underlying_env = gym_make(underlying_id, **kwargs)
     underlying_env = mp_wrapper(raw_underlying_env)
 
-    mp_config = underlying_env.get('mp_config', {})
+    mp_config = getattr(underlying_env, 'mp_config') if hasattr(underlying_env, 'mp_config') else {}
     active_mp_config = copy.deepcopy(mp_config.get(mp_type, {}))
     global_inherit_defaults = mp_config.get('inherit_defaults', True)
     inherit_defaults = active_mp_config.pop('inherit_defaults', global_inherit_defaults)
