@@ -7,7 +7,7 @@ from fancy_gym.utils.make_env_helpers import make_bb
 from fancy_gym.utils.utils import nested_update
 
 from gymnasium import register as gym_register
-from gymnasium import gym_make
+from gymnasium import make as gym_make
 
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
@@ -135,7 +135,7 @@ def register_mp(id, mp_wrapper, mp_type, mp_config_override={}):
     parts = id.split('-')
     assert len(parts) >= 2 and parts[-1].startswith('v'), 'Malformed env id, must end in -v{int}.'
     fancy_id = '-'.join(parts[:-1]+[mp_type, parts[-1]])
-    register(
+    gym_register(
         id=fancy_id,
         entry_point=bb_env_constructor,
         kwargs={
