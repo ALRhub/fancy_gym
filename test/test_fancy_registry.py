@@ -9,7 +9,7 @@ from gymnasium.core import ActType, ObsType
 import fancy_gym
 from fancy_gym import register
 
-ENV_IDS = ['Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
+ENV_IDS = ['fancy/Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
 
 
 class Object(object):
