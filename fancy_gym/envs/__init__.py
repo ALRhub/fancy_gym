@@ -35,7 +35,7 @@ from .mujoco.table_tennis.mp_wrapper import TTVelObs_MPWrapper_Replan as MPWrapp
 # Classic Control
 # Simple Reacher
 register(
-    id='SimpleReacher-v0',
+    id='fancy/SimpleReacher-v0',
     entry_point=SimpleReacherEnv,
     mp_wrapper=MPWrapper_SimpleReacher,
     max_episode_steps=200,
@@ -45,7 +45,7 @@ register(
 )
 
 register(
-    id='LongSimpleReacher-v0',
+    id='fancy/LongSimpleReacher-v0',
     entry_point=SimpleReacherEnv,
     mp_wrapper=MPWrapper_SimpleReacher,
     max_episode_steps=200,
@@ -56,7 +56,7 @@ register(
 
 # Viapoint Reacher
 register(
-    id='ViaPointReacher-v0',
+    id='fancy/ViaPointReacher-v0',
     entry_point=ViaPointReacherEnv,
     mp_wrapper=MPWrapper_ViaPointReacher,
     max_episode_steps=200,
@@ -69,7 +69,7 @@ register(
 
 # Hole Reacher
 register(
-    id='HoleReacher-v0',
+    id='fancy/HoleReacher-v0',
     entry_point=HoleReacherEnv,
     mp_wrapper=MPWrapper_HoleReacher,
     max_episode_steps=200,
@@ -90,7 +90,7 @@ register(
 # Mujoco Reacher
 for dims in [5, 7]:
     register(
-        id=f'Reacher{dims}d-v0',
+        id=f'fancy/Reacher{dims}d-v0',
         entry_point=ReacherEnv,
         mp_wrapper=MPWrapper_Reacher,
         max_episode_steps=MAX_EPISODE_STEPS_REACHER,
@@ -100,7 +100,7 @@ for dims in [5, 7]:
     )
 
     register(
-        id=f'Reacher{dims}dSparse-v0',
+        id=f'fancy/Reacher{dims}dSparse-v0',
         entry_point=ReacherEnv,
         mp_wrapper=MPWrapper_Reacher,
         max_episode_steps=MAX_EPISODE_STEPS_REACHER,
@@ -113,7 +113,7 @@ for dims in [5, 7]:
 
 
 register(
-    id='HopperJumpSparse-v0',
+    id='fancy/HopperJumpSparse-v0',
     entry_point='fancy_gym.envs.mujoco:HopperJumpEnv',
     mp_wrapper=mujoco.hopper_jump.MPWrapper,
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
@@ -123,7 +123,7 @@ register(
 )
 
 register(
-    id='HopperJump-v0',
+    id='fancy/HopperJump-v0',
     entry_point='fancy_gym.envs.mujoco:HopperJumpEnv',
     mp_wrapper=mujoco.hopper_jump.MPWrapper,
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
@@ -137,49 +137,49 @@ register(
 
 # TODO: Add [MPs] later when finished (old TODO I moved here during refactor)
 register(
-    id='AntJump-v0',
+    id='fancy/AntJump-v0',
     entry_point='fancy_gym.envs.mujoco:AntJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_ANTJUMP,
     add_mp_types=[],
 )
 
 register(
-    id='HalfCheetahJump-v0',
+    id='fancy/HalfCheetahJump-v0',
     entry_point='fancy_gym.envs.mujoco:HalfCheetahJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HALFCHEETAHJUMP,
     add_mp_types=[],
 )
 
 register(
-    id='HopperJumpOnBox-v0',
+    id='fancy/HopperJumpOnBox-v0',
     entry_point='fancy_gym.envs.mujoco:HopperJumpOnBoxEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMPONBOX,
     add_mp_types=[],
 )
 
 register(
-    id='HopperThrow-v0',
+    id='fancy/HopperThrow-v0',
     entry_point='fancy_gym.envs.mujoco:HopperThrowEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROW,
     add_mp_types=[],
 )
 
 register(
-    id='HopperThrowInBasket-v0',
+    id='fancy/HopperThrowInBasket-v0',
     entry_point='fancy_gym.envs.mujoco:HopperThrowInBasketEnv',
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERTHROWINBASKET,
     add_mp_types=[],
 )
 
 register(
-    id='Walker2DJump-v0',
+    id='fancy/Walker2DJump-v0',
     entry_point='fancy_gym.envs.mujoco:Walker2dJumpEnv',
     max_episode_steps=MAX_EPISODE_STEPS_WALKERJUMP,
     add_mp_types=[],
 )
 
 register(  # [MPDone
-    id='BeerPong-v0',
+    id='fancy/BeerPong-v0',
     entry_point='fancy_gym.envs.mujoco:BeerPongEnv',
     mp_wrapper=MPWrapper_Beerpong,
     max_episode_steps=MAX_EPISODE_STEPS_BEERPONG,
@@ -189,7 +189,7 @@ register(  # [MPDone
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
 # only one time step, i.e. we simulate until the end of th episode
 register(
-    id='BeerPongStepBased-v0',
+    id='fancy/BeerPongStepBased-v0',
     entry_point='fancy_gym.envs.mujoco:BeerPongEnvStepBasedEpisodicReward',
     mp_wrapper=MPWrapper_Beerpong_FixedRelease,
     max_episode_steps=FIXED_RELEASE_STEP,
@@ -197,7 +197,7 @@ register(
 )
 
 register(
-    id='BeerPongFixedRelease-v0',
+    id='fancy/BeerPongFixedRelease-v0',
     entry_point='fancy_gym.envs.mujoco:BeerPongEnv',
     mp_wrapper=MPWrapper_Beerpong_FixedRelease,
     max_episode_steps=FIXED_RELEASE_STEP,
@@ -207,14 +207,14 @@ register(
 # Box pushing environments with different rewards
 for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
     register(
-        id='BoxPushing{}-v0'.format(reward_type),
+        id='fancy/BoxPushing{}-v0'.format(reward_type),
         entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
         mp_wrapper=mujoco.box_pushing.MPWrapper,
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
 
     register(
-        id='BoxPushing{}Replan-v0'.format(reward_type),
+        id='fancy/BoxPushing{}Replan-v0'.format(reward_type),
         entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
         mp_wrapper=mujoco.box_pushing.ReplanMPWrapper,
         register_step_based=False,
@@ -224,7 +224,7 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
 # Table Tennis environments
 for ctxt_dim in [2, 4]:
     register(
-        id='TableTennis{}D-v0'.format(ctxt_dim),
+        id='fancy/TableTennis{}D-v0'.format(ctxt_dim),
         entry_point='fancy_gym.envs.mujoco:TableTennisEnv',
         mp_wrapper=MPWrapper_TableTennis,
         max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
@@ -236,7 +236,7 @@ for ctxt_dim in [2, 4]:
     )
 
     register(
-        id='TableTennis{}DReplan-v0'.format(ctxt_dim),
+        id='fancy/TableTennis{}DReplan-v0'.format(ctxt_dim),
         entry_point='fancy_gym.envs.mujoco:TableTennisEnv',
         mp_wrapper=MPWrapper_TableTennis,
         max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
@@ -248,7 +248,7 @@ for ctxt_dim in [2, 4]:
     )
 
 register(
-    id='TableTennisWind-v0',
+    id='fancy/TableTennisWind-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisWind',
     mp_wrapper=MPWrapper_TableTennis_VelObs,
     add_mp_types=['ProMP', 'ProDMP'],
@@ -256,7 +256,7 @@ register(
 )
 
 register(
-    id='TableTennisWindReplan-v0',
+    id='fancy/TableTennisWindReplan-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisWind',
     mp_wrapper=MPWrapper_TableTennis_VelObs_Replan,
     add_mp_types=['ProDMP'],
@@ -264,7 +264,7 @@ register(
 )
 
 register(
-    id='TableTennisGoalSwitching-v0',
+    id='fancy/TableTennisGoalSwitching-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisGoalSwitching',
     mp_wrapper=MPWrapper_TableTennis,
     add_mp_types=['ProMP', 'ProDMP'],
@@ -275,7 +275,7 @@ register(
 )
 
 register(
-    id='TableTennisGoalSwitchingReplan-v0',
+    id='fancy/TableTennisGoalSwitchingReplan-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisGoalSwitching',
     mp_wrapper=MPWrapper_TableTennis_Replan,
     add_mp_types=['ProDMP'],
