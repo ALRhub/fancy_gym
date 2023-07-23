@@ -2,7 +2,7 @@ from typing import List, Type
 
 import gymnasium as gym
 import numpy as np
-from fancy_gym import make
+from gymnasium import make
 
 
 def run_env(env_id: str, iterations: int = None, seed: int = 0, wrappers: List[Type[gym.Wrapper]] = [],
