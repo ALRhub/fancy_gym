@@ -49,6 +49,12 @@ def _make_wrapped_env(env: gym.Env, wrappers: Iterable[Type[gym.Wrapper]], seed=
     if fallback_max_steps:
         env = ensure_finite_time(env, fallback_max_steps)
     has_black_box_wrapper = False
+    head = env
+    while hasattr(head, 'env'):
+        if isinstance(head, RawInterfaceWrapper):
+            has_black_box_wrapper = True
+            break
+        head = head.env
     for w in wrappers:
         # only wrap the environment if not BlackBoxWrapper, e.g. for vision
         if issubclass(w, RawInterfaceWrapper):
