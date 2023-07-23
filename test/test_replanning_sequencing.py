@@ -79,7 +79,8 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'}, seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            {'basis_generator_type': 'rbf'}, fallback_max_steps=MAX_STEPS_FALLBACK)
+    env.reset(seed=SEED)
 
     assert env.learn_sub_trajectories
     assert env.spec.max_episode_steps
@@ -132,7 +133,8 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': phase_generator_type},
-                            {'basis_generator_type': basis_generator_type}, seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            {'basis_generator_type': basis_generator_type}, fallback_max_steps=MAX_STEPS_FALLBACK)
+    env.reset(seed=SEED)
 
     assert env.do_replanning
     assert env.spec.max_episode_steps
@@ -181,7 +183,8 @@ def test_max_planning_times(mp_type: str, max_planning_times: int, sub_segment_s
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -213,7 +216,8 @@ def test_replanning_with_learn_tau(mp_type: str, max_planning_times: int, sub_se
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -246,7 +250,8 @@ def test_replanning_with_learn_delay(mp_type: str, max_planning_times: int, sub_
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -301,7 +306,8 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
     _ = env.reset(seed=SEED)
     done = False
     planning_times = 0
@@ -350,7 +356,8 @@ def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED, fallback_max_steps=MAX_STEPS_FALLBACK)
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
     _ = env.reset(seed=SEED)
     for i in range(max_planning_times):
         action = env.action_space.sample()

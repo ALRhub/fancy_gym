@@ -22,7 +22,7 @@ def run_env(env_id: str, iterations: int = None, seed: int = 0, wrappers: List[T
     Returns: observations, rewards, terminations, truncations, actions
 
     """
-    env: gym.Env = make(env_id, seed=seed)
+    env: gym.Env = make(env_id)
     for w in wrappers:
         env = w(env)
     rewards = []
