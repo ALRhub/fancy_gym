@@ -108,13 +108,15 @@ ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = {mp_type: [] for mp_type in KNOWN_MP
 
 def register(
         id,
-        entry_point,
+        entry_point=None,
         mp_wrapper=DefaultMPWrapper,
         register_step_based=True,  # TODO: Detect
         add_mp_types=KNOWN_MPS,
         mp_config_override={},
         **kwargs
 ):
+    if register_step_based:
+        assert entry_point != None, 'You need to provide an entry-point, when registering step-based.'
     if not callable(mp_wrapper):  # mp_wrapper can be given as a String (same notation as for entry_point)
         mod_name, attr_name = mp_wrapper.split(':')
         mod = importlib.import_module(mod_name)
