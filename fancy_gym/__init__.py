@@ -1,6 +1,6 @@
 from fancy_gym import dmc, meta, open_ai
 from fancy_gym.utils.make_env_helpers import make_bb
-from .envs.registry import register
+from .envs.registry import register, upgrade
 from .dmc import ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS
 # Convenience function for all MP environments
 from .envs import ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS

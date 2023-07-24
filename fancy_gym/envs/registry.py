@@ -126,6 +126,24 @@ def register(
     register_mps(id, mp_wrapper, add_mp_types, mp_config_override)
 
 
+def upgrade(
+        id,
+        mp_wrapper=DefaultMPWrapper,
+        add_mp_types=KNOWN_MPS,
+        mp_config_override={},
+        **kwargs
+):
+    register(
+        id,
+        entry_point=None,
+        mp_wrapper=mp_wrapper,
+        register_step_based=False,
+        add_mp_types=add_mp_types,
+        mp_config_override={},
+        **kwargs
+    )
+
+
 def register_mps(id, mp_wrapper, add_mp_types=KNOWN_MPS, mp_config_override={}):
     for mp_type in add_mp_types:
         register_mp(id, mp_wrapper, mp_type, mp_config_override.get(mp_type, {}))
