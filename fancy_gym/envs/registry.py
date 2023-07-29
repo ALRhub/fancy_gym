@@ -11,6 +11,7 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 from gymnasium import register as gym_register
 from gymnasium import make as gym_make
+from gymnasium.envs.registration import registry as gym_registry
 
 
 class DefaultMPWrapper(RawInterfaceWrapper):
@@ -117,6 +118,8 @@ def register(
         mp_config_override={},
         **kwargs
 ):
+    if register_step_based and id in gym_registry:
+        print(f'[Info] Gymnasium env with id "{id}" already exists. You should supply register_step_based=False or use fancy_gym.upgrade if you only want to register mp versions of an existing env.')
     if register_step_based:
         assert entry_point != None, 'You need to provide an entry-point, when registering step-based.'
     if not callable(mp_wrapper):  # mp_wrapper can be given as a String (same notation as for entry_point)
