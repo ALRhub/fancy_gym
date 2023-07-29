@@ -141,7 +141,7 @@ def upgrade(
         mp_wrapper=mp_wrapper,
         register_step_based=False,
         add_mp_types=add_mp_types,
-        mp_config_override={},
+        mp_config_override=mp_config_override,
         **kwargs
     )
 
