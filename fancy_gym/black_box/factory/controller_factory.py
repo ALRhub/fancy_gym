@@ -11,11 +11,11 @@ def get_controller(controller_type: str, **kwargs):
     if controller_type == "motor":
         return PDController(**kwargs)
     elif controller_type == "velocity":
-        return VelController()
+        return VelController(**kwargs)
     elif controller_type == "position":
-        return PosController()
+        return PosController(**kwargs)
     elif controller_type == "metaworld":
-        return MetaWorldController()
+        return MetaWorldController(**kwargs)
     else:
         raise ValueError(f"Specified controller type {controller_type} not supported, "
                          f"please choose one of {ALL_TYPES}.")
