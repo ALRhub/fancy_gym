@@ -114,7 +114,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     # For a ProMP
     trajectory_generator_kwargs = {'trajectory_generator_type': 'promp',
-                                   'weight_scale': 2}
+                                   'weights_scale': 2}
     phase_generator_kwargs = {'phase_generator_type': 'linear'}
     controller_kwargs = {'controller_type': 'velocity'}
     basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
@@ -124,7 +124,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     # # For a DMP
     # trajectory_generator_kwargs = {'trajectory_generator_type': 'dmp',
-    #                                'weight_scale': 500}
+    #                                'weights_scale': 500}
     # phase_generator_kwargs = {'phase_generator_type': 'exp',
     #                           'alpha_phase': 2.5}
     # controller_kwargs = {'controller_type': 'velocity'}

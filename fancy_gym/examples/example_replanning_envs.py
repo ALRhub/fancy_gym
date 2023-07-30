@@ -1,5 +1,6 @@
 import fancy_gym
 
+
 def example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1, iterations=1, render=False):
     env = fancy_gym.make(env_name, seed=seed)
     env.reset()
@@ -15,6 +16,7 @@ def example_run_replanning_env(env_name="BoxPushingDenseReplanProDMP-v0", seed=1
     env.close()
     del env
 
+
 def example_custom_replanning_envs(seed=0, iteration=100, render=True):
     # id for a step-based environment
     base_env_id = "BoxPushingDense-v0"
@@ -22,7 +24,7 @@ def example_custom_replanning_envs(seed=0, iteration=100, render=True):
     wrappers = [fancy_gym.envs.mujoco.box_pushing.mp_wrapper.MPWrapper]
 
     trajectory_generator_kwargs = {'trajectory_generator_type': 'prodmp',
-                                   'weight_scale': 1}
+                                   'weights_scale': 1}
     phase_generator_kwargs = {'phase_generator_type': 'exp'}
     controller_kwargs = {'controller_type': 'velocity'}
     basis_generator_kwargs = {'basis_generator_type': 'prodmp',

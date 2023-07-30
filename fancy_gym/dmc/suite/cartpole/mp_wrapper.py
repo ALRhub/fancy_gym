@@ -13,7 +13,7 @@ class MPWrapper(RawInterfaceWrapper):
                 'd_gains': 10,
             },
             'trajectory_generator_kwargs': {
-                'weight_scale': 0.2,
+                'weights_scale': 0.2,
             },
         },
         'DMP': {
@@ -25,7 +25,7 @@ class MPWrapper(RawInterfaceWrapper):
                 'alpha_phase': 2,
             },
             'trajectory_generator_kwargs': {
-                'weight_scale': 500,
+                'weights_scale': 500,
             },
         },
         'ProDMP': {},

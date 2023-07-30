@@ -13,7 +13,7 @@ class MPWrapper(RawInterfaceWrapper):
                 'controller_type': 'velocity',
             },
             'trajectory_generator_kwargs': {
-                'weight_scale': 2,
+                'weights_scale': 2,
             },
         },
         'DMP': {
@@ -22,7 +22,7 @@ class MPWrapper(RawInterfaceWrapper):
             },
             'trajectory_generator_kwargs': {
                 # TODO: Before it was weight scale 50 and goal scale 0.1. We now only have weight scale and thus set it to 500. Check
-                'weight_scale': 500,
+                'weights_scale': 500,
             },
             'phase_generator_kwargs': {
                 'alpha_phase': 2.5,

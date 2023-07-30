@@ -20,7 +20,7 @@ class MPWrapper(RawInterfaceWrapper):
                 'alpha_phase': 2,
             },
             'trajectory_generator_kwargs': {
-                'weight_scale': 10
+                'weights_scale': 10
             },
         },
         'ProDMP': {},
