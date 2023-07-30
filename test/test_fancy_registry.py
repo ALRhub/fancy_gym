@@ -10,6 +10,7 @@ import fancy_gym
 from fancy_gym import register
 
 ENV_IDS = ['fancy/Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
+KNOWN_NS = ['dm_controll', 'fancy', 'metaworld', 'gym']
 
 
 class Object(object):
@@ -65,3 +66,8 @@ def test_make_mp_toy(mp_type: str):
     fancy_id = '-'.join(['toy2', mp_type, 'v0'])
 
     make(fancy_id)
+
+
+@pytest.mark.parametrize('ns', KNOWN_NS)
+def test_ns_nonempty(ns):
+    assert len(fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS[ns]), f'The namespace {ns} is empty even though, it should not be...'
