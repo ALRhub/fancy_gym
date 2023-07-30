@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 from gymnasium import register as gym_register
-from .registry import register, ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS
+from .registry import register
 
 from . import classic_control, mujoco
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
