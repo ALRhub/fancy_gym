@@ -5,7 +5,7 @@ from typing import Tuple, Type, Union, Optional
 import gymnasium as gym
 import numpy as np
 import pytest
-from gymnasium import register
+from gymnasium import register, make
 from gymnasium.core import ActType, ObsType
 from gymnasium import spaces
 
@@ -68,7 +68,7 @@ def setup():
 def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                                 add_time_aware_wrapper_before: bool):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(ensure_finite_time(fancy_gym.make(env_id, SEED), MAX_STEPS_FALLBACK))
+    env_step = TimeAwareObservation(ensure_finite_time(make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
@@ -117,7 +117,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
 def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                          add_time_aware_wrapper_before: bool, replanning_time: int):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(ensure_finite_time(fancy_gym.make(env_id, SEED), MAX_STEPS_FALLBACK))
+    env_step = TimeAwareObservation(ensure_finite_time(make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
