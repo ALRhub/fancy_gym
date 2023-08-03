@@ -21,6 +21,7 @@ PUSH_DISTANCE = 0.03  # 3cm ~ 1 / 3 of box sizes
 MAX_NUM_BOXES = 10
 BOX_POS_BOUND = np.array([[0.6, -0.3, 0.06], [0.8, 0.3, 0.45]])
 BIN_SIZE = 0.2
+BOX_SIZE = 0.1
 NUM_BINS = 3
 # (ahead, lean 45 back, ahead, lean 225 front, ahead, look down, camera front)
 START_POS = np.array([0, -np.pi/8, 0.0, -np.pi*5/8, 0.0, np.pi/2, np.pi/4])
