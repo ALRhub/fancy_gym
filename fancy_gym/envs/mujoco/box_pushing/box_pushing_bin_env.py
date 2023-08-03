@@ -69,7 +69,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         self.boxes_out_bins = np.arange(num_boxes)
 
         # noise of 8deg ~ pi/21rad, ensure >95% values inside the range with 3sigma=range
-        self.noisy_start_pos = lambda : np.clip(
+        self.noisy_start_pos = lambda: np.clip(
             START_POS,  # + np.random.normal(0, np.pi / 21 / 3, START_POS.shape),
             self._q_min,
             self._q_max
@@ -93,7 +93,7 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
             x, y, z = i % 18 // 6, i % 6, i // 18  # arange in a grid
             start_idx = 7 * (1 + i + self.num_boxes)
             self.init_qpos_box_pushing[start_idx:start_idx + 7] = np.array(
-                [1.21 + x * 0.12, -0.58 + 0.23 * y , 0.2 + z * 0.12, 0, 0, 0, 0]
+                [1.21 + x * 0.12, -0.58 + 0.23 * y, 0.2 + z * 0.12, 0, 0, 0, 0]
             )
 
         # camera calibration utilities
@@ -132,13 +132,10 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
 
         self._steps += 1
         self._episode_energy += np.sum(np.square(action))
-        episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING_BIN else False
+        episode_end = self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING_BIN
 
         box_pos = [self.data.site(c).xpos.copy() for c in self.centers]
         box_pos_xyz = [b[:3] for b in box_pos]
-        box_quat = [self.data.body(box).xquat.copy() for box in self.boxes]
-        rod_tip_pos = self.data.site("rod_tip").xpos.copy()
-        rod_quat = self.data.body("push_rod").xquat.copy()
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
@@ -253,15 +250,47 @@ class BoxPushingBin(MujocoEnv, utils.EzPickle):
         return obs
 
     def robot_state(self):
+        """
+        Helper function to return robot joint positions
+
+        Return:
+            (np.array) 7D array (7 joints)
+        """
         return self.data.qpos[:7].copy()  # joint position
 
-    def pos_behind_box(self):
+    def pos_behind_box(self, pos=None, total_pos=1):
+        """
+        Returns a position 'behind' the box that is on top of the stack of active boxes.
+        Knowing the position of the bins (direction of the x-axis) relative to the work-
+        bench, the position behind the box is defined by recovering the box position
+        from the environment and then going further back inthe x-axis.
+
+        A more complicated apporach is used to interpolate over multiple positions behind
+        the box by assuming an imaginary arch behind the box. The arch essential covers
+        the box from behind and stretches from [-4/5 * BOX_SIZE, -1/2 * BOX_SIZE] in
+        x-axis and [-1/2 * BOX_SIZE, 1/2 * BOX_SIZE] in y- axis, relative to the center
+        point of the box.
+
+        If no boxes then return a position close to the START_POS.
+
+        Args:
+            pos (int): dictates where to interpolate in the arch behind the box, if None
+                then assume simple case, directly behind box
+            total_pos (int): dictates how many times the arch is interpolated
+        Rreturn:
+            (np.array) 3D position behind the box
+        """
         if len(self.boxes_out_bins) == 0:
-            return np.array([0.5, 0.0, 0.15])
+            return np.array([0.5, 0.0, 0.15])  # close to robot start postition
         box_center = self.centers[self.boxes_out_bins[0]]
-        box_pos = self.data.site(box_center).xpos.copy()
-        box_pos[0] -= 0.08
-        return box_pos
+        pos_behind = self.data.site(box_center).xpos.copy()
+        pos_behind[0] -= BOX_SIZE * 4 / 5
+        if pos is not None:
+            assert pos < total_pos, "position outside number of interpolating positions"
+            pos_behind[1] += (pos - total_pos // 2) / (total_pos // 2) * (BOX_SIZE / 2)
+            pos_behind[0] +=\
+                np.abs(pos - total_pos // 2) / (total_pos // 2) * (BOX_SIZE * 3 / 10)
+        return pos_behind
 
     def get_obs(self):
         return self._get_obs()
@@ -551,8 +580,9 @@ class BoxPushingBinSparse(BoxPushingBin):
         self.boxes_out_bins = np.delete(  # Remove boxes that fell in bin after box init
             self.boxes_out_bins,
             self.boxes_in_bin(
-                np.array([self.data.site(c).xpos.copy() for c in self.centers])\
-                    [self.boxes_out_bins]
+                np.array(
+                    [self.data.site(c).xpos.copy() for c in self.centers]
+                )[self.boxes_out_bins]
             )
         )
         return obs
@@ -566,8 +596,8 @@ class BoxPushingBinSparse(BoxPushingBin):
         )
         bin_dist = np.concatenate(
             [
-                parallel_box_pos - parallel_bin_borders[:,:,(0, 2, 4)],  # dist to low
-                parallel_bin_borders[:,:,(1, 3, 5)] - parallel_box_pos  # dist to high
+                parallel_box_pos - parallel_bin_borders[:, :, (0, 2, 4)],  # dist to low
+                parallel_bin_borders[:, :, (1, 3, 5)] - parallel_box_pos  # dist to high
             ],
             axis=-1,
         )
@@ -625,7 +655,7 @@ class BoxPushingBinDense(BoxPushingBinSparse):
         box_pos = [b[:2] for b in box_pos]
         parallel_box_pos = np.repeat(np.expand_dims(box_pos, axis=1), NUM_BINS, axis=1)
         parallel_bin_pos = np.repeat(
-            np.expand_dims(self.bin_pos[:,:2], axis=0), len(box_pos), axis=0
+            np.expand_dims(self.bin_pos[:, :2], axis=0), len(box_pos), axis=0
         )
         return np.sum(np.abs(parallel_box_pos - parallel_bin_pos))
 
