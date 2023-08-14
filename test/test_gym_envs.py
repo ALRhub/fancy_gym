@@ -14,7 +14,7 @@ GYM_IDS = [spec.id for spec in gym.envs.registry.values() if
            and 'jax' not in spec.id.lower()
            and not re.match(r'GymV2.Environment', spec.id)
            ]
-GYM_MP_IDS = list(chain(*fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values()))
+GYM_MP_IDS = fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
 SEED = 1
 
 

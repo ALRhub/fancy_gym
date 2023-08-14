@@ -13,13 +13,12 @@ import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 from fancy_gym.utils.wrappers import TimeAwareObservation
 from fancy_gym.utils.make_env_helpers import ensure_finite_time
-from test.utils import ugly_hack_to_mitigate_metaworld_bug
 
 SEED = 1
-ENV_IDS = ['fancy/Reacher5d-v0', 'dmc/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
+ENV_IDS = ['fancy/Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
-ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+ALL_MP_ENVS = fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
 
 MAX_STEPS_FALLBACK = 50
 
@@ -94,7 +93,7 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
     for i in range(25):
         if done:
             env.reset(seed=SEED)
-            ugly_hack_to_mitigate_metaworld_bug(env)  # TODO: Remove, when metaworld fixed it upstream
+
         action = env.action_space.sample()
         _obs, _reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
@@ -159,7 +158,6 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
             print(done, (i + 1), episode_steps)
             assert (i + 1) % episode_steps == 0
             env.reset(seed=SEED)
-            ugly_hack_to_mitigate_metaworld_bug(env)  # TODO: Remove, when metaworld fixed it upstream
 
         assert replanning_schedule(None, None, None, None, length)
 
