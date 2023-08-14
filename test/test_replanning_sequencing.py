@@ -16,7 +16,7 @@ from fancy_gym.utils.make_env_helpers import ensure_finite_time
 from test.utils import ugly_hack_to_mitigate_metaworld_bug
 
 SEED = 1
-ENV_IDS = ['fancy/Reacher5d-v0', 'dmc:ball_in_cup-catch-v0', 'metaworld:reach-v2', 'Reacher-v2']
+ENV_IDS = ['fancy/Reacher5d-v0', 'dmc/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
 ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
