@@ -167,9 +167,11 @@ def register_mp(id, mp_wrapper, mp_type, mp_config_override={}):
     else:
         raise ValueError('env id can not contain multiple "/".')
 
-    parts = id.split('-')
+    parts = name.split('-')
     assert len(parts) >= 2 and parts[-1].startswith('v'), 'Malformed env id, must end in -v{int}.'
-    fancy_id = '-'.join(parts[:-1]+[mp_type, parts[-1]])
+    fancy_name = '-'.join(parts[:-1]+[mp_type, parts[-1]])
+
+    fancy_id = f'{ns}_{mp_type}/{fancy_name}'
 
     gym_register(
         id=fancy_id,
