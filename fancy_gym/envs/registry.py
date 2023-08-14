@@ -169,9 +169,8 @@ def register_mp(id, mp_wrapper, mp_type, mp_config_override={}):
 
     parts = name.split('-')
     assert len(parts) >= 2 and parts[-1].startswith('v'), 'Malformed env id, must end in -v{int}.'
-    fancy_name = '-'.join(parts[:-1]+[mp_type, parts[-1]])
 
-    fancy_id = f'{ns}_{mp_type}/{fancy_name}'
+    fancy_id = f'{ns}_{mp_type}/{name}'
 
     gym_register(
         id=fancy_id,
