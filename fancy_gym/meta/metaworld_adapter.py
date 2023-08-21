@@ -65,17 +65,17 @@ def make_metaworld(underlying_id: str, seed: int = 1, render_mode: Optional[str]
 
     # TODO remove this as soon as there is support for the new API
     _env = EnvCompatibility(_env, render_mode)
+    env = _env
 
-    gym_id = '_metaworld_compat_' + uuid.uuid4().hex + '-v0'
-
-    gym_register(
-        id=gym_id,
-        entry_point=lambda: _env,
-        max_episode_steps=max_episode_steps,
-    )
+    # gym_id = '_metaworld_compat_' + uuid.uuid4().hex + '-v0'
+    # gym_register(
+    #    id=gym_id,
+    #    entry_point=lambda: _env,
+    #    max_episode_steps=max_episode_steps,
+    # )
 
     # TODO enable checker when the incorrect dtype of obs and observation space are fixed by metaworld
-    env = gym.make(gym_id, disable_env_checker=True)
+    # env = gym.make(gym_id, disable_env_checker=True)
     env = MujocoMapSpacesWrapper(env)
     # TODO remove, when this has been fixed upstream
     env = MitigateMetaworldBug(env)
