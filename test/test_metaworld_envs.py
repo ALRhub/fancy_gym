@@ -6,7 +6,7 @@ from metaworld.envs import ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE
 import fancy_gym
 from test.utils import run_env, run_env_determinism
 
-METAWORLD_IDS = [f'metaworld:{env.split("-goal-observable")[0]}' for env, _ in
+METAWORLD_IDS = [f'metaworld/{env.split("-goal-observable")[0]}' for env, _ in
                  ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE.items()]
 METAWORLD_MP_IDS = fancy_gym.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
 SEED = 1
