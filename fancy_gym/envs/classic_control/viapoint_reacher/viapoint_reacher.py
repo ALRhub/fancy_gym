@@ -44,6 +44,11 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
             -> Tuple[ObsType, Dict[str, Any]]:
+        # Reset twice to ensure we return obs after generating goal and generating goal after executing seeded reset.
+        # (Env will not behave deterministic otherwise)
+        # Yes, there is probably a more elegant solution to this problem...
+        self._generate_goal()
+        super().reset(seed=seed, options=options)
         self._generate_goal()
         return super().reset(seed=seed, options=options)
 
