@@ -56,10 +56,10 @@ class MetaworldResetFix(gym.Wrapper, gym.utils.RecordConstructorArgs):
         gym.Wrapper.__init__(self, env)
 
     def reset(self, **kwargs):
-        ret = self.env.reset(**kwargs)
+        self.env.reset(**kwargs)
         if 'seed' in kwargs:
             self.env.seed(kwargs['seed'])
-        return ret
+        return self.env.reset(**kwargs)
 
 
 def make_metaworld(underlying_id: str, seed: int = 1, render_mode: Optional[str] = None, **kwargs):
