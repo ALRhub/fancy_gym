@@ -10,6 +10,8 @@ class MPWrapper(RawInterfaceWrapper):
         'ProMP': {
             'controller_kwargs': {
                 'p_gains': 50.0,
+            },
+            'trajectory_generator_kwargs': {
                 'weights_scale': 0.2,
             },
         },
