@@ -9,7 +9,6 @@ class MPWrapper(RawInterfaceWrapper):
     mp_config = {
         'ProMP': {
             'controller_kwargs': {
-                'controller_type': 'velocity',
                 'p_gains': 50.0,
             },
             'trajectory_generator_kwargs': {
@@ -18,7 +17,6 @@ class MPWrapper(RawInterfaceWrapper):
         },
         'DMP': {
             'controller_kwargs': {
-                'controller_type': 'velocity',
                 'p_gains': 50.0,
             },
             'phase_generator': {
