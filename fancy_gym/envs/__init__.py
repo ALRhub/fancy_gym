@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import numpy as np
 from gymnasium import register as gym_register
-from .registry import register
+from .registry import register, upgrade
 
 from . import classic_control, mujoco
 from .classic_control.simple_reacher.simple_reacher import SimpleReacherEnv
@@ -213,12 +213,10 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
 
-    register(
+    upgrade(
         id='fancy/BoxPushing{}Replan-v0'.format(reward_type),
-        entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
+        base_id='fancy/BoxPushing{}-v0'.format(reward_type),
         mp_wrapper=mujoco.box_pushing.ReplanMPWrapper,
-        register_step_based=False,
-        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
 
 # Table Tennis environments
