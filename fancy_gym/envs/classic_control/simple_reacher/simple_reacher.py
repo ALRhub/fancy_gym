@@ -45,8 +45,9 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
 
     def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
             -> Tuple[ObsType, Dict[str, Any]]:
+        ret = super().reset(seed=seed, options=options)
         self._generate_goal()
-        return super().reset(seed=seed, options=options)
+        return ret
 
     def _get_reward(self, action: np.ndarray):
         diff = self.end_effector - self._goal
