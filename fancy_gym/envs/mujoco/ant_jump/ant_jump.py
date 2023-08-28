@@ -162,8 +162,9 @@ class AntJumpEnv(AntEnvCustomXML):
         self.current_step = 0
         self.max_height = 0
         # goal heights from 1.0 to 2.5; can be increased, but didnt work well with CMORE
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.np_random.uniform(1.0, 2.5, 1)
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # reset_model had to be implemented in every env to make it deterministic
     def reset_model(self):

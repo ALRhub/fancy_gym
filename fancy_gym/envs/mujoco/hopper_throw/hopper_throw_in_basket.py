@@ -130,10 +130,11 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
 
         self.current_step = 0
         self.ball_in_basket = False
+        ret = super().reset(seed=seed, options=options)
         if self.context:
             self.basket_x = self.np_random.uniform(low=3, high=7, size=1)
             self.model.body("basket_ground").pos[:] = [self.basket_x[0], 0, 0]
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

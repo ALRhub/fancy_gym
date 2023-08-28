@@ -152,8 +152,9 @@ class Walker2dJumpEnv(Walker2dEnvCustomXML):
             -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
         self.max_height = 0
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.np_random.uniform(1.5, 2.5, 1)  # 1.5 3.0
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

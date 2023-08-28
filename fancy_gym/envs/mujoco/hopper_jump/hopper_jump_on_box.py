@@ -150,10 +150,11 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
         self.min_distance = 5000
         self.current_step = 0
         self.hopper_on_box = False
+        ret = super().reset(seed=seed, options=options)
         if self.context:
             self.box_x = self.np_random.uniform(1, 3, 1)
             self.model.body("box").pos = [self.box_x[0], 0, 0]
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

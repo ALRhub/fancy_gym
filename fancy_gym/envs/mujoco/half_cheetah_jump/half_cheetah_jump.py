@@ -127,8 +127,9 @@ class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
             -> Tuple[ObsType, Dict[str, Any]]:
         self.max_height = 0
         self.current_step = 0
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.np_random.uniform(1.1, 1.6, 1)  # 1.1 1.6
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

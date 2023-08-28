@@ -100,8 +100,9 @@ class HopperThrowEnv(HopperEnvCustomXML):
     def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
             -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.goal = self.np_random.uniform(2.0, 6.0, 1)  # 0.5 8.0
-        return super().reset(seed=seed, options=options)
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
