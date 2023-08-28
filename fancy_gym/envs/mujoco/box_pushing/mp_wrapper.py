@@ -61,6 +61,8 @@ class ReplanMPWrapper(MPWrapper):
             'basis_generator_kwargs': {
                 'num_basis': 5,
                 'basis_bandwidth_factor': 3,
+            },
+            'phase_generator_kwargs': {
                 'alpha_phase': 3,
             },
             'black_box_kwargs': {
