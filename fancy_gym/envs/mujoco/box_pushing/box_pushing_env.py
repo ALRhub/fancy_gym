@@ -417,12 +417,21 @@ if __name__ == '__main__':
     import time
 
     start_time = time.time()
-    env.reset()
-    env.render()
-    for _ in range(10000):
-        a = env.action_space.sample()
-        obs, reward, done, infos = env.step(a)
-        if done:
-            env.reset()
-            env.render()
-    print('Test loop took: ', (time.time() - start_time) / 100)
+    box_target_positions = []
+    for _ in range(5000):
+        obs = env.reset()
+        box_target_positions.append(np.array([obs[-7], obs[-6]]))
+    # # env.render()
+    # for _ in range(10000):
+    #     a = env.action_space.sample()
+    #     obs, reward, done, infos = env.step(a)
+    #     if done:
+    #         obs=env.reset()
+    #         box_target_positions.append(np.array([obs[-7], obs[-6]]))
+    #         # env.render()
+    # print('Test loop took: ', (time.time() - start_time) / 100)
+
+    import matplotlib.pyplot as plt
+    box_target_positions = np.array(box_target_positions)
+    plt.figure()
+    plt.scatter(box_target_positions[:, 0], box_target_positions[:, 1])
