@@ -4,7 +4,8 @@ from typing import Optional
 import numpy as np
 from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
-from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance, \
+    quat2euler
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
 
@@ -88,6 +89,8 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
         infos = {
             'episode_end': episode_end,
+            'box_pos': box_pos,
+            'box_or': quat2euler(box_quat),
             'box_goal_pos_dist': box_goal_pos_dist,
             'box_goal_rot_dist': box_goal_quat_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
