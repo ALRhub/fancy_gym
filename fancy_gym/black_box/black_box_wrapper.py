@@ -62,7 +62,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.return_context_observation = not (learn_sub_trajectories or self.do_replanning)
         self.traj_gen_action_space = self._get_traj_gen_action_space()
         self.action_space = self._get_action_space()
-
         self.observation_space = self._get_observation_space()
 
         # rendering
@@ -94,25 +93,16 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         clipped_params = np.clip(action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
-        # bc_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
-        init_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)   # for new mp version
-        # TODO we could think about initializing with the previous desired value in order to have a smooth transition
-        #  at least from the planning point of view.
+        init_time = np.array(0 if not self.do_replanning else self.current_traj_steps * self.dt)
 
         condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
         condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
 
-        # self.traj_gen.set_boundary_conditions(bc_time, condition_pos, condition_vel)
-        self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)           # for new mp version
+        self.traj_gen.set_initial_conditions(init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
-        # traj_dict = self.traj_gen.get_trajs(get_pos=True, get_vel=True)
+
         position = get_numpy(self.traj_gen.get_traj_pos())
         velocity = get_numpy(self.traj_gen.get_traj_vel())
-
-        # if self.do_replanning:
-        #     # Remove first part of trajectory as this is already over
-        #     position = position[self.current_traj_steps:]
-        #     velocity = velocity[self.current_traj_steps:]
 
         return position, velocity
 
@@ -147,9 +137,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def step(self, action: np.ndarray):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
 
-        # TODO remove this part, right now only needed for beer pong
-        mp_params, env_spec_params = self.env.episode_callback(action, self.traj_gen)
-        position, velocity = self.get_trajectory(mp_params)
+        position, velocity = self.get_trajectory(action)
+        position, velocity = self.env.set_episode_arguments(action, position, velocity)
+        traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity)
 
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
@@ -160,6 +150,11 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         infos = dict()
         done = False
+
+        if not traj_is_valid:
+            obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
+                                                                                 self.return_context_observation)
+            return self.observation(obs), trajectory_return, done, infos
 
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
@@ -181,15 +176,16 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                 self.env.render(**self.render_kwargs)
 
             if done or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action,
-                                                 t + 1 + self.current_traj_steps)
-                        and self.plan_steps < self.max_planning_times):
+                                                t + 1 + self.current_traj_steps)
+                    and self.plan_steps < self.max_planning_times):
 
-                self.condition_pos = pos if self.condition_on_desired else None
-                self.condition_vel = vel if self.condition_on_desired else None
+                if self.condition_on_desired:
+                    self.condition_pos = pos
+                    self.condition_vel = vel
 
                 break
 
-        infos.update({k: v[:t+1] for k, v in infos.items()})
+        infos.update({k: v[:t + 1] for k, v in infos.items()})
         self.current_traj_steps += t + 1
 
         if self.verbose >= 2:
@@ -212,21 +208,6 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.current_traj_steps = 0
         self.plan_steps = 0
         self.traj_gen.reset()
-        self.condition_vel = None
         self.condition_pos = None
+        self.condition_vel = None
         return super(BlackBoxWrapper, self).reset()
-
-    def vis_traj(self, params):
-        mp_params, env_spec_params = self.env.episode_callback(params, self.traj_gen)
-        position, velocity = self.get_trajectory(mp_params)
-        import matplotlib.pyplot as plt
-        pos_fig = plt.figure('positions')
-        vel_fig = plt.figure('velocities')
-        for i in range(position.shape[1]):
-            plt.figure(pos_fig.number)
-            plt.subplot(position.shape[1], 1, i+1)
-            plt.plot(position[:, i])
-            plt.figure(vel_fig.number)
-            plt.subplot(velocity.shape[1], 1, i + 1)
-            plt.plot(velocity[:, i])
-        plt.show()
