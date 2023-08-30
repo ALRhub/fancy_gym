@@ -131,16 +131,17 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         self._steps += 1
         self._terminated = True if self._steps >= MAX_EPISODE_STEPS_TABLE_TENNIS else self._terminated
 
-        reward = -25 if unstable_simulation else self._get_reward(self._terminated)
-
         land_dist_err = np.linalg.norm(self._ball_landing_pos[:-1] - self._goal_pos) \
             if self._ball_landing_pos is not None else 10.
+
+        is_success = self._ball_return_success and land_dist_err < 0.2
+        reward = -25 if unstable_simulation else self._get_reward(self._terminated, is_success)
 
         return self._get_obs(), reward, self._terminated, {
             "hit_ball": self._hit_ball,
             "ball_returned_success": self._ball_return_success,
             "land_dist_error": land_dist_err,
-            "is_success": self._ball_return_success and land_dist_err < 0.2,
+            "is_success": is_success,
             "num_steps": self._steps,
         }
 
@@ -246,7 +247,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         ])
         return obs
 
-    def _get_reward(self, terminated):
+    def _get_reward(self, terminated, is_success):
         if not terminated:
             return 0
         min_r_b_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._racket_traj), axis=1))
@@ -257,7 +258,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + (1 - np.tanh(min_b_des_b_dist ** 2))
         min_b_des_b_land_dist = np.linalg.norm(self._goal_pos[:2] - self._ball_landing_pos[:2])
         over_net_bonus = int(self._ball_landing_pos[0] < 0)
-        return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus
+        return (2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus +
+                is_success)
 
     def _generate_random_ball(self, random_pos=False, random_vel=False):
         x_pos, y_pos, z_pos = -0.5, 0.35, 1.75

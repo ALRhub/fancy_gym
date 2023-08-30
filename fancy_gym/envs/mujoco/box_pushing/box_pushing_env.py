@@ -35,7 +35,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
         self.desired_qpos_robot = np.array([[0.38706806, 0.17620842, 0.24989142, -2.39914377, -0.07986905, 2.56857367,
-                                            1.47951693]])
+                                             1.47951693]])
         self.init_qvel_box_pushing = np.zeros(15)
         self.box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
         self.frame_skip = frame_skip
@@ -73,20 +73,25 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         box_quat = self.data.body("box_0").xquat.copy()
         target_pos = self.data.body("replan_target_pos").xpos.copy()
         target_quat = self.data.body("replan_target_pos").xquat.copy()
+        target_quat2 = self.data.body("replan_target_pos2").xquat.copy()
+        target_quat3 = self.data.body("replan_target_pos3").xquat.copy()
+        target_quat4 = self.data.body("replan_target_pos4").xquat.copy()
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
         if not unstable_simulation:
-            reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat,
-                                      rod_tip_pos, rod_quat, qpos, qvel, action)
+            reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2,
+                                      target_quat3, target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action)
         else:
             reward = -50
 
         obs = self._get_obs()
         box_goal_pos_dist = 0. if not episode_end else np.linalg.norm(box_pos - target_pos)
-        box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
+        # box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
+        box_goal_quat_dist = 0. if not episode_end else self._get_min_rot_dist(box_quat, target_quat, target_quat2,
+                                                                               target_quat3, target_quat4)
         infos = {
             'episode_end': episode_end,
             'box_pos': box_pos,
@@ -134,11 +139,11 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self.model.body_quat[3] = box_target_pos[-4:]
 
         ### Avoid calculating the IK all the time:
-            # # set the robot to the right configuration (rod tip in the box)
-            # desired_tcp_pos = box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
-            # desired_tcp_quat = np.array([0, 1, 0, 0])
-            # # desired_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
-            # # self.data.qpos[:7] = desired_joint_pos
+        # # set the robot to the right configuration (rod tip in the box)
+        # desired_tcp_pos = box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
+        # desired_tcp_quat = np.array([0, 1, 0, 0])
+        # # desired_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
+        # # self.data.qpos[:7] = desired_joint_pos
         self.data.qpos[:7] = self.desired_qpos_robot
 
         mujoco.mj_forward(self.model, self.data)
@@ -157,16 +162,42 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         return np.concatenate([pos, quat])
 
     def set_context(self, context):
+        angle = context[-1]
+        angle2 = angle + np.pi / 2
+        angle3 = angle + np.pi
+        angle4 = angle + 1.5 * np.pi
+
+        quat_or_context = rot_to_quat(angle, np.array([0, 0, 1]))
+        quat_or_context2 = rot_to_quat(angle2, np.array([0, 0, 1]))
+        quat_or_context3 = rot_to_quat(angle3, np.array([0, 0, 1]))
+        quat_or_context4 = rot_to_quat(angle4, np.array([0, 0, 1]))
+
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
         self.data.joint("box_joint").qpos = self.box_init_pos
 
         self.model.body_pos[2][:2] = context[:2]
         self.model.body_pos[2][-1] = -0.01
-        self.model.body_quat[2] = context[-4:]
+        # self.model.body_quat[2] = context[-4:]
+        self.model.body_quat[2] = quat_or_context
+
         self.model.body_pos[3][:2] = context[:2]
         self.model.body_pos[3][-1] = -0.01
-        self.model.body_quat[3] = context[-4:]
+        # self.model.body_quat[3] = context[-4:]
+        self.model.body_quat[3] = quat_or_context
+
+        self.model.body_pos[4][:2] = context[:2]
+        self.model.body_pos[4][-1] = -0.01
+        self.model.body_quat[4] = quat_or_context2
+
+        self.model.body_pos[5][:2] = context[:2]
+        self.model.body_pos[5][-1] = -0.01
+        self.model.body_quat[5] = quat_or_context3
+
+        self.model.body_pos[6][:2] = context[:2]
+        self.model.body_pos[6][-1] = -0.01
+        self.model.body_quat[6] = quat_or_context4
+
         self.data.qpos[:7] = self.desired_qpos_robot
 
         mujoco.mj_forward(self.model, self.data)
@@ -174,9 +205,16 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._episode_energy = 0.
         return self._get_obs()
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
         raise NotImplementedError
+
+    def _get_min_rot_dist(self, box_quat, target_quat, target_quat2, target_quat3, targetquat4):
+        rot_dist = rotation_distance(box_quat, target_quat)
+        rot_dist2 = rotation_distance(box_quat, target_quat2)
+        rot_dist3 = rotation_distance(box_quat, target_quat3)
+        rot_dist4 = rotation_distance(box_quat, targetquat4)
+        return np.min(np.array([rot_dist, rot_dist2, rot_dist3, rot_dist4]))
 
     def _get_obs(self):
         obs = np.concatenate([
@@ -334,15 +372,17 @@ class BoxPushingDense(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
         super(BoxPushingDense, self).__init__(frame_skip=frame_skip)
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
         joint_penalty = self._joint_limit_violate_penalty(qpos,
                                                           qvel,
                                                           enable_pos_limit=True,
                                                           enable_vel_limit=True)
         tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
         box_goal_pos_dist_reward = -3.5 * np.linalg.norm(box_pos - target_pos)
-        box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi
+        # box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi
+        box_goal_rot_dist_reward = -self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
+                                                           target_quat4) / np.pi
         energy_cost = -0.0005 * np.sum(np.square(action))
 
         reward = joint_penalty + tcp_box_dist_reward + \
@@ -359,8 +399,8 @@ class BoxPushingTemporalSparse(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
         super(BoxPushingTemporalSparse, self).__init__(frame_skip=frame_skip)
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
         reward = 0.
         joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
         energy_cost = -0.02 * np.sum(np.square(action))
@@ -377,7 +417,9 @@ class BoxPushingTemporalSparse(BoxPushingEnvBase):
         box_goal_dist = np.linalg.norm(box_pos - target_pos)
 
         box_goal_pos_dist_reward = -3.5 * box_goal_dist * 100
-        box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi * 100
+        # box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi * 100
+        box_goal_rot_dist_reward = -self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
+                                                           target_quat4) / np.pi * 100
 
         ep_end_joint_vel = -50. * np.linalg.norm(qvel)
 
@@ -391,8 +433,8 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
         super(BoxPushingTemporalSpatialSparse, self).__init__(frame_skip=frame_skip)
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
         reward = 0.
         joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
         energy_cost = -0.02 * np.sum(np.square(action))
@@ -411,18 +453,22 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
         if box_goal_dist < 0.1:
             reward += 300
             box_goal_pos_dist_reward = np.clip(- 3.5 * box_goal_dist * 100 * 3, -100, 0)
-            box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat)/np.pi * 100 * 1.5, -100, 0)
+            # box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat)/np.pi * 100 * 1.5, -100, 0)
+            box_goal_rot_dist_reward = np.clip(
+                - self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
+                                         target_quat4) / np.pi * 100 * 1.5, -100, 0)
             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
 
         return reward
+
 
 class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 
     def __init__(self, frame_skip: int = 10):
         super(BoxPushingTemporalSpatialSparse2, self).__init__(frame_skip=frame_skip)
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
-                    rod_tip_pos, rod_quat, qpos, qvel, action):
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
         reward = 0.
         joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
         energy_cost = -0.0005 * np.sum(np.square(action))
@@ -445,7 +491,10 @@ class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 
         if box_goal_dist < 0.1:
             box_goal_pos_dist_reward = np.clip(- 350. * box_goal_dist, -200, 0)
-            box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat)/np.pi * 100., -100, 0)
+            # box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat) / np.pi * 100., -100, 0)
+            box_goal_rot_dist_reward = np.clip(
+                -self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
+                                        target_quat4) / np.pi * 100., -100, 0)
             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
         else:
             reward -= 300.
@@ -473,6 +522,7 @@ if __name__ == '__main__':
     # print('Test loop took: ', (time.time() - start_time) / 100)
 
     import matplotlib.pyplot as plt
+
     box_target_positions = np.array(box_target_positions)
     plt.figure()
     plt.scatter(box_target_positions[:, 0], box_target_positions[:, 1])
