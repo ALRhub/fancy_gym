@@ -143,6 +143,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             "land_dist_error": land_dist_err,
             "is_success": is_success,
             "num_steps": self._steps,
+            "executed": True,
         }
 
     def _contact_checker(self, id_1, id_2):
@@ -298,6 +299,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             "is_success": [False],
             "trajectory_length": 1,
             "num_steps": [1],
+            "executed": [False]
         }
 
     @staticmethod

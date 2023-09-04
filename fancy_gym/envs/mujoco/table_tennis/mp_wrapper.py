@@ -3,7 +3,6 @@ from typing import Union, Tuple
 import numpy as np
 
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.envs.mujoco.table_tennis.table_tennis_utils import jnt_pos_low, jnt_pos_high, delay_bound, tau_bound
 
 
 class TT_MPWrapper(RawInterfaceWrapper):
