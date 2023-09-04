@@ -29,15 +29,23 @@ class TT_MPWrapper(RawInterfaceWrapper):
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
         return self.data.qvel[:7].copy()
 
-    def preprocessing_and_validity_callback(self, action, pos_traj, vel_traj):
-        return self.check_traj_validity(action, pos_traj, vel_traj)
+    # def preprocessing_and_validity_callback(self, action, pos_traj, vel_traj):
+    #     return self.check_traj_validity(action, pos_traj, vel_traj)
+
+    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+                                            tau_bound: list, delay_bound: list):
+        return self.check_traj_validity(action, pos_traj, vel_traj, tau_bound, delay_bound)
 
     def set_episode_arguments(self, action, pos_traj, vel_traj):
         return pos_traj, vel_traj
 
+    # def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+    #                           return_contextual_obs: bool) -> Tuple[np.ndarray, float, bool, dict]:
+    #     return self.get_invalid_traj_step_return(action, pos_traj, return_contextual_obs)
+
     def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
-                              return_contextual_obs: bool) -> Tuple[np.ndarray, float, bool, dict]:
-        return self.get_invalid_traj_step_return(action, pos_traj, return_contextual_obs)
+                              return_contextual_obs: bool, tau_bound:list, delay_bound:list) -> Tuple[np.ndarray, float, bool, dict]:
+        return self.get_invalid_traj_step_return(action, pos_traj, return_contextual_obs, tau_bound, delay_bound)
 
 class TTVelObs_MPWrapper(TT_MPWrapper):
 
