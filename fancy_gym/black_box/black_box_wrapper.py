@@ -55,6 +55,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # self.traj_gen.set_mp_times(self.time_steps)
         self.traj_gen.set_duration(self.duration, self.dt)
 
+        # check
+        self.tau_bound = [-np.inf, np.inf]
+        self.delay_bound = [-np.inf, np.inf]
+        if hasattr(self.traj_gen.phase_gn, "tau_bound"):
+            self.tau_bound = self.traj_gen.phase_gn.tau_bound
+        if hasattr(self.traj_gen.phase_gn, "delay_bound"):
+            self.delay_bound = self.traj_gen.phase_gn.delay_bound
+
         # reward computation
         self.reward_aggregation = reward_aggregation
 
@@ -139,7 +147,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         position, velocity = self.get_trajectory(action)
         position, velocity = self.env.set_episode_arguments(action, position, velocity)
-        traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity)
+        traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity,
+                                                                                         self.tau_bound, self.delay_bound)
 
         trajectory_length = len(position)
         rewards = np.zeros(shape=(trajectory_length,))
@@ -153,7 +162,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
         if not traj_is_valid:
             obs, trajectory_return, done, infos = self.env.invalid_traj_callback(action, position, velocity,
-                                                                                 self.return_context_observation)
+                                                                                 self.return_context_observation,
+                                                                                 self.tau_bound, self.delay_bound)
             return self.observation(obs), trajectory_return, done, infos
 
         self.plan_steps += 1
