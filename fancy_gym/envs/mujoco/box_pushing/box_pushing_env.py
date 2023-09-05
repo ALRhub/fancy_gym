@@ -370,8 +370,8 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 
 class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 
-    def __init__(self, frame_skip: int = 10):
-        super(BoxPushingTemporalSpatialSparse2, self).__init__(frame_skip=frame_skip)
+    def __init__(self, frame_skip: int = 10, random_init: bool = False):
+        super(BoxPushingTemporalSpatialSparse2, self).__init__(frame_skip=frame_skip, random_init=random_init)
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
                     rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -406,8 +406,8 @@ class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 
 
 class BoxPushingNoConstraintSparse(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10):
-        super(BoxPushingNoConstraintSparse, self).__init__(frame_skip=frame_skip)
+    def __init__(self, frame_skip: int = 10, random_init: bool = False):
+        super(BoxPushingNoConstraintSparse, self).__init__(frame_skip=frame_skip, random_init=random_init)
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
                     rod_tip_pos, rod_quat, qpos, qvel, action):
