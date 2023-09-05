@@ -405,9 +405,9 @@ class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
         return reward
 
 
-class BoxPushingBruceSparse(BoxPushingEnvBase):
+class BoxPushingNoConstraintSparse(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
-        super(BoxPushingBruceSparse, self).__init__(frame_skip=frame_skip)
+        super(BoxPushingNoConstraintSparse, self).__init__(frame_skip=frame_skip)
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat,
                     rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -435,16 +435,3 @@ class BoxPushingBruceSparse(BoxPushingEnvBase):
         box_rot_vel = box_rot_pos_vel[:3]
         box_pos_vel = box_rot_pos_vel[3:]
         return -rot_coeff * np.linalg.norm(box_rot_vel) - pos_coeff * np.linalg.norm(box_pos_vel)
-
-
-
-if __name__=="__main__":
-    import fancy_gym
-    env = fancy_gym.make("BoxPushingDenseProDMP-v0", seed=0)
-    env.reset()
-    for i in range(1000):
-        env.render(mode="human")
-        obs, rew, done, info = env.step(env.action_space.sample())
-        if done:
-            env.reset()
-            # print(f"box_end_velocity: {info['box_end_vel']}")
