@@ -233,7 +233,8 @@ register(
 )
 
 # Box pushing environments with different rewards
-for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
+for reward_type in ["Dense", "DenseRotInv", "TemporalSparse", "TemporalSparseRotInv", "TemporalSpatialSparse",
+                    "TemporalSpatialSparseRotInv"]:
     register(
         id='BoxPushing{}-v0'.format(reward_type),
         entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
@@ -523,7 +524,9 @@ for _v in _versions:
 # ########################################################################################################################
 
 ## Box Pushing
-_versions = ['BoxPushingDense-v0', 'BoxPushingTemporalSparse-v0', 'BoxPushingTemporalSpatialSparse-v0']
+_versions = ['BoxPushingDense-v0', 'BoxPushingDenseRotInv-v0',
+             'BoxPushingTemporalSparse-v0', 'BoxPushingTemporalSparseRotInv-v0',
+             'BoxPushingTemporalSpatialSparse-v0', 'BoxPushingTemporalSpatialSparseRotInv-v0']
 for _v in _versions:
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProMP-{_name[1]}'

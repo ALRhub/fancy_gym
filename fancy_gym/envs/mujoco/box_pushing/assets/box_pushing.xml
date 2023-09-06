@@ -15,40 +15,40 @@
     </body>
 
     <body name="target_pos" pos="0.5 0.5 0.0">
-      <site type="box" pos="0 0 0" rgba="0 1 0 0.0003" size="0.05 0.05 0.01" />
-      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.0003" type="box"/>
-      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.0003" type="box"/>
-      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.0003" type="box"/>
-      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.0003" type="box"/>
+      <site type="box" pos="0 0 0" rgba="0 1 0 0.3" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.5" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.5" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.5" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.5" type="box"/>
     </body>
 
     <body name="replan_target_pos" pos="0.5 0.5 -0.01">
-      <site type="box" pos="0 0 0" rgba="1 1 1 0.3" size="0.05 0.05 0.01" />
-      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 0 0.5" type="box"/>
-      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
+      <site type="box" pos="0 0 0" rgba="1 1 0 0.3" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.5" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 0 0.5" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 0 0.5" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 0 0.5" type="box"/>
     </body>
     <body name="replan_target_pos2" pos="0.5 0.5 -0.01">
-      <site type="box" pos="0 0 0" rgba="1 1 1 0.3" size="0.05 0.05 0.01" />
-      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.5" type="box"/>
-      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.000003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.000005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.000001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.000001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.000001" type="box"/>
     </body>
     <body name="replan_target_pos3" pos="0.5 0.5 -0.01">
-      <site type="box" pos="0 0 0" rgba="1 1 1 0.3" size="0.05 0.05 0.01" />
-      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 0 0 0.5" type="box"/>
-      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.00003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 0 0 0.000005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
     </body>
     <body name="replan_target_pos4" pos="0.5 0.5 -0.01">
-      <site type="box" pos="0 0 0" rgba="1 1 1 0.3" size="0.05 0.05 0.01" />
-      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 1 0.5" type="box"/>
-      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.1" type="box"/>
-      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.1" type="box"/>
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.00003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 1 0.00005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
     </body>
   </worldbody>
 

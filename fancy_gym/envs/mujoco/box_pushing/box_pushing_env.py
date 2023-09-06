@@ -30,7 +30,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     3. time-spatial-depend sparse reward
     """
 
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml"):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
@@ -47,7 +47,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
         self._episode_energy = 0.
         MujocoEnv.__init__(self,
-                           model_path=os.path.join(os.path.dirname(__file__), "assets", "box_pushing.xml"),
+                           model_path=os.path.join(os.path.dirname(__file__), "assets", xml_name),
                            frame_skip=self.frame_skip,
                            mujoco_bindings="mujoco")
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
@@ -89,9 +89,8 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
         obs = self._get_obs()
         box_goal_pos_dist = 0. if not episode_end else np.linalg.norm(box_pos - target_pos)
-        # box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
-        box_goal_quat_dist = 0. if not episode_end else self._get_min_rot_dist(box_quat, target_quat, target_quat2,
-                                                                               target_quat3, target_quat4)
+        box_goal_quat_dist = 0. if not episode_end else self._get_rotation_dist(box_quat, target_quat, target_quat2,
+                                                                                target_quat3, target_quat4)
         infos = {
             'episode_end': episode_end,
             'box_pos': box_pos,
@@ -367,10 +366,41 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
         return q
 
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        raise NotImplementedError
+
 
 class BoxPushingDense(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
-        super(BoxPushingDense, self).__init__(frame_skip=frame_skip)
+        super(BoxPushingDense, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
+
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
+        joint_penalty = self._joint_limit_violate_penalty(qpos,
+                                                          qvel,
+                                                          enable_pos_limit=True,
+                                                          enable_vel_limit=True)
+        tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
+        box_goal_pos_dist_reward = -3.5 * np.linalg.norm(box_pos - target_pos)
+        box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi
+        energy_cost = -0.0005 * np.sum(np.square(action))
+
+        reward = joint_penalty + tcp_box_dist_reward + \
+                 box_goal_pos_dist_reward + box_goal_rot_dist_reward + energy_cost
+
+        rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
+        if rod_inclined_angle > np.pi / 4:
+            reward -= rod_inclined_angle / (np.pi)
+
+        return reward
+
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return rotation_distance(box_quat, target_quat)
+
+
+class BoxPushingDenseRotInv(BoxPushingEnvBase):
+    def __init__(self, frame_skip: int = 10):
+        super(BoxPushingDenseRotInv, self).__init__(frame_skip=frame_skip, xml_name="box_pushing_rot_inv.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -394,10 +424,47 @@ class BoxPushingDense(BoxPushingEnvBase):
 
         return reward
 
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3, target_quat4)
+
 
 class BoxPushingTemporalSparse(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10):
-        super(BoxPushingTemporalSparse, self).__init__(frame_skip=frame_skip)
+        super(BoxPushingTemporalSparse, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
+
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
+        reward = 0.
+        joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
+        energy_cost = -0.02 * np.sum(np.square(action))
+        tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
+        reward += joint_penalty + tcp_box_dist_reward + energy_cost
+        rod_inclined_angle = rotation_distance(rod_quat, desired_rod_quat)
+
+        if rod_inclined_angle > np.pi / 4:
+            reward -= rod_inclined_angle / (np.pi)
+
+        if not episode_end:
+            return reward
+
+        box_goal_dist = np.linalg.norm(box_pos - target_pos)
+
+        box_goal_pos_dist_reward = -3.5 * box_goal_dist * 100
+        box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi * 100
+
+        ep_end_joint_vel = -50. * np.linalg.norm(qvel)
+
+        reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward + ep_end_joint_vel
+
+        return reward
+
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return rotation_distance(box_quat, target_quat)
+
+
+class BoxPushingTemporalSparseRotInv(BoxPushingEnvBase):
+    def __init__(self, frame_skip: int = 10):
+        super(BoxPushingTemporalSparseRotInv, self).__init__(frame_skip=frame_skip, xml_name="box_pushing_rot_inv.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -427,11 +494,49 @@ class BoxPushingTemporalSparse(BoxPushingEnvBase):
 
         return reward
 
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3, target_quat4)
+
 
 class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 
     def __init__(self, frame_skip: int = 10):
-        super(BoxPushingTemporalSpatialSparse, self).__init__(frame_skip=frame_skip)
+        super(BoxPushingTemporalSpatialSparse, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
+
+    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
+        reward = 0.
+        joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
+        energy_cost = -0.02 * np.sum(np.square(action))
+        tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
+        reward += joint_penalty + tcp_box_dist_reward + energy_cost
+        rod_inclined_angle = rotation_distance(rod_quat, desired_rod_quat)
+
+        if rod_inclined_angle > np.pi / 4:
+            reward -= rod_inclined_angle / (np.pi)
+
+        if not episode_end:
+            return reward
+
+        box_goal_dist = np.linalg.norm(box_pos - target_pos)
+
+        if box_goal_dist < 0.1:
+            reward += 300
+            box_goal_pos_dist_reward = np.clip(- 3.5 * box_goal_dist * 100 * 3, -100, 0)
+            box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat) / np.pi * 100 * 1.5, -100, 0)
+            reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
+
+        return reward
+
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return rotation_distance(box_quat, target_quat)
+
+
+class BoxPushingTemporalSpatialSparseRotInv(BoxPushingEnvBase):
+
+    def __init__(self, frame_skip: int = 10):
+        super(BoxPushingTemporalSpatialSparseRotInv, self).__init__(frame_skip=frame_skip,
+                                                                    xml_name="box_pushing_rot_inv.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -461,45 +566,85 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 
         return reward
 
+    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
+        return self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3, target_quat4)
 
-class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 
-    def __init__(self, frame_skip: int = 10):
-        super(BoxPushingTemporalSpatialSparse2, self).__init__(frame_skip=frame_skip)
-
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
-                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
-        reward = 0.
-        joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
-        energy_cost = -0.0005 * np.sum(np.square(action))
-        tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
-
-        reward += joint_penalty + energy_cost + tcp_box_dist_reward
-
-        rod_inclined_angle = rotation_distance(rod_quat, desired_rod_quat)
-
-        if rod_inclined_angle > np.pi / 4:
-            reward -= rod_inclined_angle / (np.pi)
-
-        if not episode_end:
-            return reward
-
-        # Force the robot to stop at the end
-        reward += -50. * np.linalg.norm(qvel)
-
-        box_goal_dist = np.linalg.norm(box_pos - target_pos)
-
-        if box_goal_dist < 0.1:
-            box_goal_pos_dist_reward = np.clip(- 350. * box_goal_dist, -200, 0)
-            # box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat) / np.pi * 100., -100, 0)
-            box_goal_rot_dist_reward = np.clip(
-                -self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
-                                        target_quat4) / np.pi * 100., -100, 0)
-            reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
-        else:
-            reward -= 300.
-
-        return reward
+# class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
+# 
+#     def __init__(self, frame_skip: int = 10):
+#         super(BoxPushingTemporalSpatialSparse2, self).__init__(frame_skip=frame_skip)
+# 
+#     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+#                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
+#         reward = 0.
+#         joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
+#         energy_cost = -0.0005 * np.sum(np.square(action))
+#         tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
+# 
+#         reward += joint_penalty + energy_cost + tcp_box_dist_reward
+# 
+#         rod_inclined_angle = rotation_distance(rod_quat, desired_rod_quat)
+# 
+#         if rod_inclined_angle > np.pi / 4:
+#             reward -= rod_inclined_angle / (np.pi)
+# 
+#         if not episode_end:
+#             return reward
+# 
+#         # Force the robot to stop at the end
+#         reward += -50. * np.linalg.norm(qvel)
+# 
+#         box_goal_dist = np.linalg.norm(box_pos - target_pos)
+# 
+#         if box_goal_dist < 0.1:
+#             box_goal_pos_dist_reward = np.clip(- 350. * box_goal_dist, -200, 0)
+#             box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat) / np.pi * 100., -100, 0)
+#             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
+#         else:
+#             reward -= 300.
+# 
+#         return reward
+# 
+# 
+# class BoxPushingTemporalSpatialSparse2RotInv(BoxPushingEnvBase):
+# 
+#     def __init__(self, frame_skip: int = 10):
+#         super(BoxPushingTemporalSpatialSparse2RotInv, self).__init__(frame_skip=frame_skip)
+# 
+#     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
+#                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
+#         reward = 0.
+#         joint_penalty = self._joint_limit_violate_penalty(qpos, qvel, enable_pos_limit=True, enable_vel_limit=True)
+#         energy_cost = -0.0005 * np.sum(np.square(action))
+#         tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
+# 
+#         reward += joint_penalty + energy_cost + tcp_box_dist_reward
+# 
+#         rod_inclined_angle = rotation_distance(rod_quat, desired_rod_quat)
+# 
+#         if rod_inclined_angle > np.pi / 4:
+#             reward -= rod_inclined_angle / (np.pi)
+# 
+#         if not episode_end:
+#             return reward
+# 
+#         # Force the robot to stop at the end
+#         reward += -50. * np.linalg.norm(qvel)
+# 
+#         box_goal_dist = np.linalg.norm(box_pos - target_pos)
+# 
+#         if box_goal_dist < 0.1:
+#             box_goal_pos_dist_reward = np.clip(- 350. * box_goal_dist, -200, 0)
+#             # box_goal_rot_dist_reward = np.clip(- rotation_distance(box_quat, target_quat) / np.pi * 100., -100, 0)
+#             box_goal_rot_dist_reward = np.clip(
+#                 -self._get_min_rot_dist(box_quat, target_quat, target_quat2, target_quat3,
+#                                         target_quat4) / np.pi * 100., -100, 0)
+#             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
+#         else:
+#             reward -= 300.
+# 
+#         return reward
 
 
 if __name__ == '__main__':
