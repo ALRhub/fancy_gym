@@ -160,42 +160,55 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         quat = rot_to_quat(theta, np.array([0, 0, 1]))
         return np.concatenate([pos, quat])
 
-    def set_context(self, context):
-        angle = context[-1]
-        angle2 = angle + np.pi / 2
-        angle3 = angle + np.pi
-        angle4 = angle + 1.5 * np.pi
+    def _get_pi_half_variants(self, angle_in_rad):
+        angle2 = angle_in_rad + np.pi / 2
+        angle3 = angle_in_rad + np.pi
+        angle4 = angle_in_rad + 1.5 * np.pi
+        return angle2, angle3, angle4
 
+    def _get_pi_half_variant_quats(self, angle, angle2, angle3, angle4):
         quat_or_context = rot_to_quat(angle, np.array([0, 0, 1]))
         quat_or_context2 = rot_to_quat(angle2, np.array([0, 0, 1]))
         quat_or_context3 = rot_to_quat(angle3, np.array([0, 0, 1]))
         quat_or_context4 = rot_to_quat(angle4, np.array([0, 0, 1]))
+        return quat_or_context, quat_or_context2, quat_or_context3, quat_or_context4
+
+    def _set_target_box_pos_and_quat(self, target_xy_box_pos, quat_target_box, quat_target_box2, quat_target_box3,
+                                     quat_target_box4):
+        self.model.body_pos[2][:2] = target_xy_box_pos
+        self.model.body_pos[2][-1] = -0.01
+        self.model.body_quat[2] = quat_target_box
+
+        self.model.body_pos[3][:2] = target_xy_box_pos
+        self.model.body_pos[3][-1] = -0.01
+        self.model.body_quat[3] = quat_target_box
+
+        self.model.body_pos[4][:2] = target_xy_box_pos
+        self.model.body_pos[4][-1] = -0.01
+        self.model.body_quat[4] = quat_target_box2
+
+        self.model.body_pos[5][:2] = target_xy_box_pos
+        self.model.body_pos[5][-1] = -0.01
+        self.model.body_quat[5] = quat_target_box3
+
+        self.model.body_pos[6][:2] = target_xy_box_pos
+        self.model.body_pos[6][-1] = -0.01
+        self.model.body_quat[6] = quat_target_box4
+
+    def set_context(self, context):
+        angle = context[-1]
+        angle2, angle3, angle4 = self._get_pi_half_variants(angle)
+        quat_or_context, quat_or_context2, quat_or_context3, quat_or_context4 = self._get_pi_half_variant_quats(angle,
+                                                                                                                angle2,
+                                                                                                                angle3,
+                                                                                                                angle4)
 
         # rest box to initial position
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
         self.data.joint("box_joint").qpos = self.box_init_pos
 
-        self.model.body_pos[2][:2] = context[:2]
-        self.model.body_pos[2][-1] = -0.01
-        # self.model.body_quat[2] = context[-4:]
-        self.model.body_quat[2] = quat_or_context
-
-        self.model.body_pos[3][:2] = context[:2]
-        self.model.body_pos[3][-1] = -0.01
-        # self.model.body_quat[3] = context[-4:]
-        self.model.body_quat[3] = quat_or_context
-
-        self.model.body_pos[4][:2] = context[:2]
-        self.model.body_pos[4][-1] = -0.01
-        self.model.body_quat[4] = quat_or_context2
-
-        self.model.body_pos[5][:2] = context[:2]
-        self.model.body_pos[5][-1] = -0.01
-        self.model.body_quat[5] = quat_or_context3
-
-        self.model.body_pos[6][:2] = context[:2]
-        self.model.body_pos[6][-1] = -0.01
-        self.model.body_quat[6] = quat_or_context4
+        self._set_target_box_pos_and_quat(context[:2], quat_or_context, quat_or_context2, quat_or_context3,
+                                          quat_or_context4)
 
         self.data.qpos[:7] = self.desired_qpos_robot
 
@@ -653,8 +666,14 @@ if __name__ == '__main__':
 
     start_time = time.time()
     box_target_positions = []
+    obs = env.reset()
     for _ in range(5000):
-        obs = env.reset()
+        env.render()
+        a = env.action_space.sample()
+        obs, reward, episode_end, infos = env.step(a)
+        if episode_end:
+            obs = env.reset()
+            episode_end = False
         box_target_positions.append(np.array([obs[-7], obs[-6]]))
     # # env.render()
     # for _ in range(10000):
