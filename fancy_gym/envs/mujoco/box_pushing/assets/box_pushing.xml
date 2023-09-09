@@ -14,6 +14,12 @@
       <geom name="ground:geom1" rgba="0.26 0.58 0.51 1" size="0 0 1" type="plane" />
     </body>
 
+
+    <site pos="0.3 -0.45 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>
+    <site pos="0.3 0.45 0.0485" size="0.01 0.05 " rgba="0 0 1 0.5" type="sphere"/>
+    <site pos="0.6 -0.45 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.6 0.45 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
+
     <body name="target_pos" pos="0.5 0.5 0.0">
       <site type="box" pos="0 0 0" rgba="0 1 0 0.3" size="0.05 0.05 0.01" />
       <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.5" type="box"/>
@@ -21,6 +27,14 @@
       <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.5" type="box"/>
       <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.5" type="box"/>
     </body>
+
+<!--    <body name="context_range" pos="0.0 0.0 0.0">-->
+<!--&lt;!&ndash;      <site type="sphere" pos="0 0 0" rgba="0 1 0 0.3" size="0.05 0.05 0.01" />&ndash;&gt;-->
+<!--      <site pos="0.3 -0.45 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>-->
+<!--      <site pos="0.3 0.45 0.0485" size="0.01 0.05 " rgba="0 0 1 0.5" type="sphere"/>-->
+<!--      <site pos="0.6 -0.45 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>-->
+<!--      <site pos="0.6 0.45 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>-->
+<!--    </body>-->
 
     <body name="replan_target_pos" pos="0.5 0.5 -0.01">
       <site type="box" pos="0 0 0" rgba="1 1 0 0.3" size="0.05 0.05 0.01" />
