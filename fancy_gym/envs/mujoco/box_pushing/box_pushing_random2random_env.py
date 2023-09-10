@@ -14,7 +14,7 @@ from gym import utils, spaces
 
 
 class BoxPushingRndm2RndmEnvBase(MujocoEnv, utils.EzPickle):
-    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml"):
+    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml", **kwargs):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
@@ -130,6 +130,18 @@ class BoxPushingRndm2RndmEnvBase(MujocoEnv, utils.EzPickle):
 
         return self._get_obs()
 
+    def get_init_joint_pos(self, target_box_positions):
+        desired_joint_positions = np.zeros((target_box_positions.shape[0], 7))
+        for j in range(target_box_positions.shape[0]):
+            c_target_pos = np.concatenate((target_box_positions[j, :2], [-0.01]))
+            c_target_or = rot_to_quat(target_box_positions[j, -2], np.array([0, 0, 1]))
+            self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
+            self.data.joint("box_joint").qpos = np.concatenate((c_target_pos, c_target_or))
+            desired_tcp_pos = c_target_pos + np.array([0.0, 0.0, 0.15])
+            desired_tcp_quat = np.array([0, 1, 0, 0])
+            desired_joint_positions[j, :] = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
+        return desired_joint_positions
+
     def sample_context(self):
         # pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
         lb = np.append(BOX_POS_BOUND[0], [-0.01])
@@ -190,7 +202,7 @@ class BoxPushingRndm2RndmEnvBase(MujocoEnv, utils.EzPickle):
         self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
 
         init_box_quat = rot_to_quat(init_box_angle, np.array([0, 0, 1]))
-        init_box_pos = np.concatenate((init_box_pos, -0.01))
+        init_box_pos = np.concatenate((init_box_pos, [-0.01]))
         init_box_pos = np.concatenate([init_box_pos, init_box_quat])
         self.data.joint("box_joint").qpos = init_box_pos
 
@@ -371,9 +383,9 @@ class BoxPushingRndm2RndmEnvBase(MujocoEnv, utils.EzPickle):
         raise NotImplementedError
 
 
-class BoxPushingDenseRnd2Rnd(BoxPushingRndm2RndmEnvBase, BoxPushingDense):
-    def __init__(self, frame_skip: int = 10):
-        super(BoxPushingDenseRnd2Rnd, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
+class BoxPushingDenseRnd2Rnd(BoxPushingRndm2RndmEnvBase):
+    def __init__(self, frame_skip: int = 10, **kwargs):
+        super(BoxPushingDenseRnd2Rnd, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml", **kwargs)
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -399,9 +411,10 @@ class BoxPushingDenseRnd2Rnd(BoxPushingRndm2RndmEnvBase, BoxPushingDense):
         return rotation_distance(box_quat, target_quat)
 
 
-class BoxPushingTemporalSparseRnd2Rnd(BoxPushingRndm2RndmEnvBase, BoxPushingTemporalSparse):
-    def __init__(self, frame_skip: int = 10):
-        super(BoxPushingTemporalSparseRnd2Rnd, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
+class BoxPushingTemporalSparseRnd2Rnd(BoxPushingRndm2RndmEnvBase):
+    def __init__(self, frame_skip: int = 10, **kwargs):
+        super(BoxPushingTemporalSparseRnd2Rnd, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml",
+                                                              **kwargs)
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -437,15 +450,23 @@ if __name__ == '__main__':
     env = BoxPushingDenseRnd2Rnd()
     import time
 
-    start_time = time.time()
+    # start_time = time.time()
+    # box_target_positions = []
+    # obs = env.reset()
+    # for _ in range(5000):
+    #     env.render()
+    #     a = env.action_space.sample()
+    #     obs, reward, episode_end, infos = env.step(a)
+    #     if episode_end:
+    #         obs = env.reset()
+    #         episode_end = False
+
     box_target_positions = []
+    n_resets = 10000
     obs = env.reset()
-    for _ in range(5000):
-        env.render()
-        a = env.action_space.sample()
-        obs, reward, episode_end, infos = env.step(a)
-        if episode_end:
-            obs = env.reset()
-            episode_end = False
-
-
+    start_time = time.time()
+    for _ in range(n_resets):
+        # env.render()
+        env.reset()
+    end_time = time.time()
+    print(f'total time for {n_resets}: {end_time-start_time}')

@@ -10,4 +10,5 @@ from .walker_2d_jump.walker_2d_jump import Walker2dJumpEnv
 from .box_pushing.box_pushing_env import (BoxPushingDense, BoxPushingDenseRotInv, BoxPushingTemporalSparse,
                                           BoxPushingTemporalSparseRotInv, BoxPushingTemporalSpatialSparse,
                                           BoxPushingTemporalSpatialSparseRotInv)
+from .box_pushing.box_pushing_random2random_env import BoxPushingDenseRnd2Rnd, BoxPushingTemporalSparseRnd2Rnd
 from .table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching
