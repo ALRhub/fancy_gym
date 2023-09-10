@@ -8,3 +8,6 @@ ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS = MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS
 ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS = MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS['fancy']
 ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS = MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS['metaworld']
 ALL_GYM_MOVEMENT_PRIMITIVE_ENVIRONMENTS = MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS['gym']
+
+def make(*args, **kwargs):
+    raise Exception('As part of the refactor of Fancy Gym and upgrade to gymnasium the use of fancy_gym.make has been discontinued. Regular gym.make should be used instead. For more details check out the github README. If your codebase was build for older versions of Fancy Gym and relies on the old behavior and dependency versions, please check out the legacy branch.')
