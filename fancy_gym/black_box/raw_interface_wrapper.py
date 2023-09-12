@@ -2,10 +2,14 @@ from typing import Union, Tuple
 
 import gym
 import numpy as np
+from gym import Env
 from mp_pytorch.mp.mp_interfaces import MPInterface
 
 
 class RawInterfaceWrapper(gym.Wrapper):
+
+    def __init__(self, env: Env, **kwargs):
+        super().__init__(env)
 
     @property
     def context_mask(self) -> np.ndarray:

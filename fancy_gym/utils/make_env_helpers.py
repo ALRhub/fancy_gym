@@ -116,7 +116,7 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
         # only wrap the environment if not BlackBoxWrapper, e.g. for vision
         if issubclass(w, RawInterfaceWrapper):
             has_black_box_wrapper = True
-        _env = w(_env)
+        _env = w(_env, **kwargs)
     if not has_black_box_wrapper:
         raise ValueError("A RawInterfaceWrapper is required in order to leverage movement primitive environments.")
     return _env
@@ -219,7 +219,8 @@ def make_bb_env_helper(**kwargs):
     Returns: MP wrapped gym env
 
     """
-    seed = kwargs.pop("seed", None)
+    # seed = kwargs.pop("seed", None)
+    seed = kwargs.get("seed", None)
     wrappers = kwargs.pop("wrappers")
 
     traj_gen_kwargs = kwargs.pop("trajectory_generator_kwargs", {})

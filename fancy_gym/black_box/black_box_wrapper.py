@@ -23,7 +23,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
                  max_planning_times: int = np.inf,
-                 condition_on_desired: bool = False
+                 condition_on_desired: bool = False, **kwargs
                  ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
