@@ -259,8 +259,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + (1 - np.tanh(min_b_des_b_dist ** 2))
         min_b_des_b_land_dist = np.linalg.norm(self._goal_pos[:2] - self._ball_landing_pos[:2])
         over_net_bonus = int(self._ball_landing_pos[0] < 0)
-        return (2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus +
-                is_success)
+        return 2 * (1 - np.tanh(min_r_b_dist ** 2)) + 4 * (1 - np.tanh(min_b_des_b_land_dist ** 2)) + over_net_bonus
 
     def _generate_random_ball(self, random_pos=False, random_vel=False):
         x_pos, y_pos, z_pos = -0.5, 0.35, 1.75
