@@ -26,7 +26,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
                  goal_switching_step: int = None,
-                 enable_artificial_wind: bool = False):
+                 enable_artificial_wind: bool = False, **kwargs):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -311,7 +311,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
 
 class TableTennisWind(TableTennisEnv):
-    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4):
+    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4, **kwargs):
         super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip, enable_artificial_wind=True)
 
     def _get_obs(self):
@@ -330,5 +330,5 @@ class TableTennisWind(TableTennisEnv):
 
 
 class TableTennisGoalSwitching(TableTennisEnv):
-    def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99):
+    def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99, **kwargs):
         super().__init__(frame_skip=frame_skip, goal_switching_step=goal_switching_step)

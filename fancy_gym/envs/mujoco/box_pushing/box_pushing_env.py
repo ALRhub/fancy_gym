@@ -30,7 +30,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     3. time-spatial-depend sparse reward
     """
 
-    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml"):
+    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml", **kwargs):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
@@ -384,7 +384,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
 
 class BoxPushingDense(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingDense, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
@@ -412,7 +412,7 @@ class BoxPushingDense(BoxPushingEnvBase):
 
 
 class BoxPushingDenseRotInv(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingDenseRotInv, self).__init__(frame_skip=frame_skip, xml_name="box_pushing_rot_inv.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
@@ -442,7 +442,7 @@ class BoxPushingDenseRotInv(BoxPushingEnvBase):
 
 
 class BoxPushingTemporalSparse(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingTemporalSparse, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
@@ -476,7 +476,7 @@ class BoxPushingTemporalSparse(BoxPushingEnvBase):
 
 
 class BoxPushingTemporalSparseRotInv(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingTemporalSparseRotInv, self).__init__(frame_skip=frame_skip, xml_name="box_pushing_rot_inv.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
@@ -513,7 +513,7 @@ class BoxPushingTemporalSparseRotInv(BoxPushingEnvBase):
 
 class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingTemporalSpatialSparse, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
@@ -547,7 +547,7 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
 
 class BoxPushingTemporalSpatialSparseRotInv(BoxPushingEnvBase):
 
-    def __init__(self, frame_skip: int = 10):
+    def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingTemporalSpatialSparseRotInv, self).__init__(frame_skip=frame_skip,
                                                                     xml_name="box_pushing_rot_inv.xml")
 
