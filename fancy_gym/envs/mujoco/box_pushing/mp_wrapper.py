@@ -17,7 +17,15 @@ class MPWrapper(RawInterfaceWrapper):
             }
         },
         'DMP': {},
-        'ProDMP': {},
+        'ProDMP': {
+            'controller_kwargs': {
+                'p_gains': 0.01 * np.array([120., 120., 120., 120., 50., 30., 10.]),
+                'd_gains': 0.01 * np.array([10., 10., 10., 10., 6., 5., 3.]),
+            },
+            'basis_generator_kwargs': {
+                'basis_bandwidth_factor': 2  # 3.5, 4 to try
+            }
+        },
     }
 
     # Random x goal + random init pos
