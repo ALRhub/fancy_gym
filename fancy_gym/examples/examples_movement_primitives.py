@@ -1,7 +1,8 @@
+import gymnasium as gym
 import fancy_gym
 
 
-def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True):
+def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, render=True):
     """
     Example for running a black box based environment, which is already registered
     Args:
@@ -15,11 +16,11 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
     """
     # Equivalent to gym, we have a make function which can be used to create environments.
     # It takes care of seeding and enables the use of a variety of external environments using the gym interface.
-    env = fancy_gym.make(env_name, seed)
+    env = gym.make(env_name)
 
     returns = 0
     # env.render(mode=None)
-    obs = env.reset()
+    obs = env.reset(seed=seed)
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -50,7 +51,7 @@ def example_mp(env_name="HoleReacherProMP-v0", seed=1, iterations=1, render=True
             obs = env.reset()
 
 
-def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render=True):
+def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1, render=True):
     """
     Example for running a movement primitive based environment, which is already registered
     Args:
@@ -62,12 +63,9 @@ def example_custom_mp(env_name="Reacher5dProMP-v0", seed=1, iterations=1, render
     Returns:
 
     """
-    # Changing the arguments of the black box env is possible by providing them to gym as with all kwargs.
+    # Changing the arguments of the black box env is possible by providing them to gym through mp_config_override.
     # E.g. here for way to many basis functions
-    env = fancy_gym.make(env_name, seed, basis_generator_kwargs={'num_basis': 1000})
-    # env = fancy_gym.make(env_name, seed)
-    # mp_dict.update({'black_box_kwargs': {'learn_sub_trajectories': True}})
-    # mp_dict.update({'black_box_kwargs': {'do_replanning': lambda pos, vel, t: lambda t: t % 100}})
+    env = gym.make(env_name, seed, mp_config_override={'basis_generator_kwargs': {'num_basis': 1000}})
 
     returns = 0
     obs = env.reset()
@@ -106,7 +104,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     """
 
-    base_env_id = "Reacher5d-v0"
+    base_env_id = "fancy/Reacher5d-v0"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
@@ -157,20 +155,20 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 if __name__ == '__main__':
     render = False
     # DMP
-    example_mp("HoleReacherDMP-v0", seed=10, iterations=5, render=render)
+    example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
 
     # ProMP
-    example_mp("HoleReacherProMP-v0", seed=10, iterations=5, render=render)
-    example_mp("BoxPushingTemporalSparseProMP-v0", seed=10, iterations=1, render=render)
-    example_mp("TableTennis4DProMP-v0", seed=10, iterations=20, render=render)
+    example_mp("fancy_ProMP/HoleReacher-v0", seed=10, iterations=5, render=render)
+    example_mp("fancy_ProMP/BoxPushingTemporalSparse-v0", seed=10, iterations=1, render=render)
+    example_mp("fancy_ProMP/TableTennis4D-v0", seed=10, iterations=20, render=render)
 
     # ProDMP with Replanning
-    example_mp("BoxPushingDenseReplanProDMP-v0", seed=10, iterations=4, render=render)
-    example_mp("TableTennis4DReplanProDMP-v0", seed=10, iterations=20, render=render)
-    example_mp("TableTennisWindReplanProDMP-v0", seed=10, iterations=20, render=render)
+    example_mp("fancy_ProDMP/BoxPushingDenseReplan-v0", seed=10, iterations=4, render=render)
+    example_mp("fancy_ProDMP/TableTennis4DReplan-v0", seed=10, iterations=20, render=render)
+    example_mp("fancy_ProDMP/TableTennisWindReplan-v0", seed=10, iterations=20, render=render)
 
     # Altered basis functions
-    obs1 = example_custom_mp("Reacher5dProMP-v0", seed=10, iterations=1, render=render)
+    obs1 = example_custom_mp("fancy_ProMP/Reacher5d-v0", seed=10, iterations=1, render=render)
 
     # Custom MP
     example_fully_custom_mp(seed=10, iterations=1, render=render)

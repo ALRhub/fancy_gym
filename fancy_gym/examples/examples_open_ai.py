@@ -1,3 +1,4 @@
+import gymnasium as gym
 import fancy_gym
 
 
@@ -12,11 +13,10 @@ def example_mp(env_name, seed=1, render=True):
     Returns:
 
     """
-    # While in this case gym.make() is possible to use as well, we recommend our custom make env function.
-    env = fancy_gym.make(env_name, seed)
+    env = gym.make(env_name)
 
     returns = 0
-    obs = env.reset()
+    obs = env.reset(seed=seed)
     # number of samples/full trajectories (multiple environment steps)
     for i in range(10):
         if render and i % 2 == 0:
@@ -33,5 +33,4 @@ def example_mp(env_name, seed=1, render=True):
 
 
 if __name__ == '__main__':
-    example_mp("ReacherProMP-v2")
-
+    example_mp("gym_ProMP/Reacher-v2")

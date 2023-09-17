@@ -3,19 +3,20 @@ from collections import OrderedDict
 import numpy as np
 from matplotlib import pyplot as plt
 
+import gymnasium as gym
 import fancy_gym
 
 # This might work for some environments, however, please verify either way the correct trajectory information
 # for your environment are extracted below
 SEED = 1
 
-env_id = "Reacher5dProMP-v0"
+env_id = "fancy_ProMP/Reacher5d-v0"
 
-env = fancy_gym.make(env_id, seed=SEED, controller_kwargs={'p_gains': 0.05, 'd_gains': 0.05}).env
+env = fancy_gym.make(env_id, mp_config_override={'controller_kwargs': {'p_gains': 0.05, 'd_gains': 0.05}}).env
 env.action_space.seed(SEED)
 
 # Plot difference between real trajectory and target MP trajectory
-env.reset()
+env.reset(seed=SEED)
 w = env.action_space.sample()
 pos, vel = env.get_trajectory(w)
 

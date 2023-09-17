@@ -21,9 +21,9 @@ def example_general(env_id="Pendulum-v1", seed=1, iterations=1000, render=True):
 
     """
 
-    env = fancy_gym.make(env_id, seed)
+    env = gym.make(env_id)
     rewards = 0
-    obs = env.reset()
+    obs = env.reset(seed=seed)
     print("Observation shape: ", env.observation_space.shape)
     print("Action shape: ", env.action_space.shape)
 
@@ -41,7 +41,7 @@ def example_general(env_id="Pendulum-v1", seed=1, iterations=1000, render=True):
             obs = env.reset()
 
 
-def example_async(env_id="HoleReacher-v0", n_cpu=4, seed=int('533D', 16), n_samples=800):
+def example_async(env_id="fancy/HoleReacher-v0", n_cpu=4, seed=int('533D', 16), n_samples=800):
     """
     Example for running any env in a vectorized multiprocessing setting to generate more samples faster.
     This also includes DMC and DMP environments when leveraging our custom make_env function.
@@ -93,11 +93,10 @@ if __name__ == '__main__':
     example_general("Pendulum-v1", seed=10, iterations=200, render=render)
 
     # Mujoco task from framework
-    example_general("Reacher5d-v0", seed=10, iterations=200, render=render)
+    example_general("fancy/Reacher5d-v0", seed=10, iterations=200, render=render)
 
     # # OpenAI Mujoco task
     example_general("HalfCheetah-v2", seed=10, render=render)
 
     # Vectorized multiprocessing environments
     # example_async(env_id="HoleReacher-v0", n_cpu=2, seed=int('533D', 16), n_samples=2 * 200)
-

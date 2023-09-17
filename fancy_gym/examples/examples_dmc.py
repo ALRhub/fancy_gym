@@ -1,7 +1,8 @@
+import gymnasium as gym
 import fancy_gym
 
 
-def example_dmc(env_id="dmc:fish-swim", seed=1, iterations=1000, render=True):
+def example_dmc(env_id="dm_control/fish-swim", seed=1, iterations=1000, render=True):
     """
     Example for running a DMC based env in the step based setting.
     The env_id has to be specified as `domain_name:task_name` or
@@ -16,9 +17,9 @@ def example_dmc(env_id="dmc:fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = fancy_gym.make(env_id, seed)
+    env = gym.make(env_id)
     rewards = 0
-    obs = env.reset()
+    obs = env.reset(seed=seed)
     print("observation shape:", env.observation_space.shape)
     print("action shape:", env.action_space.shape)
 
@@ -56,7 +57,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     """
 
     # Base DMC name, according to structure of above example
-    base_env_id = "dmc:ball_in_cup-catch"
+    base_env_id = "dm_control/ball_in_cup-catch"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
@@ -65,8 +66,8 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     trajectory_generator_kwargs = {'trajectory_generator_type': 'promp'}
     phase_generator_kwargs = {'phase_generator_type': 'linear'}
     controller_kwargs = {'controller_type': 'motor',
-                          "p_gains": 1.0,
-                          "d_gains": 0.1,}
+                         "p_gains": 1.0,
+                         "d_gains": 0.1, }
     basis_generator_kwargs = {'basis_generator_type': 'zero_rbf',
                               'num_basis': 5,
                               'num_basis_zero_start': 1
@@ -123,14 +124,14 @@ if __name__ == '__main__':
     render = True
 
     # # Standard DMC Suite tasks
-    example_dmc("dmc:fish-swim", seed=10, iterations=1000, render=render)
+    example_dmc("dm_control/fish-swim", seed=10, iterations=1000, render=render)
     #
     # # Manipulation tasks
     # # Disclaimer: The vision versions are currently not integrated and yield an error
-    example_dmc("dmc:manipulation-reach_site_features", seed=10, iterations=250, render=render)
+    example_dmc("dm_control/manipulation-reach_site_features", seed=10, iterations=250, render=render)
     #
     # # Gym + DMC hybrid task provided in the MP framework
-    example_dmc("dmc_ball_in_cup-catch_promp-v0", seed=10, iterations=1, render=render)
+    example_dmc("dm_control_ProMP/ball_in_cup-catch-v0", seed=10, iterations=1, render=render)
 
     # Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is
     # already registered above
