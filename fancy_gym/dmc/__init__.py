@@ -32,7 +32,7 @@ register(
 _dmc_cartpole_tasks = ["balance", "balance_sparse", "swingup", "swingup_sparse"]
 for _task in _dmc_cartpole_tasks:
     register(
-        id=f'dmc_cartpole-{_task}_dmp-v0',
+        id=f'dm_control/cartpole-{_task}_dmp-v0',
         register_step_based=False,
         mp_wrapper=suite.cartpole.MPWrapper,
         add_mp_types=['DMP', 'ProMP'],
