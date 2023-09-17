@@ -10,6 +10,7 @@ class MPWrapper(RawInterfaceWrapper):
         'ProMP': {
             'controller_kwargs': {
                 'p_gains': 50.0,
+                'd_gains': 1.0,
             },
             'trajectory_generator_kwargs': {
                 'weights_scale': 0.2,
@@ -18,6 +19,7 @@ class MPWrapper(RawInterfaceWrapper):
         'DMP': {
             'controller_kwargs': {
                 'p_gains': 50.0,
+                'd_gains': 1.0,
             },
             'phase_generator': {
                 'alpha_phase': 2,

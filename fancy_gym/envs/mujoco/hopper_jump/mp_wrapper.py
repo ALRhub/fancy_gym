@@ -6,6 +6,11 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
 class MPWrapper(RawInterfaceWrapper):
+    mp_config = {
+        'ProMP': {},
+        'DMP': {},
+        'ProDMP': {},
+    }
 
     # Random x goal + random init pos
     @property
