@@ -1,6 +1,5 @@
 import os
 
-import mujoco_py.builder
 import numpy as np
 from gymnasium import utils
 from gymnasium.envs.mujoco import MujocoEnv
@@ -74,16 +73,13 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         crash = False
         for _ in range(self.repeat_action):
             applied_action = a + self.sim.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
-            try:
-                self.do_simulation(applied_action, self.frame_skip)
-                self.reward_function.initialize(self)
-                # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
-                if self._steps < self.release_step:
-                    self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
-                    self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
-                crash = False
-            except mujoco_py.builder.MujocoException:
-                crash = True
+            self.do_simulation(applied_action, self.frame_skip)
+            self.reward_function.initialize(self)
+            # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
+            if self._steps < self.release_step:
+                self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
+                self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
+            crash = False
 
         ob = self._get_obs()
 
