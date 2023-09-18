@@ -165,12 +165,12 @@ import numpy as np
 
 
 class RawInterfaceWrapper(gym.Wrapper):
-    mp_config = { # Default configurations for MPs can be ovveritten by defining them here.
+    mp_config = { # Default configurations for MPs can be overitten by defining attributes here.
         'ProMP': {},
         'DMP': {},
         'ProDMP': {},
-    }    
-    
+    }
+
     @property
     def context_mask(self) -> np.ndarray:
         """
