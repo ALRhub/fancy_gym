@@ -66,8 +66,8 @@ Regular step based environments added by Fancy Gym are added into the ```fancy/`
 | ------------------------------------------------------------ |
 
 ```python
+import gymnasium as gym
 import fancy_gym
-import gym
 
 env = gym.make('fancy/Reacher5d-v0')
 observation = env.reset(seed=1)
@@ -107,9 +107,10 @@ Just keep in mind, calling `step()` executes a full trajectory.
 > Feel free to try it and open an issue with any problems that occur.
 
 ```python
+import gymnasium as gym
 import fancy_gym
 
-env = fancy_gym.make('fancy_ProMP/Reacher5d-v0')
+env = gym.make('fancy_ProMP/Reacher5d-v0')
 # or env = fancy_gym.make('metaworld_ProDMP/reach-v2')
 # or env = fancy_gym.make('dm_control_DMP/ball_in_cup-catch-v0')
 
