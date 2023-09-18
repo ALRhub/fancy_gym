@@ -212,6 +212,12 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
         mp_wrapper=mujoco.box_pushing.MPWrapper,
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
+    register(
+        id='BoxPushingRandomInit{}-v0'.format(reward_type),
+        entry_point='fancy_gym.envs.mujoco:BoxPushing{}'.format(reward_type),
+        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
+        kwargs={"random_init": True}
+    )
 
     upgrade(
         id='fancy/BoxPushing{}Replan-v0'.format(reward_type),

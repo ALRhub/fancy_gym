@@ -52,7 +52,8 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return self.env.dt
 
-    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) \
+    def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+                                            tau_bound: list = None, delay_bound: list = None ) \
             -> Tuple[bool, np.ndarray, np.ndarray]:
         """
         Used to preprocess the action and check if the desired trajectory is valid.
@@ -61,6 +62,8 @@ class RawInterfaceWrapper(gym.Wrapper):
             specified, else only traj_gen parameters
             pos_traj: a vector instance of the raw position trajectory
             vel_traj: a vector instance of the raw velocity trajectory
+            tau_bound: a list of two elements, the lower and upper bound of the trajectory length scaling factor
+            delay_bound: a list of two elements, the lower and upper bound of the time to wait before execute
         Returns:
             validity flag: bool, True if the raw trajectory is valid, False if not
             pos_traj: a vector instance of the preprocessed position trajectory 
@@ -97,7 +100,8 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         return True
 
-    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
+    def invalid_traj_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+                              tau_bound: list, delay_bound: list) -> Tuple[np.ndarray, float, bool, dict]:
         """
         Used to return a artificial return from the env if the desired trajectory is invalid.
         Args:
@@ -105,6 +109,8 @@ class RawInterfaceWrapper(gym.Wrapper):
             specified, else only traj_gen parameters
             pos_traj: a vector instance of the raw position trajectory
             vel_traj: a vector instance of the raw velocity trajectory
+            tau_bound: a list of two elements, the lower and upper bound of the trajectory length scaling factor
+            delay_bound: a list of two elements, the lower and upper bound of the time to wait before execute
         Returns:
             obs: artificial observation if the trajectory is invalid, by default a zero vector
             reward: artificial reward if the trajectory is invalid, by default 0

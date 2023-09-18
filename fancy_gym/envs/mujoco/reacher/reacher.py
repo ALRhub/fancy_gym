@@ -101,11 +101,11 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
             # I Quadrant
             # self.goal = self.np_random.uniform(low=0, high=self.n_links / 10, size=2)
             # II Quadrant
-            # self.goal = np.random.uniform(low=[-self.n_links / 10, 0], high=[0, self.n_links / 10], size=2)
+            # self.goal = self.np_random.uniform(low=[-self.n_links / 10, 0], high=[0, self.n_links / 10], size=2)
             # II + III Quadrant
-            # self.goal = np.random.uniform(low=-self.n_links / 10, high=[0, self.n_links / 10], size=2)
+            # self.goal = self.np_random.uniform(low=-self.n_links / 10, high=[0, self.n_links / 10], size=2)
             # I + II Quadrant
-            # self.goal = np.random.uniform(low=[-self.n_links / 10, 0], high=self.n_links, size=2)
+            # self.goal = self.np_random.uniform(low=[-self.n_links / 10, 0], high=self.n_links, size=2)
             if np.linalg.norm(self.goal) < self.n_links / 10:
                 break
 
