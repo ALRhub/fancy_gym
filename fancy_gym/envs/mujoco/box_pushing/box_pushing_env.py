@@ -36,7 +36,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         "render_fps": 50
     }
 
-    def __init__(self, frame_skip: int = 10, random_init):
+    def __init__(self, frame_skip: int = 10, random_init: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
