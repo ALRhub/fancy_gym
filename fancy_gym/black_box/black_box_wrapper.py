@@ -99,8 +99,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         init_time = np.array(
             0 if not self.do_replanning else self.current_traj_steps * self.dt)
 
-        condition_pos = self.condition_pos if self.condition_pos is not None else self.current_pos
-        condition_vel = self.condition_vel if self.condition_vel is not None else self.current_vel
+        condition_pos = self.condition_pos if self.condition_pos is not None else self.env.get_wrapper_attr('current_pos')
+        condition_vel = self.condition_vel if self.condition_vel is not None else self.env.get_wrapper_attr('current_vel')
 
         self.traj_gen.set_initial_conditions(
             init_time, condition_pos, condition_vel)
@@ -165,7 +165,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.plan_steps += 1
         for t, (pos, vel) in enumerate(zip(position, velocity)):
             step_action = self.tracking_controller.get_action(
-                pos, vel, self.current_pos, self.current_vel)
+                pos, vel, self.env.get_wrapper_attr('current_pos'), self.env.get_wrapper_attr('current_vel'))
             c_action = np.clip(
                 step_action, self.env.action_space.low, self.env.action_space.high)
             obs, c_reward, terminated, truncated, info = self.env.step(
@@ -184,7 +184,7 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if terminated or truncated or (self.replanning_schedule(self.current_pos, self.current_vel, obs, c_action, t + 1 + self.current_traj_steps) and self.plan_steps < self.max_planning_times):
+            if terminated or truncated or (self.replanning_schedule(self.env.get_wrapper_attr('current_pos'), self.env.get_wrapper_attr('current_vel'), obs, c_action, t + 1 + self.current_traj_steps) and self.plan_steps < self.max_planning_times):
 
                 if self.condition_on_desired:
                     self.condition_pos = pos
