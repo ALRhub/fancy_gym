@@ -18,6 +18,7 @@ def test_step_metaworld_functionality(env_id: str):
     run_env(env_id)
 
 
+@pytest.mark.skip(reason="Seeding does not correctly work on current Metaworld.")
 @pytest.mark.parametrize('env_id', METAWORLD_IDS)
 def test_step_metaworld_determinism(env_id: str):
     """Tests that for step environments identical seeds produce identical trajectories."""
@@ -30,6 +31,7 @@ def test_bb_metaworld_functionality(env_id: str):
     run_env(env_id)
 
 
+@pytest.mark.skip(reason="Seeding does not correctly work on current Metaworld.")
 @pytest.mark.parametrize('env_id', METAWORLD_MP_IDS)
 def test_bb_metaworld_determinism(env_id: str):
     """Tests that for black box environment identical seeds produce identical trajectories."""
