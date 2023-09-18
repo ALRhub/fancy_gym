@@ -14,10 +14,10 @@ Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maint
 
 **Key Features**:
 
-- **New Challenging Environments**: We've introduced several new environments that present a higher degree of difficulty, pushing the boundaries of reinforcement learning research.
-- **Advanced Movement Primitives**: `fancy_gym` supports sophisticated movement primitives, including Dynamic Movement Primitives (DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic Dynamic Movement Primitives (ProDMP).
-- **Benchmark Suite Compatibility**: `fancy_gym` makes it easy to access renowned benchmark suites such as [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) and [Metaworld](https://meta-world.github.io/) and makes it easy to use them with movement primitives.
+- **New Challenging Environments**: We've introduced several new environments (Panda Box Pushing, Table Tennis, etc.) that present a higher degree of difficulty, pushing the boundaries of reinforcement learning research.
+- **Support for Movement Primitives**: `fancy_gym` supports a range of movement primitives (MPs), including Dynamic Movement Primitives (DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic Dynamic Movement Primitives (ProDMP).
 - **Upgrade to Movement Primitives**: With our framework, it's straightforward to transform standard Gymnasium environments into environments that support movement primitives.
+- **Benchmark Suite Compatibility**: `fancy_gym` makes it easy to access renowned benchmark suites such as [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) and [Metaworld](https://meta-world.github.io/), wether you want to use them in the normal step-based or a MP-based setting.
 - **Contribute Your Own Environments**: If you're inspired to create custom gym environments, both step-based and with movement primitives, this [guide](https://www.gymlibrary.dev/content/environment_creation/) will assist you. We encourage and highly appreciate submissions via PRs to integrate these environments into `fancy_gym`.
 
 ## Movement Primitive Environments (Episode-Based/Black-Box Environments)
