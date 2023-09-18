@@ -119,7 +119,7 @@ env = gym.make('fancy_ProMP/Reacher5d-v0')
 env.render(mode='human')
 
 # This returns the context information, not the full state observation
-observation = env.reset(seed=1)
+observation, info = env.reset(seed=1)
 
 for i in range(5):
     action = env.action_space.sample()
@@ -240,7 +240,7 @@ From this point on, you can access MP-version of your environments via
 env = gym.make('custom_ProDMP/cool_new_env-v0')
 
 rewards = 0
-observation = env.reset()
+observation, info = env.reset()
 
 # number of samples/full trajectories (multiple environment steps)
 for i in range(5):
