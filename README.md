@@ -83,7 +83,7 @@ for i in range(1000):
         env.render()
 
     if terminated or truncated:
-        observation = env.reset()
+        observation, info = env.reset()
 ```
 
 ### Black-box Environments
@@ -131,7 +131,7 @@ for i in range(5):
     observation, reward, terminated, truncated, info = env.step(action)
 
     # terminated or truncated is always True as we are working on the episode level, hence we always reset()
-    observation = env.reset()
+    observation, info = env.reset()
 ```
 
 To show all available environments, we provide some additional convenience variables. All of them return a dictionary
@@ -257,9 +257,9 @@ for i in range(5):
     rewards += reward
 
     if terminated or truncated:
-        print(base_env_id, rewards)
+        print(rewards)
         rewards = 0
-        observation = env.reset()
+        observatio, infon = env.reset()
 ```
 
 ## Icon Attribution
