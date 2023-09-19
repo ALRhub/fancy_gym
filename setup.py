@@ -10,6 +10,7 @@ extras = {
     'metaworld': ['metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld'],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
     'mujoco': ['mujoco==2.3.3', 'gymnasium[mujoco]>0.26.0'],
+    'mujoco-legacy' = ['mujoco-py >=2.1,<2.2', 'cython<3'],
     'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
 }
 
