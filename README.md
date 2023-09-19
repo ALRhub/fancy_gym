@@ -73,7 +73,7 @@ import fancy_gym
 env = gym.make('fancy/Reacher5d-v0')
 # or env = gym.make('metaworld/reach-v2') # fancy_gym allows access to all metaworld ML1 tasks via the metaworld/ NS
 # or env = gym.make('dm_control/ball_in_cup-catch-v0')
-# or env = gym.make('Hopper-v4')
+# or env = gym.make('Reacher-v2')
 observation = env.reset(seed=1)
 
 for i in range(1000):
@@ -117,7 +117,7 @@ import fancy_gym
 env = gym.make('fancy_ProMP/Reacher5d-v0')
 # or env = gym.make('metaworld_ProDMP/reach-v2')
 # or env = gym.make('dm_control_DMP/ball_in_cup-catch-v0')
-# or env = gym.make('gym_ProDMP/Hopper-v4') # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
+# or env = gym.make('gym_ProMP/Reacher-v2') # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
 
 # render() can be called once in the beginning with all necessary arguments.
 # To turn it of again just call render() without any arguments. 
@@ -130,12 +130,12 @@ for i in range(5):
     action = env.action_space.sample()
     observation, reward, terminated, truncated, info = env.step(action)
 
-    # Done is always True as we are working on the episode level, hence we always reset()
+    # terminated or truncated is always True as we are working on the episode level, hence we always reset()
     observation = env.reset()
 ```
 
 To show all available environments, we provide some additional convenience variables. All of them return a dictionary
-with two keys `DMP` and `ProMP` that store a list of available environment ids.
+with the keys `DMP`, `ProMP`, `ProDMP` and `all` that store a list of available environment ids.
 
 ```python
 import fancy_gym
@@ -154,6 +154,9 @@ print(fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
 
 print("MetaWorld Black-box tasks:")
 print(fancy_gym.ALL_METAWORLD_MOVEMENT_PRIMITIVE_ENVIRONMENTS)
+
+print("If you add custom envs, their mp versions will be found in:")
+print(fancy_gym.MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS['<my_custom_namespace>'])
 ```
 
 ### How to create a new MP task
