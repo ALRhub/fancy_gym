@@ -259,7 +259,7 @@ for i in range(5):
     if terminated or truncated:
         print(rewards)
         rewards = 0
-        observatio, infon = env.reset()
+        observation, info = env.reset()
 ```
 
 ## Icon Attribution
