@@ -17,8 +17,8 @@ Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maint
 - **New Challenging Environments**: We've introduced several new environments (Panda Box Pushing, Table Tennis, etc.) that present a higher degree of difficulty, pushing the boundaries of reinforcement learning research.
 - **Support for Movement Primitives**: `fancy_gym` supports a range of movement primitives (MPs), including Dynamic Movement Primitives (DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic Dynamic Movement Primitives (ProDMP).
 - **Upgrade to Movement Primitives**: With our framework, it's straightforward to transform standard Gymnasium environments into environments that support movement primitives.
-- **Benchmark Suite Compatibility**: `fancy_gym` makes it easy to access renowned benchmark suites such as [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) and [Metaworld](https://meta-world.github.io/), whether you want to use them in the normal step-based or a MP-based setting.
-- **Contribute Your Own Environments**: If you're inspired to create custom gym environments, both step-based and with movement primitives, this [guide](https://www.gymlibrary.dev/content/environment_creation/) will assist you. We encourage and highly appreciate submissions via PRs to integrate these environments into `fancy_gym`.
+- **Benchmark Suite Compatibility**: `fancy_gym` makes it easy to access renowned benchmark suites such as [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) and [Metaworld](https://meta-world.github.io/), whether you want to use them in the regular step-based setting or using MPs.
+- **Contribute Your Own Environments**: If you're inspired to create custom gym environments, both step-based and with movement primitives, this [guide](https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/) will assist you. We encourage and highly appreciate submissions via PRs to integrate these environments into `fancy_gym`.
 
 ## Movement Primitive Environments (Episode-Based/Black-Box Environments)
 
@@ -48,10 +48,11 @@ cd fancy_gym
 pip install -e .
 ```
 
-We have a few optional dependencies. CHeck them out in the setup.py or just install all of them via
+We have a few optional dependencies. If you also want to install those use
 
 ```bash 
-pip install -e '.[all]'
+pip install -e '.[all]' # to install all optional dependencies
+pip install -e '.[dmc,metaworld,box2d,mujoco,mujoco-legacy,jax,testing]' # or choose only those you want
 ```
 
 
@@ -60,9 +61,9 @@ pip install -e '.[all]'
 We will only show the basics here and prepared [multiple examples](fancy_gym/examples/) for a more detailed look.
 
 ### Step-Based Environments
-Regular step based environments added by Fancy Gym are added into the ```fancy/``` namespace.
+Regular step based environments added by Fancy Gym are added into the `fancy/` namespace.
 
-| :exclamation:  Legacy versions of Fancy Gym used ```fancy_gym.make(...)```. This is no longer supported and will raise an Exception on new versions. |
+| :exclamation:  Legacy versions of Fancy Gym used `fancy_gym.make(...)`. This is no longer supported and will raise an Exception on new versions. |
 | ------------------------------------------------------------ |
 
 ```python
@@ -70,6 +71,9 @@ import gymnasium as gym
 import fancy_gym
 
 env = gym.make('fancy/Reacher5d-v0')
+# or env = gym.make('metaworld/reach-v2') # fancy_gym allows access to all metaworld ML1 tasks via the metaworld/ NS
+# or env = gym.make('dm_control/ball_in_cup-catch-v0')
+# or env = gym.make('Hopper-v4')
 observation = env.reset(seed=1)
 
 for i in range(1000):
@@ -96,7 +100,7 @@ All environments provide by default the cumulative episode reward, this can howe
 `trajectory_length`| Total number of environment interactions | Always
 `other`| All other information from the underlying environment are returned as a list with length `trajectory_length` maintaining the original key. In case some information are not provided every time step, the missing values are filled with `None`. | Always
 
-Existing MP tasks can be created the same way as above. The namespace of a MP-variant of an environment is given by ```<original namespace>_<MP name>/```.
+Existing MP tasks can be created the same way as above. The namespace of a MP-variant of an environment is given by `<original namespace>_<MP name>/`.
 Just keep in mind, calling `step()` executes a full trajectory.
 
 > **Note:**   
@@ -111,8 +115,9 @@ import gymnasium as gym
 import fancy_gym
 
 env = gym.make('fancy_ProMP/Reacher5d-v0')
-# or env = fancy_gym.make('metaworld_ProDMP/reach-v2')
-# or env = fancy_gym.make('dm_control_DMP/ball_in_cup-catch-v0')
+# or env = gym.make('metaworld_ProDMP/reach-v2')
+# or env = gym.make('dm_control_DMP/ball_in_cup-catch-v0')
+# or env = gym.make('gym_ProDMP/Hopper-v4') # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
 
 # render() can be called once in the beginning with all necessary arguments.
 # To turn it of again just call render() without any arguments. 
