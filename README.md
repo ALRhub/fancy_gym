@@ -7,14 +7,14 @@
   <br>
 </h1>
 
-| :exclamation:  Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the legacy branch. Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
-| ------------------------------------------------------------ |
+| :exclamation: Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the legacy branch. Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maintained fork of OpenAI’s renowned Gym library) `fancy_gym` offers a comprehensive collection of reinforcement learning environments.
 
 **Key Features**:
 
-- **New Challenging Environments**: We've introduced several new environments (Panda Box Pushing, Table Tennis, etc.) that present a higher degree of difficulty, pushing the boundaries of reinforcement learning research.
+- **New Challenging Environments**: `fancy_gym` includes several new environments (Panda Box Pushing, Table Tennis, etc.) that present a higher degree of difficulty, pushing the boundaries of reinforcement learning research.
 - **Support for Movement Primitives**: `fancy_gym` supports a range of movement primitives (MPs), including Dynamic Movement Primitives (DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic Dynamic Movement Primitives (ProDMP).
 - **Upgrade to Movement Primitives**: With our framework, it's straightforward to transform standard Gymnasium environments into environments that support movement primitives.
 - **Benchmark Suite Compatibility**: `fancy_gym` makes it easy to access renowned benchmark suites such as [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control) and [Metaworld](https://meta-world.github.io/), whether you want to use them in the regular step-based setting or using MPs.
@@ -32,39 +32,39 @@ While the overarching objective of MP environments remains the learning of an op
 
 1. Clone the repository
 
-```bash 
+```bash
 git clone git@github.com:ALRhub/fancy_gym.git
 ```
 
 2. Go to the folder
 
-```bash 
+```bash
 cd fancy_gym
 ```
 
 3. Install with
 
-```bash 
+```bash
 pip install -e .
 ```
 
 We have a few optional dependencies. If you also want to install those use
 
-```bash 
+```bash
 pip install -e '.[all]' # to install all optional dependencies
 pip install -e '.[dmc,metaworld,box2d,mujoco,mujoco-legacy,jax,testing]' # or choose only those you want
 ```
-
 
 ## How to use Fancy Gym
 
 We will only show the basics here and prepared [multiple examples](fancy_gym/examples/) for a more detailed look.
 
 ### Step-Based Environments
+
 Regular step based environments added by Fancy Gym are added into the `fancy/` namespace.
 
-| :exclamation:  Legacy versions of Fancy Gym used `fancy_gym.make(...)`. This is no longer supported and will raise an Exception on new versions. |
-| ------------------------------------------------------------ |
+| :exclamation: Legacy versions of Fancy Gym used `fancy_gym.make(...)`. This is no longer supported and will raise an Exception on new versions. |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ```python
 import gymnasium as gym
@@ -90,20 +90,20 @@ for i in range(1000):
 
 All environments provide by default the cumulative episode reward, this can however be changed if necessary. Optionally, each environment returns all collected information from each step as part of the infos. This information is, however, mainly meant for debugging as well as logging and not for training.
 
-|Key| Description|Type
-|---|---|---|
-`positions`| Generated trajectory from MP | Optional
-`velocities`| Generated trajectory from MP | Optional
-`step_actions`| Step-wise executed action based on controller output | Optional
-`step_observations`| Step-wise intermediate observations | Optional
-`step_rewards`| Step-wise rewards | Optional
-`trajectory_length`| Total number of environment interactions | Always
-`other`| All other information from the underlying environment are returned as a list with length `trajectory_length` maintaining the original key. In case some information are not provided every time step, the missing values are filled with `None`. | Always
+| Key                 | Description                                                                                                                                                                                                                                      | Type     |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- |
+| `positions`         | Generated trajectory from MP                                                                                                                                                                                                                     | Optional |
+| `velocities`        | Generated trajectory from MP                                                                                                                                                                                                                     | Optional |
+| `step_actions`      | Step-wise executed action based on controller output                                                                                                                                                                                             | Optional |
+| `step_observations` | Step-wise intermediate observations                                                                                                                                                                                                              | Optional |
+| `step_rewards`      | Step-wise rewards                                                                                                                                                                                                                                | Optional |
+| `trajectory_length` | Total number of environment interactions                                                                                                                                                                                                         | Always   |
+| `other`             | All other information from the underlying environment are returned as a list with length `trajectory_length` maintaining the original key. In case some information are not provided every time step, the missing values are filled with `None`. | Always   |
 
 Existing MP tasks can be created the same way as above. The namespace of a MP-variant of an environment is given by `<original namespace>_<MP name>/`.
 Just keep in mind, calling `step()` executes a full trajectory.
 
-> **Note:**   
+> **Note:**  
 > Currently, we are also in the process of enabling replanning as well as learning of sub-trajectories.
 > This allows to split the episode into multiple trajectories and is a hybrid setting between step-based and
 > black-box leaning.
@@ -120,7 +120,7 @@ env = gym.make('fancy_ProMP/Reacher5d-v0')
 # or env = gym.make('gym_ProMP/Reacher-v2') # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
 
 # render() can be called once in the beginning with all necessary arguments.
-# To turn it of again just call render() without any arguments. 
+# To turn it of again just call render() without any arguments.
 env.render(mode='human')
 
 # This returns the context information, not the full state observation
@@ -185,7 +185,7 @@ class RawInterfaceWrapper(gym.Wrapper):
         Returns boolean mask of the same shape as the observation space.
         It determines whether the observation is returned for the contextual case or not.
         This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
-        E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the 
+        E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the
         context/part of the first observation, the velocities are not necessary in the observation for the task.
         Returns:
             bool array representing the indices of the observations
@@ -263,4 +263,5 @@ for i in range(5):
 ```
 
 ## Icon Attribution
+
 The icon is based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) icon as can be found [here](https://gymnasium.farama.org/_static/img/gymnasium_black.svg).
