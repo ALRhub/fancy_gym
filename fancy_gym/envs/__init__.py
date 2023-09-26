@@ -251,6 +251,15 @@ for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
         max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
     )
 
+# Box pushing obstacle environments with different rewards
+for reward_type in ["Dense", "TemporalSparse", "TemporalSpatialSparse"]:
+
+    register(
+        id='BoxPushingObstacle{}-v0'.format(reward_type),
+        entry_point='fancy_gym.envs.mujoco:BoxPushingObstacle{}'.format(reward_type),
+        max_episode_steps=MAX_EPISODE_STEPS_BOX_PUSHING,
+    )
+
 # Here we use the same reward as in BeerPong-v0, but now consider after the release,
 # only one time step, i.e. we simulate until the end of th episode
 register(

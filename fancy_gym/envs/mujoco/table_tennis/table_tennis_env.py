@@ -15,6 +15,10 @@ MAX_EPISODE_STEPS_TABLE_TENNIS = 350
 CONTEXT_BOUNDS_2DIMS = np.array([[-1.0, -0.65], [-0.2, 0.65]])
 CONTEXT_BOUNDS_4DIMS = np.array([[-1.0, -0.65, -1.0, -0.65],
                                  [-0.2, 0.65, -0.2, 0.65]])
+
+CONTEXT_BOUNDS_5DIMS = np.array([[-1.0, -0.65, -1.0, -0.65, 1.5],     # includes ball velocity
+                                 [-0.2, 0.65, -0.2, 0.65, 4]])
+
 CONTEXT_BOUNDS_SWICHING = np.array([[-1.0, -0.65, -1.0, 0.],
                                     [-0.2, 0.65, -0.2, 0.65]])
 
@@ -171,14 +175,14 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def set_context(self, context):
         self._steps = 0
-        self._init_ball_state = context[:2]
-        self._goal_pos = context[2:]
+        self._init_ball_state = context[:-2]
+        self._goal_pos = context[-2:]
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
-        self.data.joint("tar_z").qpos = 1.75
-        self.data.joint("tar_x").qvel = 2.5
-        self.data.joint("tar_y").qvel = 0.
-        self.data.joint("tar_z").qvel = 0.5
+        self.data.joint("tar_z").qpos = self._init_ball_state[2]
+        self.data.joint("tar_x").qvel = self._init_ball_state[3]
+        self.data.joint("tar_y").qvel = self._init_ball_state[4]
+        self.data.joint("tar_z").qvel = self._init_ball_state[5]
 
         if self._enable_artificial_wind:
             self._artificial_force = self.np_random.uniform(low=-0.1, high=0.1)

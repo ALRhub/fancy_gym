@@ -12,5 +12,7 @@ from .box_pushing.box_pushing_env import (BoxPushingDense, BoxPushingDenseRotInv
                                           BoxPushingTemporalSpatialSparseRotInv,
                                           BoxPushingTemporalSparseNoGuidanceRotInv, BoxPushingTemporalSparseNoGuidanceAtAllRotInv,
                                           BoxPushingTemporalSparseNotInclinedInit)
+from .box_pushing.box_pushing_obstacle_env import (BoxPushingObstacleDense, BoxPushingObstacleTemporalSparse,
+                                                   BoxPushingObstacleTemporalSpatialSparse)
 from .box_pushing.box_pushing_random2random_env import BoxPushingDenseRnd2Rnd, BoxPushingTemporalSparseRnd2Rnd
 from .table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching

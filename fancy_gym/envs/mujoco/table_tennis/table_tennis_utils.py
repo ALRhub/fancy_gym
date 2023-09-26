@@ -42,6 +42,48 @@ def is_init_state_valid(init_state):
     return True
 
 
+def is_init_state_valid_batch(init_states):
+    assert init_states.shape[1] == 6, "init_state must be a 6D vector (pos+vel),got {}".format(init_states)
+    x = init_states[:, 0]
+    y = init_states[:, 1]
+    z = init_states[:, 2] - table_height + 0.1
+    v_x = init_states[:, 3]
+    v_y = init_states[:, 4]
+    v_z = init_states[:, 5]
+
+    cor_states = np.ones(init_states.shape[0])
+
+    # check if the initial state is wrong
+    x_wrong = np.where(x > -0.2)[0]
+    if x_wrong.shape[0] != 0:
+        cor_states[x_wrong] = False
+
+    v_x_wrong = np.where(v_x < 0.)[0]
+    if v_x_wrong.shape[0] != 0:
+        cor_states[v_x_wrong] = False
+
+    # check if the ball can pass the net
+    t_n = (-2. * (-v_z) / g + np.sqrt(4 * (v_z ** 2) / g ** 2 - 8 * (net_height - z) / g)) / 2.
+    can_not_pass_net = np.where(x + v_x * t_n < 0.05)[0]
+    if can_not_pass_net.shape[0] != 0:
+        cor_states[can_not_pass_net] = 0
+
+    # check if ball landing position will violate x bounds
+    t_l = (-2. * (-v_z) / g + np.sqrt(4 * (v_z ** 2) / g ** 2 + 8 * (z) / g)) / 2.
+    x_bounds_wrong = np.where(x + v_x * t_l > table_x_max)[0]
+    if x_bounds_wrong.shape[0] != 0:
+        cor_states[x_bounds_wrong] = 0
+
+    # check if ball landing position will violate y bounds
+    ball_landing_pos_wrong_1 = np.where(y + v_y * t_l > table_y_max)[0]
+    ball_landing_pos_wrong_2 = np.where(y + v_y * t_l < table_y_min)[0]
+    if ball_landing_pos_wrong_1.shape[0] != 0:
+        cor_states[ball_landing_pos_wrong_1] = 0
+    if ball_landing_pos_wrong_2.shape[0] != 0:
+        cor_states[ball_landing_pos_wrong_2] = 0
+    return cor_states
+
+
 def is_init_state_valid_only_rndm_pos_batch(init_states):
     assert init_states.shape[1] == 2, "init_state must be a 6D vector (pos+vel),got {}".format(init_states)
     x = init_states[:, 0]
@@ -108,11 +150,19 @@ def is_init_state_valid_only_rndm_pos(init_state):
     return 1
 
 
-def check_init_states_valid_function(init_states):
+def check_init_states_valid_only_rndm_pos_function(init_states):
     cor_states = is_init_state_valid_only_rndm_pos_batch(init_states)
     ref_cor_states = np.zeros(init_states.shape[0])
     for i in range(init_states.shape[0]):
         ref_cor_states[i] = is_init_state_valid_only_rndm_pos(init_states[i])
+    return cor_states - ref_cor_states
+
+
+def check_init_states_valid_function(init_states):
+    cor_states = is_init_state_valid_batch(init_states)
+    ref_cor_states = np.zeros(init_states.shape[0])
+    for i in range(init_states.shape[0]):
+        ref_cor_states[i] = is_init_state_valid(init_states[i])
     return cor_states - ref_cor_states
 
 
