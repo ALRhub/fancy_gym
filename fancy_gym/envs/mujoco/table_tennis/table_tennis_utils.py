@@ -43,13 +43,13 @@ def is_init_state_valid(init_state):
 
 
 def is_init_state_valid_batch(init_states):
-    assert init_states.shape[1] == 6, "init_state must be a 6D vector (pos+vel),got {}".format(init_states)
+    assert init_states.shape[1] == 3, "init_state must be a 6D vector (pos+vel),got {}".format(init_states)
     x = init_states[:, 0]
     y = init_states[:, 1]
-    z = init_states[:, 2] - table_height + 0.1
-    v_x = init_states[:, 3]
-    v_y = init_states[:, 4]
-    v_z = init_states[:, 5]
+    z = np.ones(init_states.shape[0]) * 1.75 - table_height + 0.1
+    v_x = init_states[:, 2]
+    v_y = np.ones(init_states.shape[0]) * 0
+    v_z = np.ones(init_states.shape[0]) * 0.5
 
     cor_states = np.ones(init_states.shape[0])
 

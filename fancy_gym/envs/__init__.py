@@ -281,6 +281,12 @@ for ctxt_dim in [2, 4]:
     )
 
 register(
+    id='TableTennis5D-v0',
+    entry_point='fancy_gym.envs.mujoco:TableTennisVelocity',
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
+)
+
+register(
     id='TableTennisWind-v0',
     entry_point='fancy_gym.envs.mujoco:TableTennisWind',
     max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,

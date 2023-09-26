@@ -16,8 +16,8 @@ CONTEXT_BOUNDS_2DIMS = np.array([[-1.0, -0.65], [-0.2, 0.65]])
 CONTEXT_BOUNDS_4DIMS = np.array([[-1.0, -0.65, -1.0, -0.65],
                                  [-0.2, 0.65, -0.2, 0.65]])
 
-CONTEXT_BOUNDS_5DIMS = np.array([[-1.0, -0.65, -1.0, -0.65, 1.5],     # includes ball velocity
-                                 [-0.2, 0.65, -0.2, 0.65, 4]])
+CONTEXT_BOUNDS_5DIMS = np.array([[-1.0, -0.65, 1.5, -1.0, -0.65],  # includes ball velocity
+                                 [-0.2, 0.65, 4, -0.2, 0.65]])
 
 CONTEXT_BOUNDS_SWICHING = np.array([[-1.0, -0.65, -1.0, 0.],
                                     [-0.2, 0.65, -0.2, 0.65]])
@@ -175,14 +175,14 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def set_context(self, context):
         self._steps = 0
-        self._init_ball_state = context[:-2]
-        self._goal_pos = context[-2:]
+        self._init_ball_state = context[:2]
+        self._goal_pos = context[2:]
         self.data.joint("tar_x").qpos = self._init_ball_state[0]
         self.data.joint("tar_y").qpos = self._init_ball_state[1]
-        self.data.joint("tar_z").qpos = self._init_ball_state[2]
-        self.data.joint("tar_x").qvel = self._init_ball_state[3]
-        self.data.joint("tar_y").qvel = self._init_ball_state[4]
-        self.data.joint("tar_z").qvel = self._init_ball_state[5]
+        self.data.joint("tar_z").qpos = 1.75
+        self.data.joint("tar_x").qvel = 2.5
+        self.data.joint("tar_y").qvel = 0.
+        self.data.joint("tar_z").qvel = 0.5
 
         if self._enable_artificial_wind:
             self._artificial_force = self.np_random.uniform(low=-0.1, high=0.1)
@@ -336,3 +336,37 @@ class TableTennisWind(TableTennisEnv):
 class TableTennisGoalSwitching(TableTennisEnv):
     def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99, **kwargs):
         super().__init__(frame_skip=frame_skip, goal_switching_step=goal_switching_step)
+
+
+class TableTennisVelocity(TableTennisEnv):
+
+    def set_context(self, context):
+        self._steps = 0
+        self._init_ball_state = context[:3]
+        self._goal_pos = context[-2:]
+        self.data.joint("tar_x").qpos = self._init_ball_state[0]
+        self.data.joint("tar_y").qpos = self._init_ball_state[1]
+        self.data.joint("tar_z").qpos = 1.75
+        self.data.joint("tar_x").qvel = self._init_ball_state[2]
+        self.data.joint("tar_y").qvel = 0.
+        self.data.joint("tar_z").qvel = 0.5
+
+        if self._enable_artificial_wind:
+            self._artificial_force = self.np_random.uniform(low=-0.1, high=0.1)
+
+        self.model.body_pos[5] = np.concatenate([self._goal_pos, [0.77]])
+
+        self.data.qpos[:7] = np.array([0., 0., 0., 1.5, 0., 0., 1.5])
+        self.data.qvel[:7] = np.zeros(7)
+
+        mujoco.mj_forward(self.model, self.data)
+
+        self._hit_ball = False
+        self._ball_land_on_table = False
+        self._ball_contact_after_hit = False
+        self._ball_return_success = False
+        self._ball_landing_pos = None
+        self._terminated = False
+        self._ball_traj = []
+        self._racket_traj = []
+        return self._get_obs()
