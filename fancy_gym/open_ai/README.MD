@@ -7,8 +7,8 @@ the Motion Primitive gym interface for them.
 
 These environments are wrapped-versions of their OpenAI-gym counterparts.
 
-| Name                                 | Description                                                          | Trajectory Horizon | Action Dimension | Context Dimension |
-| ------------------------------------ | -------------------------------------------------------------------- | ------------------ | ---------------- | ----------------- |
+| Name                                 | Description                                                          | Trajectory Horizon | Action Dimension |
+| ------------------------------------ | -------------------------------------------------------------------- | ------------------ | ---------------- |
 | `gym_ProMP/ContinuousMountainCar-v0` | A ProMP wrapped version of the ContinuousMountainCar-v0 environment. | 100                | 1                |
 | `gym_ProMP/Reacher-v2`               | A ProMP wrapped version of the Reacher-v2 environment.               | 50                 | 2                |
 | `gym_ProMP/FetchSlideDense-v1`       | A ProMP wrapped version of the FetchSlideDense-v1 environment.       | 50                 | 4                |
