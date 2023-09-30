@@ -4,7 +4,7 @@
 
 ## Step-Based Envs
 
-`fancy_gym` makes all metaworld ML1 tasks avaible via the standard gym interface.
+`fancy_gym` makes all metaworld ML1 tasks avaible via the standard gym interface. To access metaworld environments using a different mode of operation (MT1 / ML100 / etc.) please use the functionality provided by metaworld directly.
 
 | Name                                     | Description                                                                           | Horizon | Action Dimension | Observation Dimension | Context Dimension |
 | ---------------------------------------- | ------------------------------------------------------------------------------------- | ------- | ---------------- | --------------------- | ----------------- |
