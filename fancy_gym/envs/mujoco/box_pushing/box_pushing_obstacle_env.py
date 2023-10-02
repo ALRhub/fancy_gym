@@ -82,6 +82,11 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
+        box_vertices = np.array([self.data.site("manboxVert1").xpos.copy(), self.data.site("manboxVert2").xpos.copy(),
+                                 self.data.site("manboxVert3").xpos.copy(), self.data.site("manboxVert4").xpos.copy()])
+        target_box_vertices = np.array([self.data.site("tarboxVert1").xpos.copy(), self.data.site("tarboxVert2").xpos.copy(),
+                                 self.data.site("tarboxVert3").xpos.copy(), self.data.site("tarboxVert4").xpos.copy()])
+
         if not unstable_simulation:
             reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2,
                                       target_quat3, target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action)
@@ -100,7 +105,9 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
             'box_goal_rot_dist': box_goal_quat_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
             'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
-            'num_steps': self._steps
+            'num_steps': self._steps,
+            'box_vertices': box_vertices,
+            'target_box_vertices': target_box_vertices,
         }
         return obs, reward, episode_end, infos
 
@@ -205,6 +212,7 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
 
         self.model.body_pos[7][:2] = obs_xy_pos
         self.model.body_pos[7][-1] = -0.01
+
 
     def set_context(self, context):
         angle = context[2]
