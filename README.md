@@ -266,6 +266,20 @@ for i in range(5):
         observation, info = env.reset()
 ```
 
+## Citing the Project
+
+To cite this repository in publications:
+
+```bibtex
+@software{fancy_gym,
+	title = {Fancy {Gym}},
+	author = {Otto, Fabian and Celik, Onur and Roth, Dominik and Zhou, Hongyi},
+	abstract = {Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.},
+	url = {https://github.com/ALRhub/fancy_gym},
+    organization = {Autonomous Learning Robots Lab (ALR) @ KIT},
+}
+```
+
 ## Icon Attribution
 
 The icon is based on the [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) icon as can be found [here](https://gymnasium.farama.org/_static/img/gymnasium_black.svg).
