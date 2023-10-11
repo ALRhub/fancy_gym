@@ -177,7 +177,7 @@ import numpy as np
 
 
 class RawInterfaceWrapper(gym.Wrapper):
-    mp_config = { # Default configurations for MPs can be overitten by defining attributes here.
+    mp_config = {
         'ProMP': {},
         'DMP': {},
         'ProDMP': {},
@@ -220,6 +220,34 @@ class RawInterfaceWrapper(gym.Wrapper):
         """
         raise NotImplementedError()
 
+```
+
+Default configurations for MPs can be overitten by defining attributes in mp_config.
+Available parameters are documented in the [MP_PyTorch Userguide](https://github.com/ALRhub/MP_PyTorch/blob/main/doc/README.md).
+
+```python
+class RawInterfaceWrapper(gym.Wrapper):
+    mp_config = {
+        'ProMP': {
+            'phase_generator_kwargs': {
+                'phase_generator_type': 'linear'
+                # When selecting another generator type, the default configuration will not be merged for the attribute.
+            },
+            'controller_kwargs': {
+                'p_gains': 0.5 * np.array([1.0, 4.0, 2.0, 4.0, 1.0, 4.0, 1.0]),
+                'd_gains': 0.5 * np.array([0.1, 0.4, 0.2, 0.4, 0.1, 0.4, 0.1]),
+            },
+            'basis_generator_kwargs': {
+                'num_basis': 3,
+                'num_basis_zero_start': 1,
+                'num_basis_zero_goal': 1,
+            },
+        },
+        'DMP': {},
+        'ProDMP': {}.
+    }
+
+    [...]
 ```
 
 If you created a new task wrapper, feel free to open a PR, so we can integrate it for others to use as well. Without the

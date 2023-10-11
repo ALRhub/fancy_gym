@@ -8,7 +8,6 @@ from collections import defaultdict
 from collections.abc import Mapping, MutableMapping
 
 from fancy_gym.utils.make_env_helpers import make_bb
-# from fancy_gym.utils.utils import nested_update
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 from gymnasium import register as gym_register
@@ -237,8 +236,6 @@ def register_mp(id: str, base_id: str, mp_wrapper: RawInterfaceWrapper, mp_type:
         MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS[ns] = {mp_type: [] for mp_type in _KNOWN_MPS_PLUS_ALL}
     MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS[ns][mp_type].append(fancy_id)
     MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS[ns]['all'].append(fancy_id)
-
-# TODO: Apply inherit_defaults: False to appropiate places and remove this...
 
 
 def nested_update(base: MutableMapping, update):
