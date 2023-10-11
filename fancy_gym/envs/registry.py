@@ -18,6 +18,15 @@ from gymnasium.envs.registration import registry as gym_registry
 class DefaultMPWrapper(RawInterfaceWrapper):
     @property
     def context_mask(self):
+        """
+            Returns boolean mask of the same shape as the observation space.
+            It determines whether the observation is returned for the contextual case or not.
+            This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
+            E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the
+            context/part of the first observation, the velocities are not necessary in the observation for the task.
+            Returns:
+                bool array representing the indices of the observations
+        """
         # If the env already defines a context_mask, we will use that
         if hasattr(self.env, 'context_mask'):
             return self.env.context_mask
@@ -27,11 +36,25 @@ class DefaultMPWrapper(RawInterfaceWrapper):
 
     @property
     def current_pos(self) -> Union[float, int, np.ndarray, Tuple]:
+        """
+            Returns the current position of the action/control dimension.
+            The dimensionality has to match the action/control dimension.
+            This is not required when exclusively using velocity control,
+            it should, however, be implemented regardless.
+            E.g. The joint positions that are directly or indirectly controlled by the action.
+        """
         assert hasattr(self.env, 'current_pos'), 'DefaultMPWrapper was unable to access env.current_pos. Please write a custom MPWrapper (recommended) or expose this attribute directly.'
         return self.env.current_pos
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray, Tuple]:
+        """
+            Returns the current velocity of the action/control dimension.
+            The dimensionality has to match the action/control dimension.
+            This is not required when exclusively using position control,
+            it should, however, be implemented regardless.
+            E.g. The joint velocities that are directly or indirectly controlled by the action.
+        """
         assert hasattr(self.env, 'current_vel'), 'DefaultMPWrapper was unable to access env.current_vel. Please write a custom MPWrapper (recommended) or expose this attribute directly.'
         return self.env.current_vel
 
