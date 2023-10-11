@@ -33,7 +33,7 @@ def find_package_data(extensions_to_include: List[str]) -> List[str]:
 
 
 setup(
-    author='Fabian Otto, Onur Celik',
+    author='Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou',
     name='fancy_gym',
     version='0.4',
     classifiers=[
