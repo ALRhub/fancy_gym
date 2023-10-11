@@ -186,14 +186,13 @@ class RawInterfaceWrapper(gym.Wrapper):
     @property
     def context_mask(self) -> np.ndarray:
         """
-        Returns boolean mask of the same shape as the observation space.
-        It determines whether the observation is returned for the contextual case or not.
-        This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
-        E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the
-        context/part of the first observation, the velocities are not necessary in the observation for the task.
-        Returns:
-            bool array representing the indices of the observations
-
+            Returns boolean mask of the same shape as the observation space.
+            It determines whether the observation is returned for the contextual case or not.
+            This effectively allows to filter unwanted or unnecessary observations from the full step-based case.
+            E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the
+            context/part of the first observation, the velocities are not necessary in the observation for the task.
+            Returns:
+                bool array representing the indices of the observations
         """
         return np.ones(self.env.observation_space.shape[0], dtype=bool)
 
@@ -276,7 +275,7 @@ To cite this repository in publications:
 	author = {Otto, Fabian and Celik, Onur and Roth, Dominik and Zhou, Hongyi},
 	abstract = {Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.},
 	url = {https://github.com/ALRhub/fancy_gym},
-    organization = {Autonomous Learning Robots Lab (ALR) @ KIT},
+	organization = {Autonomous Learning Robots Lab (ALR) @ KIT},
 }
 ```
 
