@@ -299,11 +299,11 @@ To cite this repository in publications:
 
 ```bibtex
 @software{fancy_gym,
-	title = {Fancy {Gym}},
+	title = {Fancy Gym},
 	author = {Otto, Fabian and Celik, Onur and Roth, Dominik and Zhou, Hongyi},
 	abstract = {Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.},
 	url = {https://github.com/ALRhub/fancy_gym},
-	organization = {Autonomous Learning Robots Lab (ALR) @ KIT},
+	organization = {Autonomous Learning Robots Lab (ALR) at KIT},
 }
 ```
 
