@@ -3,9 +3,8 @@
   <img src='./icon.svg' width="250px">
   <br><br>
   <b>Fancy Gym</b>
-  <br>
-  <br>
 </h1>
+<br><br>
 
 | :exclamation: Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the legacy branch. Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
