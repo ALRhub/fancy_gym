@@ -1,21 +1,23 @@
 from itertools import chain
 from typing import Tuple, Type, Union, Optional, Callable
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pytest
-from gym import register
-from gym.core import ActType, ObsType
+from gymnasium import register, make
+from gymnasium.core import ActType, ObsType
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.utils.time_aware_observation import TimeAwareObservation
+from fancy_gym.utils.wrappers import TimeAwareObservation
 
 SEED = 1
-ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch', 'metaworld:reach-v2', 'Reacher-v2']
+ENV_IDS = ['fancy/Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
-ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+ALL_MP_ENVS = fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
+
+MAX_STEPS_FALLBACK = 100
 
 
 class Object(object):
@@ -32,10 +34,12 @@ class ToyEnv(gym.Env):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
               options: Optional[dict] = None) -> Union[ObsType, Tuple[ObsType, dict]]:
-        return np.array([-1])
+        obs, options = np.array([-1]), {}
+        return obs, options
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
-        return np.array([-1]), 1, False, {}
+        obs, reward, terminated, truncated, info = np.array([-1]), 1, False, False, {}
+        return obs, reward, terminated, truncated, info
 
     def render(self, mode="human"):
         pass
@@ -76,7 +80,7 @@ def test_missing_local_state(mp_type: str):
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
+    env.reset(seed=SEED)
     with pytest.raises(NotImplementedError):
         env.step(env.action_space.sample())
 
@@ -93,12 +97,14 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
-    info_keys = list(env.step(env.action_space.sample())[3].keys())
+    env.reset(seed=SEED)
+    _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+    info_keys = list(info.keys())
 
-    env_step = fancy_gym.make(env_id, SEED)
+    env_step = make(env_id)
     env_step.reset()
-    info_keys_step = env_step.step(env_step.action_space.sample())[3].keys()
+    _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+    info_keys_step = info.keys()
 
     assert all(e in info_keys for e in info_keys_step)
     assert 'trajectory_length' in info_keys
@@ -118,13 +124,15 @@ def test_length(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]):
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': basis_generator_type})
+                            {'basis_generator_type': basis_generator_type}, fallback_max_steps=MAX_STEPS_FALLBACK)
 
-    for _ in range(5):
-        env.reset()
-        length = env.step(env.action_space.sample())[3]['trajectory_length']
+    for i in range(5):
+        env.reset(seed=SEED)
 
-        assert length == env.spec.max_episode_steps
+        _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+        length = info['trajectory_length']
+
+        assert length == env.spec.max_episode_steps, f'Expcted total simulation length ({length}) to be equal to spec.max_episode_steps ({env.spec.max_episode_steps}), but was not during test nr. {i}'
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
@@ -136,9 +144,10 @@ def test_aggregation(mp_type: str, reward_aggregation: Callable[[np.ndarray], fl
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': basis_generator_type})
-    env.reset()
+    env.reset(seed=SEED)
     # ToyEnv only returns 1 as reward
-    assert env.step(env.action_space.sample())[1] == reward_aggregation(np.ones(50, ))
+    _obs, reward, _terminated, _truncated, _info = env.step(env.action_space.sample())
+    assert reward == reward_aggregation(np.ones(50, ))
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp'])
@@ -151,14 +160,16 @@ def test_context_space(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapp
                             {'phase_generator_type': 'exp'},
                             {'basis_generator_type': 'rbf'})
     # check if observation space matches with the specified mask values which are true
-    env_step = fancy_gym.make(env_id, SEED)
+    env_step = make(env_id)
     wrapper = wrapper_class(env_step)
     assert env.observation_space.shape == wrapper.context_mask[wrapper.context_mask].shape
 
 
 @pytest.mark.parametrize('mp_type', ['promp', 'dmp', 'prodmp'])
 @pytest.mark.parametrize('num_dof', [0, 1, 2, 5])
-@pytest.mark.parametrize('num_basis', [0, 1, 2, 5])
+@pytest.mark.parametrize('num_basis', [
+    pytest.param(0, marks=pytest.mark.xfail(reason="Basis Length 0 is not yet implemented.")),
+    1, 2, 5])
 @pytest.mark.parametrize('learn_tau', [True, False])
 @pytest.mark.parametrize('learn_delay', [True, False])
 def test_action_space(mp_type: str, num_dof: int, num_basis: int, learn_tau: bool, learn_delay: bool):
@@ -219,16 +230,18 @@ def test_learn_tau(mp_type: str, tau: float):
                              'learn_delay': False
                              },
                             {'basis_generator_type': basis_generator_type,
-                             }, seed=SEED)
+                             })
 
-    d = True
+    env.reset(seed=SEED)
+    done = True
     for i in range(5):
-        if d:
-            env.reset()
+        if done:
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = tau
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps
@@ -248,6 +261,8 @@ def test_learn_tau(mp_type: str, tau: float):
         assert np.all(vel[:tau_time_steps - 2] != vel[-1])
 #
 #
+
+
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('delay', [0, 0.25, 0.5, 0.75])
 def test_learn_delay(mp_type: str, delay: float):
@@ -262,16 +277,18 @@ def test_learn_delay(mp_type: str, delay: float):
                              'learn_delay': True
                              },
                             {'basis_generator_type': basis_generator_type,
-                             }, seed=SEED)
+                             })
 
-    d = True
+    env.reset(seed=SEED)
+    done = True
     for i in range(5):
-        if d:
-            env.reset()
+        if done:
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = delay
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps
@@ -290,6 +307,8 @@ def test_learn_delay(mp_type: str, delay: float):
         assert np.all(vel[max(1, delay_time_steps)] != vel[0])
 #
 #
+
+
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('tau', [0.25, 0.5, 0.75, 1])
 @pytest.mark.parametrize('delay', [0.25, 0.5, 0.75, 1])
@@ -305,20 +324,23 @@ def test_learn_tau_and_delay(mp_type: str, tau: float, delay: float):
                              'learn_delay': True
                              },
                             {'basis_generator_type': basis_generator_type,
-                             }, seed=SEED)
+                             })
+
+    env.reset(seed=SEED)
 
     if env.spec.max_episode_steps * env.dt < delay + tau:
         return
 
-    d = True
+    done = True
     for i in range(5):
-        if d:
-            env.reset()
+        if done:
+            env.reset(seed=SEED)
         action = env.action_space.sample()
         action[0] = tau
         action[1] = delay
 
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
         assert length == env.spec.max_episode_steps

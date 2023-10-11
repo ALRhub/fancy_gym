@@ -1,8 +1,13 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym.envs.mujoco.walker2d_v4 import Walker2dEnv
+from gymnasium.envs.mujoco.walker2d_v4 import Walker2dEnv, DEFAULT_CAMERA_CONFIG
+from gymnasium.core import ObsType
+
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_WALKERJUMP = 300
 
@@ -11,8 +16,71 @@ MAX_EPISODE_STEPS_WALKERJUMP = 300
 #  to the same structure as the Hopper, where the angles are randomized (->contexts) and the agent should jump as height
 #  as possible, while landing at a specific target position
 
+class Walker2dEnvCustomXML(Walker2dEnv):
+    def __init__(
+        self,
+        xml_file,
+        forward_reward_weight=1.0,
+        ctrl_cost_weight=1e-3,
+        healthy_reward=1.0,
+        terminate_when_unhealthy=True,
+        healthy_z_range=(0.8, 2.0),
+        healthy_angle_range=(-1.0, 1.0),
+        reset_noise_scale=5e-3,
+        exclude_current_positions_from_observation=True,
+        **kwargs,
+    ):
+        utils.EzPickle.__init__(
+            self,
+            xml_file,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            healthy_reward,
+            terminate_when_unhealthy,
+            healthy_z_range,
+            healthy_angle_range,
+            reset_noise_scale,
+            exclude_current_positions_from_observation,
+            **kwargs,
+        )
 
-class Walker2dJumpEnv(Walker2dEnv):
+        self._forward_reward_weight = forward_reward_weight
+        self._ctrl_cost_weight = ctrl_cost_weight
+
+        self._healthy_reward = healthy_reward
+        self._terminate_when_unhealthy = terminate_when_unhealthy
+
+        self._healthy_z_range = healthy_z_range
+        self._healthy_angle_range = healthy_angle_range
+
+        self._reset_noise_scale = reset_noise_scale
+
+        self._exclude_current_positions_from_observation = (
+            exclude_current_positions_from_observation
+        )
+
+        if exclude_current_positions_from_observation:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+            )
+        else:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
+            )
+
+        self.observation_space = observation_space
+
+        MujocoEnv.__init__(
+            self,
+            xml_file,
+            4,
+            observation_space=observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
+
+
+class Walker2dJumpEnv(Walker2dEnvCustomXML):
     """
     healthy reward 1.0 -> 0.005 -> 0.0025 not from alex
     penalty 10 -> 0 not from alex
@@ -54,13 +122,13 @@ class Walker2dJumpEnv(Walker2dEnv):
 
         self.max_height = max(height, self.max_height)
 
-        done = bool(height < 0.2)
+        terminated = bool(height < 0.2)
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
         rewards = 0
-        if self.current_step >= self.max_episode_steps or done:
-            done = True
+        if self.current_step >= self.max_episode_steps or terminated:
+            terminated = True
             height_goal_distance = -10 * (np.linalg.norm(self.max_height - self.goal))
             healthy_reward = self.healthy_reward * self.current_step
 
@@ -73,17 +141,20 @@ class Walker2dJumpEnv(Walker2dEnv):
             'max_height': self.max_height,
             'goal': self.goal,
         }
+        truncated = False
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.current_step = 0
         self.max_height = 0
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.np_random.uniform(1.5, 2.5, 1)  # 1.5 3.0
-        return super().reset()
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -97,21 +168,3 @@ class Walker2dJumpEnv(Walker2dEnv):
 
         observation = self._get_obs()
         return observation
-
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = Walker2dJumpEnv()
-    obs = env.reset()
-
-    for i in range(6000):
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

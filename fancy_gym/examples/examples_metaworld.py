@@ -1,7 +1,8 @@
+import gymnasium as gym
 import fancy_gym
 
 
-def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
+def example_meta(env_id="fish-swim", seed=1, iterations=1000, render=True):
     """
     Example for running a MetaWorld based env in the step based setting.
     The env_id has to be specified as `task_name-v2`. V1 versions are not supported and we always
@@ -17,9 +18,9 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = fancy_gym.make(env_id, seed)
+    env = gym.make(env_id)
     rewards = 0
-    obs = env.reset()
+    obs = env.reset(seed=seed)
     print("observation shape:", env.observation_space.shape)
     print("action shape:", env.action_space.shape)
 
@@ -29,9 +30,9 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
             # THIS NEEDS TO BE SET TO FALSE FOR NOW, BECAUSE THE INTERFACE FOR RENDERING IS DIFFERENT TO BASIC GYM
             # TODO: Remove this, when Metaworld fixes its interface.
             env.render(False)
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
-        if done:
+        if terminated or truncated:
             print(env_id, rewards)
             rewards = 0
             obs = env.reset()
@@ -40,7 +41,7 @@ def example_dmc(env_id="fish-swim", seed=1, iterations=1000, render=True):
     del env
 
 
-def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
+def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
     """
     Example for running a custom movement primitive based environments.
     Our already registered environments follow the same structure.
@@ -58,7 +59,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     """
 
     # Base MetaWorld name, according to structure of above example
-    base_env_id = "metaworld:button-press-v2"
+    base_env_id = "metaworld/button-press-v2"
 
     # Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.
     # You can also add other gym.Wrappers in case they are needed.
@@ -103,10 +104,10 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
         ac = env.action_space.sample()
-        obs, reward, done, info = env.step(ac)
+        obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
 
-        if done:
+        if terminated or truncated:
             print(base_env_id, rewards)
             rewards = 0
             obs = env.reset()
@@ -124,11 +125,10 @@ if __name__ == '__main__':
     render = False
 
     # # Standard Meta world tasks
-    example_dmc("metaworld:button-press-v2", seed=10, iterations=500, render=render)
+    example_meta("metaworld/button-press-v2", seed=10, iterations=500, render=render)
 
     # # MP + MetaWorld hybrid task provided in the our framework
-    example_dmc("ButtonPressProMP-v2", seed=10, iterations=1, render=render)
+    example_meta("metaworld_ProMP/ButtonPress-v2", seed=10, iterations=1, render=render)
     #
     # # Custom MetaWorld task
-    example_custom_dmc_and_mp(seed=10, iterations=1, render=render)
-
+    example_custom_meta_and_mp(seed=10, iterations=1, render=render)

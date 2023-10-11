@@ -1,12 +1,16 @@
 import os
+from typing import Optional, Dict, Any, Tuple
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.core import ObsType
+from fancy_gym.envs.mujoco.hopper_jump.hopper_jump import HopperEnvCustomXML
+from gymnasium import spaces
+
 
 MAX_EPISODE_STEPS_HOPPERJUMPONBOX = 250
 
 
-class HopperJumpOnBoxEnv(HopperEnv):
+class HopperJumpOnBoxEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.01 -> 0.001
@@ -33,6 +37,16 @@ class HopperJumpOnBoxEnv(HopperEnv):
         self.hopper_on_box = False
         self.context = context
         self.box_x = 1
+
+        if exclude_current_positions_from_observation:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(12,), dtype=np.float64
+            )
+        else:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(13,), dtype=np.float64
+            )
+
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
         super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
                          healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
@@ -74,10 +88,10 @@ class HopperJumpOnBoxEnv(HopperEnv):
 
         costs = ctrl_cost
 
-        done = fell_over or self.hopper_on_box
+        terminated = fell_over or self.hopper_on_box
 
-        if self.current_step >= self.max_episode_steps or done:
-            done = False
+        if self.current_step >= self.max_episode_steps or terminated:
+            done = False  # TODO why are we doing this???
 
             max_height = self.max_height.copy()
             min_distance = self.min_distance.copy()
@@ -122,21 +136,25 @@ class HopperJumpOnBoxEnv(HopperEnv):
             'goal': self.box_x,
         }
 
-        return observation, reward, done, info
+        truncated = self.current_step >= self.max_episode_steps and not terminated
+
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.box_x)
 
-    def reset(self):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
 
         self.max_height = 0
         self.min_distance = 5000
         self.current_step = 0
         self.hopper_on_box = False
+        ret = super().reset(seed=seed, options=options)
         if self.context:
             self.box_x = self.np_random.uniform(1, 3, 1)
             self.model.body("box").pos = [self.box_x[0], 0, 0]
-        return super().reset()
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -150,21 +168,3 @@ class HopperJumpOnBoxEnv(HopperEnv):
 
         observation = self._get_obs()
         return observation
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = HopperJumpOnBoxEnv()
-    obs = env.reset()
-
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

@@ -9,19 +9,6 @@ class MPWrapper(BaseMetaworldMPWrapper):
     and no secondary objects or end effectors are altered at the start of an episode.
     You can verify this by executing the code below for your environment id and check if the output is non-zero
     at the same indices.
-    ```python
-    import fancy_gym
-    env = fancy_gym.make(env_id, 1)
-    print(env.reset() - env.reset())
-    array([ 0.        ,  0.        ,  0.        ,  0.        ,    0,
-        0         , 0          ,  0.        ,  0.        ,  0.        ,
-        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-        0.        ,  0.        ,  0         ,  0         ,  0         ,
-        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-        0.        ,  0.        ,  0.        ,  0.        ,  0.        ,
-        0.        , !=0        , !=0        , !=0])
-    ```
     """
 
     @property

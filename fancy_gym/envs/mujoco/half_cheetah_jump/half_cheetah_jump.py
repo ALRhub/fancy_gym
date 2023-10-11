@@ -1,14 +1,68 @@
 import os
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, Any, Dict
 
 import numpy as np
-from gym.core import ObsType
-from gym.envs.mujoco.half_cheetah_v4 import HalfCheetahEnv
+from gymnasium.core import ObsType
+from gymnasium.envs.mujoco.half_cheetah_v4 import HalfCheetahEnv, DEFAULT_CAMERA_CONFIG
+
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
 
 MAX_EPISODE_STEPS_HALFCHEETAHJUMP = 100
 
 
-class HalfCheetahJumpEnv(HalfCheetahEnv):
+class HalfCheetahEnvCustomXML(HalfCheetahEnv):
+
+    def __init__(
+        self,
+        xml_file,
+        forward_reward_weight=1.0,
+        ctrl_cost_weight=0.1,
+        reset_noise_scale=0.1,
+        exclude_current_positions_from_observation=True,
+        **kwargs,
+    ):
+        utils.EzPickle.__init__(
+            self,
+            xml_file,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            reset_noise_scale,
+            exclude_current_positions_from_observation,
+            **kwargs,
+        )
+
+        self._forward_reward_weight = forward_reward_weight
+
+        self._ctrl_cost_weight = ctrl_cost_weight
+
+        self._reset_noise_scale = reset_noise_scale
+
+        self._exclude_current_positions_from_observation = (
+            exclude_current_positions_from_observation
+        )
+
+        if exclude_current_positions_from_observation:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+            )
+        else:
+            observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
+            )
+
+        MujocoEnv.__init__(
+            self,
+            xml_file,
+            5,
+            observation_space=observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
+
+
+class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
     """
     _ctrl_cost_weight 0.1 -> 0.0
     """
@@ -41,10 +95,11 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
         height_after = self.get_body_com("torso")[2]
         self.max_height = max(height_after, self.max_height)
 
-        ## Didnt use fell_over, because base env also has no done condition - Paul and Marc
+        # Didnt use fell_over, because base env also has no done condition - Paul and Marc
         # fell_over = abs(self.sim.data.qpos[2]) > 2.5  # how to figure out if the cheetah fell over? -> 2.5 oke?
         # TODO: Should a fall over be checked here?
-        done = False
+        terminated = False
+        truncated = False
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
@@ -63,17 +118,18 @@ class HalfCheetahJumpEnv(HalfCheetahEnv):
             'max_height': self.max_height
         }
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
-              options: Optional[dict] = None, ) -> Union[ObsType, Tuple[ObsType, dict]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
         self.max_height = 0
         self.current_step = 0
+        ret = super().reset(seed=seed, options=options)
         self.goal = self.np_random.uniform(1.1, 1.6, 1)  # 1.1 1.6
-        return super().reset()
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):

@@ -7,6 +7,30 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 class MPWrapper(RawInterfaceWrapper):
 
+    mp_config = {
+        'ProMP': {
+            'controller_kwargs': {
+                'controller_type': 'velocity',
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 2,
+            },
+        },
+        'DMP': {
+            'controller_kwargs': {
+                'controller_type': 'velocity',
+            },
+            'trajectory_generator_kwargs': {
+                # TODO: Before it was weight scale 50 and goal scale 0.1. We now only have weight scale and thus set it to 500. Check
+                'weights_scale': 500,
+            },
+            'phase_generator_kwargs': {
+                'alpha_phase': 2.5,
+            },
+        },
+        'ProDMP': {},
+    }
+
     @property
     def context_mask(self):
         return np.hstack([

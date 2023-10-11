@@ -1,13 +1,16 @@
 import os
-from typing import Optional
+from typing import Optional, Any, Dict, Tuple
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from fancy_gym.envs.mujoco.hopper_jump.hopper_jump import HopperEnvCustomXML
+from gymnasium.core import ObsType
+from gymnasium import spaces
+
 
 MAX_EPISODE_STEPS_HOPPERTHROWINBASKET = 250
 
 
-class HopperThrowInBasketEnv(HopperEnv):
+class HopperThrowInBasketEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - healthy_reward: 1.0 -> 0.0
@@ -42,6 +45,16 @@ class HopperThrowInBasketEnv(HopperEnv):
         self.context = context
         self.penalty = penalty
         self.basket_x = 5
+
+        if exclude_current_positions_from_observation:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(18,), dtype=np.float64
+            )
+        else:
+            self.observation_space = spaces.Box(
+                low=-np.inf, high=np.inf, shape=(19,), dtype=np.float64
+            )
+
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
         super().__init__(xml_file=xml_file,
                          forward_reward_weight=forward_reward_weight,
@@ -65,14 +78,14 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         is_in_basket_x = ball_pos[0] >= basket_pos[0] and ball_pos[0] <= basket_pos[0] + self.basket_size
         is_in_basket_y = ball_pos[1] >= basket_pos[1] - (self.basket_size / 2) and ball_pos[1] <= basket_pos[1] + (
-                self.basket_size / 2)
+            self.basket_size / 2)
         is_in_basket_z = ball_pos[2] < 0.1
         is_in_basket = is_in_basket_x and is_in_basket_y and is_in_basket_z
         if is_in_basket:
             self.ball_in_basket = True
 
         ball_landed = self.get_body_com("ball")[2] <= 0.05
-        done = bool(ball_landed or is_in_basket)
+        terminated = bool(ball_landed or is_in_basket)
 
         rewards = 0
 
@@ -80,7 +93,7 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         costs = ctrl_cost
 
-        if self.current_step >= self.max_episode_steps or done:
+        if self.current_step >= self.max_episode_steps or terminated:
 
             if is_in_basket:
                 if not self.context:
@@ -101,23 +114,27 @@ class HopperThrowInBasketEnv(HopperEnv):
         info = {
             'ball_pos': ball_pos[0],
         }
+        truncated = False
 
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.basket_x)
 
-    def reset(self, *, seed: Optional[int] = None, return_info: bool = False, options: Optional[dict] = None):
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) \
+            -> Tuple[ObsType, Dict[str, Any]]:
+
         if self.max_episode_steps == 10:
             # We have to initialize this here, because the spec is only added after creating the env.
             self.max_episode_steps = self.spec.max_episode_steps
 
         self.current_step = 0
         self.ball_in_basket = False
+        ret = super().reset(seed=seed, options=options)
         if self.context:
             self.basket_x = self.np_random.uniform(low=3, high=7, size=1)
             self.model.body("basket_ground").pos[:] = [self.basket_x[0], 0, 0]
-        return super().reset()
+        return ret
 
     # overwrite reset_model to make it deterministic
     def reset_model(self):
@@ -132,22 +149,3 @@ class HopperThrowInBasketEnv(HopperEnv):
 
         observation = self._get_obs()
         return observation
-
-
-if __name__ == '__main__':
-    render_mode = "human"  # "human" or "partial" or "final"
-    env = HopperThrowInBasketEnv()
-    obs = env.reset()
-
-    for i in range(2000):
-        # objective.load_result("/tmp/cma")
-        # test with random actions
-        ac = env.action_space.sample()
-        obs, rew, d, info = env.step(ac)
-        if i % 10 == 0:
-            env.render(mode=render_mode)
-        if d:
-            print('After ', i, ' steps, done: ', d)
-            env.reset()
-
-    env.close()

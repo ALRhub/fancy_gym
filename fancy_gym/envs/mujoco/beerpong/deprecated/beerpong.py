@@ -1,9 +1,8 @@
 import os
 
-import mujoco_py.builder
 import numpy as np
-from gym import utils
-from gym.envs.mujoco import MujocoEnv
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
 
 from fancy_gym.envs.mujoco.beerpong.deprecated.beerpong_reward_staged import BeerPongReward
 
@@ -74,27 +73,24 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         crash = False
         for _ in range(self.repeat_action):
             applied_action = a + self.sim.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
-            try:
-                self.do_simulation(applied_action, self.frame_skip)
-                self.reward_function.initialize(self)
-                # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
-                if self._steps < self.release_step:
-                    self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
-                    self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
-                crash = False
-            except mujoco_py.builder.MujocoException:
-                crash = True
+            self.do_simulation(applied_action, self.frame_skip)
+            self.reward_function.initialize(self)
+            # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
+            if self._steps < self.release_step:
+                self.sim.data.qpos[7::] = self.sim.data.site_xpos[self.site_id("init_ball_pos"), :].copy()
+                self.sim.data.qvel[7::] = self.sim.data.site_xvelp[self.site_id("init_ball_pos"), :].copy()
+            crash = False
 
         ob = self._get_obs()
 
         if not crash:
             reward, reward_infos = self.reward_function.compute_reward(self, applied_action)
             is_collided = reward_infos['is_collided']
-            done = is_collided or self._steps == self.ep_length - 1
+            terminated = is_collided or self._steps == self.ep_length - 1
             self._steps += 1
         else:
             reward = -30
-            done = True
+            terminated = True
             reward_infos = {"success": False, "ball_pos": np.zeros(3), "ball_vel": np.zeros(3), "is_collided": False}
 
         infos = dict(
@@ -104,7 +100,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             q_vel=self.sim.data.qvel[0:7].ravel().copy(), sim_crash=crash,
         )
         infos.update(reward_infos)
-        return ob, reward, done, infos
+        return ob, reward, terminated, infos
 
     def _get_obs(self):
         theta = self.sim.data.qpos.flat[:7]
@@ -143,16 +139,16 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
             return super(BeerPongEnvStepBasedEpisodicReward, self).step(a)
         else:
             reward = 0
-            done = False
-            while not done:
-                sub_ob, sub_reward, done, sub_infos = super(BeerPongEnvStepBasedEpisodicReward, self).step(
-                    np.zeros(a.shape))
+            terminated, truncated = False, False
+            while not (terminated or truncated):
+                sub_ob, sub_reward, terminated, truncated, sub_infos = super(BeerPongEnvStepBasedEpisodicReward,
+                                                                             self).step(np.zeros(a.shape))
                 reward += sub_reward
             infos = sub_infos
             ob = sub_ob
             ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
             # internal steps and thus, the observation also needs to be set correctly
-        return ob, reward, done, infos
+        return ob, reward, terminated, truncated, infos
 
 
 # class BeerBongEnvStepBased(BeerBongEnv):
@@ -186,27 +182,3 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
 #             ob[-1] = self.release_step + 1  # Since we simulate until the end of the episode, PPO does not see the
 #             # internal steps and thus, the observation also needs to be set correctly
 #         return ob, reward, done, infos
-
-
-if __name__ == "__main__":
-    env = BeerPongEnv(frame_skip=2)
-    env.seed(0)
-    # env = BeerBongEnvStepBased(frame_skip=2)
-    # env = BeerBongEnvStepBasedEpisodicReward(frame_skip=2)
-    # env = BeerBongEnvFixedReleaseStep(frame_skip=2)
-    import time
-
-    env.reset()
-    env.render("human")
-    for i in range(600):
-        # ac = 10 * env.action_space.sample()
-        ac = 0.05 * np.ones(7)
-        obs, rew, d, info = env.step(ac)
-        env.render("human")
-
-        if d:
-            print('reward:', rew)
-            print('RESETTING')
-            env.reset()
-            time.sleep(1)
-    env.close()

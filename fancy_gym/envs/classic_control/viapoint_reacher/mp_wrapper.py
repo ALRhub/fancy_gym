@@ -7,6 +7,26 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 class MPWrapper(RawInterfaceWrapper):
 
+    mp_config = {
+        'ProMP': {
+            'controller_kwargs': {
+                'controller_type': 'velocity',
+            },
+        },
+        'DMP': {
+            'controller_kwargs': {
+                'controller_type': 'velocity',
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 50,
+            },
+            'phase_generator_kwargs': {
+                'alpha_phase': 2,
+            },
+        },
+        'ProDMP': {},
+    }
+
     @property
     def context_mask(self):
         return np.hstack([

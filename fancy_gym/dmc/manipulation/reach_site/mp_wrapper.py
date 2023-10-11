@@ -6,6 +6,28 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
 class MPWrapper(RawInterfaceWrapper):
+    mp_config = {
+        'ProMP': {
+            'controller_kwargs': {
+                'p_gains': 50.0,
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 0.2,
+            },
+        },
+        'DMP': {
+            'controller_kwargs': {
+                'p_gains': 50.0,
+            },
+            'phase_generator': {
+                'alpha_phase': 2,
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 500,
+            },
+        },
+        'ProDMP': {},
+    }
 
     @property
     def context_mask(self) -> np.ndarray:
@@ -35,4 +57,4 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def dt(self) -> Union[float, int]:
-        return self.env.dt
+        return self.env.control_timestep()

@@ -6,33 +6,38 @@ from setuptools import setup, find_packages
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
-    "dmc": ["dm_control>=1.0.1"],
-    "metaworld": ["metaworld @ git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld",
-                  'mujoco-py<2.2,>=2.1',
-                  'scipy'
-                  ],
+    'dmc': ['shimmy[dm-control]', 'Shimmy==1.0.0'],
+    'metaworld': ['metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld'],
+    'box2d': ['gymnasium[box2d]>=0.26.0'],
+    'mujoco': ['mujoco==2.3.3', 'gymnasium[mujoco]>0.26.0'],
+    'mujoco-legacy': ['mujoco-py >=2.1,<2.2', 'cython<3'],
+    'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
 }
 
 # All dependencies
 all_groups = set(extras.keys())
-extras["all"] = list(set(itertools.chain.from_iterable(map(lambda group: extras[group], all_groups))))
+extras["all"] = list(set(itertools.chain.from_iterable(
+    map(lambda group: extras[group], all_groups))))
+
+extras['testing'] = extras["all"] + ['pytest']
 
 
 def find_package_data(extensions_to_include: List[str]) -> List[str]:
     envs_dir = Path("fancy_gym/envs/mujoco")
     package_data_paths = []
     for extension in extensions_to_include:
-        package_data_paths.extend([str(path)[10:] for path in envs_dir.rglob(extension)])
+        package_data_paths.extend([str(path)[10:]
+                                  for path in envs_dir.rglob(extension)])
 
     return package_data_paths
 
 
 setup(
-    author='Fabian Otto, Onur Celik',
+    author='Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou',
     name='fancy_gym',
-    version='0.2',
+    version='1.0',
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
@@ -46,10 +51,11 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'gym[mujoco]<0.25.0,>=0.24.1',
+        'gymnasium>=0.26.0',
         'mp_pytorch<=0.1.3'
     ],
-    packages=[package for package in find_packages() if package.startswith("fancy_gym")],
+    packages=[package for package in find_packages(
+    ) if package.startswith("fancy_gym")],
     package_data={
         "fancy_gym": find_package_data(extensions_to_include=["*.stl", "*.xml"])
     },

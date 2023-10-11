@@ -6,6 +6,30 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
 class MPWrapper(RawInterfaceWrapper):
+    mp_config = {
+        'ProMP': {
+            'controller_kwargs': {
+                'p_gains': 10,
+                'd_gains': 10,
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 0.2,
+            },
+        },
+        'DMP': {
+            'controller_kwargs': {
+                'p_gains': 10,
+                'd_gains': 10,
+            },
+            'phase_generator': {
+                'alpha_phase': 2,
+            },
+            'trajectory_generator_kwargs': {
+                'weights_scale': 500,
+            },
+        },
+        'ProDMP': {},
+    }
 
     def __init__(self, env, n_poles: int = 1):
         self.n_poles = n_poles
@@ -35,7 +59,7 @@ class MPWrapper(RawInterfaceWrapper):
 
     @property
     def dt(self) -> Union[float, int]:
-        return self.env.dt
+        return self.env.control_timestep()
 
 
 class TwoPolesMPWrapper(MPWrapper):

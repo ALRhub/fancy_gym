@@ -2,21 +2,25 @@ from itertools import chain
 from types import FunctionType
 from typing import Tuple, Type, Union, Optional
 
-import gym
+import gymnasium as gym
 import numpy as np
 import pytest
-from gym import register
-from gym.core import ActType, ObsType
+from gymnasium import register, make
+from gymnasium.core import ActType, ObsType
+from gymnasium import spaces
 
 import fancy_gym
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
-from fancy_gym.utils.time_aware_observation import TimeAwareObservation
+from fancy_gym.utils.wrappers import TimeAwareObservation
+from fancy_gym.utils.make_env_helpers import ensure_finite_time
 
 SEED = 1
-ENV_IDS = ['Reacher5d-v0', 'dmc:ball_in_cup-catch', 'metaworld:reach-v2', 'Reacher-v2']
+ENV_IDS = ['fancy/Reacher5d-v0', 'dm_control/ball_in_cup-catch-v0', 'metaworld/reach-v2', 'Reacher-v2']
 WRAPPERS = [fancy_gym.envs.mujoco.reacher.MPWrapper, fancy_gym.dmc.suite.ball_in_cup.MPWrapper,
             fancy_gym.meta.goal_object_change_mp_wrapper.MPWrapper, fancy_gym.open_ai.mujoco.reacher_v2.MPWrapper]
-ALL_MP_ENVS = chain(*fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS.values())
+ALL_MP_ENVS = fancy_gym.ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
+
+MAX_STEPS_FALLBACK = 50
 
 
 class ToyEnv(gym.Env):
@@ -26,10 +30,12 @@ class ToyEnv(gym.Env):
 
     def reset(self, *, seed: Optional[int] = None, return_info: bool = False,
               options: Optional[dict] = None) -> Union[ObsType, Tuple[ObsType, dict]]:
-        return np.array([-1])
+        obs, options = np.array([-1]), {}
+        return obs, options
 
     def step(self, action: ActType) -> Tuple[ObsType, float, bool, dict]:
-        return np.array([-1]), 1, False, {}
+        obs, reward, terminated, truncated, info = np.array([-1]), 1, False, False, {}
+        return obs, reward, terminated, truncated, info
 
     def render(self, mode="human"):
         pass
@@ -61,7 +67,7 @@ def setup():
 def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                                 add_time_aware_wrapper_before: bool):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(fancy_gym.make(env_id, SEED))
+    env_step = TimeAwareObservation(ensure_finite_time(make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
@@ -72,24 +78,29 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': 'exp'},
-                            {'basis_generator_type': 'rbf'}, seed=SEED)
+                            {'basis_generator_type': 'rbf'}, fallback_max_steps=MAX_STEPS_FALLBACK)
+    env.reset(seed=SEED)
 
     assert env.learn_sub_trajectories
+    assert env.spec.max_episode_steps
+    assert env_step.spec.max_episode_steps
     assert env.traj_gen.learn_tau
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
-    assert env.observation_space == env_step.observation_space
+    assert spaces.flatten_space(env_step.observation_space) == spaces.flatten_space(env.observation_space)
 
-    d = True
+    done = True
 
     for i in range(25):
-        if d:
-            env.reset()
+        if done:
+            env.reset(seed=SEED)
+
         action = env.action_space.sample()
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
 
-        if not d:
+        if not done:
             assert length == np.round(action[0] / env.dt)
             assert length == np.round(env.traj_gen.tau.numpy() / env.dt)
         else:
@@ -105,14 +116,14 @@ def test_learn_sub_trajectories(mp_type: str, env_wrap: Tuple[str, Type[RawInter
 def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]],
                          add_time_aware_wrapper_before: bool, replanning_time: int):
     env_id, wrapper_class = env_wrap
-    env_step = TimeAwareObservation(fancy_gym.make(env_id, SEED))
+    env_step = TimeAwareObservation(ensure_finite_time(make(env_id, SEED), MAX_STEPS_FALLBACK))
     wrappers = [wrapper_class]
 
     # has time aware wrapper
     if add_time_aware_wrapper_before:
         wrappers += [TimeAwareObservation]
 
-    replanning_schedule = lambda c_pos, c_vel, obs, c_action, t: t % replanning_time == 0
+    def replanning_schedule(c_pos, c_vel, obs, c_action, t): return t % replanning_time == 0
 
     basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     phase_generator_type = 'exp' if 'dmp' in mp_type else 'linear'
@@ -121,30 +132,35 @@ def test_replanning_time(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWra
                             {'trajectory_generator_type': mp_type},
                             {'controller_type': 'motor'},
                             {'phase_generator_type': phase_generator_type},
-                            {'basis_generator_type': basis_generator_type}, seed=SEED)
+                            {'basis_generator_type': basis_generator_type}, fallback_max_steps=MAX_STEPS_FALLBACK)
+    env.reset(seed=SEED)
 
     assert env.do_replanning
+    assert env.spec.max_episode_steps
+    assert env_step.spec.max_episode_steps
     assert callable(env.replanning_schedule)
     # This also verifies we are not adding the TimeAwareObservationWrapper twice
-    assert env.observation_space == env_step.observation_space
+    assert spaces.flatten_space(env_step.observation_space) == spaces.flatten_space(env.observation_space)
 
-    env.reset()
+    env.reset(seed=SEED)
 
     episode_steps = env_step.spec.max_episode_steps // replanning_time
     # Make 3 episodes, total steps depend on the replanning steps
     for i in range(3 * episode_steps):
         action = env.action_space.sample()
-        obs, r, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         length = info['trajectory_length']
 
-        if d:
+        if done:
             # Check if number of steps until termination match the replanning interval
-            print(d, (i + 1), episode_steps)
+            print(done, (i + 1), episode_steps)
             assert (i + 1) % episode_steps == 0
-            env.reset()
+            env.reset(seed=SEED)
 
         assert replanning_schedule(None, None, None, None, length)
+
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
@@ -165,14 +181,18 @@ def test_max_planning_times(mp_type: str, max_planning_times: int, sub_segment_s
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
-    _ = env.reset()
-    d = False
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
+    _ = env.reset(seed=SEED)
+    done = False
     planning_times = 0
-    while not d:
-        _, _, d, _ = env.step(env.action_space.sample())
+    while not done:
+        action = env.action_space.sample()
+        _obs, _reward, terminated, truncated, _info = env.step(action)
+        done = terminated or truncated
         planning_times += 1
     assert planning_times == max_planning_times
+
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
@@ -194,16 +214,19 @@ def test_replanning_with_learn_tau(mp_type: str, max_planning_times: int, sub_se
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
-    _ = env.reset()
-    d = False
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
+    _ = env.reset(seed=SEED)
+    done = False
     planning_times = 0
-    while not d:
+    while not done:
         action = env.action_space.sample()
         action[0] = tau
-        _, _, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, _info = env.step(action)
+        done = terminated or truncated
         planning_times += 1
     assert planning_times == max_planning_times
+
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
@@ -213,26 +236,28 @@ def test_replanning_with_learn_delay(mp_type: str, max_planning_times: int, sub_
     basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     phase_generator_type = 'exp' if mp_type == 'prodmp' else 'linear'
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper],
-                        {'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
-                         'max_planning_times': max_planning_times,
-                         'verbose': 2},
-                        {'trajectory_generator_type': mp_type,
-                         },
-                        {'controller_type': 'motor'},
-                        {'phase_generator_type': phase_generator_type,
-                         'learn_tau': False,
-                         'learn_delay': True
-                         },
-                        {'basis_generator_type': basis_generator_type,
-                         },
-                        seed=SEED)
-    _ = env.reset()
-    d = False
+                            {'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
+                             'max_planning_times': max_planning_times,
+                             'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': phase_generator_type,
+                             'learn_tau': False,
+                             'learn_delay': True
+                             },
+                            {'basis_generator_type': basis_generator_type,
+                             },
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
+    _ = env.reset(seed=SEED)
+    done = False
     planning_times = 0
-    while not d:
+    while not done:
         action = env.action_space.sample()
         action[0] = delay
-        _, _, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         delay_time_steps = int(np.round(delay / env.dt))
         pos = info['positions'].flatten()
@@ -256,6 +281,7 @@ def test_replanning_with_learn_delay(mp_type: str, max_planning_times: int, sub_
 
     assert planning_times == max_planning_times
 
+
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('max_planning_times', [1, 2, 3])
 @pytest.mark.parametrize('sub_segment_steps', [5, 10, 15])
@@ -266,27 +292,29 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
     basis_generator_type = 'prodmp' if mp_type == 'prodmp' else 'rbf'
     phase_generator_type = 'exp' if mp_type == 'prodmp' else 'linear'
     env = fancy_gym.make_bb('toy-v0', [ToyWrapper],
-                        {'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
-                         'max_planning_times': max_planning_times,
-                         'verbose': 2},
-                        {'trajectory_generator_type': mp_type,
-                         },
-                        {'controller_type': 'motor'},
-                        {'phase_generator_type': phase_generator_type,
-                         'learn_tau': True,
-                         'learn_delay': True
-                         },
-                        {'basis_generator_type': basis_generator_type,
-                         },
-                        seed=SEED)
-    _ = env.reset()
-    d = False
+                            {'replanning_schedule': lambda pos, vel, obs, action, t: t % sub_segment_steps == 0,
+                             'max_planning_times': max_planning_times,
+                             'verbose': 2},
+                            {'trajectory_generator_type': mp_type,
+                             },
+                            {'controller_type': 'motor'},
+                            {'phase_generator_type': phase_generator_type,
+                             'learn_tau': True,
+                             'learn_delay': True
+                             },
+                            {'basis_generator_type': basis_generator_type,
+                             },
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
+    _ = env.reset(seed=SEED)
+    done = False
     planning_times = 0
-    while not d:
+    while not done:
         action = env.action_space.sample()
         action[0] = tau
         action[1] = delay
-        _, _, d, info = env.step(action)
+        _obs, _reward, terminated, truncated, info = env.step(action)
+        done = terminated or truncated
 
         delay_time_steps = int(np.round(delay / env.dt))
 
@@ -305,6 +333,7 @@ def test_replanning_with_learn_delay_and_tau(mp_type: str, max_planning_times: i
         planning_times += 1
 
     assert planning_times == max_planning_times
+
 
 @pytest.mark.parametrize('mp_type', ['promp', 'prodmp'])
 @pytest.mark.parametrize('max_planning_times', [1, 2, 3, 4])
@@ -325,9 +354,11 @@ def test_replanning_schedule(mp_type: str, max_planning_times: int, sub_segment_
                              },
                             {'basis_generator_type': basis_generator_type,
                              },
-                            seed=SEED)
-    _ = env.reset()
-    d = False
+                            fallback_max_steps=MAX_STEPS_FALLBACK)
+
+    _ = env.reset(seed=SEED)
     for i in range(max_planning_times):
-        _, _, d, _ = env.step(env.action_space.sample())
-    assert d
+        action = env.action_space.sample()
+        _obs, _reward, terminated, truncated, _info = env.step(action)
+        done = terminated or truncated
+    assert done

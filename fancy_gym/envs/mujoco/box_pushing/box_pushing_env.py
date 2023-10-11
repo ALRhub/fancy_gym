@@ -1,8 +1,8 @@
 import os
 
 import numpy as np
-from gym import utils, spaces
-from gym.envs.mujoco import MujocoEnv
+from gymnasium import utils, spaces
+from gymnasium.envs.mujoco import MujocoEnv
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
@@ -12,6 +12,7 @@ import mujoco
 MAX_EPISODE_STEPS_BOX_PUSHING = 100
 
 BOX_POS_BOUND = np.array([[0.3, -0.45, -0.01], [0.6, 0.45, -0.01]])
+
 
 class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     """
@@ -26,6 +27,15 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
     3. time-spatial-depend sparse reward
     """
 
+    metadata = {
+        "render_modes": [
+            "human",
+            "rgb_array",
+            "depth_array",
+        ],
+        "render_fps": 50
+    }
+
     def __init__(self, frame_skip: int = 10, random_init: bool = False):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
@@ -39,11 +49,16 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._desired_rod_quat = desired_rod_quat
 
         self._episode_energy = 0.
+
+        self.observation_space = spaces.Box(
+            low=-np.inf, high=np.inf, shape=(28,), dtype=np.float64
+        )
+
         self.random_init = random_init
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "box_pushing.xml"),
                            frame_skip=self.frame_skip,
-                           mujoco_bindings="mujoco")
+                           observation_space=self.observation_space)
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
     def step(self, action):
@@ -89,7 +104,11 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
             'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
             'num_steps': self._steps
         }
-        return obs, reward, episode_end, infos
+
+        terminated = episode_end and infos['is_success']
+        truncated = episode_end and not infos['is_success']
+
+        return obs, reward, terminated, truncated, infos
 
     def reset_model(self):
         # rest box to initial position
@@ -250,7 +269,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
             old_err_norm = err_norm
 
-            ### get Jacobian by mujoco
+            # get Jacobian by mujoco
             self.data.qpos[:7] = q
             mujoco.mj_forward(self.model, self.data)
 
@@ -284,6 +303,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
         return q
 
+
 class BoxPushingDense(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10, random_init: bool = False):
         super(BoxPushingDense, self).__init__(frame_skip=frame_skip, random_init=random_init)
@@ -299,13 +319,14 @@ class BoxPushingDense(BoxPushingEnvBase):
         energy_cost = -0.0005 * np.sum(np.square(action))
 
         reward = joint_penalty + tcp_box_dist_reward + \
-                 box_goal_pos_dist_reward + box_goal_rot_dist_reward + energy_cost
+            box_goal_pos_dist_reward + box_goal_rot_dist_reward + energy_cost
 
         rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
         if rod_inclined_angle > np.pi / 4:
             reward -= rod_inclined_angle / (np.pi)
 
         return reward
+
 
 class BoxPushingTemporalSparse(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10, random_init: bool = False):
@@ -367,6 +388,7 @@ class BoxPushingTemporalSpatialSparse(BoxPushingEnvBase):
             reward += box_goal_pos_dist_reward + box_goal_rot_dist_reward
 
         return reward
+
 
 class BoxPushingTemporalSpatialSparse2(BoxPushingEnvBase):
 

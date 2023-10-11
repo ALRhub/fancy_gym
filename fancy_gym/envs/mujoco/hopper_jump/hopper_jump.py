@@ -1,12 +1,95 @@
 import os
 
 import numpy as np
-from gym.envs.mujoco.hopper_v4 import HopperEnv
+from gymnasium.envs.mujoco.hopper_v4 import HopperEnv, DEFAULT_CAMERA_CONFIG
+
+from gymnasium import utils
+from gymnasium.envs.mujoco import MujocoEnv
+from gymnasium.spaces import Box
+
+import mujoco
 
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
 
 
-class HopperJumpEnv(HopperEnv):
+class HopperEnvCustomXML(HopperEnv):
+    """
+    Initialization changes to normal Hopper:
+    - terminate_when_unhealthy: True -> False
+    - healthy_reward: 1.0 -> 2.0
+    - healthy_z_range: (0.7, float('inf')) -> (0.5, float('inf'))
+    - healthy_angle_range: (-0.2, 0.2) -> (-float('inf'), float('inf'))
+    - exclude_current_positions_from_observation: True -> False
+    """
+
+    def __init__(
+            self,
+            xml_file,
+            forward_reward_weight=1.0,
+            ctrl_cost_weight=1e-3,
+            healthy_reward=1.0,
+            terminate_when_unhealthy=True,
+            healthy_state_range=(-100.0, 100.0),
+            healthy_z_range=(0.7, float("inf")),
+            healthy_angle_range=(-0.2, 0.2),
+            reset_noise_scale=5e-3,
+            exclude_current_positions_from_observation=True,
+            **kwargs,
+    ):
+        xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
+        utils.EzPickle.__init__(
+            self,
+            xml_file,
+            forward_reward_weight,
+            ctrl_cost_weight,
+            healthy_reward,
+            terminate_when_unhealthy,
+            healthy_state_range,
+            healthy_z_range,
+            healthy_angle_range,
+            reset_noise_scale,
+            exclude_current_positions_from_observation,
+            **kwargs
+        )
+
+        self._forward_reward_weight = forward_reward_weight
+
+        self._ctrl_cost_weight = ctrl_cost_weight
+
+        self._healthy_reward = healthy_reward
+        self._terminate_when_unhealthy = terminate_when_unhealthy
+
+        self._healthy_state_range = healthy_state_range
+        self._healthy_z_range = healthy_z_range
+        self._healthy_angle_range = healthy_angle_range
+
+        self._reset_noise_scale = reset_noise_scale
+
+        self._exclude_current_positions_from_observation = (
+            exclude_current_positions_from_observation
+        )
+
+        if not hasattr(self, 'observation_space'):
+            if exclude_current_positions_from_observation:
+                self.observation_space = Box(
+                    low=-np.inf, high=np.inf, shape=(15,), dtype=np.float64
+                )
+            else:
+                self.observation_space = Box(
+                    low=-np.inf, high=np.inf, shape=(16,), dtype=np.float64
+                )
+
+        MujocoEnv.__init__(
+            self,
+            xml_file,
+            4,
+            observation_space=self.observation_space,
+            default_camera_config=DEFAULT_CAMERA_CONFIG,
+            **kwargs,
+        )
+
+
+class HopperJumpEnv(HopperEnvCustomXML):
     """
     Initialization changes to normal Hopper:
     - terminate_when_unhealthy: True -> False
@@ -73,7 +156,7 @@ class HopperJumpEnv(HopperEnv):
         self.do_simulation(action, self.frame_skip)
 
         height_after = self.get_body_com("torso")[2]
-        #site_pos_after = self.data.get_site_xpos('foot_site')
+        # site_pos_after = self.data.get_site_xpos('foot_site')
         site_pos_after = self.data.site('foot_site').xpos
         self.max_height = max(height_after, self.max_height)
 
@@ -88,7 +171,8 @@ class HopperJumpEnv(HopperEnv):
 
         ctrl_cost = self.control_cost(action)
         costs = ctrl_cost
-        done = False
+        terminated = False
+        truncated = False
 
         goal_dist = np.linalg.norm(site_pos_after - self.goal)
         if self.contact_dist is None and self.contact_with_floor:
@@ -115,7 +199,7 @@ class HopperJumpEnv(HopperEnv):
             healthy=self.is_healthy,
             contact_dist=self.contact_dist or 0
         )
-        return observation, reward, done, info
+        return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
         # goal_dist = self.data.get_site_xpos('foot_site') - self.goal
@@ -140,8 +224,8 @@ class HopperJumpEnv(HopperEnv):
         noise_high[5] = 0.785
 
         qpos = (
-                self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq) +
-                self.init_qpos
+            self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nq) +
+            self.init_qpos
         )
         qvel = (
             # self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv) +
@@ -162,12 +246,12 @@ class HopperJumpEnv(HopperEnv):
         # floor_geom_id = self.model.geom_name2id('floor')
         # foot_geom_id = self.model.geom_name2id('foot_geom')
         # TODO: do this properly over a sensor in the xml file, see dmc hopper
-        floor_geom_id = self._mujoco_bindings.mj_name2id(self.model,
-                                                         self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                         'floor')
-        foot_geom_id = self._mujoco_bindings.mj_name2id(self.model,
-                                                        self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                        'foot_geom')
+        floor_geom_id = mujoco.mj_name2id(self.model,
+                                          mujoco.mjtObj.mjOBJ_GEOM,
+                                          'floor')
+        foot_geom_id = mujoco.mj_name2id(self.model,
+                                         mujoco.mjtObj.mjOBJ_GEOM,
+                                         'foot_geom')
         for i in range(self.data.ncon):
             contact = self.data.contact[i]
             collision = contact.geom1 == floor_geom_id and contact.geom2 == foot_geom_id

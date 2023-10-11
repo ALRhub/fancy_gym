@@ -6,6 +6,28 @@ from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
 class MPWrapper(RawInterfaceWrapper):
+    mp_config = {
+        'ProMP': {
+            "trajectory_generator_kwargs": {
+                'trajectory_generator_type': 'promp'
+            },
+            "phase_generator_kwargs": {
+                'phase_generator_type': 'linear'
+            },
+            "controller_kwargs": {
+                'controller_type': 'motor',
+                "p_gains": 0.6,
+                "d_gains": 0.075,
+            },
+            "basis_generator_kwargs": {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 6,
+                'num_basis_zero_start': 1
+            }
+        },
+        'DMP': {},
+        'ProDMP': {},
+    }
 
     @property
     def current_vel(self) -> Union[float, int, np.ndarray]:
