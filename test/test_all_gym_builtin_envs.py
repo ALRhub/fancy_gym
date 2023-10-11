@@ -12,6 +12,7 @@ GYM_IDS = [spec.id for spec in gym.envs.registry.values() if
            not isinstance(spec.entry_point, Callable) and
            "fancy_gym" not in spec.entry_point and 'make_bb_env_helper' not in spec.entry_point
            and 'jax' not in spec.id.lower()
+           and 'jax' not in spec.id.lower()
            and not re.match(r'GymV2.Environment', spec.id)
            ]
 GYM_MP_IDS = fancy_gym.ALL_DMC_MOVEMENT_PRIMITIVE_ENVIRONMENTS['all']
