@@ -6,6 +6,7 @@
   <br><br>
 </h1>
 
+
 | :exclamation: Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the [legacy branch](https://github.com/ALRhub/fancy_gym/tree/legacy). Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
@@ -33,6 +34,32 @@ While the overarching objective of MP environments remains the learning of an op
 
 ## Installation
 
+### Installation via pip (recommended)
+
+While the publication of `fancy_gym` on PyPI is still pending, you can install it from Test-PyPI.
+```bash
+pip install --index-url https://test.pypi.org/simple/ fancy_gym
+```
+
+We have a few optional dependencies. If you also want to install those use
+
+```bash
+# to install all optional dependencies
+pip install --index-url https://test.pypi.org/simple/ 'fancy_gym[all]'
+
+# or choose only those you want
+pip install --index-url https://test.pypi.org/simple/ 'fancy_gym[dmc,box2d,mujoco-legacy,jax,testing]'
+```
+
+Pip can not automatically install up-to-date versions of metaworld, since they are not avaible on PyPI yet.
+Install metaworld via
+
+```bash
+pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld
+```
+
+### Installation from master
+
 1. Clone the repository
 
 ```bash
@@ -54,8 +81,16 @@ pip install -e .
 We have a few optional dependencies. If you also want to install those use
 
 ```bash
-pip install -e '.[all]' # to install all optional dependencies
-pip install -e '.[dmc,metaworld,box2d,mujoco,mujoco-legacy,jax,testing]' # or choose only those you want
+# to install all optional dependencies
+pip install -e '.[all]'
+
+# or choose only those you want
+pip install -e '.[dmc,box2d,mujoco-legacy,jax,testing]'
+```
+
+Metaworld has to be installed manually with
+```bash
+pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld
 ```
 
 ## How to use Fancy Gym
