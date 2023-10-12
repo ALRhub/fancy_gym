@@ -6,7 +6,7 @@
   <br><br>
 </div>
 
-| :exclamation: Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the [legacy branch](https://github.com/ALRhub/fancy_gym/tree/legacy). Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
+|  &#x2757; Fancy Gym has recently received a major refactor, which also updated many of the used dependencies to current versions. The update has brought some breaking changes. If you want to access the old version, check out the [legacy branch](https://github.com/ALRhub/fancy_gym/tree/legacy). Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maintained fork of OpenAI’s renowned Gym library) `fancy_gym` offers a comprehensive collection of reinforcement learning environments.
@@ -100,7 +100,7 @@ We will only show the basics here and prepared [multiple examples](fancy_gym/exa
 
 Regular step based environments added by Fancy Gym are added into the `fancy/` namespace.
 
-| :exclamation: Legacy versions of Fancy Gym used `fancy_gym.make(...)`. This is no longer supported and will raise an Exception on new versions. |
+|  &#x2757; Legacy versions of Fancy Gym used `fancy_gym.make(...)`. This is no longer supported and will raise an Exception on new versions. |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ```python
