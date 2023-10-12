@@ -1,6 +1,6 @@
 [project]
 name = "fancy_gym"
-version = "1.0.3"
+version = "1.0.4"
 description = "Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches."
 readme = "README.md"
 authors = [
@@ -9,7 +9,7 @@ authors = [
     {name = "Dominik Roth", email = "fancy_gym@dominik-roth.eu"},
     {name = "Hongyi Zhou", email = "hongyi.zhou@kit.edu"}
 ]
-license = { file = "LICENSE" }
+license = { text = "MIT License" }
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -35,7 +35,9 @@ requires-python = ">=3.7"
 
 [project.urls]
 "Homepage" = "https://github.com/ALRhub/fancy_gym/"
+#"Documentation" = "https://github.com/ALRhub/fancy_gym/"
 "Bug Tracker" = "https://github.com/ALRhub/fancy_gym/issues"
+#"Repository" = "https://github.com/ALRhub/fancy_gym/"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
