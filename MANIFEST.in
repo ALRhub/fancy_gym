@@ -9,3 +9,6 @@ include CONTRIBUTING.md
 # Include stl and xml files from the fancy_gym/envs/mujoco directory
 recursive-include fancy_gym/envs/mujoco *.stl
 recursive-include fancy_gym/envs/mujoco *.xml
+
+# Also shipping the most important part of fancy gym
+include icon.svg

@@ -1,6 +1,6 @@
 <div align="center">
   <br>
-  <img src='./icon.svg' width="250px">
+  <img src='https://raw.githubusercontent.com/ALRhub/fancy_gym/master/icon.svg' width="250px">
   <br><br>
   <b style="font-size: 2em;">Fancy Gym</b>
   <br><br>
