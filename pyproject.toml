@@ -9,7 +9,7 @@ authors = [
     {name = "Dominik Roth", email = "fancy_gym@dominik-roth.eu"},
     {name = "Hongyi Zhou", email = "hongyi.zhou@kit.edu"}
 ]
-license = "MIT"
+license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
