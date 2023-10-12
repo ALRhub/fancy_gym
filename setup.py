@@ -54,7 +54,7 @@ setup(
     install_requires=[
         'mp_pytorch<=0.1.3',
         'mujoco==2.3.3',
-        'gymnasium[mujoco]>0.26.0'
+        'gymnasium[mujoco]>=0.26.0'
     ],
     packages=[package for package in find_packages(
     ) if package.startswith("fancy_gym")],
