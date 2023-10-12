@@ -9,7 +9,6 @@ from setuptools import setup, find_packages
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     'dmc': ['shimmy[dm-control]', 'Shimmy==1.0.0'],
-    'metaworld': ['metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld'],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
     'mujoco-legacy': ['mujoco-py >=2.1,<2.2', 'cython<3'],
     'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
@@ -53,9 +52,9 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'mp_pytorch<=0.1.3'
+        'mp_pytorch<=0.1.3',
         'mujoco==2.3.3',
-        'gymnasium[mujoco]>0.26.0']
+        'gymnasium[mujoco]>0.26.0'
     ],
     packages=[package for package in find_packages(
     ) if package.startswith("fancy_gym")],
