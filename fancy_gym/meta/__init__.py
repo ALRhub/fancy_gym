@@ -67,4 +67,3 @@ else:
             mp_wrapper=goal_endeffector_change_mp_wrapper.MPWrapper,
             add_mp_types=['ProMP', 'ProDMP'],
         )
-`
