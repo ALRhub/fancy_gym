@@ -43,21 +43,34 @@ mp_pytorch = "<=0.1.3"
 
 [project.optional-dependencies]
 dmc = ["shimmy[dm-control]", "Shimmy==1.0.0"]
-metaworld = ["metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld"]
+# PyPi does not allow external dependencies. Metaworld will have to be installed manually until Farama publishes up-to-date version of metaworld on PyPi.
+#metaworld = ["metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld"]
 box2d = ["gymnasium[box2d]>=0.26.0"]
 mujoco = ["mujoco==2.3.3", "gymnasium[mujoco]>0.26.0"]
 mujoco-legacy = ["mujoco-py>=2.1,<2.2", "cython<3"]
 jax = ["jax>=0.4.0", "jaxlib>=0.4.0"]
+
+all = [
+    # include all the optional dependencies
+    "shimmy[dm-control]",
+    "Shimmy==1.0.0",
+    #"metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld",
+    "mujoco==2.3.3",
+    "gymnasium[box2d,mujoco]>=0.26.0",
+    "mujoco-py>=2.1,<2.2",
+    "cython<3",
+    "jax>=0.4.0",
+    "jaxlib>=0.4.0"
+]
 
 testing = [
     "pytest",
     # include all the optional dependencies as well
     "shimmy[dm-control]",
     "Shimmy==1.0.0",
-    "metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld",
-    "gymnasium[box2d]>=0.26.0",
+    #"metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld",
     "mujoco==2.3.3",
-    "gymnasium[mujoco]>0.26.0",
+    "gymnasium[box2d,mujoco]>=0.26.0",
     "mujoco-py>=2.1,<2.2",
     "cython<3",
     "jax>=0.4.0",
