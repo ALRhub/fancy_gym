@@ -37,17 +37,17 @@ While the overarching objective of MP environments remains the learning of an op
 
 While the publication of `fancy_gym` on PyPI is still pending, you can install it from Test-PyPI.
 ```bash
-pip install --index-url https://test.pypi.org/simple/ fancy_gym
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple fancy_gym
 ```
 
 We have a few optional dependencies. If you also want to install those use
 
 ```bash
 # to install all optional dependencies
-pip install --index-url https://test.pypi.org/simple/ 'fancy_gym[all]'
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'fancy_gym[all]'
 
 # or choose only those you want
-pip install --index-url https://test.pypi.org/simple/ 'fancy_gym[dmc,box2d,mujoco-legacy,jax,testing]'
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'fancy_gym[dmc,box2d,mujoco-legacy,jax,testing]'
 ```
 
 Pip can not automatically install up-to-date versions of metaworld, since they are not avaible on PyPI yet.
