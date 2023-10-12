@@ -1,0 +1,9 @@
+# Include the README
+include README.md
+
+# Include the license file
+include LICENSE
+
+# Include stl and xml files from the fancy_gym/envs/mujoco directory
+recursive-include fancy_gym/envs/mujoco *.stl
+recursive-include fancy_gym/envs/mujoco *.xml
