@@ -1,3 +1,5 @@
+# We still provide a setup.py for backwards compatability.
+# But the pyproject.toml should be prefered.
 import itertools
 from pathlib import Path
 from typing import List
@@ -48,6 +50,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     extras_require=extras,
     install_requires=[
