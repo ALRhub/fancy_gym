@@ -1,5 +1,8 @@
 # Fancy Gym
 
+| :exclamation: You are currently viewing the legacy version of `fancy_gym`. We recommend migrating to the new version found on the [master branch](https://github.com/ALRhub/fancy_gym). Find out more about what changed [here](https://github.com/ALRhub/fancy_gym/pull/75). |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+
 `fancy_gym` offers a large variety of reinforcement learning environments under the unifying interface
 of [OpenAI gym](https://gymlibrary.dev/). We provide support (under the OpenAI gym interface) for the benchmark suites
 [DeepMind Control](https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control)
@@ -24,6 +27,9 @@ the contextual setting, i.e. we expose the context space - a subset of the obser
 episode. This requires to predict a new action/MP parametrization for each context.
 
 ## Installation
+
+| :exclamation: The `legacy` and `master` versions of `fancy_gym` have incompatible dependencies. If you want to install both make sure to use seperate environments (like those provided by [venv](https://docs.python.org/3/library/venv.html), [Poetry](https://python-poetry.org/) or [Conda](https://docs.conda.io/en/latest/)). |
+| ------------------------------------------------------------ |
 
 1. Clone the repository
 
@@ -73,7 +79,7 @@ for i in range(1000):
 
     if done:
         obs = env.reset()
-``` 
+```
 
 When using `dm_control` tasks we expect the `env_id` to be specified as `dmc:domain_name-task_name` or for manipulation
 tasks as `dmc:manipulation-environment_name`. For `metaworld` tasks, we require the structure `metaworld:env_id-v2`, our
