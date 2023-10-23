@@ -6,6 +6,8 @@ from typing import List
 
 from setuptools import setup, find_packages
 
+print('[!] You are currently installing/building fancy_gym via setup.py. This is only provided for backwards-compatability. Please use the pyproject.toml instead.')
+
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     'dmc': ['shimmy[dm-control]', 'Shimmy==1.0.0'],
