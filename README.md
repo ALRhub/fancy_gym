@@ -35,7 +35,7 @@ While the overarching objective of MP environments remains the learning of an op
 
 We recommend installing `fancy_gym` into a virtual environments like [venv](https://docs.python.org/3/library/venv.html). 3rd party alternatives to venv like [Poetry](https://python-poetry.org/) or [Conda](https://docs.conda.io/en/latest/) can also be used.
 
-### Installation via pip (recommended)
+### Installation from PyPI (recommended)
 
 Install `fancy_gym` via
 ```bash
@@ -62,25 +62,21 @@ pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d15
 ### Installation from master
 
 1. Clone the repository
-
 ```bash
 git clone git@github.com:ALRhub/fancy_gym.git
 ```
 
 2. Go to the folder
-
 ```bash
 cd fancy_gym
 ```
 
 3. Install with
-
 ```bash
 pip install -e .
 ```
 
 We have a few optional dependencies. If you also want to install those use
-
 ```bash
 # to install all optional dependencies
 pip install -e '.[all]'
