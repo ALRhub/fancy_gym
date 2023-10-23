@@ -101,6 +101,7 @@ class AntJumpEnv(AntEnvCustomXML):
                  contact_force_range=(-1.0, 1.0),
                  reset_noise_scale=0.1,
                  exclude_current_positions_from_observation=True,
+                 **kwargs
                  ):
         self.current_step = 0
         self.max_height = 0
@@ -113,7 +114,7 @@ class AntJumpEnv(AntEnvCustomXML):
                          healthy_z_range=healthy_z_range,
                          contact_force_range=contact_force_range,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation, **kwargs)
 
     def step(self, action):
         self.current_step += 1

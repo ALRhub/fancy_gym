@@ -74,7 +74,8 @@ class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
                  reset_noise_scale=0.1,
                  context=True,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=100):
+                 max_episode_steps=100,
+                 **kwargs):
         self.current_step = 0
         self.max_height = 0
         # self.max_episode_steps = max_episode_steps
@@ -85,7 +86,8 @@ class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
                          forward_reward_weight=forward_reward_weight,
                          ctrl_cost_weight=ctrl_cost_weight,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation,
+                         **kwargs)
 
     def step(self, action):
 

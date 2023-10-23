@@ -34,7 +34,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
                  goal_switching_step: int = None,
-                 enable_artificial_wind: bool = False):
+                 enable_artificial_wind: bool = False, **kwargs):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
 
@@ -68,7 +68,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", "xml", "table_tennis_env.xml"),
                            frame_skip=frame_skip,
-                           observation_space=self.observation_space)
+                           observation_space=self.observation_space,
+                           **kwargs)
 
         if ctxt_dim == 2:
             self.context_bounds = CONTEXT_BOUNDS_2DIMS
