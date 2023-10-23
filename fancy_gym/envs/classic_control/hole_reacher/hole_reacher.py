@@ -17,9 +17,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
     def __init__(self, n_links: int, hole_x: Union[None, float] = None, hole_depth: Union[None, float] = None,
                  hole_width: float = 1., random_start: bool = False, allow_self_collision: bool = False,
-                 allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple"):
+                 allow_wall_collision: bool = False, collision_penalty: float = 1000, rew_fct: str = "simple", **kwargs):
 
-        super().__init__(n_links, random_start, allow_self_collision)
+        super().__init__(n_links, random_start, allow_self_collision, **kwargs)
 
         # provided initial parameters
         self.initial_x = hole_x  # x-position of center of hole
@@ -178,7 +178,9 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         return False
 
-    def render(self, mode='human'):
+    def render(self, mode=None):
+        if mode==None:
+            mode = self.render_mode
         if self.fig is None:
             # Create base figure once on the beginning. Afterwards only update
             plt.ion()

@@ -13,9 +13,9 @@ from . import MPWrapper
 class ViaPointReacherEnv(BaseReacherDirectEnv):
 
     def __init__(self, n_links, random_start: bool = False, via_target: Union[None, Iterable] = None,
-                 target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):
+                 target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000, **kwargs):
 
-        super().__init__(n_links, random_start, allow_self_collision)
+        super().__init__(n_links, random_start, allow_self_collision, **kwargs)
 
         # provided initial parameters
         self.intitial_target = target  # provided target value
@@ -123,7 +123,9 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
     def _check_collisions(self) -> bool:
         return self._check_self_collision()
 
-    def render(self, mode='human'):
+    def render(self, mode=None):
+        if mode==None:
+            mode = self.render_mode
         goal_pos = self._goal.T
         via_pos = self._via_point.T
 

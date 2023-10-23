@@ -17,8 +17,8 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     """
 
     def __init__(self, n_links: int, target: Union[None, Iterable] = None, random_start: bool = True,
-                 allow_self_collision: bool = False, ):
-        super().__init__(n_links, random_start, allow_self_collision)
+                 allow_self_collision: bool = False, **kwargs):
+        super().__init__(n_links, random_start, allow_self_collision, **kwargs)
 
         # provided initial parameters
         self.inital_target = target
@@ -98,7 +98,9 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     def _check_collisions(self) -> bool:
         return self._check_self_collision()
 
-    def render(self, mode='human'):  # pragma: no cover
+    def render(self, mode=None):  # pragma: no cover
+        if mode==None:
+            mode = self.render_mode
         if self.fig is None:
             # Create base figure once on the beginning. Afterwards only update
             plt.ion()
