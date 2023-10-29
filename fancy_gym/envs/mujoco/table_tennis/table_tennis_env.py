@@ -276,11 +276,11 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
 
 class TableTennisWind(TableTennisEnv):
-    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4):
+    def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4, **kwargs):
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(22,), dtype=np.float64
         )
-        super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip, enable_artificial_wind=True)
+        super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip, enable_artificial_wind=True, **kwargs)
 
     def _get_obs(self):
         obs = np.concatenate([
@@ -298,5 +298,5 @@ class TableTennisWind(TableTennisEnv):
 
 
 class TableTennisGoalSwitching(TableTennisEnv):
-    def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99):
-        super().__init__(frame_skip=frame_skip, goal_switching_step=goal_switching_step)
+    def __init__(self, frame_skip: int = 4, goal_switching_step: int = 99, **kwargs):
+        super().__init__(frame_skip=frame_skip, goal_switching_step=goal_switching_step, **kwargs)
