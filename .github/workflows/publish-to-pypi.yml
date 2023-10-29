@@ -1,9 +1,11 @@
 name: Publish Python package to PyPI
 
 on:
-  push:
-    tags:
-      - '*'
+  # Action currently disabled to only push to TestPyPI for now
+
+  #push:
+  #  tags:
+  #    - '*'
 
 jobs:
   publish:
