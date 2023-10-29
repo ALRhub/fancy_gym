@@ -14,6 +14,20 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # This fetches all history for all branches and tags
+
+    - name: Verify tag is on master branch
+      run: |
+        TAG_SHA=$(git rev-parse ${{ github.ref }})
+        MASTER_SHA=$(git rev-parse refs/heads/master)
+
+        if [ "$TAG_SHA" == "$MASTER_SHA" ]; then
+          echo "Tag is on the master branch. Proceeding with the workflow."
+        else
+          echo "Tag is not on the master branch. Cancelling the workflow."
+          exit 1
+        fi
 
     - name: Set up Python
       uses: actions/setup-python@v4
