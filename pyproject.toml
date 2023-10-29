@@ -1,6 +1,6 @@
 [project]
 name = "fancy_gym"
-version = "0.1.0"
+version = "0.1.2"
 description = "Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches."
 readme = "README.md"
 authors = [
