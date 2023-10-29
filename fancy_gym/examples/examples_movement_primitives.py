@@ -16,7 +16,7 @@ def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, rend
     """
     # Equivalent to gym, we have a make function which can be used to create environments.
     # It takes care of seeding and enables the use of a variety of external environments using the gym interface.
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode='human' if render else None)
 
     returns = 0
     # env.render(mode=None)
@@ -26,14 +26,6 @@ def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, rend
     for i in range(iterations):
 
         if render and i % 1 == 0:
-            # This renders the full MP trajectory
-            # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
-            # Resetting to no rendering, can be achieved by render(mode=None).
-            # It is also possible to change the mode multiple times when
-            # e.g. only every second trajectory should be displayed, such as here
-            # Just make sure the correct mode is set before executing the step.
-            env.render(mode="human")
-        else:
             env.render()
 
         # Now the action space is not the raw action but the parametrization of the trajectory generator,
@@ -65,14 +57,14 @@ def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1,
     """
     # Changing the arguments of the black box env is possible by providing them to gym through mp_config_override.
     # E.g. here for way to many basis functions
-    env = gym.make(env_name, seed, mp_config_override={'basis_generator_kwargs': {'num_basis': 1000}})
+    env = gym.make(env_name, seed, mp_config_override={'basis_generator_kwargs': {'num_basis': 1000}}, render_mode='human' if render else None)
 
     returns = 0
     obs = env.reset()
 
     # This time rendering every trajectory
     if render:
-        env.render(mode="human")
+        env.render()
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -129,13 +121,14 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
     # basis_generator_kwargs = {'basis_generator_type': 'rbf',
     #                           'num_basis': 5
     #                           }
-    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+    raw_env = gym.make(base_env_id, render_mode='human' if render else None)
+    env = fancy_gym.make_bb(env=raw_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
 
     if render:
-        env.render(mode="human")
+        env.render()
 
     rewards = 0
     obs = env.reset()
@@ -152,7 +145,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
             obs = env.reset()
 
 
-if __name__ == '__main__':
+def main():
     render = False
     # DMP
     example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
@@ -172,3 +165,6 @@ if __name__ == '__main__':
 
     # Custom MP
     example_fully_custom_mp(seed=10, iterations=1, render=render)
+
+if __name__=='__main__':
+    main()
