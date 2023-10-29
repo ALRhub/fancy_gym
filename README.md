@@ -92,7 +92,7 @@ pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d15
 
 ## How to use Fancy Gym
 
-We will only show the basics here and prepared [multiple examples](fancy_gym/examples/) for a more detailed look.
+We will only show the basics here and prepared [multiple examples](https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/examples/) for a more detailed look.
 
 ### Step-Based Environments
 
@@ -197,7 +197,7 @@ print(fancy_gym.MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS['<my_custom_namespace>'])
 ### How to create a new MP task
 
 In case a required task is not supported yet in the MP framework, it can be created relatively easy. For the task at
-hand, the following [interface](fancy_gym/black_box/raw_interface_wrapper.py) needs to be implemented.
+hand, the following [interface](https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/black_box/raw_interface_wrapper.py) needs to be implemented.
 
 ```python
 from abc import abstractmethod
@@ -283,7 +283,7 @@ class RawInterfaceWrapper(gym.Wrapper):
 
 If you created a new task wrapper, feel free to open a PR, so we can integrate it for others to use as well. Without the
 integration the task can still be used. A rough outline can be shown here, for more details we recommend having a look
-at the [examples](fancy_gym/examples/).
+at the [examples](https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/examples/).
 
 If the step-based is already registered with gym, you can simply do the following:
 
