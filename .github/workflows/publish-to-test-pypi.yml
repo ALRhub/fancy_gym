@@ -19,15 +19,12 @@ jobs:
 
     - name: Verify tag is on master branch
       run: |
-        TAG_SHA=$(git rev-parse ${{ github.ref }})
-        MASTER_SHA=$(git rev-parse refs/heads/master)
-
-        if [ "$TAG_SHA" == "$MASTER_SHA" ]; then
-          echo "Tag is on the master branch. Proceeding with the workflow."
-        else
+        TAG_IS_ON_MASTER=$(git branch -r --contains ${{ github.ref }} | grep 'origin/master')
+        if [ -z "$TAG_IS_ON_MASTER" ]; then
           echo "Tag is not on the master branch. Cancelling the workflow."
           exit 1
         fi
+        echo "Tag is on the master branch. Proceeding with the workflow."
 
     - name: Set up Python
       uses: actions/setup-python@v4
