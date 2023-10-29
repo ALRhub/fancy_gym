@@ -41,6 +41,7 @@ def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, rend
         if terminated or truncated:
             print(reward)
             obs = env.reset()
+    env.close()
 
 
 def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1, render=True):
@@ -80,6 +81,7 @@ def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1,
             print(i, reward)
             obs = env.reset()
 
+    env.close()
     return obs
 
 class Custom_MPWrapper(fancy_gym.envs.mujoco.reacher.MPWrapper):
@@ -147,11 +149,11 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
 
     env = gym.make(custom_env_id_ProMP, render_mode='human' if render else None)
 
-    if render:
-        env.render()
-
     rewards = 0
     obs = env.reset()
+
+    if render:
+        env.render()
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -163,6 +165,12 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
             print(rewards)
             rewards = 0
             obs = env.reset()
+
+    try: # Some mujoco-based envs don't correlcty implement .close
+        env.close()
+    except:
+        pass
+
 
 def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
     """
@@ -200,11 +208,11 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
 
     env = gym.make(custom_env_id_ProMP, render_mode='human' if render else None)
 
-    if render:
-        env.render()
-
     rewards = 0
     obs = env.reset()
+
+    if render:
+        env.render()
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -233,6 +241,12 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
             print(rewards)
             rewards = 0
             obs = env.reset()
+
+    try: # Some mujoco-based envs don't correlcty implement .close
+        env.close()
+    except:
+        pass
+
 
 def main():
     render = False
