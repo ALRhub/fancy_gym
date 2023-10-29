@@ -2,8 +2,6 @@ name: Publish Python package to PyPI
 
 on:
   push:
-    branches:
-      - master
     tags:
       - '*'
 

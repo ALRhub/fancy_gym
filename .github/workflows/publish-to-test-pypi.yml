@@ -2,8 +2,6 @@ name: Publish Python package to TestPyPI
 
 on:
   push:
-    branches:
-      - master
     tags:
       - '*'
 
