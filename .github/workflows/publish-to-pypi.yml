@@ -1,17 +1,17 @@
 name: Publish Python package to PyPI
 
 on:
-  # Action currently disabled to only push to TestPyPI for now
-
-  #push:
-  #  tags:
-  #    - '*'
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
 
 jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')  # Only run on tagged commits
+    if: false && startsWith(github.ref, 'refs/tags/')  # Only run on tagged commits
 
     steps:
     - name: Check out code
