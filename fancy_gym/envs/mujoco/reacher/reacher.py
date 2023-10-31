@@ -13,7 +13,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
     More general version of the gym mujoco Reacher environment
     """
 
-    def __init__(self, sparse: bool = False, n_links: int = 5, reward_weight: float = 1, ctrl_cost_weight: float = 1):
+    def __init__(self, sparse: bool = False, n_links: int = 5, reward_weight: float = 1, ctrl_cost_weight: float = 1,
+                 **kwargs):
         utils.EzPickle.__init__(**locals())
 
         self._steps = 0
