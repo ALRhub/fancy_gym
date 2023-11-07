@@ -1,0 +1,55 @@
+<mujoco model="base_surrounding">
+  <compiler angle="radian" discardvisual="false" />
+  <option collision="all" cone="elliptic" gravity="0 0 -9.81" impratio="3" solver="Newton" timestep="0.002" tolerance="1e-10" />
+  <size nconmax="2000" njmax="2000" />
+  <asset>
+    <texture builtin="gradient" height="32" rgb1="0.26 0.58 0.51" rgb2="0.26 0.58 0.51" type="skybox" width="32" />
+  </asset>
+  <visual>
+    <map zfar="1000" znear="0.001" />
+  </visual>
+  <worldbody>
+    <light castshadow="true" cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1" />
+    <body name="ground" pos="0 0 -0.94">
+      <geom name="ground:geom1" rgba="0.26 0.58 0.51 1" size="0 0 1" type="plane" />
+    </body>
+
+    <site pos="0.125 -0.7 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>
+    <site pos="0.125 0.6 0.0485" size="0.01 0.05 " rgba="0 1 1 0.5" type="sphere"/>
+    <site pos="0.7 -0.7 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.7 0.45 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+
+
+    <site pos="0.3 0.2 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.3 -0.025 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.6 0.2 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.6 -0.025 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+
+    <site pos="0.3 -0.5 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.3 -0.1 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.6 -0.5 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.6 -0.1 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
+
+      <body name="obstacle_box_0" pos="0.4 -0.025 0.0" quat="1 0 0 0">
+          <geom pos="0 0 0" size="0.03 0.03 0.1" rgba="1 0 0 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+      </body>
+
+      <body name="obstacle_box_1" pos="0.4 -0.1 0.0" quat="1 0 0 0">
+          <geom pos="0 0 0" size="0.03 0.03 0.1" rgba="0 1 0 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+      </body>
+
+      <body name="walls" pos="0.0 0.0 0.0" quat="1 0 0 0">
+          <geom pos="0.15 -0.05 0.025" size="0.005 0.65 0.08" rgba="1 0 0 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+          <geom pos="0.7 -0.05 0.025" size="0.005 0.65 0.08" rgba="0 1 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+<!--          <geom pos="0.425 0.6 0.025" size="0.28 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>-->
+          <geom pos="0.27 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+          <geom pos="0.58 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+          <site pos="0.425 -0.7 0.0485" size="0.025 0.025 0.025 " rgba="1 0 0 0.5" type="sphere"/>
+        </body>
+
+  </worldbody>
+
+  <include file="kit_lab_surrounding.xml" />
+  <include file="panda_rod.xml" />
+  <include file="ball_model.xml" />
+</mujoco>

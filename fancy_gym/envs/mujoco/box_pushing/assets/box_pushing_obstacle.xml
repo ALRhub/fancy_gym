@@ -1,0 +1,95 @@
+<mujoco model="base_surrounding">
+  <compiler angle="radian" discardvisual="false" />
+  <option collision="all" cone="elliptic" gravity="0 0 -9.81" impratio="3" solver="Newton" timestep="0.002" tolerance="1e-10" />
+  <size nconmax="2000" njmax="2000" />
+  <asset>
+    <texture builtin="gradient" height="32" rgb1="0.26 0.58 0.51" rgb2="0.26 0.58 0.51" type="skybox" width="32" />
+  </asset>
+  <visual>
+    <map zfar="1000" znear="0.001" />
+  </visual>
+  <worldbody>
+    <light castshadow="true" cutoff="100" diffuse="1 1 1" dir="-0 0 -1.3" directional="true" exponent="1" pos="0 0 1.3" specular=".1 .1 .1" />
+    <body name="ground" pos="0 0 -0.94">
+      <geom name="ground:geom1" rgba="0.26 0.58 0.51 1" size="0 0 1" type="plane" />
+    </body>
+
+
+<!--    <site pos="0.3 -0.7 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>-->
+<!--    <site pos="0.3 0.45 0.0485" size="0.01 0.05 " rgba="0 1 1 0.5" type="sphere"/>-->
+<!--    <site pos="0.6 -0.7 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>-->
+<!--    <site pos="0.6 0.45 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>-->
+
+    <site pos="0.125 -0.7 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>
+    <site pos="0.125 0.45 0.0485" size="0.01 0.05 " rgba="0 1 1 0.5" type="sphere"/>
+    <site pos="0.7 -0.7 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>
+    <site pos="0.7 0.45 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+
+
+    <site pos="0.3 0.2 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.3 -0.3 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.6 0.2 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+    <site pos="0.6 -0.3 0.0485" size="0.01 0.05 " rgba="1 0 0 0.5" type="sphere"/>
+
+    <body name="target_pos" pos="0.5 0.5 0.0">
+      <site type="box" pos="0 0 0" rgba="0 1 0 0.3" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.5" type="box"/>
+      <site name='tarboxVert1' pos="0.045 0.045 0.123" size="0.01 0.05 " rgba="0 0 1 1.0" type="sphere"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.5" type="box"/>
+        <site name='tarboxVert2' pos="-0.045 0.045 0.123" size="0.01 0.05 " rgba="0 1 0 1.0" type="sphere"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.5" type="box"/>
+        <site name='tarboxVert3' pos="-0.045 -0.045 0.123" size="0.01 0.05 " rgba="1 0 0 1.0" type="sphere"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="0 1 0 0.5" type="box"/>
+        <site name='tarboxVert4' pos="0.045 -0.045 0.123" size="0.01 0.05 " rgba="1 1 0 1.0" type="sphere"/>
+    </body>
+
+<!--    <body name="context_range" pos="0.0 0.0 0.0">-->
+<!--&lt;!&ndash;      <site type="sphere" pos="0 0 0" rgba="0 1 0 0.3" size="0.05 0.05 0.01" />&ndash;&gt;-->
+<!--      <site pos="0.3 -0.45 0.0485" size="0.01 0.05" rgba="0 0 1 0.5" type="sphere"/>-->
+<!--      <site pos="0.3 0.45 0.0485" size="0.01 0.05 " rgba="0 0 1 0.5" type="sphere"/>-->
+<!--      <site pos="0.6 -0.45 0.0485" size="0.01 0.005 " rgba="0 1 0 0.5" type="sphere"/>-->
+<!--      <site pos="0.6 0.45 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>-->
+<!--    </body>-->
+
+    <body name="replan_target_pos" pos="0.5 0.5 -0.01">
+      <site type="box" pos="0 0 0" rgba="1 1 0 0.3" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 0.5" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 0 0.5" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 0 0.5" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 0 0.5" type="box"/>
+    </body>
+    <body name="replan_target_pos2" pos="0.5 0.5 -0.01">
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.000003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 0 0.000005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.000001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.000001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.000001" type="box"/>
+    </body>
+    <body name="replan_target_pos3" pos="0.5 0.5 -0.01">
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.00003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 0 0 0.000005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+    </body>
+    <body name="replan_target_pos4" pos="0.5 0.5 -0.01">
+      <site type="box" pos="0 0 0" rgba="1 1 1 0.00003" size="0.05 0.05 0.01" />
+      <site pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 1 1 0.00005" type="box"/>
+      <site pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="1 1 1 0.00001" type="box"/>
+      <site pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="1 1 1 0.00001" type="box"/>
+    </body>
+    <body name="obstacle_box_0" pos="0.4 0.15 0.0" quat="1 0 0 0">
+        <geom pos="0 0 0" size="0.05 0.05 0.01" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>
+        <geom pos="0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 1.0" type="box" mass="0.001"/>
+        <geom pos="0 0.05 0.0485" size="0.05 0.005 0.045" rgba="0 0 1 1.0" type="box" mass="0.001"/>
+        <geom pos="-0.05 0 0.0485" size="0.005 0.05 0.045" rgba="0 0 1 1.0" type="box" mass="0.001"/>
+        <geom pos="0 -0.05 0.0485" size="0.05 0.005 0.045" rgba="0 0 1 1.0" type="box" mass="0.001"/>
+    </body>
+
+  </worldbody>
+
+  <include file="kit_lab_surrounding.xml" />
+  <include file="panda_rod.xml" />
+  <include file="push_box.xml" />
+</mujoco>
