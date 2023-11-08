@@ -9,8 +9,32 @@ import mujoco
 
 MAX_EPISODE_STEPS_MINI_GOLF = 100
 
-# CTXT SPACE BOUNDS:[[min_X_RED, min_Y_RED, min_X_GREEN, min_Y_GREEN], [max_X_RED, max_Y_RED, max_Y_GREEN, max_Y_GREEN]]
-BOX_POS_BOUND = np.array([[0.3, -0.025, 0.3, -0.5], [0.6, 0.2, 0.6, -0.1]])
+# CTXT SPACE BOUNDS:[[min_X_RED, min_Y_RED, min_X_GREEN, min_Y_GREEN, min_goal_width],
+#                    [max_X_RED, max_Y_RED, max_Y_GREEN, max_Y_GREEN, max_goal_width]]
+
+MIN_GOAL_WIDTH = 0.06
+MAX_GOAL_WIDTH = 0.3
+BOX_POS_BOUND = np.array([[0.19, -0.025, 0.3, -0.5, MIN_GOAL_WIDTH], [0.65, 0.2, 0.6, -0.1, MAX_GOAL_WIDTH]])
+
+
+def skew(x):
+    """
+    Returns the skew-symmetric matrix of x
+    param x: 3x1 vector
+    """
+    return np.array([[0, -x[2], x[1]], [x[2], 0, -x[0]], [-x[1], x[0], 0]])
+
+
+def get_quaternion_error(curr_quat, des_quat):
+    """
+    Calculates the difference between the current quaternion and the desired quaternion.
+    See Siciliano textbook page 140 Eq 3.91
+
+    param curr_quat: current quaternion
+    param des_quat: desired quaternion
+    return: difference between current quaternion and desired quaternion
+    """
+    return curr_quat[0] * des_quat[1:] - des_quat[0] * curr_quat[1:] - skew(des_quat[1:]) @ curr_quat[1:]
 
 
 class MiniGolfEnv(MujocoEnv, utils.EzPickle):
@@ -20,21 +44,20 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         normalized joints torque * 7 , range [-1, 1]
     """
 
-    def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml", **kwargs):
+    def __init__(self, frame_skip: int = 10, xml_name="mini_golf.xml", **kwargs):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
-        self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
-        self.desired_qpos_robot = np.array([[0.38706806, 0.17620842, 0.24989142, -2.39914377, -0.07986905, 2.56857367,
-                                             1.47951693]])
-        self.init_qvel_box_pushing = np.zeros(15)
-        self.box_init_pos = np.array([0.4, 0.3, -0.01, 0.0, 0.0, 0.0, 1.0])
+        self.q_torque_max = np.array([90., 90., 90., 90., 12., 12., 12.])
+        self.q_max = np.array([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973])
+        self.q_min = np.array([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
+        self._init_qpos = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.425, 0.5, 0.005, 1, 0, 0, 0])
+        self._des_robot_qpos = np.array([0.82571042, 0.81006124, 0.17260485, -1.37485921, -0.15166258, 2.17198979,
+                                         1.81153316])
+        self._init_qvel = np.zeros(15)
+        self._is_success = False
+        self._init_xpos_goal_wall_left = 0.27
+        self._init_xpos_goal_wall_right = 0.58
         self.frame_skip = frame_skip
-
-        self._q_max = q_max
-        self._q_min = q_min
-        self._q_dot_max = q_dot_max
-        self._desired_rod_quat = desired_rod_quat
-
         self._episode_energy = 0.
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", xml_name),
@@ -44,7 +67,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
 
     def step(self, action):
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
-        resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
+        resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -self.q_torque_max, self.q_torque_max)
 
         unstable_simulation = False
 
@@ -57,38 +80,36 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         self._steps += 1
         self._episode_energy += np.sum(np.square(action))
 
-        episode_end = True if self._steps >= MAX_EPISODE_STEPS_BOX_PUSHING else False
+        episode_end = True if self._steps >= MAX_EPISODE_STEPS_MINI_GOLF else False
 
-        box_pos = self.data.body("box_0").xpos.copy()
-        box_quat = self.data.body("box_0").xquat.copy()
-        target_pos = self.data.body("replan_target_pos").xpos.copy()
-        target_quat = self.data.body("replan_target_pos").xquat.copy()
-        target_quat2 = self.data.body("replan_target_pos2").xquat.copy()
-        target_quat3 = self.data.body("replan_target_pos3").xquat.copy()
-        target_quat4 = self.data.body("replan_target_pos4").xquat.copy()
+        ball_pos = self.data.body("ball").xpos.copy()
+        red_obs_box = self.data.body("obstacle_box_0").xpos.copy()
+        green_obs_box = self.data.body("obstacle_box_1").xpos.copy()
+        ball_target_pos = self.data.site("ball_target").xpos.copy()
+
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
         rod_quat = self.data.body("push_rod").xquat.copy()
+
         qpos = self.data.qpos[:7].copy()
         qvel = self.data.qvel[:7].copy()
 
         if not unstable_simulation:
-            reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2,
-                                      target_quat3, target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action)
+            reward = self._get_reward(episode_end, ball_pos, red_obs_box, green_obs_box, ball_target_pos,
+                                      rod_tip_pos, rod_quat, qpos, qvel, action)
         else:
             reward = -50
 
         obs = self._get_obs()
-        box_goal_pos_dist = 0. if not episode_end else np.linalg.norm(box_pos - target_pos)
-        box_goal_quat_dist = 0. if not episode_end else self._get_rotation_dist(box_quat, target_quat, target_quat2,
-                                                                                target_quat3, target_quat4)
+        ball_goal_dist = np.linalg.norm(ball_target_pos - ball_pos)
+        self._is_success = True if (self._is_success or ball_pos[1] < ball_target_pos[1]) else False
+        rod_tip_ball_dist = np.linalg.norm(rod_tip_pos - ball_pos)
         infos = {
             'episode_end': episode_end,
-            'box_pos': box_pos,
-            'box_or': quat2euler(box_quat),
-            'box_goal_pos_dist': box_goal_pos_dist,
-            'box_goal_rot_dist': box_goal_quat_dist,
+            'ball_pos': ball_pos,
+            'ball_goal_dist': ball_goal_dist,
+            'rod_tip_ball_dist': rod_tip_ball_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
-            'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
+            'is_success': self._is_success,
             'num_steps': self._steps
         }
         return obs, reward, episode_end, infos
@@ -109,126 +130,89 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
                 self._mujoco_bindings.mj_resetData(self.model, self.data)
             return self.set_context(options['ctxt'])
 
+    """
+    goal width context: varying the goal width makes the task easier/harder, but helps the agent to learn from easier
+                        tasks first. Setting the goal width follows the following equation:
+                        delta_x = (goal_width - MIN_GOAL_WIDTH)/2 
+                        -> x-position of right wall: 0.58 + delta_x
+                        -> x-position of left wall: 0.27 - delta_x 
+                        I.e. a desired width of MIN_GOAL_WIDTH results in delta_x = 0.0.  
+    """
+
     def reset_model(self):
         # rest box to initial position
-        self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
+        self.set_state(self._init_qpos, self._init_qvel)
 
-        self.data.joint("box_joint").qpos = self.box_init_pos
+        # randomly sample obstacles
+        positions = self.sample_context()
+        red_obs_pos = positions[:3]
+        green_obs_pos = positions[-4:-1]
+        goal_width = positions[-1]
 
-        # set target position
-        box_target_pos = self.sample_context()
-        while np.linalg.norm(box_target_pos[:2] - self.box_init_pos[:2]) < 0.3:
-            box_target_pos = self.sample_context()
-        # box_target_pos[0] = 0.4
-        # box_target_pos[1] = -0.3
-        # box_target_pos[-4:] = np.array([0.0, 0.0, 0.0, 1.0])
-        self.model.body_pos[2] = box_target_pos[:3]
-        self.model.body_quat[2] = box_target_pos[-4:]
-        self.model.body_pos[3] = box_target_pos[:3]
-        self.model.body_quat[3] = box_target_pos[-4:]
+        self.model.body('obstacle_box_0').pos = red_obs_pos
+        self.model.body('obstacle_box_1').pos = green_obs_pos
 
-        ### Avoid calculating the IK all the time:
-        # # set the robot to the right configuration (rod tip in the box)
-        # desired_tcp_pos = box_init_pos[:3] + np.array([0.0, 0.0, 0.15])
-        # desired_tcp_quat = np.array([0, 1, 0, 0])
-        # # desired_joint_pos = self.calculateOfflineIK(desired_tcp_pos, desired_tcp_quat)
-        # # self.data.qpos[:7] = desired_joint_pos
-        self.data.qpos[:7] = self.desired_qpos_robot
+        # get delta_x to the left and right wall x-positions:
+        delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
+        self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
+        self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+
+        self.data.qpos[:7] = self._des_robot_qpos
 
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
+        self._is_success = False
 
         return self._get_obs()
 
     def sample_context(self):
-        # pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
-        lb = np.append(BOX_POS_BOUND[0], [-0.01])
-        ub = np.append(BOX_POS_BOUND[1], [-0.01])
-        pos = self.np_random.uniform(low=lb, high=ub)
-        theta = self.np_random.uniform(low=0, high=np.pi * 2)
-        quat = rot_to_quat(theta, np.array([0, 0, 1]))
-        return np.concatenate([pos, quat])
-
-    def _get_pi_half_variants(self, angle_in_rad):
-        angle2 = angle_in_rad + np.pi / 2
-        angle3 = angle_in_rad + np.pi
-        angle4 = angle_in_rad + 1.5 * np.pi
-        return angle2, angle3, angle4
-
-    def _get_pi_half_variant_quats(self, angle, angle2, angle3, angle4):
-        quat_or_context = rot_to_quat(angle, np.array([0, 0, 1]))
-        quat_or_context2 = rot_to_quat(angle2, np.array([0, 0, 1]))
-        quat_or_context3 = rot_to_quat(angle3, np.array([0, 0, 1]))
-        quat_or_context4 = rot_to_quat(angle4, np.array([0, 0, 1]))
-        return quat_or_context, quat_or_context2, quat_or_context3, quat_or_context4
-
-    def _set_target_box_pos_and_quat(self, target_xy_box_pos, quat_target_box, quat_target_box2, quat_target_box3,
-                                     quat_target_box4):
-        self.model.body_pos[2][:2] = target_xy_box_pos
-        self.model.body_pos[2][-1] = -0.01
-        self.model.body_quat[2] = quat_target_box
-
-        self.model.body_pos[3][:2] = target_xy_box_pos
-        self.model.body_pos[3][-1] = -0.01
-        self.model.body_quat[3] = quat_target_box
-
-        self.model.body_pos[4][:2] = target_xy_box_pos
-        self.model.body_pos[4][-1] = -0.01
-        self.model.body_quat[4] = quat_target_box2
-
-        self.model.body_pos[5][:2] = target_xy_box_pos
-        self.model.body_pos[5][-1] = -0.01
-        self.model.body_quat[5] = quat_target_box3
-
-        self.model.body_pos[6][:2] = target_xy_box_pos
-        self.model.body_pos[6][-1] = -0.01
-        self.model.body_quat[6] = quat_target_box4
+        pos = self.np_random.uniform(low=BOX_POS_BOUND[0], high=BOX_POS_BOUND[1])
+        red_box_pos = np.append(pos[:2], [0.])
+        green_box_pos = np.append(pos[-3:-1], [0.])
+        goal_width = pos[-1]
+        return np.concatenate([red_box_pos, green_box_pos, [goal_width]])
 
     def set_context(self, context):
-        angle = context[-1]
-        angle2, angle3, angle4 = self._get_pi_half_variants(angle)
-        quat_or_context, quat_or_context2, quat_or_context3, quat_or_context4 = self._get_pi_half_variant_quats(angle,
-                                                                                                                angle2,
-                                                                                                                angle3,
-                                                                                                                angle4)
-
         # rest box to initial position
-        self.set_state(self.init_qpos_box_pushing, self.init_qvel_box_pushing)
-        self.data.joint("box_joint").qpos = self.box_init_pos
+        self.set_state(self._init_qpos, self._init_qvel)
 
-        self._set_target_box_pos_and_quat(context[:2], quat_or_context, quat_or_context2, quat_or_context3,
-                                          quat_or_context4)
+        red_obs_pos = np.append(context[:2], [0])
+        green_obs_pos = np.append(context[-4:-1], [0])
+        goal_width = context[-1]
 
-        self.data.qpos[:7] = self.desired_qpos_robot
+        self.model.body('obstacle_box_0').pos = red_obs_pos
+        self.model.body('obstacle_box_1').pos = green_obs_pos
+
+        # get delta_x to the left and right wall x-positions:
+        delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
+        self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
+        self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+
+        self.data.qpos[:7] = self._des_robot_qpos
 
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
+        self._is_success = False
         return self._get_obs()
 
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
-                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
-        raise NotImplementedError
+    def _get_reward(self, episode_end, ball_pos, red_obs_box, green_obs_box, ball_target_pos, rod_tip_pos,
+                    rod_quat, qpos, qvel, action):
+        return 0
 
-    def _get_min_rot_dist(self, box_quat, target_quat, target_quat2, target_quat3, targetquat4):
-        rot_dist = rotation_distance(box_quat, target_quat)
-        rot_dist2 = rotation_distance(box_quat, target_quat2)
-        rot_dist3 = rotation_distance(box_quat, target_quat3)
-        rot_dist4 = rotation_distance(box_quat, targetquat4)
-        return np.min(np.array([rot_dist, rot_dist2, rot_dist3, rot_dist4]))
+    def _calc_current_goal_width(self):
+        return self.model.geom("goal_wall_right").pos[0].copy() - self.model.geom("goal_wall_left").pos[
+            0].copy() - 2 * 0.125
 
     def _get_obs(self):
         obs = np.concatenate([
             self.data.qpos[:7].copy(),  # joint position
             self.data.qvel[:7].copy(),  # joint velocity
-            # self.data.qfrc_bias[:7].copy(),  # joint gravity compensation
-            # self.data.site("rod_tip").xpos.copy(),  # position of rod tip
-            # self.data.body("push_rod").xquat.copy(),  # orientation of rod
-            self.data.body("box_0").xpos.copy(),  # position of box
-            self.data.body("box_0").xquat.copy(),  # orientation of box
-            self.data.body("replan_target_pos").xpos.copy(),  # position of target
-            self.data.body("replan_target_pos").xquat.copy()  # orientation of target
+            self.data.body("ball").xpos.copy(),  # position of box
+            self.data.body("obstacle_box_0").xpos.copy(),  # position of red obstacle
+            self.data.body("obstacle_box_1").xpos.copy(),  # position of green obstacle
+            [self._calc_current_goal_width()]              # Current width of the target wall
         ])
         return obs
 
@@ -306,7 +290,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         while True:
             q_old = q
             q = q + dt * qd_d
-            q = np.clip(q, q_min, q_max)
+            q = np.clip(q, self.q_min, self.q_max)
             self.data.qpos[:7] = q
             mujoco.mj_forward(self.model, self.data)
             current_cart_pos = self.data.body("tcp").xpos.copy()
@@ -354,10 +338,10 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
 
             margin_to_limit = 0.1
             qd_null_limit = np.zeros(qd_null.shape)
-            qd_null_limit_max = pgain_limit * (q_max - margin_to_limit - q)
-            qd_null_limit_min = pgain_limit * (q_min + margin_to_limit - q)
-            qd_null_limit[q > q_max - margin_to_limit] += qd_null_limit_max[q > q_max - margin_to_limit]
-            qd_null_limit[q < q_min + margin_to_limit] += qd_null_limit_min[q < q_min + margin_to_limit]
+            qd_null_limit_max = pgain_limit * (self.q_max - margin_to_limit - q)
+            qd_null_limit_min = pgain_limit * (self.q_min + margin_to_limit - q)
+            qd_null_limit[q > self.q_max - margin_to_limit] += qd_null_limit_max[q > self.q_max - margin_to_limit]
+            qd_null_limit[q < self.q_min + margin_to_limit] += qd_null_limit_min[q < self.q_min + margin_to_limit]
             qd_null += qd_null_limit
 
             # W J.T (J W J' + reg I)^-1 xd_d + (I - W J.T (J W J' + reg I)^-1 J qd_null
@@ -369,69 +353,17 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
 
         return q
 
-    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
-        raise NotImplementedError
-
-
-class BoxPushingDense(BoxPushingEnvBase):
-    def __init__(self, frame_skip: int = 10, **kwargs):
-        super(BoxPushingDense, self).__init__(frame_skip=frame_skip, xml_name="box_pushing.xml")
-
-    def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
-                    target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
-        joint_penalty = self._joint_limit_violate_penalty(qpos,
-                                                          qvel,
-                                                          enable_pos_limit=True,
-                                                          enable_vel_limit=True)
-        tcp_box_dist_reward = -2 * np.clip(np.linalg.norm(box_pos - rod_tip_pos), 0.05, 100)
-        box_goal_pos_dist_reward = -3.5 * np.linalg.norm(box_pos - target_pos)
-        box_goal_rot_dist_reward = -rotation_distance(box_quat, target_quat) / np.pi
-        energy_cost = -0.0005 * np.sum(np.square(action))
-
-        reward = joint_penalty + tcp_box_dist_reward + \
-                 box_goal_pos_dist_reward + box_goal_rot_dist_reward + energy_cost
-
-        rod_inclined_angle = rotation_distance(rod_quat, self._desired_rod_quat)
-        if rod_inclined_angle > np.pi / 4:
-            reward -= rod_inclined_angle / (np.pi)
-
-        return reward
-
-    def _get_rotation_dist(self, box_quat, target_quat, target_quat2, target_quat3, target_quat4):
-        return rotation_distance(box_quat, target_quat)
-
-
 
 if __name__ == '__main__':
-    # env = BoxPushingDense()
-    env = BoxPushingTemporalSparseNotInclinedInit()
+    env = MiniGolfEnv()
     import time
 
     start_time = time.time()
-    box_target_positions = []
     obs = env.reset()
     env.render()
     for _ in range(5000):
-        obs = env.reset()
+        # obs, reward, done, infos = env.step(env.action_space.sample())
+        env.reset()
         env.render()
-    #     a = env.action_space.sample()
-    #     obs, reward, episode_end, infos = env.step(a)
-    #     if episode_end:
-    #         obs = env.reset()
-    #         episode_end = False
-    #     box_target_positions.append(np.array([obs[-7], obs[-6]]))
-    # # # env.render()
-    # for _ in range(10000):
-    #     a = env.action_space.sample()
-    #     obs, reward, done, infos = env.step(a)
-    #     if done:
-    #         obs=env.reset()
-    #         box_target_positions.append(np.array([obs[-7], obs[-6]]))
-    #         # env.render()
-    # print('Test loop took: ', (time.time() - start_time) / 100)
-
-    # import matplotlib.pyplot as plt
-    #
-    # box_target_positions = np.array(box_target_positions)
-    # plt.figure()
-    # plt.scatter(box_target_positions[:, 0], box_target_positions[:, 1])
+        # if done:
+        #     env.reset()
