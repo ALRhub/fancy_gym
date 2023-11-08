@@ -14,6 +14,7 @@ from .mujoco.hopper_jump.hopper_jump import MAX_EPISODE_STEPS_HOPPERJUMP
 from .mujoco.hopper_jump.hopper_jump_on_box import MAX_EPISODE_STEPS_HOPPERJUMPONBOX
 from .mujoco.hopper_throw.hopper_throw import MAX_EPISODE_STEPS_HOPPERTHROW
 from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPERTHROWINBASKET
+from .mujoco.mini_golf.mini_golf_env import MAX_EPISODE_STEPS_MINI_GOLF
 from .mujoco.reacher.reacher import ReacherEnv, MAX_EPISODE_STEPS_REACHER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
@@ -301,6 +302,12 @@ register(
     }
 )
 
+
+register(
+    id='MiniGolf-v0',
+    entry_point='fancy_gym.envs.mujoco:MiniGolfEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_MINI_GOLF,
+)
 
 # movement Primitive Environments
 

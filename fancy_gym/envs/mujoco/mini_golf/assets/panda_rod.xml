@@ -87,7 +87,7 @@
 
             <!-- PUSHROD -->
             <body name="push_rod">
-             <geom type="cylinder" size="0.015 0.15" pos="0 0 0.075"/>
+             <geom name="rod_contact" type="cylinder" size="0.015 0.15" pos="0 0 0.075"/>
              <site name="rod_tip" type="box" rgba="0 0 1 1." size="0.015 0.015 0.01" pos="0 0 0.225"/>
             </body>
 

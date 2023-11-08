@@ -48,71 +48,102 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
         self.q_torque_max = np.array([90., 90., 90., 90., 12., 12., 12.])
-        self.q_max = np.array([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973])
-        self.q_min = np.array([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
+        self._q_max = np.array([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973])
+        self._q_min = np.array([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
         self._init_qpos = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.425, 0.5, 0.005, 1, 0, 0, 0])
         self._des_robot_qpos = np.array([0.82571042, 0.81006124, 0.17260485, -1.37485921, -0.15166258, 2.17198979,
                                          1.81153316])
         self._init_qvel = np.zeros(15)
-        self._is_success = False
         self._init_xpos_goal_wall_left = 0.27
         self._init_xpos_goal_wall_right = 0.58
         self.frame_skip = frame_skip
         self._episode_energy = 0.
+        self._had_ball_contact = False
+        self._passed_goal = False
+        self._pass_threshold = -0.75
+        self._id_set = False
+        self._ball_traj = []
+        self._rod_traj = []
         MujocoEnv.__init__(self,
                            model_path=os.path.join(os.path.dirname(__file__), "assets", xml_name),
                            frame_skip=self.frame_skip,
                            mujoco_bindings="mujoco")
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
 
+    def _set_ids(self):
+        self._ball_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "ball_contact")
+        self._rod_contact_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_GEOM, "rod_contact")
+        self._id_set = True
+
     def step(self, action):
+        if not self._id_set:
+            self._set_ids()
+
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
         resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -self.q_torque_max, self.q_torque_max)
 
         unstable_simulation = False
 
-        try:
-            self.do_simulation(resultant_action, self.frame_skip)
-        except Exception as e:
-            print(e)
-            unstable_simulation = True
+        for _ in range(self.frame_skip):
+            try:
+                self.do_simulation(resultant_action, 1)
+            except Exception as e:
+                print(e)
+                unstable_simulation = True
+                break
 
+            if not self._had_ball_contact:
+                self._had_ball_contact = self._contact_checker(self._ball_contact_id, self._rod_contact_id)
+
+            else:
+                if not self._passed_goal:
+                    # check if ball has passed goal (ball pos - radius):
+                    # y-wall position is at -0.7-> Smaller Y-Values mean ball has passed the goal
+                    # we are adding a threshold to make sure that the ball has passed the -0.7. Mujoco has soft
+                    # constraints which might lead to temporary "wall breakthroughs"
+                    self._passed_goal = self.data.body("ball").xpos.copy()[1] - 0.025 < self._pass_threshold
+
+            self._ball_traj.append(self.data.body("ball").xpos.copy())
+            self._rod_traj.append(self.data.site("rod_tip").xpos.copy())
         self._steps += 1
         self._episode_energy += np.sum(np.square(action))
 
-        episode_end = True if self._steps >= MAX_EPISODE_STEPS_MINI_GOLF else False
+        episode_end = True if (self._steps >= MAX_EPISODE_STEPS_MINI_GOLF or unstable_simulation) else False
 
         ball_pos = self.data.body("ball").xpos.copy()
-        red_obs_box = self.data.body("obstacle_box_0").xpos.copy()
-        green_obs_box = self.data.body("obstacle_box_1").xpos.copy()
-        ball_target_pos = self.data.site("ball_target").xpos.copy()
+        # red_obs_box = self.data.body("obstacle_box_0").xpos.copy()
+        # green_obs_box = self.data.body("obstacle_box_1").xpos.copy()
 
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
-        rod_quat = self.data.body("push_rod").xquat.copy()
-
-        qpos = self.data.qpos[:7].copy()
-        qvel = self.data.qvel[:7].copy()
 
         if not unstable_simulation:
-            reward = self._get_reward(episode_end, ball_pos, red_obs_box, green_obs_box, ball_target_pos,
-                                      rod_tip_pos, rod_quat, qpos, qvel, action)
+            reward = self._get_reward(episode_end)
         else:
             reward = -50
 
         obs = self._get_obs()
-        ball_goal_dist = np.linalg.norm(ball_target_pos - ball_pos)
-        self._is_success = True if (self._is_success or ball_pos[1] < ball_target_pos[1]) else False
         rod_tip_ball_dist = np.linalg.norm(rod_tip_pos - ball_pos)
         infos = {
             'episode_end': episode_end,
             'ball_pos': ball_pos,
-            'ball_goal_dist': ball_goal_dist,
+            'ball_goal_y_pos': ball_pos[1],
             'rod_tip_ball_dist': rod_tip_ball_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
-            'is_success': self._is_success,
+            'is_success': self._passed_goal,
             'num_steps': self._steps
         }
         return obs, reward, episode_end, infos
+
+    def _get_reward(self, episode_end):
+        if not episode_end:
+            return 0
+        min_b_rod_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._rod_traj), axis=1))
+        if not self._had_ball_contact:
+            return 0.2 * (1 - np.tanh(min_b_rod_dist))
+        if not self._passed_goal:
+            min_y_val = np.min(np.array(self._ball_traj)[:, 1])
+            return 2 * (1 - np.tanh(min_y_val - self._pass_threshold))
+        return 6
 
     def reset(
             self,
@@ -162,8 +193,10 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
-        self._is_success = False
-
+        self._passed_goal = False
+        self._had_ball_contact = False
+        self._ball_traj = []
+        self._rod_traj = []
         return self._get_obs()
 
     def sample_context(self):
@@ -194,12 +227,18 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
-        self._is_success = False
+        self._passed_goal = False
+        self._had_ball_contact = False
+        self._ball_traj = []
+        self._rod_traj = []
         return self._get_obs()
 
-    def _get_reward(self, episode_end, ball_pos, red_obs_box, green_obs_box, ball_target_pos, rod_tip_pos,
-                    rod_quat, qpos, qvel, action):
-        return 0
+    def _contact_checker(self, id_1, id_2):
+        for coni in range(0, self.data.ncon):
+            con = self.data.contact[coni]
+            if (con.geom1 == id_1 and con.geom2 == id_2) or (con.geom1 == id_2 and con.geom2 == id_1):
+                return True
+        return False
 
     def _calc_current_goal_width(self):
         return self.model.geom("goal_wall_right").pos[0].copy() - self.model.geom("goal_wall_left").pos[
@@ -209,28 +248,12 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         obs = np.concatenate([
             self.data.qpos[:7].copy(),  # joint position
             self.data.qvel[:7].copy(),  # joint velocity
-            self.data.body("ball").xpos.copy(),  # position of box
+            self.data.body("ball").xpos.copy(),  # position of ball
             self.data.body("obstacle_box_0").xpos.copy(),  # position of red obstacle
             self.data.body("obstacle_box_1").xpos.copy(),  # position of green obstacle
-            [self._calc_current_goal_width()]              # Current width of the target wall
+            [self._calc_current_goal_width()]  # Current width of the target wall
         ])
         return obs
-
-    def _joint_limit_violate_penalty(self, qpos, qvel, enable_pos_limit=False, enable_vel_limit=False):
-        penalty = 0.
-        p_coeff = 1.
-        v_coeff = 1.
-        # q_limit
-        if enable_pos_limit:
-            higher_error = qpos - self._q_max
-            lower_error = self._q_min - qpos
-            penalty -= p_coeff * (abs(np.sum(higher_error[qpos > self._q_max])) +
-                                  abs(np.sum(lower_error[qpos < self._q_min])))
-        # q_dot_limit
-        if enable_vel_limit:
-            q_dot_error = abs(qvel) - abs(self._q_dot_max)
-            penalty -= v_coeff * abs(np.sum(q_dot_error[q_dot_error > 0.]))
-        return penalty
 
     def get_body_jacp(self, name):
         id = mujoco.mj_name2id(self.model, 1, name)
@@ -353,6 +376,33 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
 
         return q
 
+    def check_traj_validity(self, action, pos_traj, vel_traj, tau_bound, delay_bound):
+        time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0]
+        if time_invalid or np.any(pos_traj > self._q_max) or np.any(pos_traj < self._q_min):
+            return False, pos_traj, vel_traj
+        return True, pos_traj, vel_traj
+
+    def _get_traj_invalid_penalty(self, action, pos_traj, tau_bound, delay_bound):
+        tau_invalid_penalty = 3 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+        violate_high_bound_error = np.mean(np.maximum(pos_traj - self._q_max, 0))
+        violate_low_bound_error = np.mean(np.maximum(self._q_min - pos_traj, 0))
+        invalid_penalty = tau_invalid_penalty + violate_high_bound_error + violate_low_bound_error
+        return -invalid_penalty
+
+    def get_invalid_traj_step_return(self, action, pos_traj, contextual_obs, tau_bound, delay_bound):
+        obs = self._get_obs() if contextual_obs else np.concatenate(
+            [self._get_obs(), np.array([0])])  # 0 for invalid traj
+        penalty = self._get_traj_invalid_penalty(action, pos_traj, tau_bound, delay_bound)
+        return obs, penalty, True, {
+            'episode_end': True,
+            'ball_pos': self.data.body("ball").xpos.copy(),
+            'ball_goal_y_pos': self.data.body("ball").xpos.copy()[1],
+            'rod_tip_ball_dist': 10,
+            'episode_energy': self._episode_energy,
+            'is_success': self._passed_goal,
+            'num_steps': self._steps
+        }
+
 
 if __name__ == '__main__':
     env = MiniGolfEnv()
@@ -362,8 +412,9 @@ if __name__ == '__main__':
     obs = env.reset()
     env.render()
     for _ in range(5000):
-        # obs, reward, done, infos = env.step(env.action_space.sample())
-        env.reset()
+        obs, reward, done, infos = env.step(env.action_space.sample())
+        # env.reset()
         env.render()
-        # if done:
-        #     env.reset()
+        if done:
+            env.reset()
+            print(reward)
