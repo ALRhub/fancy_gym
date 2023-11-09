@@ -5,7 +5,7 @@ import numpy as np
 from fancy_gym.black_box.raw_interface_wrapper import RawInterfaceWrapper
 
 
-class MPWrapper(RawInterfaceWrapper):
+class MiniGolfMPWrapper(RawInterfaceWrapper):
     @property
     def context_mask(self):
         return np.hstack([
