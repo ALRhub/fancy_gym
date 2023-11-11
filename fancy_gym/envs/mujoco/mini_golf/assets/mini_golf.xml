@@ -30,7 +30,8 @@
     <site pos="0.65 -0.5 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
     <site pos="0.65 -0.1 0.0485" size="0.01 0.05 " rgba="0 1 0 0.5" type="sphere"/>
 
-    <site name="ball_target" pos="0.425 -0.7 0.005" size="0.025 " rgba="1 0 0 0.5" type="sphere"/>
+<!--    <site name="ball_target" pos="0.425 -0.7 0.005" size="0.025 " rgba="1 0 0 0.5" type="sphere"/>-->
+    <site name="ball_target" pos="0.18 -0.7 0.005" size="0.025 " rgba="1 0 0 0.5" type="sphere"/>
 
       <body name="obstacle_box_0" pos="0.4 -0.025 0.0" quat="1 0 0 0">
           <geom pos="0 0 0" size="0.03 0.03 0.1" rgba="1 0 0 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001"  solref="0.1, 0.03"/>
@@ -51,9 +52,21 @@
 <!--          <geom pos="0.27 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>-->
 <!--          <geom pos="0.58 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"/>-->
         </body>
+<!--    <body name="goal_walls" pos="0.0 0.0 0.0" quat="1 0 0 0">-->
+<!--      <geom name="goal_wall_left" pos="0.27 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"  solref="0.1, 0.03"/>-->
+<!--      <geom name="goal_wall_right" pos="0.58 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1" solref="0.1, 0.03"/>-->
+<!--    </body>-->
+
+<!--    <body name="goal_walls" pos="0.0 0.0 0.0" quat="1 0 0 0">-->
+<!--      <geom name="goal_wall_left" pos="0.0 -0.7 0.025" size="0.4 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"  solref="0.1, 0.03"/>-->
+<!--      <geom name="goal_wall_right" pos="0.85 -0.7 0.025" size="0.4 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1" solref="0.1, 0.03"/>-->
+<!--      <geom name="goal_wall_top" pos="0.425 -0.7 0.255" size="0.8 0.005 0.15" rgba="0 0 1 0.05" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"  solref="0.1, 0.03"/>-->
+<!--    </body>-->
+
     <body name="goal_walls" pos="0.0 0.0 0.0" quat="1 0 0 0">
-      <geom name="goal_wall_left" pos="0.27 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1"  solref="0.1, 0.03"/>
-      <geom name="goal_wall_right" pos="0.58 -0.7 0.025" size="0.125 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" priority="1" solref="0.1, 0.03"/>
+      <geom name="goal_wall_left" pos="-0.245 -0.7 0.025" size="0.4 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" solref="0.1, 0.03"/>
+      <geom name="goal_wall_right" pos=" 0.605 -0.7 0.025" size="0.4 0.005 0.08" rgba="0 0 1 1.0" type="box" mass="2000.0" friction="0.3 0.001 0.0001" solref="0.1, 0.03"/>
+      <geom name="goal_wall_top" pos="0.425 -0.7 0.255" size="0.8 0.005 0.15" rgba="0 0 1 0.05" type="box" mass="2000.0" friction="0.3 0.001 0.0001" solref="0.1, 0.03"/>
     </body>
 
 

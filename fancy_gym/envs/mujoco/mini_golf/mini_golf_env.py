@@ -10,11 +10,37 @@ import mujoco
 MAX_EPISODE_STEPS_MINI_GOLF = 100
 
 # CTXT SPACE BOUNDS:[[min_X_RED, min_Y_RED, min_X_GREEN, min_Y_GREEN, min_goal_width],
-#                    [max_X_RED, max_Y_RED, max_Y_GREEN, max_Y_GREEN, max_goal_width]]
+#                    [max_X_RED, max_Y_RED, max_X_GREEN, max_Y_GREEN, max_goal_width]]
 
-MIN_GOAL_WIDTH = 0.06
-MAX_GOAL_WIDTH = 0.3
-CONTEXT_BOUNDS = np.array([[0.19, -0.025, 0.3, -0.5, MIN_GOAL_WIDTH], [0.65, 0.2, 0.6, -0.1, MAX_GOAL_WIDTH]])
+# MIN_GOAL_WIDTH = 0.06
+# MAX_GOAL_WIDTH = 0.3
+# CONTEXT_BOUNDS = np.array([[0.19, -0.025, 0.3, -0.5, MIN_GOAL_WIDTH], [0.65, 0.2, 0.6, -0.1, MAX_GOAL_WIDTH]])
+
+
+# Red obstacle X- and Y Variation
+MIN_X_RED = 0.19
+MAX_X_RED = 0.65
+MIN_Y_RED = -0.025
+MAX_Y_RED = 0.2
+
+# Green obstacle X- and Y Variation
+MIN_X_GREEN = 0.3
+MAX_X_GREEN = 0.6
+MIN_Y_GREEN = -0.5
+MAX_Y_GREEN = -0.1
+
+# Initial Ball X-Variation
+MIN_X_BALL_POS = 0.25
+MAX_X_BALL_POS = 0.6
+
+# # Gaol Wall Shift Variation
+# MAX_WALL_SHIFT = 0.245
+
+MIN_X_GOAL_POS = 0.18
+MAX_X_GOAL_POS = 0.67
+
+CONTEXT_BOUNDS = np.array([[MIN_X_RED, MIN_Y_RED, MIN_X_GREEN, MIN_Y_GREEN, MIN_X_BALL_POS, MIN_X_GOAL_POS],
+                           [MAX_X_RED, MAX_Y_RED, MAX_X_GREEN, MAX_Y_GREEN, MAX_X_BALL_POS, MAX_X_GOAL_POS]])
 
 
 def skew(x):
@@ -54,8 +80,8 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         self._des_robot_qpos = np.array([0.90138834,  0.94911663,  0.15175606, -1.0552696,  -0.13568928,  1.99531533,
                                          1.82624438])
         self._init_qvel = np.zeros(15)
-        self._init_xpos_goal_wall_left = 0.27
-        self._init_xpos_goal_wall_right = 0.58
+        self._init_xpos_goal_wall_left = 0.0
+        self._init_xpos_goal_wall_right = 0.85
         self.frame_skip = frame_skip
         self._episode_energy = 0.
         self._had_ball_contact = False
@@ -144,7 +170,9 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
             return 0.2 * (1 - np.tanh(min_b_rod_dist))
         if not self._passed_goal:
             min_y_val = np.min(np.array(self._ball_traj)[:, 1])
-            return 2 * (1 - np.tanh(min_y_val - self._pass_threshold))
+            goal_pos = self.data.site("ball_target").xpos.copy()
+            min_ball_goal_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - goal_pos[None, :], axis=1))
+            return 2 * (1 - np.tanh(min_ball_goal_dist)) + 0.5 * (1 - np.tanh(min_y_val - self._pass_threshold))
         return 6
 
     def reset(
@@ -173,22 +201,32 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
     """
 
     def reset_model(self):
-        # rest box to initial position
-        self.set_state(self._init_qpos, self._init_qvel)
-
         # randomly sample obstacles
         positions = self.sample_context()
         red_obs_pos = positions[:3]
-        green_obs_pos = positions[-4:-1]
-        goal_width = positions[-1]
+        green_obs_pos = positions[3:6]
+        init_ball_pos = positions[6:9]
+        goal_pos = positions[-1]
+
+        self._init_qpos[9:12] = init_ball_pos
+        self.set_state(self._init_qpos, self._init_qvel)
 
         self.model.body('obstacle_box_0').pos = red_obs_pos
         self.model.body('obstacle_box_1').pos = green_obs_pos
 
-        # get delta_x to the left and right wall x-positions:
-        delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
-        self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
-        self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+        # This was for varying wall widths, but this turned out to be trivial:
+        # # get delta_x to the left and right wall x-positions:
+        # delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
+        # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
+        # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+
+        # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left + wall_shift
+        # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + wall_shift
+
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+
+        self.model.site("ball_target").pos[0] = goal_pos
 
         # desired_tcp_pos = self.data.body("ball").xpos.copy() + np.array([0.0, 0.25, 0.15])
         # desired_tcp_quat = np.array([0, 1, 0, 0])
@@ -210,25 +248,37 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
     def sample_context(self):
         pos = self.np_random.uniform(low=CONTEXT_BOUNDS[0], high=CONTEXT_BOUNDS[1])
         red_box_pos = np.append(pos[:2], [0.])
-        green_box_pos = np.append(pos[-3:-1], [0.])
-        goal_width = pos[-1]
-        return np.concatenate([red_box_pos, green_box_pos, [goal_width]])
+        green_box_pos = np.append(pos[2:4], [0.])
+        init_ball_pos = np.append(pos[4], [0.5, 0.005])
+        goal_pos = pos[-1]
+        return np.concatenate([red_box_pos, green_box_pos, init_ball_pos, [goal_pos]])
 
     def set_context(self, context):
         # rest box to initial position
-        self.set_state(self._init_qpos, self._init_qvel)
-
         red_obs_pos = np.append(context[:2], [0])
-        green_obs_pos = np.append(context[-3:-1], [0])
-        goal_width = context[-1]
+        green_obs_pos = np.append(context[2:4], [0])
+        init_ball_pos = np.append([context[4]], [0.5, 0.005])
+        goal_pos = context[-1]
+
+        self._init_qpos[9:12] = init_ball_pos
+        self.set_state(self._init_qpos, self._init_qvel)
 
         self.model.body('obstacle_box_0').pos = red_obs_pos
         self.model.body('obstacle_box_1').pos = green_obs_pos
 
-        # get delta_x to the left and right wall x-positions:
-        delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
-        self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
-        self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+        # This was for varying wall widths, but this turned out to be trivial:
+        # # get delta_x to the left and right wall x-positions:
+        # delta_x = (goal_width - MIN_GOAL_WIDTH) / 2
+        # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left - delta_x
+        # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + delta_x
+
+        # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left + wall_shift
+        # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + wall_shift
+
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+
+        self.model.site("ball_target").pos[0] = goal_pos
 
         self.data.qpos[:7] = self._des_robot_qpos
 
@@ -252,6 +302,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         return self.model.geom("goal_wall_right").pos[0].copy() - self.model.geom("goal_wall_left").pos[
             0].copy() - 2 * 0.125
 
+    # TODO: For step based envs the observation space needs to be adjusted
     def _get_obs(self):
         obs = np.concatenate([
             self.data.qpos[:7].copy(),  # joint position
@@ -420,9 +471,9 @@ if __name__ == '__main__':
     obs = env.reset()
     env.render()
     for _ in range(5000):
-        # obs, reward, done, infos = env.step(env.action_space.sample())
-        env.reset()
+        obs, reward, done, infos = env.step(env.action_space.sample())
+        # env.reset()
         env.render()
-        # if done:
-        #     env.reset()
-        #     print(reward)
+        if done:
+            env.reset()
+            print(reward)
