@@ -145,7 +145,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         rod_tip_pos = self.data.site("rod_tip").xpos.copy()
 
         if not unstable_simulation:
-            reward = self._get_reward(episode_end)
+            reward = self._get_reward(episode_end, action)
         else:
             reward = -50
 
@@ -162,9 +162,9 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         }
         return obs, reward, episode_end, infos
 
-    def _get_reward(self, episode_end):
+    def _get_reward(self, episode_end, pol_action):
         if not episode_end:
-            return 0
+            return -0.0005*np.sum(np.square(pol_action))
         min_b_rod_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._rod_traj), axis=1))
         if not self._had_ball_contact:
             return 0.2 * (1 - np.tanh(min_b_rod_dist))
@@ -446,7 +446,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         violate_high_bound_error = np.mean(np.maximum(pos_traj - self._q_max, 0))
         violate_low_bound_error = np.mean(np.maximum(self._q_min - pos_traj, 0))
         invalid_penalty = tau_invalid_penalty + violate_high_bound_error + violate_low_bound_error
-        return -invalid_penalty
+        return -20*invalid_penalty-5
 
     def get_invalid_traj_step_return(self, action, pos_traj, contextual_obs, tau_bound, delay_bound):
         obs = self._get_obs() if contextual_obs else np.concatenate(
