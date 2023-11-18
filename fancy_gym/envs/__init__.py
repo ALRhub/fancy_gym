@@ -31,7 +31,6 @@ from .mujoco.table_tennis.mp_wrapper import TT_MPWrapper as MPWrapper_TableTenni
 from .mujoco.table_tennis.mp_wrapper import TT_MPWrapper_Replan as MPWrapper_TableTennis_Replan
 from .mujoco.table_tennis.mp_wrapper import TTVelObs_MPWrapper as MPWrapper_TableTennis_VelObs
 from .mujoco.table_tennis.mp_wrapper import TTVelObs_MPWrapper_Replan as MPWrapper_TableTennis_VelObs_Replan
-from .mujoco.air_hockey.air_hockey_env_wrapper import MAX_EPISODE_STEPS_AIRHOCKEY
 
 # Classic Control
 # Simple Reacher
@@ -294,5 +293,5 @@ register(
 register(
     id='fancy/AirHockey-v0',
     entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
-    max_episode_steps=MAX_EPISODE_STEPS_AIRHOCKEY
+    max_episode_steps=45000
 )

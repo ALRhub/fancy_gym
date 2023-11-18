@@ -129,8 +129,8 @@ class AirHockeyDouble(AirHockeyBase):
 
             self.q_pos_prev[i] = self.init_state[i]
             self.q_pos_prev[i + 7] = self.init_state[i]
-            self.q_vel_prev[i] = self._data.joint("iiwa_1/joint_" + str(i + 1)).qvel
-            self.q_vel_prev[i + 7] = self._data.joint("iiwa_2/joint_" + str(i + 1)).qvel
+            self.q_vel_prev[i] = self._data.joint("iiwa_1/joint_" + str(i + 1)).qvel[0]
+            self.q_vel_prev[i + 7] = self._data.joint("iiwa_2/joint_" + str(i + 1)).qvel[0]
 
         self.universal_joint_plugin.reset()
 

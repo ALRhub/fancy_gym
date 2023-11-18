@@ -9,4 +9,9 @@ from .reacher.reacher import ReacherEnv
 from .walker_2d_jump.walker_2d_jump import Walker2dJumpEnv
 from .box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, BoxPushingTemporalSpatialSparse
 from .table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching
+
 from .air_hockey.air_hockey_env_wrapper import AirHockeyEnv
+try:
+    from .air_hockey.air_hockey_env_wrapper import AirHockeyEnv
+except:
+    print("[FANCY GYM] Air Hockey not available (depends on mushroom-rl, dmc, mujoco)")
