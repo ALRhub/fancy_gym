@@ -25,10 +25,6 @@ class AirHockeyEnv(Environment):
                     of position, velocity and acceleration of the shape (20, 3, n_joints)
         """
 
-        if env_mode == None:
-            print("Please specify one of the environments in [3dof-hit, 3dof-defend, 7dof-hit, 7dof-defend, tournament]")
-            exit()
-
         env_dict = {
             "tournament": position.IiwaPositionTournament,
 
@@ -38,6 +34,9 @@ class AirHockeyEnv(Environment):
             "3dof-hit": position.PlanarPositionHit,
             "3dof-defend": position.PlanarPositionDefend
         }
+
+        if env_mode not in env_dict:
+            raise Exception(f"Please specify one of the environments in {list(env_dict.keys())} for env_mode parameter!")
 
         if env_mode == "tournament" and type(interpolation_order) != tuple:
             interpolation_order = (interpolation_order, interpolation_order)
