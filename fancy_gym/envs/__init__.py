@@ -290,8 +290,13 @@ register(
     }
 )
 
-register(
-    id='fancy/AirHockey-v0',
-    entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
-    max_episode_steps=45000
-)
+# Air Hockey environments
+for env_mode in ["tournament", "7dof-hit", "7dof-defend", "3dof-hit", "3dof-defend"]:
+    register(
+        id=f'fancy/AirHockey-{env_mode}-v0',
+        entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
+        max_episode_steps=45000,
+        kwargs={
+            'env_mode': env_mode
+        }
+    )
