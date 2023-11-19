@@ -45,10 +45,11 @@ class AirHockeyEnv(Environment):
         self.base_env = env_dict[env_mode](interpolation_order=interpolation_order, **kwargs)
         self.env_name = env_mode
         self.env_info = self.base_env.env_info
+        single_robot_obs_size = len(self.base_env.info.observation_space.low)
         if env_mode == "tournament":
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,23), dtype=np.float64)
+            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,single_robot_obs_size), dtype=np.float64)
         else:
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(20,), dtype=np.float64)
+            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(single_robot_obs_size,), dtype=np.float64)
         robot_info = self.env_info["robot"]
 
         if env_mode != "tournament":

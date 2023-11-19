@@ -40,7 +40,7 @@ class AirHockeyHit(AirHockeySingle):
             puck_vel = np.zeros(3)
             puck_vel[0] = -np.cos(angle) * lin_vel
             puck_vel[1] = np.sin(angle) * lin_vel
-            puck_vel[2] = np.random.uniform(-2, 2, 1)
+            puck_vel[2] = np.random.uniform(-2, 2)
 
             self._write_data("puck_x_vel", puck_vel[0])
             self._write_data("puck_y_vel", puck_vel[1])

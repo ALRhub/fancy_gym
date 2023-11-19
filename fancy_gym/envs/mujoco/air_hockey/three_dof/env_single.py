@@ -71,7 +71,7 @@ class AirHockeySingle(AirHockeyBase):
         for i in range(3):
             self._data.joint("planar_robot_1/joint_" + str(i + 1)).qpos = self.init_state[i]
             self.q_pos_prev[i] = self.init_state[i]
-            self.q_vel_prev[i] = self._data.joint("planar_robot_1/joint_" + str(i + 1)).qvel
+            self.q_vel_prev[i] = self._data.joint("planar_robot_1/joint_" + str(i + 1)).qvel[0]
 
         mujoco.mj_fwdPosition(self._model, self._data)
         super().setup(state)

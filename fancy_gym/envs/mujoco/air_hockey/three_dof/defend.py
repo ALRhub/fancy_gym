@@ -27,7 +27,7 @@ class AirHockeyDefend(AirHockeySingle):
         puck_vel = np.zeros(3)
         puck_vel[0] = -np.cos(angle) * lin_vel
         puck_vel[1] = np.sin(angle) * lin_vel
-        puck_vel[2] = np.random.uniform(-10, 10, 1)
+        puck_vel[2] = np.random.uniform(-10, 10)
 
         self._write_data("puck_x_pos", puck_pos[0])
         self._write_data("puck_y_pos", puck_pos[1])
