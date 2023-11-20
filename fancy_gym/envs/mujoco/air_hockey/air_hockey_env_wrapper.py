@@ -8,7 +8,7 @@ from fancy_gym.envs.mujoco.air_hockey.utils import robot_to_world
 from mushroom_rl.core import Environment
 
 class AirHockeyEnv(Environment):
-    metadata = {"render_modes": ["human"], "render_fps": 60}
+    metadata = {"render_modes": ["human"], "render_fps": 50}
 
     def __init__(self, env_mode=None, interpolation_order=3, render_mode=None, **kwargs):
         """
