@@ -1,7 +1,8 @@
-from typing import Tuple, Optional, Callable, Dict, Any
+from typing import Tuple, Optional, Callable, Dict, Any, Union
 
 import gymnasium as gym
 import numpy as np
+import torch
 from gymnasium import spaces
 from gymnasium.core import ObsType
 from mp_pytorch.mp.mp_interfaces import MPInterface
@@ -24,7 +25,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
                      Callable[[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int], bool]] = None,
                  reward_aggregation: Callable[[np.ndarray], float] = np.sum,
                  max_planning_times: int = np.inf,
-                 condition_on_desired: bool = False
+                 condition_on_desired: bool = False,
+                 backend: str = "numpy",
+                 device: str = "cpu",
                  ):
         """
         gym.Wrapper for leveraging a black box approach with a trajectory generator.
@@ -43,6 +46,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         """
         super().__init__(env)
 
+        self.backend = backend
+        self.device = device
+
         self.duration = duration
         self.learn_sub_trajectories = learn_sub_trajectories
         self.do_replanning = replanning_schedule is not None
@@ -57,8 +63,8 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         self.traj_gen.set_duration(self.duration, self.dt)
 
         # check
-        self.tau_bound = [-np.inf, np.inf]
-        self.delay_bound = [-np.inf, np.inf]
+        self.tau_bound = [-np.inf, np.inf] if self.backend == "numpy" else [-torch.inf, torch.inf]
+        self.delay_bound = [-np.inf, np.inf] if self.backend == "numpy" else [-torch.inf, torch.inf]
         if hasattr(self.traj_gen.phase_gn, "tau_bound"):
             self.tau_bound = self.traj_gen.phase_gn.tau_bound
         if hasattr(self.traj_gen.phase_gn, "delay_bound"):
@@ -89,11 +95,14 @@ class BlackBoxWrapper(gym.ObservationWrapper):
     def observation(self, observation):
         # return context space if we are
         if self.return_context_observation:
-            observation = observation[self.env.context_mask]
+            observation = observation[..., self.env.context_mask]
         # cast dtype because metaworld returns incorrect that throws gym error
-        return observation.astype(self.observation_space.dtype)
+        return observation.astype(self.observation_space.dtype) if self.backend == "numpy" else observation
 
     def get_trajectory(self, action: np.ndarray) -> Tuple:
+        assert len(action.shape) == 2, "action should be a 2D array, where the first dimension is the batch size"
+        batch_size = action.shape[0]
+
         duration = self.duration
         if self.learn_sub_trajectories:
             duration = None
@@ -101,11 +110,24 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             # If we do not do this, the traj_gen assumes we are continuing the trajectory.
             self.traj_gen.reset()
 
-        clipped_params = np.clip(
-            action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
+        self.traj_gen.set_add_dim([batch_size,])
+
+        if self.backend == "torch":
+            clipped_params = torch.clamp(
+                action, 
+                torch.tensor(self.traj_gen_action_space.low, device=self.device), 
+                torch.tensor(self.traj_gen_action_space.high, device=self.device))
+        else:
+            clipped_params = np.clip(
+                action, self.traj_gen_action_space.low, self.traj_gen_action_space.high)
         self.traj_gen.set_params(clipped_params)
+
         init_time = np.array(
             0 if not self.do_replanning else self.current_traj_steps * self.dt)
+        init_time = np.repeat(init_time, batch_size)
+        
+        if self.backend == "torch":
+            init_time = torch.tensor(init_time, dtype=torch.float32, device=self.device)
 
         condition_pos = self.condition_pos if self.condition_pos is not None else self.env.get_wrapper_attr('current_pos')
         condition_vel = self.condition_vel if self.condition_vel is not None else self.env.get_wrapper_attr('current_vel')
@@ -114,15 +136,19 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
 
-        position = get_numpy(self.traj_gen.get_traj_pos())
-        velocity = get_numpy(self.traj_gen.get_traj_vel())
+        position = self.traj_gen.get_traj_pos()
+        velocity = self.traj_gen.get_traj_vel()
+        
+        if self.backend == "numpy":
+            position = get_numpy(position)
+            velocity = get_numpy(velocity)
 
         return position, velocity
 
     def _get_traj_gen_action_space(self):
         """This function can be used to set up an individual space for the parameters of the traj_gen."""
         min_action_bounds, max_action_bounds = self.traj_gen.get_params_bounds()
-        action_space = gym.spaces.Box(low=min_action_bounds.numpy(), high=max_action_bounds.numpy(),
+        action_space = gym.spaces.Box(low=min_action_bounds.cpu().numpy(), high=max_action_bounds.cpu().numpy(),
                                       dtype=self.env.action_space.dtype)
         return action_space
 
@@ -147,21 +173,33 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             return spaces.Box(low=min_obs_bound, high=max_obs_bound, dtype=self.env.observation_space.dtype)
         return self.env.observation_space
 
-    def step(self, action: np.ndarray):
+    def step(self, action: Union[np.ndarray, torch.Tensor]):
         """ This function generates a trajectory based on a MP and then does the usual loop over reset and step"""
+        if len(action.shape) == 1:
+            action = action.reshape(1, -1)
+        batch_size = action.shape[0]
 
         position, velocity = self.get_trajectory(action)
         position, velocity = self.env.set_episode_arguments(action, position, velocity)
         traj_is_valid, position, velocity = self.env.preprocessing_and_validity_callback(action, position, velocity,
                                                                                          self.tau_bound, self.delay_bound)
 
-        trajectory_length = len(position)
-        rewards = np.zeros(shape=(trajectory_length,))
+        trajectory_length = position.shape[1]
+        if self.backend == "torch":
+            rewards = torch.zeros(size=(batch_size, trajectory_length,), device=self.device)
+        else:
+            rewards = np.zeros(shape=(batch_size, trajectory_length,)) 
         if self.verbose >= 2:
-            actions = np.zeros(shape=(trajectory_length,) +
-                               self.env.action_space.shape)
-            observations = np.zeros(shape=(trajectory_length,) + self.env.observation_space.shape,
-                                    dtype=self.env.observation_space.dtype)
+            if self.backend == "torch":
+                actions = torch.zeros(size=(batch_size, trajectory_length,) +
+                                      self.env.action_space.shape, device=self.device)
+                observations = torch.zeros(size=(batch_size, trajectory_length,) + self.env.observation_space.shape,
+                                           dtype=self.env.observation_space.dtype, device=self.device)
+            else:
+                actions = np.zeros(shape=(batch_size, trajectory_length,) +
+                                self.env.action_space.shape)
+                observations = np.zeros(shape=(batch_size, trajectory_length,) + self.env.observation_space.shape,
+                                        dtype=self.env.observation_space.dtype)
 
         infos = dict()
         done = False
@@ -172,18 +210,27 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             return self.observation(obs), trajectory_return, terminated, truncated, infos
 
         self.plan_steps += 1
-        for t, (pos, vel) in enumerate(zip(position, velocity)):
+        for t in range(trajectory_length):
+            pos = position[:, t]
+            vel = velocity[:, t]
+
             step_action = self.tracking_controller.get_action(
                 pos, vel, self.env.get_wrapper_attr('current_pos'), self.env.get_wrapper_attr('current_vel'))
-            c_action = np.clip(
-                step_action, self.env.action_space.low, self.env.action_space.high)
+            if self.backend == "torch":
+                c_action = torch.clamp(
+                    step_action, 
+                    torch.tensor(self.env.action_space.low, device=self.device), 
+                    torch.tensor(self.env.action_space.high, device=self.device))
+            else:
+                c_action = np.clip(
+                    step_action, self.env.action_space.low, self.env.action_space.high)
             obs, c_reward, terminated, truncated, info = self.env.step(
                 c_action)
-            rewards[t] = c_reward
+            rewards[:, t] = c_reward
 
             if self.verbose >= 2:
-                actions[t, :] = c_action
-                observations[t, :] = obs
+                actions[:, t, :] = c_action
+                observations[:, t, :] = obs
 
             for k, v in info.items():
                 elems = infos.get(k, [None] * trajectory_length)
@@ -193,7 +240,15 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
 
-            if terminated or truncated or (self.replanning_schedule(self.env.get_wrapper_attr('current_pos'), self.env.get_wrapper_attr('current_vel'), obs, c_action, t + 1 + self.current_traj_steps) and self.plan_steps < self.max_planning_times):
+            all_terminated = terminated.all() if self.backend == "torch" else terminated
+            all_truncated = truncated.all() if self.backend == "torch" else truncated
+            if all_terminated or all_truncated or (
+                self.replanning_schedule(self.env.get_wrapper_attr('current_pos'), 
+                                         self.env.get_wrapper_attr('current_vel'), 
+                                         obs, 
+                                         c_action, 
+                                         t + 1 + self.current_traj_steps) 
+                and self.plan_steps < self.max_planning_times):
 
                 if self.condition_on_desired:
                     self.condition_pos = pos
@@ -207,12 +262,12 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         if self.verbose >= 2:
             infos['positions'] = position
             infos['velocities'] = velocity
-            infos['step_actions'] = actions[:t + 1]
-            infos['step_observations'] = observations[:t + 1]
-            infos['step_rewards'] = rewards[:t + 1]
+            infos['step_actions'] = actions[:, :t + 1]
+            infos['step_observations'] = observations[:, :t + 1]
+            infos['step_rewards'] = rewards[:, :t + 1]
 
         infos['trajectory_length'] = t + 1
-        trajectory_return = self.reward_aggregation(rewards[:t + 1])
+        trajectory_return = self.reward_aggregation(rewards[:, :t + 1], 1)
         return self.observation(obs), trajectory_return, terminated, truncated, infos
 
     def render(self, **kwargs):

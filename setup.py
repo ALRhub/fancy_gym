@@ -52,7 +52,7 @@ setup(
     extras_require=extras,
     install_requires=[
         'gymnasium>=0.26.0',
-        'mp_pytorch<=0.1.3'
+        'mp_pytorch'
     ],
     packages=[package for package in find_packages(
     ) if package.startswith("fancy_gym")],
