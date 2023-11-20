@@ -12,6 +12,7 @@ extras = {
     'mujoco': ['mujoco==2.3.3', 'gymnasium[mujoco]>0.26.0'],
     'mujoco-legacy': ['mujoco-py >=2.1,<2.2', 'cython<3'],
     'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
+    'mushroom-rl': ['mushroom-rl'],
 }
 
 # All dependencies
