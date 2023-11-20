@@ -152,7 +152,7 @@ class AirHockeyEnv(Environment):
         return self
     
     def close(self):
-        return
+        self.base_env.stop()
 
 
 if __name__ == "__main__":
