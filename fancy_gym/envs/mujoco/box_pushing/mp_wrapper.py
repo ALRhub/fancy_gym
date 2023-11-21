@@ -17,6 +17,7 @@ class MPWrapper(RawInterfaceWrapper):
             [False] * 4,  # orientation of box
             [True] * 3,  # position of target
             [True] * 4,  # orientation of target
+            [True] * 3,  # position of obstacle
             # [True] * 1,  # time
         ])
 

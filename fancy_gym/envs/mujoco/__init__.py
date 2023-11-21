@@ -17,4 +17,4 @@ from .box_pushing.box_pushing_obstacle_env import (BoxPushingObstacleDense, BoxP
 from .box_pushing.box_pushing_random2random_env import BoxPushingDenseRnd2Rnd, BoxPushingTemporalSparseRnd2Rnd
 from .table_tennis.table_tennis_env import (TableTennisEnv, TableTennisWind, TableTennisGoalSwitching,
                                             TableTennisVelocity)
-from .mini_golf.mini_golf_env import MiniGolfEnv
+from .mini_golf.mini_golf_env import MiniGolfEnv, MiniGolfQuadRewEnv, MiniGolfOneObsEnv

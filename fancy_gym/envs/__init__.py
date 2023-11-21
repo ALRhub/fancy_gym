@@ -309,6 +309,18 @@ register(
     max_episode_steps=MAX_EPISODE_STEPS_MINI_GOLF,
 )
 
+register(
+    id='MiniGolf-v1',
+    entry_point='fancy_gym.envs.mujoco:MiniGolfQuadRewEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_MINI_GOLF,
+)
+
+register(
+    id='MiniGolf-v2',
+    entry_point='fancy_gym.envs.mujoco:MiniGolfOneObsEnv',
+    max_episode_steps=MAX_EPISODE_STEPS_MINI_GOLF,
+)
+
 # movement Primitive Environments
 
 ## Simple Reacher

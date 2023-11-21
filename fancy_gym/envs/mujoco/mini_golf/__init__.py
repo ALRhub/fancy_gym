@@ -1,1 +1,1 @@
-from .mp_wrapper import MiniGolfMPWrapper
+from .mp_wrapper import MiniGolfMPWrapper, MiniGolfOneObsMPWrapper

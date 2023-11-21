@@ -42,6 +42,9 @@ MAX_X_GOAL_POS = 0.67
 CONTEXT_BOUNDS = np.array([[MIN_X_RED, MIN_Y_RED, MIN_X_GREEN, MIN_Y_GREEN, MIN_X_BALL_POS, MIN_X_GOAL_POS],
                            [MAX_X_RED, MAX_Y_RED, MAX_X_GREEN, MAX_Y_GREEN, MAX_X_BALL_POS, MAX_X_GOAL_POS]])
 
+CONTEXT_BOUNDS_ONE_OBS = np.array([[MIN_X_GREEN, MIN_Y_GREEN, MIN_X_BALL_POS, MIN_X_GOAL_POS],
+                                   [MAX_X_GREEN, MAX_Y_GREEN, MAX_X_BALL_POS, MAX_X_GOAL_POS]])
+
 
 def skew(x):
     """
@@ -77,7 +80,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         self._q_max = np.array([2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973])
         self._q_min = np.array([-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973])
         self._init_qpos = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.425, 0.4, 0.005, 1, 0, 0, 0])
-        self._des_robot_qpos = np.array([0.90138834,  0.94911663,  0.15175606, -1.0552696,  -0.13568928,  1.99531533,
+        self._des_robot_qpos = np.array([0.90138834, 0.94911663, 0.15175606, -1.0552696, -0.13568928, 1.99531533,
                                          1.82624438])
         self._init_qvel = np.zeros(15)
         self._init_xpos_goal_wall_left = 0.0
@@ -164,7 +167,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
 
     def _get_reward(self, episode_end, pol_action):
         if not episode_end:
-            return -0.0005*np.sum(np.square(pol_action))
+            return -0.0005 * np.sum(np.square(pol_action))
         min_b_rod_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._rod_traj), axis=1))
         if not self._had_ball_contact:
             return 0.2 * (1 - np.tanh(min_b_rod_dist))
@@ -223,8 +226,10 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left + wall_shift
         # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + wall_shift
 
-        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
-        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+        # self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.428
+        # self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.428
 
         self.model.site("ball_target").pos[0] = goal_pos
 
@@ -275,8 +280,10 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         # self.model.geom("goal_wall_left").pos[0] = self._init_xpos_goal_wall_left + wall_shift
         # self.model.geom("goal_wall_right").pos[0] = self._init_xpos_goal_wall_right + wall_shift
 
-        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
-        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+        # self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.425
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.428
+        # self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.425
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.428
 
         self.model.site("ball_target").pos[0] = goal_pos
 
@@ -446,7 +453,7 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         violate_high_bound_error = np.mean(np.maximum(pos_traj - self._q_max, 0))
         violate_low_bound_error = np.mean(np.maximum(self._q_min - pos_traj, 0))
         invalid_penalty = tau_invalid_penalty + violate_high_bound_error + violate_low_bound_error
-        return -20*invalid_penalty-5
+        return -20 * invalid_penalty - 5
 
     def get_invalid_traj_step_return(self, action, pos_traj, contextual_obs, tau_bound, delay_bound):
         obs = self._get_obs() if contextual_obs else np.concatenate(
@@ -463,8 +470,101 @@ class MiniGolfEnv(MujocoEnv, utils.EzPickle):
         }
 
 
+class MiniGolfQuadRewEnv(MiniGolfEnv):
+    def _get_reward(self, episode_end, pol_action):
+        if not episode_end:
+            return -0.0005 * np.sum(np.square(pol_action))
+        min_b_rod_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - np.array(self._rod_traj), axis=1))
+        if not self._had_ball_contact:
+            return -2 * min_b_rod_dist - 2
+        if not self._passed_goal:
+            ball_contact_bonus = 5
+            min_y_val = np.min(np.array(self._ball_traj)[:, 1])
+            goal_pos = self.data.site("ball_target").xpos.copy()
+            min_ball_goal_dist = np.min(np.linalg.norm(np.array(self._ball_traj) - goal_pos[None, :], axis=1))
+            return ball_contact_bonus - 5 * min_ball_goal_dist - 2 * min_y_val
+        return 8
+
+
+class MiniGolfOneObsEnv(MiniGolfEnv):
+
+    def reset_model(self):
+        # randomly sample obstacles
+        positions = self.sample_context()
+        green_obs_pos = positions[:3]
+        init_ball_pos = positions[3:6]
+        goal_pos = positions[-1]
+
+        self._init_qpos[9:12] = init_ball_pos
+        self.set_state(self._init_qpos, self._init_qvel)
+
+        self.model.body('obstacle_box_1').pos = green_obs_pos
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.428
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.428
+
+        self.model.body('obstacle_box_0').pos = np.array([5, 5, 5])
+
+        self.model.site("ball_target").pos[0] = goal_pos
+        self.data.qpos[:7] = self._des_robot_qpos
+
+        mujoco.mj_forward(self.model, self.data)
+        self._steps = 0
+        self._episode_energy = 0.
+        self._passed_goal = False
+        self._had_ball_contact = False
+        self._ball_traj = []
+        self._rod_traj = []
+        return self._get_obs()
+
+    def sample_context(self):
+        pos = self.np_random.uniform(low=CONTEXT_BOUNDS_ONE_OBS[0], high=CONTEXT_BOUNDS_ONE_OBS[1])
+        green_box_pos = np.append(pos[:2], [0.])
+        init_ball_pos = np.append(pos[2], [0.5, 0.005])
+        goal_pos = pos[-1]
+        return np.concatenate([green_box_pos, init_ball_pos, [goal_pos]])
+
+    def set_context(self, context):
+        # rest box to initial position
+        green_obs_pos = np.append(context[:2], [0])
+        init_ball_pos = np.append([context[2]], [0.5, 0.005])
+        goal_pos = context[-1]
+
+        self._init_qpos[9:12] = init_ball_pos
+        self.set_state(self._init_qpos, self._init_qvel)
+
+        self.model.body('obstacle_box_1').pos = green_obs_pos
+        self.model.geom("goal_wall_left").pos[0] = goal_pos - 0.428
+        self.model.geom("goal_wall_right").pos[0] = goal_pos + 0.428
+
+        self.model.body('obstacle_box_0').pos = np.array([5, 5, 5])
+
+        self.model.site("ball_target").pos[0] = goal_pos
+
+        self.data.qpos[:7] = self._des_robot_qpos
+
+        mujoco.mj_forward(self.model, self.data)
+        self._steps = 0
+        self._episode_energy = 0.
+        self._passed_goal = False
+        self._had_ball_contact = False
+        self._ball_traj = []
+        self._rod_traj = []
+        return self._get_obs()
+
+    def _get_obs(self):
+        obs = np.concatenate([
+            self.data.qpos[:7].copy(),  # joint position
+            self.data.qvel[:7].copy(),  # joint velocity
+            self.data.body("ball").xpos.copy(),  # position of ball
+            self.data.body("obstacle_box_1").xpos.copy(),  # position of green obstacle
+            [self._calc_current_goal_width()]  # Current width of the target wall
+        ])
+        return obs
+
 if __name__ == '__main__':
-    env = MiniGolfEnv()
+    # env = MiniGolfEnv()
+    # env = MiniGolfQuadRewEnv()
+    env = MiniGolfOneObsEnv()
     import time
 
     start_time = time.time()
