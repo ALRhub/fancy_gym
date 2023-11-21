@@ -123,9 +123,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
     def _check_collisions(self) -> bool:
         return self._check_self_collision()
 
-    def render(self, mode=None):
-        if mode==None:
-            mode = self.render_mode
+    def render(self):
         goal_pos = self._goal.T
         via_pos = self._via_point.T
 

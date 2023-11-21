@@ -178,9 +178,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
 
         return False
 
-    def render(self, mode=None):
-        if mode==None:
-            mode = self.render_mode
+    def render(self):
         if self.fig is None:
             # Create base figure once on the beginning. Afterwards only update
             plt.ion()
