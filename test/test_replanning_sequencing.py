@@ -37,7 +37,7 @@ class ToyEnv(gym.Env):
         obs, reward, terminated, truncated, info = np.array([-1]), 1, False, False, {}
         return obs, reward, terminated, truncated, info
 
-    def render(self, mode="human"):
+    def render(self):
         pass
 
 
