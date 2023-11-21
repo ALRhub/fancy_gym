@@ -14,6 +14,7 @@ extras = {
     'box2d': ['gymnasium[box2d]>=0.26.0'],
     'mujoco-legacy': ['mujoco-py >=2.1,<2.2', 'cython<3'],
     'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
+    'mushroom-rl': ['mushroom-rl'],
 }
 
 # All dependencies
