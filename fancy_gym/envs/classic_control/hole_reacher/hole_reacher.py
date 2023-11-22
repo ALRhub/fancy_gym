@@ -197,7 +197,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
         self.fig.gca().set_title(
             f"Iteration: {self._steps}, distance: {np.linalg.norm(self.end_effector - self._goal) ** 2}")
 
-        if mode == "human":
+        if self.render_mode == "human":
 
             # arm
             self.line.set_data(self._joints[:, 0], self._joints[:, 1])
@@ -205,7 +205,7 @@ class HoleReacherEnv(BaseReacherDirectEnv):
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
 
-        elif mode == "partial":
+        elif self.render_mode == "partial":
             if self._steps % 20 == 0 or self._steps in [1, 199] or self._is_collided:
                 # Arm
                 plt.plot(self._joints[:, 0], self._joints[:, 1], 'ro-', markerfacecolor='k',

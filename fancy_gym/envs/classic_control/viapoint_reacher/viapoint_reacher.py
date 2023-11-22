@@ -146,7 +146,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
 
         self.fig.gca().set_title(f"Iteration: {self._steps}, distance: {self.end_effector - self._goal}")
 
-        if mode == "human":
+        if self.render_mode == "human":
             # goal
             if self._steps == 1:
                 self.goal_point_plot.set_data(goal_pos[0], goal_pos[1])
@@ -158,7 +158,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
 
-        elif mode == "partial":
+        elif self.render_mode == "partial":
             if self._steps == 1:
                 # fig, ax = plt.subplots()
                 # Add the patch to the Axes
@@ -178,7 +178,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
                 plt.ylim([-1.1, lim])
                 plt.pause(0.01)
 
-        elif mode == "final":
+        elif self.render_mode == "final":
             if self._steps == 199 or self._is_collided:
                 # fig, ax = plt.subplots()
 
