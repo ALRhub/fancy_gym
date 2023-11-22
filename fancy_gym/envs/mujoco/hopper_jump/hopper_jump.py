@@ -115,6 +115,7 @@ class HopperJumpEnv(HopperEnvCustomXML):
             reset_noise_scale=5e-3,
             exclude_current_positions_from_observation=False,
             sparse=False,
+            **kwargs
     ):
 
         self.sparse = sparse
@@ -141,7 +142,8 @@ class HopperJumpEnv(HopperEnvCustomXML):
                          healthy_z_range=healthy_z_range,
                          healthy_angle_range=healthy_angle_range,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation,
+                         **kwargs)
 
         # increase initial height
         self.init_qpos[1] = 1.5

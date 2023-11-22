@@ -32,7 +32,8 @@ class HopperThrowEnv(HopperEnvCustomXML):
                  reset_noise_scale=5e-3,
                  context=True,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=250):
+                 max_episode_steps=250,
+                 **kwargs):
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
         self.current_step = 0
         self.max_episode_steps = max_episode_steps
@@ -57,7 +58,8 @@ class HopperThrowEnv(HopperEnvCustomXML):
                          healthy_z_range=healthy_z_range,
                          healthy_state_range=healthy_angle_range,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation,
+                         **kwargs)
 
     def step(self, action):
         self.current_step += 1

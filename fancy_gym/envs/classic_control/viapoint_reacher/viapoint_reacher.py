@@ -13,9 +13,9 @@ from . import MPWrapper
 class ViaPointReacherEnv(BaseReacherDirectEnv):
 
     def __init__(self, n_links, random_start: bool = False, via_target: Union[None, Iterable] = None,
-                 target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000):
+                 target: Union[None, Iterable] = None, allow_self_collision=False, collision_penalty=1000, **kwargs):
 
-        super().__init__(n_links, random_start, allow_self_collision)
+        super().__init__(n_links, random_start, allow_self_collision, **kwargs)
 
         # provided initial parameters
         self.intitial_target = target  # provided target value
@@ -123,7 +123,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
     def _check_collisions(self) -> bool:
         return self._check_self_collision()
 
-    def render(self, mode='human'):
+    def render(self):
         goal_pos = self._goal.T
         via_pos = self._via_point.T
 
@@ -146,7 +146,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
 
         self.fig.gca().set_title(f"Iteration: {self._steps}, distance: {self.end_effector - self._goal}")
 
-        if mode == "human":
+        if self.render_mode == "human":
             # goal
             if self._steps == 1:
                 self.goal_point_plot.set_data(goal_pos[0], goal_pos[1])
@@ -158,7 +158,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
 
-        elif mode == "partial":
+        elif self.render_mode == "partial":
             if self._steps == 1:
                 # fig, ax = plt.subplots()
                 # Add the patch to the Axes
@@ -178,7 +178,7 @@ class ViaPointReacherEnv(BaseReacherDirectEnv):
                 plt.ylim([-1.1, lim])
                 plt.pause(0.01)
 
-        elif mode == "final":
+        elif self.render_mode == "final":
             if self._steps == 199 or self._is_collided:
                 # fig, ax = plt.subplots()
 

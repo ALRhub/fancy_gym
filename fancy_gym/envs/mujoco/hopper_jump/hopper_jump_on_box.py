@@ -29,7 +29,8 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
                  reset_noise_scale=5e-3,
                  context=True,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=250):
+                 max_episode_steps=250,
+                 **kwargs):
         self.current_step = 0
         self.max_height = 0
         self.max_episode_steps = max_episode_steps
@@ -50,7 +51,8 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
         xml_file = os.path.join(os.path.dirname(__file__), "assets", xml_file)
         super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
                          healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
-                         exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation,
+                         **kwargs)
 
     def step(self, action):
 
