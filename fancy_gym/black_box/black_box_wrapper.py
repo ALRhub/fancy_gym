@@ -96,11 +96,15 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         # return context space if we are
         if self.return_context_observation:
             observation = observation[..., self.env.context_mask]
-        # cast dtype because metaworld returns incorrect that throws gym error
-        return observation.astype(self.observation_space.dtype) if self.backend == "numpy" else observation
+        
+        if self.backend == "numpy":
+            # cast dtype because metaworld returns incorrect that throws gym error
+            return observation.astype(self.observation_space.dtype)
+        else:
+            return observation
 
-    def get_trajectory(self, action: np.ndarray) -> Tuple:
-        assert len(action.shape) == 2, "action should be a 2D array, where the first dimension is the batch size"
+    def get_trajectory(self, action: Union[np.ndarray, torch.Tensor]) -> Tuple:
+        assert len(action.shape) == 2, "action should be a 2D tensor or array, where the first dimension is the batch size"
         batch_size = action.shape[0]
 
         duration = self.duration
