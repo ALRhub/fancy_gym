@@ -132,6 +132,13 @@ class BlackBoxWrapper(gym.ObservationWrapper):
         condition_pos = self.condition_pos if self.condition_pos is not None else self.env.get_wrapper_attr('current_pos')
         condition_vel = self.condition_vel if self.condition_vel is not None else self.env.get_wrapper_attr('current_vel')
 
+        if self.backend == "torch":
+            condition_pos = condition_pos.unsqueeze(0) if condition_pos.ndim == 1 else condition_pos
+            condition_vel = condition_vel.unsqueeze(0) if condition_vel.ndim == 1 else condition_vel
+        else:
+            condition_pos = np.expand_dims(condition_pos, axis=0) if condition_pos.ndim == 1 else condition_pos
+            condition_vel = np.expand_dims(condition_vel, axis=0) if condition_vel.ndim == 1 else condition_vel
+
         self.traj_gen.set_initial_conditions(
             init_time, condition_pos, condition_vel)
         self.traj_gen.set_duration(duration, self.dt)
@@ -214,8 +221,17 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             pos = position[:, t]
             vel = velocity[:, t]
 
-            step_action = self.tracking_controller.get_action(
-                pos, vel, self.env.get_wrapper_attr('current_pos'), self.env.get_wrapper_attr('current_vel'))
+            condition_pos = self.env.get_wrapper_attr('current_pos')
+            condition_vel = self.env.get_wrapper_attr('current_vel')
+
+            if self.backend == "torch":
+                condition_pos = condition_pos.unsqueeze(0) if condition_pos.ndim == 1 else condition_pos
+                condition_vel = condition_vel.unsqueeze(0) if condition_vel.ndim == 1 else condition_vel
+            else:
+                condition_pos = np.expand_dims(condition_pos, axis=0) if condition_pos.ndim == 1 else condition_pos
+                condition_vel = np.expand_dims(condition_vel, axis=0) if condition_vel.ndim == 1 else condition_vel
+
+            step_action = self.tracking_controller.get_action(pos, vel, condition_pos, condition_vel)
             if self.backend == "torch":
                 c_action = torch.clamp(
                     step_action, 
@@ -224,6 +240,9 @@ class BlackBoxWrapper(gym.ObservationWrapper):
             else:
                 c_action = np.clip(
                     step_action, self.env.action_space.low, self.env.action_space.high)
+                
+            # in case env is not vectorized, we need to squeeze the action
+            c_action = c_action.squeeze(0) if c_action.shape[0] == 1 else c_action
             obs, c_reward, terminated, truncated, info = self.env.step(
                 c_action)
             rewards[:, t] = c_reward
