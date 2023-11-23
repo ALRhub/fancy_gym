@@ -98,9 +98,7 @@ class SimpleReacherEnv(BaseReacherTorqueEnv):
     def _check_collisions(self) -> bool:
         return self._check_self_collision()
 
-    def render(self, mode=None):  # pragma: no cover
-        if mode==None:
-            mode = self.render_mode
+    def render(self):  # pragma: no cover
         if self.fig is None:
             # Create base figure once on the beginning. Afterwards only update
             plt.ion()
