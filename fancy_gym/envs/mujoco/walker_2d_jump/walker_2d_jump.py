@@ -97,7 +97,8 @@ class Walker2dJumpEnv(Walker2dEnvCustomXML):
                  reset_noise_scale=5e-3,
                  penalty=0,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=300):
+                 max_episode_steps=300,
+                 **kwargs):
         self.current_step = 0
         self.max_episode_steps = max_episode_steps
         self.max_height = 0
@@ -112,7 +113,8 @@ class Walker2dJumpEnv(Walker2dEnvCustomXML):
                          healthy_z_range=healthy_z_range,
                          healthy_angle_range=healthy_angle_range,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation,
+                         **kwargs)
 
     def step(self, action):
         self.current_step += 1

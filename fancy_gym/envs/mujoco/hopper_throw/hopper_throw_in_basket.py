@@ -36,7 +36,8 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
                  context=True,
                  penalty=0.0,
                  exclude_current_positions_from_observation=True,
-                 max_episode_steps=250):
+                 max_episode_steps=250,
+                 **kwargs):
         self.hit_basket_reward = hit_basket_reward
         self.current_step = 0
         self.max_episode_steps = max_episode_steps
@@ -65,7 +66,8 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
                          healthy_z_range=healthy_z_range,
                          healthy_angle_range=healthy_angle_range,
                          reset_noise_scale=reset_noise_scale,
-                         exclude_current_positions_from_observation=exclude_current_positions_from_observation)
+                         exclude_current_positions_from_observation=exclude_current_positions_from_observation,
+                         **kwargs)
 
     def step(self, action):
 

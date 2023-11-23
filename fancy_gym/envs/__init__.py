@@ -289,3 +289,25 @@ register(
         'goal_switching_step': 99
     }
 )
+
+# Air Hockey environments
+for env_mode in ["7dof-hit", "7dof-defend", "3dof-hit", "3dof-defend"]:
+    register(
+        id=f'fancy/AirHockey-{env_mode}-v0',
+        entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
+        max_episode_steps=500,
+        add_mp_types=[],
+        kwargs={
+            'env_mode': env_mode
+        }
+    )
+
+register(
+    id=f'fancy/AirHockey-tournament-v0',
+    entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
+    max_episode_steps=15000,
+    add_mp_types=[],
+    kwargs={
+        'env_mode': 'tournament'
+    }
+)

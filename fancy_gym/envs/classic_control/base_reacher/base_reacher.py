@@ -14,11 +14,13 @@ class BaseReacherEnv(gym.Env):
     Base class for all reaching environments.
     """
 
-    def __init__(self, n_links: int, random_start: bool = True, allow_self_collision: bool = False):
+    def __init__(self, n_links: int, random_start: bool = True, allow_self_collision: bool = False, render_mode: str = None):
         super().__init__()
         self.link_lengths = np.ones(n_links)
         self.n_links = n_links
         self._dt = 0.01
+
+        self.render_mode = render_mode
 
         self.random_start = random_start
 

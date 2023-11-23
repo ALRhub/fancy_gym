@@ -10,8 +10,8 @@ class BaseReacherDirectEnv(BaseReacherEnv):
     """
 
     def __init__(self, n_links: int, random_start: bool = True,
-                 allow_self_collision: bool = False):
-        super().__init__(n_links, random_start, allow_self_collision)
+                 allow_self_collision: bool = False, **kwargs):
+        super().__init__(n_links, random_start, allow_self_collision, **kwargs)
 
         self.max_vel = 2 * np.pi
         action_bound = np.ones((self.n_links,)) * self.max_vel
