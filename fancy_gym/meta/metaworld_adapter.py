@@ -11,11 +11,7 @@ import numpy as np
 
 from fancy_gym.utils.env_compatibility import EnvCompatibility
 
-try:
-    import metaworld
-except Exception:
-    print('[FANCY GYM] Metaworld not avaible')
-
+import metaworld
 
 class FixMetaworldHasIncorrectObsSpaceWrapper(gym.Wrapper, gym.utils.RecordConstructorArgs):
     def __init__(self, env: gym.Env):

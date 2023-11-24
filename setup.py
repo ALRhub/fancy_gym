@@ -1,15 +1,17 @@
+# We still provide a setup.py for backwards compatability.
+# But the pyproject.toml should be prefered.
 import itertools
 from pathlib import Path
 from typing import List
 
 from setuptools import setup, find_packages
 
+print('[!] You are currently installing/building fancy_gym via setup.py. This is only provided for backwards-compatability. Please use the pyproject.toml instead.')
+
 # Environment-specific dependencies for dmc and metaworld
 extras = {
     'dmc': ['shimmy[dm-control]', 'Shimmy==1.0.0'],
-    'metaworld': ['mujoco==2.3.3', 'metaworld @ git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld'],
     'box2d': ['gymnasium[box2d]>=0.26.0'],
-    'mujoco': ['mujoco==2.3.3', 'gymnasium[mujoco]>0.26.0'],
     'mujoco-legacy': ['mujoco-py >=2.1,<2.2', 'cython<3'],
     'jax': ["jax >=0.4.0", "jaxlib >=0.4.0"],
     'mushroom-rl': ['mushroom-rl'],
@@ -36,7 +38,7 @@ def find_package_data(extensions_to_include: List[str]) -> List[str]:
 setup(
     author='Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou',
     name='fancy_gym',
-    version='1.0',
+    version='0.1.0',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
@@ -49,11 +51,13 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
     ],
     extras_require=extras,
     install_requires=[
-        'gymnasium>=0.26.0',
-        'mp_pytorch<=0.1.3'
+        'mp_pytorch<=0.1.3',
+        'mujoco==2.3.3',
+        'gymnasium[mujoco]>=0.26.0'
     ],
     packages=[package for package in find_packages(
     ) if package.startswith("fancy_gym")],

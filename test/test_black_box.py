@@ -103,7 +103,7 @@ def test_verbosity(mp_type: str, env_wrap: Tuple[str, Type[RawInterfaceWrapper]]
 
     env_step = make(env_id)
     env_step.reset()
-    _obs, _reward, _terminated, _truncated, info = env.step(env.action_space.sample())
+    _obs, _reward, _terminated, _truncated, info = env_step.step(env_step.action_space.sample())
     info_keys_step = info.keys()
 
     assert all(e in info_keys for e in info_keys_step)
