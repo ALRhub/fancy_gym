@@ -28,13 +28,7 @@ def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, rend
         if render and i % 1 == 0:
             # This renders the full MP trajectory
             # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
-            # Resetting to no rendering, can be achieved by render(mode=None).
-            # It is also possible to change the mode multiple times when
-            # e.g. only every second trajectory should be displayed, such as here
-            # Just make sure the correct mode is set before executing the step.
             env.render(mode="human")
-        else:
-            env.render()
 
         # Now the action space is not the raw action but the parametrization of the trajectory generator,
         # such as a ProMP
@@ -129,7 +123,8 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
     # basis_generator_kwargs = {'basis_generator_type': 'rbf',
     #                           'num_basis': 5
     #                           }
-    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+    base_env = gym.make(base_env_id)
+    env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
@@ -151,9 +146,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
             rewards = 0
             obs = env.reset()
 
-
-if __name__ == '__main__':
-    render = False
+def main(render = False):
     # DMP
     example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
 
@@ -172,3 +165,6 @@ if __name__ == '__main__':
 
     # Custom MP
     example_fully_custom_mp(seed=10, iterations=1, render=render)
+
+if __name__ == '__main__':
+    main()

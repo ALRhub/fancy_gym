@@ -31,6 +31,8 @@ def example_mp(env_name, seed=1, render=True):
             print(returns)
             obs = env.reset()
 
+def main(render=True):
+    example_mp("gym_ProMP/Reacher-v2", render=render)
 
 if __name__ == '__main__':
-    example_mp("gym_ProMP/Reacher-v2")
+    main()
