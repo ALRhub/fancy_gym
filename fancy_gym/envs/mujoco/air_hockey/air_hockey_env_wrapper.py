@@ -130,6 +130,7 @@ class AirHockeyEnv(Environment):
             return self.base_env.render(record = True)
         elif self.render_mode == 'human':
             self.render_human_active = True
+            self.base_env.render()
         else:
             raise ValueError(f"Unsupported render mode: '{self.render_mode}'")
             
