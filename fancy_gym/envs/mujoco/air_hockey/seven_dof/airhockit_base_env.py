@@ -11,15 +11,24 @@ class AirhocKIT2023BaseEnv(AirHockeySingle):
         obs_high = np.hstack([[np.inf] * 37])
         self.wrapper_obs_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float64)
         self.wrapper_act_space = spaces.Box(low=np.repeat(-100., 6), high=np.repeat(100., 6))
+        self.noise = False
 
     # We don't need puck yaw observations
     def filter_obs(self, obs):
         obs = np.hstack([obs[0:2], obs[3:5], obs[6:12], obs[13:19], obs[20:]])
         return obs
+
+    # These are roughly the noise levels for a noisy environment, turned-off by default, enable in the constructor
+    def add_noise(self, obs):
+        if not self.noise:
+            return
+        obs[self.env_info["puck_pos_ids"]] += np.random.normal(0, 0.001, 3)
+        obs[self.env_info["puck_vel_ids"]] += np.random.normal(0, 0.1, 3)
     
     def reset(self):
         self.last_acceleration = np.repeat(0., 6)
         obs = super().reset()
+        self.add_noise(obs)
         self.interp_pos = obs[self.env_info["joint_pos_ids"]][:-1]
         self.interp_vel = obs[self.env_info["joint_vel_ids"]][:-1]
 
@@ -43,6 +52,7 @@ class AirhocKIT2023BaseEnv(AirHockeySingle):
         self.last_acceleration += jerk * 0.02
 
         obs, rew, done, info = super().step(abs_action)
+        self.add_noise(obs)
         self.last_planned_world_pos = self._fk(self.interp_pos)
         obs = np.hstack([
             obs, self.interp_pos, self.interp_vel, self.last_acceleration, self.last_planned_world_pos
