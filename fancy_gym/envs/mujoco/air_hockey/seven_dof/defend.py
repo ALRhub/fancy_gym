@@ -46,8 +46,8 @@ class AirHockeyDefend(AirHockeySingle):
         return super().is_absorbing(state)
 
 class AirHockeyDefendAirhocKIT2023(AirhocKIT2023BaseEnv):
-    def __init__(self, gamma=0.99, horizon=200, viewer_params={}):
-        super().__init__(gamma=gamma, horizon=horizon, viewer_params=viewer_params)
+    def __init__(self, gamma=0.99, horizon=200, viewer_params={}, **kwargs):
+        super().__init__(gamma=gamma, horizon=horizon, viewer_params=viewer_params, **kwargs)
         self.init_velocity_range = (1, 3)
         self.start_range = np.array([[0.4, 0.75], [-0.4, 0.4]])  # Table Frame
         self._setup_metrics()

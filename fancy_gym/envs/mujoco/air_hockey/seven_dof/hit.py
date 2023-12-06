@@ -57,8 +57,8 @@ class AirHockeyHit(AirHockeySingle):
         return super(AirHockeyHit, self).is_absorbing(obs)
 
 class AirHockeyHitAirhocKIT2023(AirhocKIT2023BaseEnv):
-    def __init__(self, gamma=0.99, horizon=500, moving_init=True, viewer_params={}):
-        super().__init__(gamma=gamma, horizon=horizon, viewer_params=viewer_params)
+    def __init__(self, gamma=0.99, horizon=500, moving_init=True, viewer_params={}, **kwargs):
+        super().__init__(gamma=gamma, horizon=horizon, viewer_params=viewer_params, **kwargs)
 
         self.moving_init = moving_init
         hit_width = self.env_info['table']['width'] / 2 - self.env_info['puck']['radius'] - \

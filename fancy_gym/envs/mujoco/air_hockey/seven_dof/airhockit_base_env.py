@@ -5,20 +5,19 @@ from fancy_gym.envs.mujoco.air_hockey.seven_dof.env_single import AirHockeySingl
 from fancy_gym.envs.mujoco.air_hockey.utils import inverse_kinematics, forward_kinematics, jacobian
 
 class AirhocKIT2023BaseEnv(AirHockeySingle):
-    def __init__(self, **kwargs):
+    def __init__(self, noise=False, **kwargs):
         super().__init__(**kwargs)
         obs_low = np.hstack([[-np.inf] * 37])
         obs_high = np.hstack([[np.inf] * 37])
         self.wrapper_obs_space = spaces.Box(low=obs_low, high=obs_high, dtype=np.float64)
         self.wrapper_act_space = spaces.Box(low=np.repeat(-100., 6), high=np.repeat(100., 6))
-        self.noise = False
+        self.noise = noise
 
     # We don't need puck yaw observations
     def filter_obs(self, obs):
         obs = np.hstack([obs[0:2], obs[3:5], obs[6:12], obs[13:19], obs[20:]])
         return obs
 
-    # These are roughly the noise levels for a noisy environment, turned-off by default, enable in the constructor
     def add_noise(self, obs):
         if not self.noise:
             return
