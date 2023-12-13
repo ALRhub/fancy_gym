@@ -1,4 +1,4 @@
-# Custom Mujoco tasks
+# Mujoco
 
 ## Step-based Environments
 
@@ -46,7 +46,6 @@ No longer used?
 | `fancy/BallInACup-v0`       | Ball-in-a-cup task where a robot needs to catch a ball attached to a cup at its end-effector        | 4000    | 7                | wip                   |
 | `fancy/BallInACupGoal-v0`   | Similar to `fancy/BallInACupSimple-v0` but the ball needs to be caught at a specified goal position | 4000    | 7                | wip                   |
 -->
-
 
 ## MP Environments
 

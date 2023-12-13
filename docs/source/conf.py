@@ -38,6 +38,7 @@ exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'sphinx_rtd_theme'
 html_logo = "_static/imgs/icon.svg"
+html_favicon = "_static/imgs/icon.svg"
 epub_show_urls = 'footnote'
 html_static_path = ['_static']
 

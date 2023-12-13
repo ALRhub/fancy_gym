@@ -43,6 +43,15 @@ Key Features
 
 .. toctree::
    :maxdepth: 3
+   :caption: Environments
+
+   envs/fancy/index
+   envs/dmc
+   envs/meta
+   envs/open_ai
+
+.. toctree::
+   :maxdepth: 3
    :caption: Examples
 
    examples/general
@@ -51,17 +60,8 @@ Key Features
    examples/open_ai
    examples/movement_primitives
    examples/mp_params_tuning
+   examples/pd_control_gain_tuning
    examples/replanning_envs
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Environments
-
-   envs/fancy/index
-   envs/airhockey
-   envs/dmc
-   envs/meta
-   envs/open_ai
 
 .. toctree::
    :maxdepth: 3
