@@ -61,7 +61,7 @@ def make_metaworld(underlying_id: str, seed: int = 1, render_mode: Optional[str]
     if underlying_id not in metaworld.ML1.ENV_NAMES:
         raise ValueError(f'Specified environment "{underlying_id}" not present in metaworld ML1.')
 
-    env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[underlying_id + "-goal-observable"](seed=seed, **kwargs)
+    env = metaworld.envs.ALL_V2_ENVIRONMENTS_GOAL_OBSERVABLE[underlying_id + "-goal-observable"](seed=seed, render_mode=render_mode, **kwargs)
 
     # setting this avoids generating the same initialization after each reset
     env._freeze_rand_vec = False
