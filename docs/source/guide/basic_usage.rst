@@ -1,9 +1,7 @@
 Basic Usage
 -----------
 
-We will only show the basics here and prepared `multiple
-examples <https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/examples/>`__
-for a more detailed look.
+We will only show the basics here and prepared :ref:`multiple examples <example-general>` for a more detailed look.
 
 Step-Based Environments
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,7 +32,7 @@ Regular step based environments added by Fancy Gym are added into the
        if terminated or truncated:
            observation, info = env.reset()
 
-Black-box Environments
+Black-Box Environments
 ~~~~~~~~~~~~~~~~~~~~~~
 
 All environments provide by default the cumulative episode reward, this
@@ -67,13 +65,13 @@ a MP-variant of an environment is given by
 ``<original namespace>_<MP name>/``. Just keep in mind, calling
 ``step()`` executes a full trajectory.
 
-   | **Note:**
-   | Currently, we are also in the process of enabling replanning as
-     well as learning of sub-trajectories. This allows to split the
-     episode into multiple trajectories and is a hybrid setting between
-     step-based and black-box leaning. While this is already
-     implemented, it is still in beta and requires further testing. Feel
-     free to try it and open an issue with any problems that occur.
+.. note::
+    Currently, we are also in the process of enabling replanning as
+    well as learning of sub-trajectories. This allows to split the
+    episode into multiple trajectories and is a hybrid setting between
+    step-based and black-box leaning. While this is already
+    implemented, it is still in beta and requires further testing. Feel
+    free to try it and open an issue with any problems that occur.
 
 .. code:: python
 

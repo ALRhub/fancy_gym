@@ -92,7 +92,7 @@ If you created a new task wrapper, feel free to open a PR, so we can
 integrate it for others to use as well. Without the integration the task
 can still be used. A rough outline can be shown here, for more details
 we recommend having a look at the
-`examples <https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/examples/>`__.
+:ref:`multiple examples <example-mp>`.
 
 If the step-based is already registered with gym, you can simply do the
 following:

@@ -3,7 +3,7 @@ What is Episodic RL?
 
 .. raw:: html
 
-   <p align="justify">
+    <div class="justify">
 
 Movement primitive (MP) environments differ from traditional step-based
 environments. They align more with concepts from stochastic search,
@@ -14,13 +14,6 @@ produced by trajectory generators like Dynamic Movement Primitives
 (DMP), Probabilistic Movement Primitives (ProMP) or Probabilistic
 Dynamic Movement Primitives (ProDMP).
 
-.. raw:: html
-
-   </p>
-
-.. raw:: html
-
-   <p align="justify">
 
 Once generated, these trajectories are converted into step-by-step
 actions using a trajectory tracking controller. The specific controller
@@ -29,13 +22,6 @@ position, velocity, and PD-Controllers tailored for position, velocity,
 and torque control. Additionally, we have a specialized controller
 designed for the MetaWorld control suite.
 
-.. raw:: html
-
-   </p>
-
-.. raw:: html
-
-   <p align="justify">
 
 While the overarching objective of MP environments remains the learning
 of an optimal policy, the actions here represent the parametrization of
@@ -47,4 +33,4 @@ every unique context.
 
 .. raw:: html
 
-   </p>
+    </div>

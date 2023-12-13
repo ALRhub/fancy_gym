@@ -1,10 +1,11 @@
 Installation
 ------------
 
-We recommend installing ``fancy_gym`` into a virtual environment as
-provided by `venv <https://docs.python.org/3/library/venv.html>`__. 3rd
-party alternatives to venv like `Poetry <https://python-poetry.org/>`__
-or `Conda <https://docs.conda.io/en/latest/>`__ can also be used.
+.. note::
+   We recommend installing ``fancy_gym`` into a virtual environment as
+   provided by `venv <https://docs.python.org/3/library/venv.html>`__. 3rd
+   party alternatives to venv like `Poetry <https://python-poetry.org/>`__
+   or `Conda <https://docs.conda.io/en/latest/>`__ can also be used.
 
 Installation from PyPI (recommended)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
