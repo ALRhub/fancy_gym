@@ -1,3 +1,6 @@
+.. _example-mp:
+
+
 Movement Primitives Examples
 ============================
 

@@ -1,3 +1,5 @@
+.. _example-general:
+
 General Usage Examples
 ======================
 
