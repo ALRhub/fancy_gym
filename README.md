@@ -110,12 +110,11 @@ env = gym.make('fancy/Reacher5d-v0', render_mode='human')
 # or env = gym.make('dm_control/ball_in_cup-catch-v0', render_mode='human')
 # or env = gym.make('Reacher-v2', render_mode='human')
 observation = env.reset(seed=1)
+env.render()
 
 for i in range(1000):
     action = env.action_space.sample()
     observation, reward, terminated, truncated, info = env.step(action)
-    if i % 5 == 0:
-        env.render()
 
     if terminated or truncated:
         observation, info = env.reset()
@@ -156,6 +155,7 @@ env = gym.make('fancy_ProMP/Reacher5d-v0', render_mode="human")
 
 # This returns the context information, not the full state observation
 observation, info = env.reset(seed=1)
+env.render()
 
 for i in range(5):
     action = env.action_space.sample()
