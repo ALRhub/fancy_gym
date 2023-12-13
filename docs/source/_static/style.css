@@ -3,6 +3,15 @@
   --main-bg-color: #343A40;
 }
 
+.justify {
+  text-align: justify;
+}
+
+.center {
+  text-align: center;
+}
+
+
 /* Header fonts y */
 h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p.caption {
     font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
