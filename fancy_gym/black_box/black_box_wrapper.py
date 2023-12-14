@@ -262,9 +262,19 @@ class BlackBoxWrapper(gym.ObservationWrapper):
 
             if self.render_kwargs:
                 self.env.render(**self.render_kwargs)
+            
+            # TODO: currently only support sync termination and truncation
+            if type(truncated) == bool:
+                if self.backend == "torch":
+                    truncated = torch.tensor(truncated, device=self.device).repeat(batch_size)
+                else:
+                    truncated = np.array(truncated).repeat(batch_size)
 
-            all_terminated = terminated.all() if self.backend == "torch" else terminated
-            all_truncated = truncated.all() if self.backend == "torch" else truncated
+            if type(terminated) == np.ndarray or type(terminated) == torch.Tensor:
+                all_terminated = terminated.all()
+            if type(truncated) == np.ndarray or type(truncated) == torch.Tensor:
+                all_truncated = truncated.all()
+
             if all_terminated or all_truncated or (
                 self.replanning_schedule(self.env.get_wrapper_attr('current_pos'), 
                                          self.env.get_wrapper_attr('current_vel'), 
