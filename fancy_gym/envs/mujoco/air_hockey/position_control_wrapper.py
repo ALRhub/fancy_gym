@@ -124,9 +124,9 @@ class PositionControl:
 
     def _interpolate_trajectory(self, interp_order, action, i=0):
         tf = self.dt
-        prev_pos = self.prev_pos[i*self.n_robot_joints:(i+1)*self.n_robot_joints]
-        prev_vel = self.prev_vel[i*self.n_robot_joints:(i+1)*self.n_robot_joints]
-        prev_acc = self.prev_acc[i*self.n_robot_joints:(i+1)*self.n_robot_joints]
+        prev_pos = self.prev_pos[i * self.n_robot_joints:(i + 1) * self.n_robot_joints]
+        prev_vel = self.prev_vel[i * self.n_robot_joints:(i + 1) * self.n_robot_joints]
+        prev_acc = self.prev_acc[i * self.n_robot_joints:(i + 1) * self.n_robot_joints]
         if interp_order == 1 and action.ndim == 1:
             coef = np.array([[1, 0], [1, tf]])
             results = np.vstack([prev_pos, action])
@@ -166,13 +166,17 @@ class PositionControl:
             weights_dd = np.polynomial.polynomial.polyder(weights_d, axis=1)
 
         if interp_order in [3, 4, 5]:
-            self.jerk[i*self.n_robot_joints:(i+1)*self.n_robot_joints] = np.abs(weights_dd[:, 1]) + np.abs(weights_dd[:, 0] - prev_acc) / self._timestep
+            self.jerk[i * self.n_robot_joints:(i + 1) * self.n_robot_joints] = np.abs(weights_dd[:, 1]) + np.abs(
+                weights_dd[:, 0] - prev_acc) / self._timestep
         else:
-            self.jerk[i*self.n_robot_joints:(i+1)*self.n_robot_joints] = np.ones_like(prev_acc) * np.inf
+            self.jerk[i * self.n_robot_joints:(i + 1) * self.n_robot_joints] = np.ones_like(prev_acc) * np.inf
 
-        self.prev_pos[i*self.n_robot_joints:(i+1)*self.n_robot_joints] = np.polynomial.polynomial.polyval(tf, weights.T)
-        self.prev_vel[i*self.n_robot_joints:(i+1)*self.n_robot_joints] = np.polynomial.polynomial.polyval(tf, weights_d.T)
-        self.prev_acc[i*self.n_robot_joints:(i+1)*self.n_robot_joints] = np.polynomial.polynomial.polyval(tf, weights_dd.T)
+        self.prev_pos[i * self.n_robot_joints:(i + 1) * self.n_robot_joints] = np.polynomial.polynomial.polyval(tf,
+                                                                                                                weights.T)
+        self.prev_vel[i * self.n_robot_joints:(i + 1) * self.n_robot_joints] = np.polynomial.polynomial.polyval(tf,
+                                                                                                                weights_d.T)
+        self.prev_acc[i * self.n_robot_joints:(i + 1) * self.n_robot_joints] = np.polynomial.polynomial.polyval(tf,
+                                                                                                                weights_dd.T)
 
         for t in np.linspace(self._timestep, self.dt, self._n_intermediate_steps):
             q = np.polynomial.polynomial.polyval(t, weights.T)
@@ -223,12 +227,14 @@ class PositionControl:
         action = super(PositionControl, self)._preprocess_action(action)
 
         if self.n_agents == 1:
-            assert action.shape == self.action_shape[0], f"Unexpected action shape. Expected {self.action_shape[0]} but got" \
-                                                      f" {action.shape}"
+            assert action.shape == self.action_shape[
+                0], f"Unexpected action shape. Expected {self.action_shape[0]} but got" \
+                    f" {action.shape}"
         else:
             for i in range(self.n_agents):
-                assert action[i].shape == self.action_shape[i], f"Unexpected action shape. Expected {self.action_shape[i]} but got" \
-                                                          f" {action[i].shape}"
+                assert action[i].shape == self.action_shape[
+                    i], f"Unexpected action shape. Expected {self.action_shape[i]} but got" \
+                        f" {action[i].shape}"
 
         return action
 
@@ -261,14 +267,18 @@ class PlanarPositionDefend(PositionControlPlanar, three_dof.AirHockeyDefend):
 class IiwaPositionHit(PositionControlIIWA, seven_dof.AirHockeyHit):
     pass
 
+
 class IiwaPositionHitAirhocKIT2023(PositionControlIIWA, seven_dof.AirHockeyHitAirhocKIT2023):
     pass
+
 
 class IiwaPositionDefend(PositionControlIIWA, seven_dof.AirHockeyDefend):
     pass
 
+
 class IiwaPositionDefendAirhocKIT2023(PositionControlIIWA, seven_dof.AirHockeyDefendAirhocKIT2023):
     pass
+
 
 class IiwaPositionTournament(PositionControlIIWA, seven_dof.AirHockeyTournament):
     pass

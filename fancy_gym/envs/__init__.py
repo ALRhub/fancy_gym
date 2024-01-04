@@ -295,8 +295,9 @@ for env_mode in ["7dof-hit", "7dof-defend", "3dof-hit", "3dof-defend", "7dof-hit
     register(
         id=f'fancy/AirHockey-{env_mode}-v0',
         entry_point='fancy_gym.envs.mujoco:AirHockeyEnv',
+        mp_wrapper=mujoco.air_hockey.MPWrapper,
         max_episode_steps=500,
-        add_mp_types=[],
+        add_mp_types=['ProDMP'],
         kwargs={
             'env_mode': env_mode
         }

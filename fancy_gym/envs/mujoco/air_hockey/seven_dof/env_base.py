@@ -9,11 +9,12 @@ from fancy_gym.envs.mujoco.air_hockey.utils.universal_joint_plugin import Univer
 from mushroom_rl.environments.mujoco import MuJoCo, ObservationType
 from mushroom_rl.utils.spaces import Box
 
-
 """
     Abstract class for all AirHockey Environments.
 
 """
+
+
 class AirHockeyBase(MuJoCo):
     def __init__(self, gamma=0.99, horizon=500, timestep=1 / 1000., n_intermediate_steps=20, n_substeps=1,
                  n_agents=1, viewer_params={}):

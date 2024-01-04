@@ -62,7 +62,8 @@ def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1,
     """
     # Changing the arguments of the black box env is possible by providing them to gym through mp_config_override.
     # E.g. here for way to many basis functions
-    env = gym.make(env_name, seed, mp_config_override={'basis_generator_kwargs': {'num_basis': 1000}}, render_mode='human' if render else None)
+    env = gym.make(env_name, seed, mp_config_override={'basis_generator_kwargs': {'num_basis': 1000}},
+                   render_mode='human' if render else None)
 
     returns = 0
     obs = env.reset()
@@ -84,24 +85,25 @@ def example_custom_mp(env_name="fancy_ProMP/Reacher5d-v0", seed=1, iterations=1,
     env.close()
     return obs
 
+
 class Custom_MPWrapper(fancy_gym.envs.mujoco.reacher.MPWrapper):
     mp_config = {
         'ProMP': {
-                'trajectory_generator_kwargs':  {
-                    'trajectory_generator_type': 'promp',
-                    'weights_scale': 2
-                },
-                'phase_generator_kwargs': {
-                    'phase_generator_type': 'linear'
-                },
-                'controller_kwargs': {
-                    'controller_type': 'velocity'
-                },
-                'basis_generator_kwargs': {
-                    'basis_generator_type': 'zero_rbf',
-                    'num_basis': 5,
-                    'num_basis_zero_start': 1
-                }
+            'trajectory_generator_kwargs': {
+                'trajectory_generator_type': 'promp',
+                'weights_scale': 2
+            },
+            'phase_generator_kwargs': {
+                'phase_generator_type': 'linear'
+            },
+            'controller_kwargs': {
+                'controller_type': 'velocity'
+            },
+            'basis_generator_kwargs': {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 5,
+                'num_basis_zero_start': 1
+            }
         },
         'DMP': {
             'trajectory_generator_kwargs': {
@@ -166,7 +168,7 @@ def example_fully_custom_mp(seed=1, iterations=1, render=True):
             rewards = 0
             obs = env.reset()
 
-    try: # Some mujoco-based envs don't correlcty implement .close
+    try:  # Some mujoco-based envs don't correlcty implement .close
         env.close()
     except:
         pass
@@ -188,22 +190,23 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
     custom_env_id = "fancy/Reacher5d-Custom-v0"
     custom_env_id_ProMP = "fancy_ProMP/Reacher5d-Custom-v0"
 
-    fancy_gym.upgrade(custom_env_id, mp_wrapper=fancy_gym.envs.mujoco.reacher.MPWrapper, add_mp_types=['ProMP'], base_id=base_env_id, mp_config_override=     {'ProMP': {
-                'trajectory_generator_kwargs':  {
-                    'trajectory_generator_type': 'promp',
-                    'weights_scale': 2
-                },
-                'phase_generator_kwargs': {
-                    'phase_generator_type': 'linear'
-                },
-                'controller_kwargs': {
-                    'controller_type': 'velocity'
-                },
-                'basis_generator_kwargs': {
-                    'basis_generator_type': 'zero_rbf',
-                    'num_basis': 5,
-                    'num_basis_zero_start': 1
-                }
+    fancy_gym.upgrade(custom_env_id, mp_wrapper=fancy_gym.envs.mujoco.reacher.MPWrapper, add_mp_types=['ProMP'],
+                      base_id=base_env_id, mp_config_override={'ProMP': {
+            'trajectory_generator_kwargs': {
+                'trajectory_generator_type': 'promp',
+                'weights_scale': 2
+            },
+            'phase_generator_kwargs': {
+                'phase_generator_type': 'linear'
+            },
+            'controller_kwargs': {
+                'controller_type': 'velocity'
+            },
+            'basis_generator_kwargs': {
+                'basis_generator_type': 'zero_rbf',
+                'num_basis': 5,
+                'num_basis_zero_start': 1
+            }
         }})
 
     env = gym.make(custom_env_id_ProMP, render_mode='human' if render else None)
@@ -242,7 +245,7 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
             rewards = 0
             obs = env.reset()
 
-    try: # Some mujoco-based envs don't correlcty implement .close
+    try:  # Some mujoco-based envs don't correlcty implement .close
         env.close()
     except:
         pass
@@ -251,24 +254,26 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
 def main():
     render = False
     # DMP
-    example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
+    # example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
 
-    # ProMP
-    example_mp("fancy_ProMP/HoleReacher-v0", seed=10, iterations=5, render=render)
-    example_mp("fancy_ProMP/BoxPushingTemporalSparse-v0", seed=10, iterations=1, render=render)
-    example_mp("fancy_ProMP/TableTennis4D-v0", seed=10, iterations=20, render=render)
+    # # ProMP
+    # # example_mp("fancy_ProMP/HoleReacher-v0", seed=10, iterations=5, render=render)
+    # example_mp("fancy_ProMP/BoxPushingTemporalSparse-v0", seed=10, iterations=1, render=render)
+    # example_mp("fancy_ProMP/TableTennis4D-v0", seed=10, iterations=20, render=render)
+    #
+    # # ProDMP with Replanning
+    # example_mp("fancy_ProDMP/BoxPushingDenseReplan-v0", seed=10, iterations=4, render=render)
+    # example_mp("fancy_ProDMP/TableTennis4DReplan-v0", seed=10, iterations=20, render=render)
+    # example_mp("fancy_ProDMP/TableTennisWindReplan-v0", seed=10, iterations=20, render=render)
+    #
+    # # Altered basis functions
+    # obs1 = example_custom_mp("fancy_ProMP/Reacher5d-v0", seed=10, iterations=1, render=render)
+    #
+    # # Custom MP
+    # example_fully_custom_mp(seed=10, iterations=1, render=render)
+    # example_fully_custom_mp_alternative(seed=10, iterations=1, render=render)
+    example_mp("fancy_ProDMP/AirHockey-7dof-hit-airhockit2023", seed=10, iterations=20, render=render)
 
-    # ProDMP with Replanning
-    example_mp("fancy_ProDMP/BoxPushingDenseReplan-v0", seed=10, iterations=4, render=render)
-    example_mp("fancy_ProDMP/TableTennis4DReplan-v0", seed=10, iterations=20, render=render)
-    example_mp("fancy_ProDMP/TableTennisWindReplan-v0", seed=10, iterations=20, render=render)
 
-    # Altered basis functions
-    obs1 = example_custom_mp("fancy_ProMP/Reacher5d-v0", seed=10, iterations=1, render=render)
-
-    # Custom MP
-    example_fully_custom_mp(seed=10, iterations=1, render=render)
-    example_fully_custom_mp_alternative(seed=10, iterations=1, render=render)
-
-if __name__=='__main__':
+if __name__ == '__main__':
     main()

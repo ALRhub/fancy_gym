@@ -87,16 +87,16 @@ def example_async(env_id="fancy/HoleReacher-v0", n_cpu=4, seed=int('533D', 16), 
 
 
 if __name__ == '__main__':
-    render = True
+    render = False
 
-    # Basic gym task
-    example_general("Pendulum-v1", seed=10, iterations=200, render=render)
-
-    # Mujoco task from framework
-    example_general("fancy/Reacher5d-v0", seed=10, iterations=200, render=render)
+    # # Basic gym task
+    # example_general("Pendulum-v1", seed=10, iterations=200, render=render)
+    #
+    # # Mujoco task from framework
+    # example_general("fancy/Reacher5d-v0", seed=10, iterations=200, render=render)
 
     # # OpenAI Mujoco task
-    example_general("HalfCheetah-v2", seed=10, render=render)
-
+    example_general('fancy/AirHockey-7dof-hit-airhockit2023-v0', seed=10, render=render)
+    print('FINISHED')
     # Vectorized multiprocessing environments
     # example_async(env_id="HoleReacher-v0", n_cpu=2, seed=int('533D', 16), n_samples=2 * 200)

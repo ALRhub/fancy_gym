@@ -8,6 +8,7 @@ class AirHockeyHit(AirHockeySingle):
     """
         Class for the air hockey hitting task.
     """
+
     def __init__(self, gamma=0.99, horizon=500, moving_init=True, viewer_params={}):
         """
             Constructor
@@ -23,7 +24,6 @@ class AirHockeyHit(AirHockeySingle):
         self.hit_range = np.array([[-0.7, -0.2], [-hit_width, hit_width]])  # Table Frame
         self.init_velocity_range = (0, 0.5)  # Table Frame
         self.init_ee_range = np.array([[0.60, 1.25], [-0.4, 0.4]])  # Robot Frame
-
 
     def setup(self, obs):
         # Initial position of the puck
@@ -55,6 +55,7 @@ class AirHockeyHit(AirHockeySingle):
         if puck_pos[0] > 0 and puck_vel[0] < 0:
             return True
         return super(AirHockeyHit, self).is_absorbing(obs)
+
 
 class AirHockeyHitAirhocKIT2023(AirhocKIT2023BaseEnv):
     def __init__(self, gamma=0.99, horizon=500, moving_init=True, viewer_params={}, **kwargs):
@@ -109,7 +110,7 @@ class AirHockeyHitAirhocKIT2023(AirhocKIT2023BaseEnv):
 
         self.episode_steps += 1
         return super()._step_finalize()
-    
+
     def reward(self, state, action, next_state, absorbing):
         rew = 0
         puck_pos, puck_vel = self.get_puck(next_state)
@@ -126,7 +127,7 @@ class AirHockeyHitAirhocKIT2023(AirhocKIT2023BaseEnv):
 
         if self.has_scored:
             rew += 2000 + 5000 * np.linalg.norm(puck_vel[:2])
-        
+
         return rew
 
     def is_absorbing(self, obs):
@@ -146,11 +147,13 @@ class AirHockeyHitAirhocKIT2023(AirhocKIT2023BaseEnv):
 
 if __name__ == '__main__':
     env = AirHockeyHit(moving_init=True)
+    # env = AirHockeyHitAirhocKIT2023()
     env.reset()
 
     steps = 0
     while True:
         action = np.zeros(7)
+        # action = np.zeros(6)
 
         observation, reward, done, info = env.step(action)
         env.render()

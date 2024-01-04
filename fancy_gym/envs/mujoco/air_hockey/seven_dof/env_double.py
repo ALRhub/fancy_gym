@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation as R
 from fancy_gym.envs.mujoco.air_hockey.seven_dof.env_base import AirHockeyBase
 from fancy_gym.envs.mujoco.air_hockey.utils import inverse_kinematics
 
+
 class AirHockeyDouble(AirHockeyBase):
     """
     Base class for two agents air hockey tasks.
