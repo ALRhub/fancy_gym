@@ -252,7 +252,7 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
 
 
 def main():
-    render = False
+    render = True
     # DMP
     # example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
 
