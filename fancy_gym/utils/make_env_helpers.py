@@ -10,6 +10,7 @@ from collections.abc import MutableMapping
 from math import ceil
 from typing import Iterable, Type, Union, Optional
 
+import torch
 import gymnasium as gym
 from gymnasium import make
 import numpy as np
@@ -124,6 +125,13 @@ def make_bb(
     # Max delay is full duration minus two steps due to above reason
     if phase_kwargs.get('learn_delay') and phase_kwargs.get('delay_bound') is None:
         phase_kwargs["delay_bound"] = [0, black_box_kwargs['duration'] - env.dt * 2]
+
+    black_box_kwargs["backend"] = "torch"
+    black_box_kwargs["device"] = env.unwrapped.device
+    black_box_kwargs["reward_aggregation"] = torch.sum
+    traj_gen_kwargs["device"] = env.unwrapped.device
+    phase_kwargs["device"] = env.unwrapped.device
+    basis_kwargs["device"] = env.unwrapped.device
 
     phase_gen = get_phase_generator(**phase_kwargs)
     basis_gen = get_basis_generator(phase_generator=phase_gen, **basis_kwargs)

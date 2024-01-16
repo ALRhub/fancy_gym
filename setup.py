@@ -55,7 +55,7 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
-        'mp_pytorch<=0.1.3',
+        'mp_pytorch',
         'mujoco==2.3.3',
         'gymnasium[mujoco]>=0.26.0'
     ],
