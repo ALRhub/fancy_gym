@@ -444,21 +444,23 @@ for _v in _versions:
 
     _name = _v.split("-")
     _env_id = f'{_name[0]}ProDMP-{_name[1]}'
-    kwargs_dict_box_pushing_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
-    kwargs_dict_box_pushing_prodmp['wrappers'].append(mujoco.reacher.MPWrapper)
-    kwargs_dict_box_pushing_prodmp['name'] = _v
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.3
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
-    kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['num_basis'] = 5
-    kwargs_dict_box_pushing_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
-    kwargs_dict_box_pushing_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
-    kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_reacher_prodmp = deepcopy(DEFAULT_BB_DICT_ProDMP)
+    kwargs_dict_reacher_prodmp['wrappers'].append(mujoco.reacher.MPWrapper)
+    kwargs_dict_reacher_prodmp['name'] = _v
+    kwargs_dict_reacher_prodmp['trajectory_generator_kwargs']['weights_scale'] = 0.3
+    kwargs_dict_reacher_prodmp['trajectory_generator_kwargs']['goal_scale'] = 0.3
+    kwargs_dict_reacher_prodmp['trajectory_generator_kwargs']['auto_scale_basis'] = True
+    # kwargs_dict_box_pushing_prodmp['trajectory_generator_kwargs']['goal_offset'] = 1.0
+    kwargs_dict_reacher_prodmp['basis_generator_kwargs']['num_basis'] = 5
+    kwargs_dict_reacher_prodmp['basis_generator_kwargs']['basis_bandwidth_factor'] = 3
+    kwargs_dict_reacher_prodmp['phase_generator_kwargs']['alpha_phase'] = 3
+    # kwargs_dict_box_pushing_prodmp['black_box_kwargs']['condition_on_desired'] = True
+    kwargs_dict_reacher_prodmp['trajectory_generator_kwargs']['disable_goal'] = False
+    kwargs_dict_reacher_prodmp['trajectory_generator_kwargs']['relative_goal'] = True
     register(
         id=_env_id,
         entry_point='fancy_gym.utils.make_env_helpers:make_bb_env_helper',
-        kwargs=kwargs_dict_box_pushing_prodmp
+        kwargs=kwargs_dict_reacher_prodmp
     )
     ALL_FANCY_MOVEMENT_PRIMITIVE_ENVIRONMENTS["ProDMP"].append(_env_id)
 

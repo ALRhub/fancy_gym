@@ -141,6 +141,7 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
             target[:2],  # x-y of goal position
             self.data.qvel.flat[:self.n_links],  # angular velocity
             self.get_body_com("fingertip") - target,  # goal distance
+            [self._steps]
         ])
 
     def create_observation(self):

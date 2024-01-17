@@ -14,7 +14,7 @@ class MPWrapper(RawInterfaceWrapper):
                                [True] * 2,  # goal position
                                [False] * self.n_links,  # angular velocity
                                [False] * 3,  # goal distance
-                               # [False],  # step
+                               [False],  # step
                                ])
 
     @property

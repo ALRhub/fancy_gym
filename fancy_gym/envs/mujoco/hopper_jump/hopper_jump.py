@@ -1,9 +1,23 @@
 import os
 
+import mujoco
 import numpy as np
 from gym.envs.mujoco.hopper_v4 import HopperEnv
 
 MAX_EPISODE_STEPS_HOPPERJUMP = 250
+MIN_GOAL = 0.3
+MAX_GOAL = 1.35
+
+MIN_J3 = -0.5
+MAX_J3 = 0.0
+
+MIN_J4 = -0.2
+MAX_J4 = 0.0
+
+MIN_J5 = 0
+MAX_J5 = 0.785
+CONTEXT_BOUNDS = np.array([[MIN_GOAL, MIN_J3, MIN_J4, MIN_J5],
+                           [MAX_GOAL, MAX_J3, MAX_J4, MAX_J5]])
 
 
 class HopperJumpEnv(HopperEnv):
@@ -31,7 +45,7 @@ class HopperJumpEnv(HopperEnv):
             healthy_angle_range=(-float('inf'), float('inf')),
             reset_noise_scale=5e-3,
             exclude_current_positions_from_observation=False,
-            sparse=False,
+            sparse=False, **kwargs
     ):
 
         self.sparse = sparse
@@ -73,7 +87,7 @@ class HopperJumpEnv(HopperEnv):
         self.do_simulation(action, self.frame_skip)
 
         height_after = self.get_body_com("torso")[2]
-        #site_pos_after = self.data.get_site_xpos('foot_site')
+        # site_pos_after = self.data.get_site_xpos('foot_site')
         site_pos_after = self.data.site('foot_site').xpos
         self.max_height = max(height_after, self.max_height)
 
@@ -158,6 +172,36 @@ class HopperJumpEnv(HopperEnv):
 
         return observation
 
+    def set_context(self, context):
+        goal = context[0]
+        j3 = context[1]
+        j4 = context[2]
+        j5 = context[3]
+        self.goal = np.concatenate(([goal.copy()], np.zeros(2)))
+        self.model.body('goal_site_body').pos[:] = np.copy(self.goal)
+        self.max_height = 0
+        self._steps = 0
+
+        qpos = self.init_qpos.copy()
+        qpos[3] = j3
+        qpos[4] = j4
+        qpos[5] = j5
+
+        qvel = (
+            # self.np_random.uniform(low=noise_low, high=noise_high, size=self.model.nv) +
+            self.init_qvel
+        )
+
+        self.set_state(qpos, qvel)
+
+        observation = self._get_obs()
+        self.has_left_floor = False
+        self.contact_with_floor = False
+        self.init_floor_contact = False
+        self.contact_dist = None
+
+        return observation
+
     def _is_floor_foot_contact(self):
         # floor_geom_id = self.model.geom_name2id('floor')
         # foot_geom_id = self.model.geom_name2id('foot_geom')
@@ -175,6 +219,7 @@ class HopperJumpEnv(HopperEnv):
             if collision or collision_trans:
                 return True
         return False
+
 
 # # TODO is that needed? if so test it
 # class HopperJumpStepEnv(HopperJumpEnv):
@@ -249,3 +294,16 @@ class HopperJumpEnv(HopperEnv):
 #             'contact_dist': copy.copy(self.contact_dist) or 0
 #         }
 #         return observation, reward, done, info
+
+
+if __name__ == '__main__':
+    env = HopperJumpEnv()
+    obs = env.reset()
+    env.render()
+    for _ in range(5000):
+        obs, reward, done, infos = env.step(env.action_space.sample())
+        # env.reset()
+        env.render()
+        if done:
+            env.reset()
+            print(reward)

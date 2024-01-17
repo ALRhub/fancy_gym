@@ -219,8 +219,8 @@ def make_bb_env_helper(**kwargs):
     Returns: MP wrapped gym env
 
     """
-    # seed = kwargs.pop("seed", None)
-    seed = kwargs.get("seed", None)
+    seed = kwargs.pop("seed", None)
+    # seed = kwargs.get("seed", None)
     wrappers = kwargs.pop("wrappers")
 
     traj_gen_kwargs = kwargs.pop("trajectory_generator_kwargs", {})
