@@ -63,12 +63,13 @@
 		border-bottom: 1px solid #fcfcfc;
 	}
 
-	.wy-table thead, .rst-content table.docutils thead, .rst-content table.field-list thead {
-		background-color: #b9b9b9;
+  .wy-table thead, .rst-content table.docutils thead, .rst-content table.field-list thead {
+		background-color: var(--header-bg-color);
 	}
 
 	.wy-table thead th, .rst-content table.docutils thead th, .rst-content table.field-list thead th {
-		border: solid 2px #e1e4e5;
+		border: solid 2px var(--text-color);
+    color: var(--text-color);
 	}
 
 	.wy-table thead p, .rst-content table.docutils thead p, .rst-content table.field-list thead p {
@@ -120,10 +121,6 @@ body, h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend, p
   background-color: var(--bg-color);
   color: var(--text-color);
   font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
-}
-
-a:visited {
-  color: inherit;
 }
 
 /* Code blocks */
