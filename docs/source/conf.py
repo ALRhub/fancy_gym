@@ -42,5 +42,12 @@ html_favicon = "_static/imgs/icon.svg"
 epub_show_urls = 'footnote'
 html_static_path = ['_static']
 
+html_context = {
+  'display_github': True,
+  'github_user': 'ALRhub',
+  'github_repo': 'fancy_gym',
+  'github_version': 'release/docs/source',
+}
+
 def setup(app):
     app.add_css_file("style.css")
