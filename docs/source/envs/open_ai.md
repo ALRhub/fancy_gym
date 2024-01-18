@@ -1,11 +1,14 @@
-# OpenAI Gym
+# Farama Gymnasium (previously OpenAI Gym)
 
-These are the Environment Wrappers for selected [OpenAI Gym](https://gym.openai.com/) environments to use
-the Motion Primitive gym interface for them.
+These are the Environment Wrappers for selected [Gymnasium](https://gymnasium.farama.org/) environments to use the Motion Primitive gym interface for them.
+
+## Step-Based Environments
+
+We refer to the [Gymnasium docs](https://gymnasium.farama.org/content/basic_usage/) for an overview of step-based environments provided by them.
 
 ## MP Environments
 
-These environments are wrapped-versions of their OpenAI-gym counterparts.
+These environments are wrapped-versions of their Gymnasium counterparts.
 
 | Name                                 | Description                                                          | Trajectory Horizon | Action Dimension |
 | ------------------------------------ | -------------------------------------------------------------------- | ------------------ | ---------------- |
