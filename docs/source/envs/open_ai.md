@@ -1,11 +1,12 @@
 # Gymnasium
 
 <div class='center'>
-    <img src="../_static/imgs/env_gifs/Lunar_Lander.gif" style="margin: 5%; width: 50%;">
+    <img src="../_static/imgs/env_gifs/Lunar_Lander.gif" style="margin: 5%; width: 60%;">
+    <p>Lunar Lander Task (LunarLander-v2)</p>
 </div>
 <br>
 
-These are the Environment Wrappers for selected [Farama Gymnasium](https://gymnasium.farama.org/) (previously OpenAI Gym) environments to use the Motion Primitive gym interface for them.
+We provide MP versions for selected [Farama Gymnasium](https://gymnasium.farama.org/) (previously OpenAI Gym) environments.
 
 ## Step-Based Environments
 
