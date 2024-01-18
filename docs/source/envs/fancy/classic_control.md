@@ -1,6 +1,6 @@
 # Classic Control
 
-TODO: Text + Images
+Classic Control environments provide a foundational platform for exploring and experimenting with RL algorithms. These environments are designed to be simple, allowing researchers and practitioners to focus on the fundamental principles of control without the complexities of high-dimensional and physics-based simulations.
 
 ## Step-based Environments
 
