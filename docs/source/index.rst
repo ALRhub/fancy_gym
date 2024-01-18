@@ -10,7 +10,7 @@ Key Features
 ------------
 
  - **New Challenging Environments**: ``fancy_gym`` includes several new
-   environments (Panda Box Pushing, Table Tennis, etc.) that present a
+   environments (`Panda Box Pushing <envs/fancy/mujoco.html#box-pushing>`_, `Table Tennis <envs/fancy/mujoco.html#table-tennis>`_, `etc. <envs/fancy/index.html>`_) that present a
    higher degree of difficulty, pushing the boundaries of reinforcement
    learning research.
  - **Support for Movement Primitives**: ``fancy_gym`` supports a range
@@ -22,13 +22,13 @@ Key Features
    environments that support movement primitives.
  - **Benchmark Suite Compatibility**: ``fancy_gym`` makes it easy to
    access renowned benchmark suites such as `DeepMind
-   Control <https://deepmind.com/research/publications/2020/dm-control-Software-and-Tasks-for-Continuous-Control>`__
-   and `Metaworld <https://meta-world.github.io/>`__, whether you want
+   Control <envs/dmc.html>`__
+   and `Metaworld <envs/meta.html>`__, whether you want
    to use them in the regular step-based setting or using MPs.
  - **Contribute Your Own Environments**: If you’re inspired to create
    custom gym environments, both step-based and with movement
    primitives, this
-   `guide <https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/>`__
+   `guide <guide/upgrading_envs.html>`__
    will assist you. We encourage and highly appreciate submissions via
    PRs to integrate these environments into ``fancy_gym``.
 
@@ -96,8 +96,9 @@ can be found
 
 .. raw:: html
 
-   <div style="text-align: center;">
+   <div style="text-align: center; background: white; border-radius: 10px;">
       <a href="https://alr.anthropomatik.kit.edu/"><img src="_static/imgs/alr.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://www.kit.edu/"><img src="_static/imgs/kit.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://uni-tuebingen.de/"><img src="_static/imgs/uni_tuebingen.svg" style="margin: 5%; width: 20%;"></a>
    </div>
+   <br>

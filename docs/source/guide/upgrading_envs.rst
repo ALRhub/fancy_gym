@@ -1,6 +1,8 @@
 Creating new MP Environments
 ----------------------------
 
+This guide will explain to you how to upgrade an existing step-based Gymnasium environment into one, that supports Movement Primitives (MPs). If you are looking for a guide to build such a Gymnasium environment instead, please have a look at `this guide <https://gymnasium.farama.org/tutorials/gymnasium_basics/environment_creation/>`__.
+
 In case a required task is not supported yet in the MP framework, it can
 be created relatively easy. For the task at hand, the following
 `interface <https://github.com/ALRhub/fancy_gym/tree/master/fancy_gym/black_box/raw_interface_wrapper.py>`__
