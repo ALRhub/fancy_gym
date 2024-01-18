@@ -1,6 +1,19 @@
 Fancy Gym
 =========
 
+.. raw:: html
+
+   <div style="text-align: center;">
+      <img src="_static/imgs/fancy_namelogo.svg" style="margin: 5%; width: 80%;"></a>
+   </div>
+    <style>
+       /* We don't want to show the title (ugly), but need to define it since it also sets the pages metadata (for titlebar and stuff) */
+        h1 {
+            display: none;
+        }
+    </style>
+
+
 Built upon the foundation of
 `Gymnasium <https://gymnasium.farama.org/>`__ (a maintained fork of
 OpenAI’s renowned Gym library) ``fancy_gym`` offers a comprehensive
