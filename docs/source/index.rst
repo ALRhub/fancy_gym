@@ -45,6 +45,54 @@ Key Features
    will assist you. We encourage and highly appreciate submissions via
    PRs to integrate these environments into ``fancy_gym``.
 
+Quickstart Guide
+----------------
+
+Install via pip (`or us an alternative installation method <guide/installation.html>`__)
+
+.. code:: bash
+
+   pip install 'fancy_gym[all]'
+
+
+Try out one of our step-based environments (`or explore our other envs <envs/fancy/index.html>`__)
+
+.. code:: python
+
+   import gymnasium as gym
+   import fancy_gym
+   import time
+
+   env = gym.make('fancy/BoxPushingDense-v0', render_mode='human')
+   observation = env.reset()
+   env.render()
+
+   for i in range(1000):
+      action = env.action_space.sample() # Randomly sample an action
+      observation, reward, terminated, truncated, info = env.step(action)
+      time.sleep(1/env.metadata['render_fps'])
+
+      if terminated or truncated:
+            observation, info = env.reset()
+
+
+Explore the MP-based variant (`or learn more about Movement Primitives (MPs) <guide/episodic_rl.html>`__)
+
+.. code:: python
+
+   import gymnasium as gym
+   import fancy_gym
+
+   env = gym.make('fancy_ProMP/BoxPushingDense-v0', render_mode='human')
+   env.reset()
+   env.render()
+   
+   for i in range(10):
+      action = env.action_space.sample() # Randomly sample MP parameters
+      observation, reward, terminated, truncated, info = env.step(action) # Will execute full trajectory, based on MP
+      observation = env.reset()
+
+
 .. toctree::
    :maxdepth: 3
    :caption: User Guide
