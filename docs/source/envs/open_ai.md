@@ -1,6 +1,6 @@
-# Farama Gymnasium (previously OpenAI Gym)
+# Gymnasium
 
-These are the Environment Wrappers for selected [Gymnasium](https://gymnasium.farama.org/) environments to use the Motion Primitive gym interface for them.
+These are the Environment Wrappers for selected [Farama Gymnasium](https://gymnasium.farama.org/) (previously OpenAI Gym) environments to use the Motion Primitive gym interface for them.
 
 ## Step-Based Environments
 
