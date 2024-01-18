@@ -46,7 +46,7 @@ html_context = {
   'display_github': True,
   'github_user': 'ALRhub',
   'github_repo': 'fancy_gym',
-  'github_version': 'release/docs/source',
+  'github_version': 'release/docs/source/',
 }
 
 def setup(app):
