@@ -7,7 +7,7 @@ Fancy gym adds a couple of environments. Some of these are adaptations of existi
 
    <div class='center'>
       <img src="../../_static/imgs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
-      <p>Box Pushing Task</p>
+      <p>Box Pushing Task (´fancy/BoxPushingDense-v0´)</p>
    </div>
    <br>
 
