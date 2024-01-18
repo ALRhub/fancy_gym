@@ -6,7 +6,7 @@ environments in order to use our Motion Primitive gym interface with them.
 
 ## Step-Based Environments
 
-When installing fancy_gym with the optional dmc extra (e.g. `pip install fancy_gym[dmc]`), all regular dmc tasks are made avaible via (Shimmy)[https://github.com/Farama-Foundation/Shimmy].
+When installing fancy_gym with the optional dmc extra (e.g. `pip install fancy_gym[dmc]`), all regular dmc tasks are avaible via [Shimmy](https://github.com/Farama-Foundation/Shimmy).
 
 | Name                                    | Description                                                                                                             | Action Dim | Observation Dim |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ---------- | --------------- |
