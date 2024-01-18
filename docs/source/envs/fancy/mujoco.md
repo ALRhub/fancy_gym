@@ -5,7 +5,7 @@
 ### Box Pushing
 
 <div class='center'>
-   <img src="../../_static/imgs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
+   <img src="../../_static/imgs/env_gifs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
 </div>
 
 The box-pushing task presents an advanced environment for reinforcement learning (RL) systems, utilizing the versatile Franka Emika Panda robotic arm, which boasts seven degrees of freedom (DoFs). The objective of this task is to precisely manipulate a box to a specified goal location and orientation.
@@ -29,7 +29,7 @@ Variations of this environment are available, differing in reward structures and
 ### Table Tennis
 
 <div class='center'>
-   <img src="../../_static/imgs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
+   <img src="../../_static/imgs/env_gifs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
 </div>
 
 The table tennis task offers a dynamic and interactive environment designed for the development and testing of reinforcement learning (RL) systems. Using a robotic arm equipped with seven degrees of freedom (DoFs), the challenge is to respond to incoming balls and return them accurately to a specified goal location on the opponent's side of the table.
@@ -54,6 +54,11 @@ Variations of the table tennis environment are available to cater to different r
 
 ### Beer Pong
 
+<div class='center'>
+   <img src="../../_static/imgs/env_gifs/Beer_Pong.gif" style="margin: 5%; width: 45%;">
+</div>
+<!-- TODO: Vid is ugly and unsuccessful. Replace. -->
+
 The Beer Pong task is based upon a robotic system with seven Degrees of Freedom (DoF), challenging the robot to throw a ball into a cup placed on a large table. The environment's context is established by the cup's location, defined within a range of x-coordinates from -1.42 to 1.42 meters and y-coordinates from -4.05 to -1.25 meters.
 
 The observation space includes the cosine and sine of the robot's joint angles, the angular velocities, and distances of the ball relative to the top and bottom of the cup, along with the cup's position and the current timestep. The action space for the robot is defined by the torques applied to each joint. For episode-based methods, the parameter space is expanded to 15 dimensions, which includes two weights for the basis functions per joint and the duration of the throw, namely the ball release time.
@@ -70,11 +75,6 @@ Conditions for the task are specified as follows:
 An additional reward component at the final timestep T assesses the chosen ball release time to ensure it falls within a reasonable range. The overall return for an episode is the sum of the rewards at each timestep, the task-specific reward, and the release time reward.
 
 A successful throw in this task is determined by the ball landing in the cup at the episode's conclusion, showcasing the robot's ability to accurately predict and execute the complex motion required for this popular party game.
-
-<div class='center'>
-   <img src="../../_static/imgs/Beer_Pong.gif" style="margin: 5%; width: 45%;">
-</div>
-<!-- TODO: Vid is ugly and unsuccessful. Replace. -->
 
 | Name                            | Description                                                                                    | Horizon | Action Dimension | Observation Dimension |
 | ------------------------------- | ---------------------------------------------------------------------------------------------- | ------- | ---------------- | --------------------- |

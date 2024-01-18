@@ -6,7 +6,7 @@ Fancy Gym adds a couple new environments. Some of these are adaptations of exist
 .. raw:: html
 
    <div class='center'>
-      <img src="../../_static/imgs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
+      <img src="../../_static/imgs/env_gifs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
       <p>Box Pushing Task (<a href="./mujoco.html#box-pushing">fancy/BoxPushingDense-v0</a>)</p>
    </div>
    <br>

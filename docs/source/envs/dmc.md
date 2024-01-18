@@ -1,5 +1,7 @@
 # DeepMind Control (DMC)
 
+<!-- TODO: Add Vid -->
+
 These are the Environment Wrappers for selected
 [DeepMind Control](https://github.com/google-deepmind/dm_control)
 environments in order to use our Motion Primitive gym interface with them.

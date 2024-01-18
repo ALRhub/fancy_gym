@@ -1,5 +1,11 @@
 # Metaworld
 
+<div class='center'>
+    <img src="../_static/imgs/env_gifs/Metaworld.gif" style="margin: 5%; width: 45%;">
+    <p>Metaworld Dial Turn Task (metaworld/dial-turn-v2)</p>
+</div>
+<br>
+
 [Metaworld](https://meta-world.github.io/) is an open-source simulated benchmark designed to advance meta-reinforcement learning and multi-task learning, comprising 50 diverse robotic manipulation tasks. The benchmark features a universal tabletop environment equipped with a simulated Sawyer arm and a variety of everyday objects. This shared environment is pivotal for reusing structured learning and efficiently acquiring related tasks.
 
 ## Step-Based Environments
