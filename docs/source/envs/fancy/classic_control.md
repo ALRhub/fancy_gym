@@ -1,5 +1,7 @@
 # Classic Control
 
+TODO: Text + Images
+
 ## Step-based Environments
 
 | Name                         | Description                                                                                                                                                                                                         | Horizon | Action Dimension | Observation Dimension |
