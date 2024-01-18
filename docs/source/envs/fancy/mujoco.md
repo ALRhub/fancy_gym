@@ -2,9 +2,7 @@
 
 ## Step-based Environments
 
-### Environments made by Fancy Gym
-
-#### Box Pushing
+### Box Pushing
 
 <div class='center'>
    <img src="../../_static/imgs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
@@ -28,7 +26,7 @@ Variations of this environment are available, differing in reward structures and
 
 ---
 
-#### Table Tennis
+### Table Tennis
 
 <div class='center'>
    <img src="../../_static/imgs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
@@ -54,7 +52,7 @@ Variations of the table tennis environment are available to cater to different r
 
 ---
 
-#### Beer Pong
+### Beer Pong
 
 The Beer Pong task is based upon a robotic system with seven Degrees of Freedom (DoF), challenging the robot to throw a ball into a cup placed on a large table. The environment's context is established by the cup's location, defined within a range of x-coordinates from -1.42 to 1.42 meters and y-coordinates from -4.05 to -1.25 meters.
 
