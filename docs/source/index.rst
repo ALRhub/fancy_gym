@@ -7,7 +7,7 @@ Fancy Gym
       <img src="_static/imgs/fancy_namelogo.svg" style="margin: 5%; width: 80%;"></a>
    </div>
     <style>
-       /* We don't want to show the title (ugly), but need to define it since it also sets the pages metadata (for titlebar and stuff) */
+       /* Little Hack: We don't want to show the title (ugly), but need to define it since it also sets the pages metadata (for titlebar and stuff) */
         h1 {
             display: none;
         }
@@ -23,9 +23,10 @@ Key Features
 ------------
 
  - **New Challenging Environments**: ``fancy_gym`` includes several new
-   environments (`Panda Box Pushing <envs/fancy/mujoco.html#box-pushing>`_, `Table Tennis <envs/fancy/mujoco.html#table-tennis>`_, `etc. <envs/fancy/index.html>`_) that present a
-   higher degree of difficulty, pushing the boundaries of reinforcement
-   learning research.
+   environments (`Panda Box Pushing <envs/fancy/mujoco.html#box-pushing>`_,
+   `Table Tennis <envs/fancy/mujoco.html#table-tennis>`_,
+   `etc. <envs/fancy/index.html>`_) that present a higher degree of
+   difficulty, pushing the boundaries of reinforcement learning research.
  - **Support for Movement Primitives**: ``fancy_gym`` supports a range
    of movement primitives (MPs), including Dynamic Movement Primitives
    (DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic
@@ -48,7 +49,7 @@ Key Features
 Quickstart Guide
 ----------------
 
-Install via pip (`or us an alternative installation method <guide/installation.html>`__)
+Install via pip (`or use an alternative installation method <guide/installation.html>`__)
 
 .. code:: bash
 
@@ -157,7 +158,7 @@ can be found
 
 .. raw:: html
 
-   <div style="text-align: center; background: white; border-radius: 10px;">
+   <div style="text-align: center; background: #f8f8f8; border-radius: 10px;">
       <a href="https://alr.anthropomatik.kit.edu/"><img src="_static/imgs/alr.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://www.kit.edu/"><img src="_static/imgs/kit.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://uni-tuebingen.de/"><img src="_static/imgs/uni_tuebingen.svg" style="margin: 5%; width: 20%;"></a>
