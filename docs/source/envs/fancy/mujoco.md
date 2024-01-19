@@ -16,7 +16,7 @@ The observation space includes the sine and cosine values of the robotic joint a
 
 A composite reward function serves as the performance metric for the RL system. It accounts for the distance to the goal, the box's orientation, maintaining a rod within the box, achieving the rod's desired orientation, and includes penalties for joint position and velocity limit violations, as well as an action cost for energy expenditure.
 
-Variations of this environment are available, differing in reward structures and the optionality of randomizing the box's initial position. These variations are purposefully designed to challenge RL algorithms, enhancing their generalization and adaptation capabilities.
+Variations of this environment are available, differing in reward structures and the optionality of randomizing the box's initial position. These variations are purposefully designed to challenge RL algorithms, enhancing their generalization and adaptation capabilities. Temporally sparse environments only provide a reward at the last timestep. Spatially sparse environments only provide a reward, if the goal is almost reached, the box is close enought to the goal and somewhat correctly aligned.
 
 | Name                                       | Description                                                          | Horizon | Action Dimension | Observation Dimension |
 | ------------------------------------------ | -------------------------------------------------------------------- | ------- | ---------------- | --------------------- |
@@ -86,26 +86,24 @@ A successful throw in this task is determined by the ball landing in the cup at 
 
 ### Variations of existing environments
 
-| Name                                 | Description                                                                                      | Horizon | Action Dimension | Observation Dimension |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------ | ------- | ---------------- | --------------------- |
-| `fancy/Reacher-v0`                   | Modified (5 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                    | 200     | 5                | 21                    |
-| `fancy/ReacherSparse-v0`             | Same as `fancy/Reacher-v0`, but the distance penalty is only provided in the last time step.     | 200     | 5                | 21                    |
-| `fancy/ReacherSparseBalanced-v0`     | Same as `fancy/ReacherSparse-v0`, but the end-effector has to remain upright.                    | 200     | 5                | 21                    |
-| `fancy/LongReacher-v0`               | Modified (7 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                    | 200     | 7                | 27                    |
-| `fancy/LongReacherSparse-v0`         | Same as `fancy/LongReacher-v0`, but the distance penalty is only provided in the last time step. | 200     | 7                | 27                    |
-| `fancy/LongReacherSparseBalanced-v0` | Same as `fancy/LongReacherSparse-v0`, but the end-effector has to remain upright.                | 200     | 7                | 27                    |
-| `fancy/Reacher5d-v0`                 | Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 5                | 20                    |
-| `fancy/Reacher5dSparse-v0`           | Sparse Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 5                | 20                    |
-| `fancy/Reacher7d-v0`                 | Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 7                | 22                    |
-| `fancy/Reacher7dSparse-v0`           | Sparse Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 7                | 22                    |
-| `fancy/HopperJumpSparse-v0`          | Hopper Jump task with sparse rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`              | 250     | 3                | 15 / 16\*             |
-| `fancy/HopperJump-v0`                | Hopper Jump task with continuous rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`          | 250     | 3                | 15 / 16\*             |
-| `fancy/AntJump-v0`                   | Ant Jump task, based on Gymnasium's `gym.envs.mujoco.Ant`                                        | 200     | 8                | 119                   |
-| `fancy/HalfCheetahJump-v0`           | HalfCheetah Jump task, based on Gymnasium's `gym.envs.mujoco.HalfCheetah`                        | 100     | 6                | 112                   |
-| `fancy/HopperJumpOnBox-v0`           | Hopper Jump on Box task, based on Gymnasium's `gym.envs.mujoco.Hopper`                           | 250     | 4                | 16 / 100\*            |
-| `fancy/HopperThrow-v0`               | Hopper Throw task, based on Gymnasium's `gym.envs.mujoco.Hopper`                                 | 250     | 3                | 18 / 100\*            |
-| `fancy/HopperThrowInBasket-v0`       | Hopper Throw in Basket task, based on Gymnasium's `gym.envs.mujoco.Hopper`                       | 250     | 3                | 18 / 100\*            |
-| `fancy/Walker2DJump-v0`              | Walker 2D Jump task, based on Gymnasium's `gym.envs.mujoco.Walker2d`                             | 300     | 6                | 18 / 19\*             |
+| Name                           | Description                                                                                      | Horizon | Action Dimension | Observation Dimension |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ | ------- | ---------------- | --------------------- |
+| `fancy/Reacher-v0`             | Modified (5 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                    | 200     | 5                | 21                    |
+| `fancy/ReacherSparse-v0`       | Same as `fancy/Reacher-v0`, but the distance penalty is only provided in the last time step.     | 200     | 5                | 21                    |
+| `fancy/LongReacher-v0`         | Modified (7 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                    | 200     | 7                | 27                    |
+| `fancy/LongReacherSparse-v0`   | Same as `fancy/LongReacher-v0`, but the distance penalty is only provided in the last time step. | 200     | 7                | 27                    |
+| `fancy/Reacher5d-v0`           | Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 5                | 20                    |
+| `fancy/Reacher5dSparse-v0`     | Sparse Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 5                | 20                    |
+| `fancy/Reacher7d-v0`           | Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 7                | 22                    |
+| `fancy/Reacher7dSparse-v0`     | Sparse Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 7                | 22                    |
+| `fancy/HopperJumpSparse-v0`    | Hopper Jump task with sparse rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`              | 250     | 3                | 15 / 16\*             |
+| `fancy/HopperJump-v0`          | Hopper Jump task with continuous rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`          | 250     | 3                | 15 / 16\*             |
+| `fancy/AntJump-v0`             | Ant Jump task, based on Gymnasium's `gym.envs.mujoco.Ant`                                        | 200     | 8                | 119                   |
+| `fancy/HalfCheetahJump-v0`     | HalfCheetah Jump task, based on Gymnasium's `gym.envs.mujoco.HalfCheetah`                        | 100     | 6                | 112                   |
+| `fancy/HopperJumpOnBox-v0`     | Hopper Jump on Box task, based on Gymnasium's `gym.envs.mujoco.Hopper`                           | 250     | 4                | 16 / 100\*            |
+| `fancy/HopperThrow-v0`         | Hopper Throw task, based on Gymnasium's `gym.envs.mujoco.Hopper`                                 | 250     | 3                | 18 / 100\*            |
+| `fancy/HopperThrowInBasket-v0` | Hopper Throw in Basket task, based on Gymnasium's `gym.envs.mujoco.Hopper`                       | 250     | 3                | 18 / 100\*            |
+| `fancy/Walker2DJump-v0`        | Walker 2D Jump task, based on Gymnasium's `gym.envs.mujoco.Walker2d`                             | 300     | 6                | 18 / 19\*             |
 
 \*Observation dimensions depend on configuration.
 

@@ -6,10 +6,8 @@
 | ------------------------------------------ | -------------------------------------------------------------------------------------------------- | ------- | ---------------- | --------------------- |
 | `fancy/Reacher-v0`                         | Modified (5 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                      | 200     | 5                | 21                    |
 | `fancy/ReacherSparse-v0`                   | Same as `fancy/Reacher-v0`, but the distance penalty is only provided in the last time step.       | 200     | 5                | 21                    |
-| `fancy/ReacherSparseBalanced-v0`           | Same as `fancy/ReacherSparse-v0`, but the end-effector has to remain upright.                      | 200     | 5                | 21                    |
 | `fancy/LongReacher-v0`                     | Modified (7 links) gymnasiums's mujoco `Reacher-v2` (2 links)                                      | 200     | 7                | 27                    |
 | `fancy/LongReacherSparse-v0`               | Same as `fancy/LongReacher-v0`, but the distance penalty is only provided in the last time step.   | 200     | 7                | 27                    |
-| `fancy/LongReacherSparseBalanced-v0`       | Same as `fancy/LongReacherSparse-v0`, but the end-effector has to remain upright.                  | 200     | 7                | 27                    |
 | `fancy/Reacher5d-v0`                       | Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                       | 200     | 5                | 20                    |
 | `fancy/Reacher5dSparse-v0`                 | Sparse Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                | 200     | 5                | 20                    |
 | `fancy/Reacher7d-v0`                       | Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                       | 200     | 7                | 22                    |
