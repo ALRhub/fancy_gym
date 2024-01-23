@@ -134,7 +134,7 @@ Explore the MP-based variant (`or learn more about Movement Primitives (MPs) <gu
 Citing the Project
 ------------------
 
-To cite `fancy gym` in publications:
+To cite `fancy_gym` in publications:
 
 .. code:: bibtex
 

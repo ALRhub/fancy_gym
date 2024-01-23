@@ -172,7 +172,7 @@
 <div class='center'>
    <img src="../../_static/imgs/env_gifs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
 </div>
-<p>The table tennis task offers a dynamic and interactive environment designed for the development and testing of reinforcement learning (RL) systems. Using a robotic arm equipped with seven degrees of freedom (DoFs), the challenge is to respond to incoming balls and return them accurately to a specified goal location on the opponent’s side of the table.</p>
+<p>The table tennis task offers a robotic arm equipped with seven degrees of freedom (DoFs). The task is to respond to incoming balls and return them accurately to a specified goal location on the opponent’s side of the table.</p>
 <p>The context space for this environment includes the initial ball position, with x-coordinates ranging from -1 to -0.2 meters and y-coordinates from -0.65 to 0.65 meters, and the goal position with x-coordinates between -1.2 to -0.2 meters and y-coordinates from -0.6 to 0.6 meters. The full observation space comprises the sine and cosine values of the joint angles, the joint velocities, and the ball’s velocity, providing comprehensive information for the RL system to base its decisions on.</p>
 <p>A task is considered successfully completed when the returned ball not only lands on the opponent’s side of the table but also within a tight margin of 20 centimeters from the goal location. The reward function is designed to reflect various conditions of play, including whether the ball was hit, if it landed on the table, and the proximity of the ball’s landing position to the goal location.</p>
 <p>Variations of the table tennis environment are available to cater to different research needs. These variations maintain the foundational challenge of precise ball return while providing additional complexity for RL algorithms to overcome.</p>
@@ -405,7 +405,7 @@ No longer used?
 </section>
 <section id="mp-environments">
 <h2>MP Environments<a class="headerlink" href="#mp-environments" title="Permalink to this heading"></a></h2>
-<p>Many of these envs also exist as MP-variants. Refer to them using <code class="docutils literal notranslate"><span class="pre">fancy_DMP/&lt;name&gt;</span></code> <code class="docutils literal notranslate"><span class="pre">fancy_ProMP/&lt;name&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">fancy_ProDMP/&lt;name&gt;</span></code>.</p>
+<p>Most of these envs also exist as MP-variants. Refer to them using <code class="docutils literal notranslate"><span class="pre">fancy_DMP/&lt;name&gt;</span></code> <code class="docutils literal notranslate"><span class="pre">fancy_ProMP/&lt;name&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">fancy_ProDMP/&lt;name&gt;</span></code>.</p>
 </section>
 </section>
 

@@ -32,7 +32,7 @@ Variations of this environment are available, differing in reward structures and
    <img src="../../_static/imgs/env_gifs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
 </div>
 
-The table tennis task offers a dynamic and interactive environment designed for the development and testing of reinforcement learning (RL) systems. Using a robotic arm equipped with seven degrees of freedom (DoFs), the challenge is to respond to incoming balls and return them accurately to a specified goal location on the opponent's side of the table.
+The table tennis task offers a robotic arm equipped with seven degrees of freedom (DoFs). The task is to respond to incoming balls and return them accurately to a specified goal location on the opponent's side of the table.
 
 The context space for this environment includes the initial ball position, with x-coordinates ranging from -1 to -0.2 meters and y-coordinates from -0.65 to 0.65 meters, and the goal position with x-coordinates between -1.2 to -0.2 meters and y-coordinates from -0.6 to 0.6 meters. The full observation space comprises the sine and cosine values of the joint angles, the joint velocities, and the ball's velocity, providing comprehensive information for the RL system to base its decisions on.
 
@@ -118,4 +118,4 @@ No longer used?
 
 ## MP Environments
 
-Many of these envs also exist as MP-variants. Refer to them using `fancy_DMP/<name>` `fancy_ProMP/<name>` or `fancy_ProDMP/<name>`.
+Most of these envs also exist as MP-variants. Refer to them using `fancy_DMP/<name>` `fancy_ProMP/<name>` or `fancy_ProDMP/<name>`.
