@@ -19,7 +19,7 @@ Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maint
 
 ## Quickstart Guide
 
-|  &#x2139; We recommend installing `fancy_gym` into a virtual environment as provided by [venv](https://docs.python.org/3/library/venv.html), [Poetry](https://python-poetry.org/) or [Conda](https://docs.conda.io/en/latest/). |
+|  &#x26A0; We recommend installing `fancy_gym` into a virtual environment as provided by [venv](https://docs.python.org/3/library/venv.html), [Poetry](https://python-poetry.org/) or [Conda](https://docs.conda.io/en/latest/). |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 
 Install via pip (`or use an alternative installation method <guide/installation.html>`\_\_)
