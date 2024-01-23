@@ -159,7 +159,7 @@ can be found
 .. raw:: html
 
    <div style="text-align: center; background: #f8f8f8; border-radius: 10px;">
-      <a href="https://alr.anthropomatik.kit.edu/"><img src="_static/imgs/alr.svg" style="margin: 5%; width: 20%;"></a>
+      <a href="https://alr.iar.kit.edu/"><img src="_static/imgs/alr.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://www.kit.edu/"><img src="_static/imgs/kit.svg" style="margin: 5%; width: 20%;"></a>
       <a href="https://uni-tuebingen.de/"><img src="_static/imgs/uni_tuebingen.svg" style="margin: 5%; width: 20%;"></a>
    </div>
