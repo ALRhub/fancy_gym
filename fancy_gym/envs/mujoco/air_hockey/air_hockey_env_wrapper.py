@@ -8,9 +8,9 @@ from fancy_gym.envs.mujoco.air_hockey.utils import robot_to_world
 from mushroom_rl.core import Environment
 
 class AirHockeyEnv(Environment):
-    metadata = {"render_modes": ["human"], "render_fps": 50}
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 50}
 
-    def __init__(self, env_mode=None, interpolation_order=3, render_mode=None, **kwargs):
+    def __init__(self, env_mode=None, interpolation_order=3, render_mode=None, width=1920, height=1080, **kwargs):
         """
         Environment Constructor
 
@@ -30,7 +30,10 @@ class AirHockeyEnv(Environment):
             "7dof-defend": position.IiwaPositionDefend,
 
             "3dof-hit": position.PlanarPositionHit,
-            "3dof-defend": position.PlanarPositionDefend
+            "3dof-defend": position.PlanarPositionDefend,
+
+            "7dof-hit-airhockit2023": position.IiwaPositionHitAirhocKIT2023,
+            "7dof-defend-airhockit2023": position.IiwaPositionDefendAirhocKIT2023,
         }
 
         if env_mode not in env_dict:
@@ -39,37 +42,53 @@ class AirHockeyEnv(Environment):
         if env_mode == "tournament" and type(interpolation_order) != tuple:
             interpolation_order = (interpolation_order, interpolation_order)
 
+        self.render_mode = render_mode
+        self.render_human_active = False
+
+        # Determine headless mode based on render_mode
+        headless = self.render_mode == 'rgb_array'
+        
+        # Prepare viewer_params
+        viewer_params = kwargs.get('viewer_params', {})
+        viewer_params.update({'headless': headless, 'width': width, 'height': height})
+        kwargs['viewer_params'] = viewer_params
+
         self.base_env = env_dict[env_mode](interpolation_order=interpolation_order, **kwargs)
         self.env_name = env_mode
         self.env_info = self.base_env.env_info
-        single_robot_obs_size = len(self.base_env.info.observation_space.low)
-        if env_mode == "tournament":
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,single_robot_obs_size), dtype=np.float64)
-        else:
-            self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(single_robot_obs_size,), dtype=np.float64)
-        robot_info = self.env_info["robot"]
 
-        if env_mode != "tournament":
-            if interpolation_order in [1, 2]:
-                self.action_space = spaces.Box(low=robot_info["joint_pos_limit"][0], high=robot_info["joint_pos_limit"][1])
-            if interpolation_order in [3, 4, -1]:
-                self.action_space = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0]]), 
-                                            high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1]]))
-            if interpolation_order in [5]:
-                self.action_space = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0], robot_info["joint_acc_limit"][0]]), 
-                                            high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1], robot_info["joint_acc_limit"][1]]))
+        if hasattr(self.base_env, "wrapper_obs_space") and hasattr(self.base_env, "wrapper_act_space"):
+            self.observation_space = self.base_env.wrapper_obs_space
+            self.action_space = self.base_env.wrapper_act_space
         else:
-            acts = [None, None]
-            for i in range(2):
-                if interpolation_order[i] in [1, 2]:
-                    acts[i] = spaces.Box(low=robot_info["joint_pos_limit"][0], high=robot_info["joint_pos_limit"][1])
-                if interpolation_order[i] in [3, 4, -1]:
-                    acts[i] = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0]]), 
-                                            high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1]]))
-                if interpolation_order[i] in [5]:
-                    acts[i] = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0], robot_info["joint_acc_limit"][0]]), 
-                                            high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1], robot_info["joint_acc_limit"][1]]))
-            self.action_space = spaces.Tuple((acts[0], acts[1]))
+            single_robot_obs_size = len(self.base_env.info.observation_space.low)
+            if env_mode == "tournament":
+                self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(2,single_robot_obs_size), dtype=np.float64)
+            else:
+                self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(single_robot_obs_size,), dtype=np.float64)
+            robot_info = self.env_info["robot"]
+
+            if env_mode != "tournament":
+                if interpolation_order in [1, 2]:
+                    self.action_space = spaces.Box(low=robot_info["joint_pos_limit"][0], high=robot_info["joint_pos_limit"][1])
+                if interpolation_order in [3, 4, -1]:
+                    self.action_space = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0]]), 
+                                                high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1]]))
+                if interpolation_order in [5]:
+                    self.action_space = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0], robot_info["joint_acc_limit"][0]]), 
+                                                high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1], robot_info["joint_acc_limit"][1]]))
+            else:
+                acts = [None, None]
+                for i in range(2):
+                    if interpolation_order[i] in [1, 2]:
+                        acts[i] = spaces.Box(low=robot_info["joint_pos_limit"][0], high=robot_info["joint_pos_limit"][1])
+                    if interpolation_order[i] in [3, 4, -1]:
+                        acts[i] = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0]]), 
+                                                high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1]]))
+                    if interpolation_order[i] in [5]:
+                        acts[i] = spaces.Box(low=np.vstack([robot_info["joint_pos_limit"][0], robot_info["joint_vel_limit"][0], robot_info["joint_acc_limit"][0]]), 
+                                                high=np.vstack([robot_info["joint_pos_limit"][1], robot_info["joint_vel_limit"][1], robot_info["joint_acc_limit"][1]]))
+                self.action_space = spaces.Tuple((acts[0], acts[1]))
 
         constraint_list = constraints.ConstraintList()
         constraint_list.add(constraints.JointPositionConstraint(self.env_info))
@@ -80,9 +99,6 @@ class AirHockeyEnv(Environment):
 
         self.env_info['constraints'] = constraint_list
         self.env_info['env_name'] = self.env_name
-
-        self.render_mode = render_mode
-        self.render_human_active = False
 
         super().__init__(self.base_env.info)
 
@@ -111,15 +127,21 @@ class AirHockeyEnv(Environment):
 
         if self.env_info['env_name'] == "tournament":
             obs = np.array(np.split(obs, 2))
-        
+
         if self.render_human_active:
             self.base_env.render()
 
         return obs, reward, done, False, info
 
     def render(self):
-        self.render_human_active = True
-
+        if self.render_mode == 'rgb_array':
+            return self.base_env.render(record = True)
+        elif self.render_mode == 'human':
+            self.render_human_active = True
+            self.base_env.render()
+        else:
+            raise ValueError(f"Unsupported render mode: '{self.render_mode}'")
+            
     def reset(self, seed=None, options={}):
         self.base_env.seed(seed)
         obs = self.base_env.reset()
