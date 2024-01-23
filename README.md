@@ -6,7 +6,7 @@
   <br><br>
 </h1>
 
-Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maintained fork of OpenAI’s renowned Gym library) `fancy_gym` offers a comprehensive collection of reinforcement learning environments.
+Built upon the foundation of [Gymnasium](https://gymnasium.farama.org) (a maintained fork of OpenAI’s renowned Gym library) `fancy_gym` offers a comprehensive collection of reinforcement learning environments.
 
 **Key Features**:
 
@@ -28,7 +28,7 @@ Install via pip [or use an alternative installation method](https://dominik-roth
     pip install 'fancy_gym[all]'
 ```
 
-Try out one of our step-based environments [or explore our other envs](https://dominik-roth.eu/fancy/envs/fancy/index.html>)
+Try out one of our step-based environments [or explore our other envs](https://dominik-roth.eu/fancy/envs/fancy/index.html)
 
 ```python
    import gymnasium as gym
@@ -48,7 +48,7 @@ Try out one of our step-based environments [or explore our other envs](https://d
             observation, info = env.reset()
 ```
 
-Explore the MP-based variant [or learn more about Movement Primitives (MPs)](https://dominik-roth.eu/fancy/guide/episodic_rl.html>)
+Explore the MP-based variant [or learn more about Movement Primitives (MPs)](https://dominik-roth.eu/fancy/guide/episodic_rl.html)
 
 ```python
    import gymnasium as gym
