@@ -65,13 +65,6 @@ The observation space includes the cosine and sine of the robot's joint angles, 
 
 Action penalties are implemented in the form of squared torque sums applied across all joints, penalizing excessive force and encouraging efficient motion. The reward function at each timestep t before the final timestep T penalizes the action penalty, while at t=T, a non-Markovian reward based on the ball's position relative to the cup and the action penalty is considered.
 
-Conditions for the task are specified as follows:
-
-- The ball contacts the ground before touching the table.
-- The ball is not in the cup and has not made contact with the table.
-- The ball is not in the cup but has made contact with the table.
-- The ball successfully lands in the cup.
-
 An additional reward component at the final timestep T assesses the chosen ball release time to ensure it falls within a reasonable range. The overall return for an episode is the sum of the rewards at each timestep, the task-specific reward, and the release time reward.
 
 A successful throw in this task is determined by the ball landing in the cup at the episode's conclusion, showcasing the robot's ability to accurately predict and execute the complex motion required for this popular party game.

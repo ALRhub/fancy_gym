@@ -241,13 +241,6 @@
 <p>The Beer Pong task is based upon a robotic system with seven Degrees of Freedom (DoF), challenging the robot to throw a ball into a cup placed on a large table. The environment’s context is established by the cup’s location, defined within a range of x-coordinates from -1.42 to 1.42 meters and y-coordinates from -4.05 to -1.25 meters.</p>
 <p>The observation space includes the cosine and sine of the robot’s joint angles, the angular velocities, and distances of the ball relative to the top and bottom of the cup, along with the cup’s position and the current timestep. The action space for the robot is defined by the torques applied to each joint. For episode-based methods, the parameter space is expanded to 15 dimensions, which includes two weights for the basis functions per joint and the duration of the throw, namely the ball release time.</p>
 <p>Action penalties are implemented in the form of squared torque sums applied across all joints, penalizing excessive force and encouraging efficient motion. The reward function at each timestep t before the final timestep T penalizes the action penalty, while at t=T, a non-Markovian reward based on the ball’s position relative to the cup and the action penalty is considered.</p>
-<p>Conditions for the task are specified as follows:</p>
-<ul class="simple">
-<li><p>The ball contacts the ground before touching the table.</p></li>
-<li><p>The ball is not in the cup and has not made contact with the table.</p></li>
-<li><p>The ball is not in the cup but has made contact with the table.</p></li>
-<li><p>The ball successfully lands in the cup.</p></li>
-</ul>
 <p>An additional reward component at the final timestep T assesses the chosen ball release time to ensure it falls within a reasonable range. The overall return for an episode is the sum of the rewards at each timestep, the task-specific reward, and the release time reward.</p>
 <p>A successful throw in this task is determined by the ball landing in the cup at the episode’s conclusion, showcasing the robot’s ability to accurately predict and execute the complex motion required for this popular party game.</p>
 <table class="docutils align-default">
