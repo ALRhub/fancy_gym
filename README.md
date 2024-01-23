@@ -22,13 +22,13 @@ Built upon the foundation of [Gymnasium](https://gymnasium.farama.org/) (a maint
 |  &#x26A0; We recommend installing `fancy_gym` into a virtual environment as provided by [venv](https://docs.python.org/3/library/venv.html), [Poetry](https://python-poetry.org/) or [Conda](https://docs.conda.io/en/latest/). |
 | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 
-Install via pip (`or use an alternative installation method <guide/installation.html>`\_\_)
+Install via pip [or use an alternative installation method](https://dominik-roth.eu/fancy/guide/installation.html)
 
 ```bash
     pip install 'fancy_gym[all]'
 ```
 
-Try out one of our step-based environments (`or explore our other envs <envs/fancy/index.html>`\_\_)
+Try out one of our step-based environments [or explore our other envs](https://dominik-roth.eu/fancy/envs/fancy/index.html>)
 
 ```python
    import gymnasium as gym
@@ -48,7 +48,7 @@ Try out one of our step-based environments (`or explore our other envs <envs/fan
             observation, info = env.reset()
 ```
 
-Explore the MP-based variant (`or learn more about Movement Primitives (MPs) <guide/episodic_rl.html>`\_\_)
+Explore the MP-based variant [or learn more about Movement Primitives (MPs)](https://dominik-roth.eu/fancy/guide/episodic_rl.html>)
 
 ```python
    import gymnasium as gym
