@@ -1,6 +1,6 @@
 # Mujoco
 
-## Step-based Environments
+## Step-Based Environments
 
 ### Box Pushing
 
