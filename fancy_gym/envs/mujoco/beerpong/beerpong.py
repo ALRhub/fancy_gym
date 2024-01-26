@@ -1,6 +1,7 @@
 import os
 from typing import Optional
 
+import mujoco
 import numpy as np
 from gym import utils
 from gym.envs.mujoco import MujocoEnv
@@ -31,9 +32,11 @@ CUP_COLLISION_OBJ = ["cup_geom_table3", "cup_geom_table4", "cup_geom_table5", "c
 CUP_POS_MIN = [-1.42, -4.05]
 CUP_POS_MAX = [1.42, -1.25]
 
+CONTEXT_BOUNDS = np.array([CUP_POS_MIN, CUP_POS_MAX])
+
 
 class BeerPongEnv(MujocoEnv, utils.EzPickle):
-    def __init__(self):
+    def __init__(self, **kwargs):
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "beerpong_wo_cup.xml")
@@ -54,9 +57,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         # TODO: If accessing IDs is easier in the (new) official mujoco bindings, remove this
         self.model = None
         self.geom_id = lambda x: self._mujoco_bindings.mj_name2id(self.model,
-                                                                  self._mujoco_bindings.mjtObj.mjOBJ_GEOM,
-                                                                  x)
-
+                                                                  self._mujoco_bindings.mjtObj.mjOBJ_GEOM, x)
         # for reward calculation
         self.dists = []
         self.dists_final = []
@@ -101,13 +102,42 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
         start_pos = init_pos_all
         start_pos[0:7] = init_pos_robot
 
-        # TODO: Ask Max why we need to set the state twice.
         self.set_state(start_pos, init_vel)
         start_pos[7::] = self.data.site("init_ball_pos").xpos.copy()
         self.set_state(start_pos, init_vel)
         xy = self.np_random.uniform(self._cup_pos_min, self._cup_pos_max)
+        # xy = np.array([0.38897119, -3.2945972])
         xyz = np.zeros(3)
         xyz[:2] = xy
+        xyz[-1] = 0.840
+        self.model.body("cup_table").pos[:] = xyz
+        return self._get_obs()
+
+    def set_context(self, context):
+        self.dists = []
+        self.dists_final = []
+        self.action_costs = []
+        self.ball_ground_contact_first = False
+        self.ball_table_contact = False
+        self.ball_wall_contact = False
+        self.ball_cup_contact = False
+        self.ball_in_cup = False
+        self.dist_ground_cup = -1  # distance floor to cup if first floor contact
+
+        init_pos_all = self.init_qpos.copy()
+        init_pos_robot = self.start_pos
+        init_vel = np.zeros_like(init_pos_all)
+
+        self._steps = 0
+
+        start_pos = init_pos_all
+        start_pos[0:7] = init_pos_robot
+
+        self.set_state(start_pos, init_vel)
+        start_pos[7::] = self.data.site("init_ball_pos").xpos.copy()
+        self.set_state(start_pos, init_vel)
+        xyz = np.zeros(3)
+        xyz[:2] = context  # xy
         xyz[-1] = 0.840
         self.model.body("cup_table").pos[:] = xyz
         return self._get_obs()
@@ -118,7 +148,8 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             applied_action = a + self.data.qfrc_bias[:len(a)].copy() / self.model.actuator_gear[:, 0]
             try:
                 self.do_simulation(applied_action, self.frame_skip)
-                # self.reward_function.check_contacts(self.sim)   # I assume this is not important?
+                self._check_contacts()
+                mujoco.mj_forward(self.model, self.data)
                 if self._steps < self.release_step:
                     self.data.qpos[7::] = self.data.site('init_ball_pos').xpos.copy()
                     self.data.qvel[7::] = self.data.sensor('init_ball_vel').data.copy()
@@ -267,3 +298,24 @@ class BeerPongEnvStepBasedEpisodicReward(BeerPongEnv):
                     np.zeros(a.shape))
                 reward += sub_reward
         return obs, reward, done, infos
+
+
+if __name__ == '__main__':
+
+    env = BeerPongEnv()
+    env.action_space.seed(0)
+    env.observation_space.seed(0)
+    env.np_random.seed(0)
+    import time
+
+    start_time = time.time()
+    obs = env.reset()
+    print(f'Cup Position: {env.model.body("cup_table").pos[:]}')
+    env.render()
+    for _ in range(5000):
+        # obs, reward, done, infos = env.step(env.action_space.sample())
+        obs, reward, done, infos = env.step(10*np.ones(7))
+        env.render()
+        if done:
+            env.reset()
+            print(reward)

@@ -155,3 +155,22 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
 
     def get_np_random(self):
         return self._np_random
+
+
+if __name__ == '__main__':
+
+    env = ReacherEnv()
+    env.action_space.seed(0)
+    env.observation_space.seed(0)
+    env.np_random.seed(0)
+    import time
+
+    start_time = time.time()
+    obs = env.reset()
+    env.render()
+    for _ in range(5000000):
+        obs, reward, done, infos = env.step(np.zeros(5))
+        env.render()
+        if done:
+            env.reset()
+            print(reward)

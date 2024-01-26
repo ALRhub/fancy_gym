@@ -33,9 +33,18 @@ class MPWrapper(RawInterfaceWrapper):
             self.release_step = action[0] / self.dt  # Tau value
         return action, None
 
-    def set_context(self, context):
-        xyz = np.zeros(3)
-        xyz[:2] = context
-        xyz[-1] = 0.840
-        self.model.body_pos[self.cup_table_id] = xyz
-        return self.get_observation_from_step(self.get_obs())
+    def set_episode_arguments(self, action, pos_traj, vel_traj):
+        # self.env.release_step = action[0] / self.dt  # Tau value
+        self.env.env.env.env.release_step = action[0] / self.dt  # Tau value
+        return pos_traj, vel_traj
+    # def preprocessing_and_validity_callback(self, action: np.ndarray, pos_traj: np.ndarray, vel_traj: np.ndarray,
+    #                                         tau_bound: list = None, delay_bound: list = None) -> Tuple[bool, np.ndarray, np.ndarray]:
+    #     self.release_step = action[0]/ self.dt  # Tau value
+    #     return True, pos_traj, vel_traj
+
+    # def set_context(self, context):
+    #     xyz = np.zeros(3)
+    #     xyz[:2] = context
+    #     xyz[-1] = 0.840
+    #     self.model.body_pos[self.cup_table_id] = xyz
+    #     return self.get_observation_from_step(self.get_obs())
