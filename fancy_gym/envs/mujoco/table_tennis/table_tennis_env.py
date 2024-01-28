@@ -179,6 +179,17 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
                 return True
         return False
 
+    def get_initial_robot_state(self):
+
+        robot_init_pos = DEFAULT_ROBOT_INIT_POS + \
+                         self.np_random.uniform(-1.0, 1.0, size=7) *\
+                         np.array([5.2, 4.0, 5.6, 4.0, 6.1, 3.2, 4.4]) *\
+                         self._random_pos_scale
+
+        robot_init_vel = DEFAULT_ROBOT_INIT_VEL + self.np_random.uniform(-1.0, 1.0, size=7) * self._random_vel_scale
+
+        return np.clip(robot_init_pos, jnt_pos_low, jnt_pos_high), np.clip(robot_init_vel, jnt_vel_low, jnt_vel_high)
+
     def reset_model(self):
         self._steps = 0
         self._init_ball_state = self._generate_valid_init_ball(random_pos=True, random_vel=False)
