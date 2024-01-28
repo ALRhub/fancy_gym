@@ -6,6 +6,7 @@ from gymnasium.envs.mujoco import MujocoEnv
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import calculate_jerk_profile, calculate_mean_squared_jerk, calculate_dimensionless_jerk, calculate_maximum_jerk
 
 import mujoco
 
@@ -109,6 +110,26 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         truncated = episode_end and not infos['is_success']
 
         return obs, reward, terminated, truncated, infos
+
+    def calculate_smoothness_metrics(self, velocity_profile, dt):
+        """
+        Calculates the smoothness metrics for the given velocity profile.
+        param velocity_profile: np.array
+                                The array containing the movement velocity profile.
+        param dt: float
+                  The sampling time interval of the data.
+        return mean_squared_jerk: float
+                                  The mean squared jerk estimate of the given movement's smoothness.
+        return maximum_jerk: float
+                             The maximum jerk estimate of the given movement's smoothness.
+        return dimensionless_jerk: float
+                                   The dimensionless jerk estimate of the given movement's smoothness.
+        """
+        jerk_profile = calculate_jerk_profile(velocity_profile, dt)
+        mean_squared_jerk = calculate_mean_squared_jerk(jerk_profile)
+        maximum_jerk = calculate_maximum_jerk(jerk_profile)
+        dimensionless_jerk = calculate_dimensionless_jerk(jerk_profile, velocity_profile, dt)
+        return mean_squared_jerk, maximum_jerk, dimensionless_jerk
 
     def reset_model(self):
         # rest box to initial position
