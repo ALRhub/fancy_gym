@@ -6,6 +6,9 @@ jnt_pos_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
 jnt_vel_low = np.ones(7) * -7
 jnt_vel_high = np.ones(7) * 7
 
+delay_bound = [0.05, 0.15]
+tau_bound = [0.5, 1.5]
+
 net_height = 0.1
 table_height = 0.77
 table_x_min = -1.1
