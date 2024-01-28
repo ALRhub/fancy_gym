@@ -41,6 +41,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
                  enable_artificial_wind: bool = False,
                  random_pos_scale: float = 0.0,
                  random_vel_scale: float = 0.0,
+                 **kwargs,
                 ):
         utils.EzPickle.__init__(**locals())
         self._steps = 0
@@ -490,8 +491,9 @@ class TableTennisGoalSwitching(TableTennisEnv):
 class TableTennisRandomInit(TableTennisEnv):
     def __init__(self, ctxt_dim: int = 4, frame_skip: int = 4,
                  random_pos_scale: float = 1.0,
-                 random_vel_scale: float = 0.0):
+                 random_vel_scale: float = 0.0,
+                 **kwargs):
         super().__init__(ctxt_dim=ctxt_dim, frame_skip=frame_skip,
                          random_pos_scale=random_pos_scale,
-                         random_vel_scale=random_vel_scale)
-
+                         random_vel_scale=random_vel_scale,
+                         **kwargs)
