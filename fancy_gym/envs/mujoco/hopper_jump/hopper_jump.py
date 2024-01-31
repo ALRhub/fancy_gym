@@ -220,6 +220,29 @@ class HopperJumpEnv(HopperEnv):
                 return True
         return False
 
+    @staticmethod
+    def check_traj_validity(action, pos_traj, vel_traj, tau_bound, delay_bound):
+        time_invalid = action[0] > tau_bound[1] or action[0] < tau_bound[0]
+        if time_invalid:
+            return False, pos_traj, vel_traj
+        return True, pos_traj, vel_traj
+
+    def get_invalid_tau_return(self, action, pos_traj, contextual_obs, tau_bound, delay_bound):
+        obs = self._get_obs() if contextual_obs else np.concatenate(
+            [self._get_obs(), np.array([0])])  # 0 for invalid traj
+        tau_invalid_penalty = -10 * (np.max([0, action[0] - tau_bound[1]]) + np.max([0, tau_bound[0] - action[0]]))
+        return obs, tau_invalid_penalty, True, dict(
+                                                    height=[self.get_body_com("torso")[2]],
+                                                    x_pos=[self.data.site('foot_site').xpos],
+                                                    max_height=[self.get_body_com("torso")[2]],
+                                                    goal=[self.goal[:1]],
+                                                    goal_dist=[np.linalg.norm(self.data.site('foot_site').xpos - self.goal)],
+                                                    height_rew=[self.max_height],
+                                                    healthy_reward=[self.healthy_reward],
+                                                    healthy=[self.is_healthy],
+                                                    contact_dist=[self.contact_dist or 0]
+                                                )
+
 
 # # TODO is that needed? if so test it
 # class HopperJumpStepEnv(HopperJumpEnv):
