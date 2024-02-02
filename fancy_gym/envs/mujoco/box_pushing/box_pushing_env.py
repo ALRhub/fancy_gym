@@ -50,6 +50,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         self._desired_rod_quat = desired_rod_quat
 
         self._episode_energy = 0.
+        self.velocity_profile = []
 
         self.observation_space = spaces.Box(
             low=-np.inf, high=np.inf, shape=(28,), dtype=np.float64
@@ -67,6 +68,8 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         resultant_action = np.clip(action + self.data.qfrc_bias[:7].copy(), -q_torque_max, q_torque_max)
 
         unstable_simulation = False
+
+        self.velocity_profile.append(self.data.qvel[:7].copy())
 
         try:
             self.do_simulation(resultant_action, self.frame_skip)
@@ -97,11 +100,15 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         obs = self._get_obs()
         box_goal_pos_dist = 0. if not episode_end else np.linalg.norm(box_pos - target_pos)
         box_goal_quat_dist = 0. if not episode_end else rotation_distance(box_quat, target_quat)
+        mean_squared_jerk, maximum_jerk, dimensionless_jerk = (0.0,0.0,0.0) if not episode_end else self.calculate_smoothness_metrics(np.array(self.velocity_profile), self.dt)
         infos = {
             'episode_end': episode_end,
             'box_goal_pos_dist': box_goal_pos_dist,
             'box_goal_rot_dist': box_goal_quat_dist,
             'episode_energy': 0. if not episode_end else self._episode_energy,
+            'mean_squared_jerk': mean_squared_jerk,
+            'maximum_jerk': maximum_jerk,
+            'dimensionless_jerk': dimensionless_jerk,
             'is_success': True if episode_end and box_goal_pos_dist < 0.05 and box_goal_quat_dist < 0.5 else False,
             'num_steps': self._steps
         }
