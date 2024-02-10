@@ -26,6 +26,8 @@ def example_mp(env_name="fancy_ProMP/HoleReacher-v0", seed=1, iterations=1, rend
     for i in range(iterations):
 
         if render and i % 1 == 0:
+            # This renders the full MP trajectory
+            # It is only required to call render() once in the beginning, which renders every consecutive trajectory.
             env.render()
 
         # Now the action space is not the raw action but the parametrization of the trajectory generator,
@@ -248,8 +250,7 @@ def example_fully_custom_mp_alternative(seed=1, iterations=1, render=True):
         pass
 
 
-def main():
-    render = False
+def main(render=False):
     # DMP
     example_mp("fancy_DMP/HoleReacher-v0", seed=10, iterations=5, render=render)
 
