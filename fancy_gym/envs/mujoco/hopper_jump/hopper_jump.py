@@ -88,6 +88,12 @@ class HopperEnvCustomXML(HopperEnv):
             **kwargs,
         )
 
+        self.render_active = False
+
+    def render(self):
+        self.render_active = True
+        return super().render()
+
 
 class HopperJumpEnv(HopperEnvCustomXML):
     """
@@ -201,6 +207,10 @@ class HopperJumpEnv(HopperEnvCustomXML):
             healthy=self.is_healthy,
             contact_dist=self.contact_dist or 0
         )
+
+        if self.render_active:
+            self.render()
+
         return observation, reward, terminated, truncated, info
 
     def _get_obs(self):
