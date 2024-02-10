@@ -35,7 +35,7 @@ def example_meta(env_id="fish-swim", seed=1, iterations=1000, render=True):
         if terminated or truncated:
             print(env_id, rewards)
             rewards = 0
-            obs = env.reset()
+            obs = env.reset(seed=seed+i+1)
 
     env.close()
     del env
@@ -81,7 +81,8 @@ def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
     basis_generator_kwargs = {'basis_generator_type': 'rbf',
                               'num_basis': 5
                               }
-    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+    base_env = gym.make(base_env_id)
+    env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
@@ -92,14 +93,10 @@ def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
     # It is also possible to change them mode multiple times when
     # e.g. only every nth trajectory should be displayed.
     if render:
-        raise ValueError("Metaworld render interface bug does not allow to render() fixes its interface. "
-                         "A temporary workaround is to alter their code in MujocoEnv render() from "
-                         "`if not offscreen` to `if not offscreen or offscreen == 'human'`.")
-        # TODO: Remove this, when Metaworld fixes its interface.
-        # env.render(mode="human")
+        env.render(mode="human")
 
     rewards = 0
-    obs = env.reset()
+    obs = env.reset(seed=seed)
 
     # number of samples/full trajectories (multiple environment steps)
     for i in range(iterations):
@@ -110,25 +107,23 @@ def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
         if terminated or truncated:
             print(base_env_id, rewards)
             rewards = 0
-            obs = env.reset()
+            obs = env.reset(seed=seed+i+1)
 
     env.close()
     del env
 
-
-if __name__ == '__main__':
-    # Disclaimer: MetaWorld environments require the seed to be specified in the beginning.
-    # Adjusting it afterwards with env.seed() is not recommended as it may not affect the underlying behavior.
-
+def main(render = False):
     # For rendering it might be necessary to specify your OpenGL installation
     # export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so
-    render = False
 
     # # Standard Meta world tasks
     example_meta("metaworld/button-press-v2", seed=10, iterations=500, render=render)
 
     # # MP + MetaWorld hybrid task provided in the our framework
-    example_meta("metaworld_ProMP/ButtonPress-v2", seed=10, iterations=1, render=render)
+    example_meta("metaworld_ProMP/button-press-v2", seed=10, iterations=1, render=render)
     #
     # # Custom MetaWorld task
     example_custom_meta_and_mp(seed=10, iterations=1, render=render)
+
+if __name__ == '__main__':
+    main()
