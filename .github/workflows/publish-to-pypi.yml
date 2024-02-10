@@ -2,29 +2,27 @@ name: Publish Python package to PyPI
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - release
 
 jobs:
   publish:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    if: false && startsWith(github.ref, 'refs/tags/')  # Only run on tagged commits
-
     steps:
     - name: Check out code
       uses: actions/checkout@v4
       with:
         fetch-depth: 0  # This fetches all history for all branches and tags
 
-    - name: Verify tag is on master branch
+    - name: Check if commit is tagged
       run: |
-        TAG_IS_ON_MASTER=$(git branch -r --contains ${{ github.ref }} | grep 'origin/master')
-        if [ -z "$TAG_IS_ON_MASTER" ]; then
-          echo "Tag is not on the master branch. Cancelling the workflow."
+        TAG=$(git tag --contains HEAD)
+        if [ -z "$TAG" ]; then
+          echo "Commit is not tagged. Failing the workflow."
           exit 1
         fi
-        echo "Tag is on the master branch. Proceeding with the workflow."
+        echo "Commit is tagged. Proceeding with the workflow."
 
     - name: Set up Python
       uses: actions/setup-python@v4

@@ -115,3 +115,7 @@ MUJOCO_LOG.TXT
 
 # vscode
 .vscode
+
+# Push HTML of docs to GitHub
+# Could be solved via a GitHub Action instead in the future, but that would use up compute for ALRhub
+!docs/build/
