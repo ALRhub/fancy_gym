@@ -47,4 +47,4 @@ jobs:
             exit 1
           else
             echo "Version and git tag match. Check passed."
-
+          fi
