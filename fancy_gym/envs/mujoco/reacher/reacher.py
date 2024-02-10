@@ -79,7 +79,7 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
             goal=self.goal if hasattr(self, "goal") else None
         )
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return ob, reward, terminated, truncated, info

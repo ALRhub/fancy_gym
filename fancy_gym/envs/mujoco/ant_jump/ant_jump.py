@@ -154,7 +154,7 @@ class AntJumpEnv(AntEnvCustomXML):
         }
         truncated = False
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return obs, reward, terminated, truncated, info

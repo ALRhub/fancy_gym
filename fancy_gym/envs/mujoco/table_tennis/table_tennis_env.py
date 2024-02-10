@@ -160,7 +160,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         terminated, truncated = self._terminated, False
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return self._get_obs(), reward, terminated, truncated, info

@@ -208,7 +208,7 @@ class HopperJumpEnv(HopperEnvCustomXML):
             contact_dist=self.contact_dist or 0
         )
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return observation, reward, terminated, truncated, info

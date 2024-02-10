@@ -119,7 +119,7 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
         }
         truncated = False
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return observation, reward, terminated, truncated, info

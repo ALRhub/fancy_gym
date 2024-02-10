@@ -170,7 +170,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         truncated = False
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return ob, reward, terminated, truncated, infos

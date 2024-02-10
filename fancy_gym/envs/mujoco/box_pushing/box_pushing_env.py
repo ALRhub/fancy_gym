@@ -110,7 +110,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         terminated = episode_end and infos['is_success']
         truncated = episode_end and not infos['is_success']
 
-        if self.render_active:
+        if self.render_active and self.render_mode=='human':
             self.render()
 
         return obs, reward, terminated, truncated, infos
