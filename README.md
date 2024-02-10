@@ -105,17 +105,16 @@ Regular step based environments added by Fancy Gym are added into the `fancy/` n
 import gymnasium as gym
 import fancy_gym
 
-env = gym.make('fancy/Reacher5d-v0')
-# or env = gym.make('metaworld/reach-v2') # fancy_gym allows access to all metaworld ML1 tasks via the metaworld/ NS
-# or env = gym.make('dm_control/ball_in_cup-catch-v0')
-# or env = gym.make('Reacher-v2')
+env = gym.make('fancy/Reacher5d-v0', render_mode='human')
+# or env = gym.make('metaworld/reach-v2', render_mode='human') # fancy_gym allows access to all metaworld ML1 tasks via the metaworld/ NS
+# or env = gym.make('dm_control/ball_in_cup-catch-v0', render_mode='human')
+# or env = gym.make('Reacher-v2', render_mode='human')
 observation = env.reset(seed=1)
+env.render()
 
 for i in range(1000):
     action = env.action_space.sample()
     observation, reward, terminated, truncated, info = env.step(action)
-    if i % 5 == 0:
-        env.render()
 
     if terminated or truncated:
         observation, info = env.reset()
@@ -149,17 +148,14 @@ Just keep in mind, calling `step()` executes a full trajectory.
 import gymnasium as gym
 import fancy_gym
 
-env = gym.make('fancy_ProMP/Reacher5d-v0')
-# or env = gym.make('metaworld_ProDMP/reach-v2')
-# or env = gym.make('dm_control_DMP/ball_in_cup-catch-v0')
-# or env = gym.make('gym_ProMP/Reacher-v2') # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
-
-# render() can be called once in the beginning with all necessary arguments.
-# To turn it of again just call render() without any arguments.
-env.render(mode='human')
+env = gym.make('fancy_ProMP/Reacher5d-v0', render_mode="human")
+# or env = gym.make('metaworld_ProDMP/reach-v2', render_mode="human")
+# or env = gym.make('dm_control_DMP/ball_in_cup-catch-v0', render_mode="human")
+# or env = gym.make('gym_ProMP/Reacher-v2', render_mode="human") # mp versions of envs added directly by gymnasium are in the gym_<MP-type> NS
 
 # This returns the context information, not the full state observation
 observation, info = env.reset(seed=1)
+env.render()
 
 for i in range(5):
     action = env.action_space.sample()

@@ -261,10 +261,14 @@ class PlanarPositionDefend(PositionControlPlanar, three_dof.AirHockeyDefend):
 class IiwaPositionHit(PositionControlIIWA, seven_dof.AirHockeyHit):
     pass
 
+class IiwaPositionHitAirhocKIT2023(PositionControlIIWA, seven_dof.AirHockeyHitAirhocKIT2023):
+    pass
 
 class IiwaPositionDefend(PositionControlIIWA, seven_dof.AirHockeyDefend):
     pass
 
+class IiwaPositionDefendAirhocKIT2023(PositionControlIIWA, seven_dof.AirHockeyDefendAirhocKIT2023):
+    pass
 
 class IiwaPositionTournament(PositionControlIIWA, seven_dof.AirHockeyTournament):
     pass
