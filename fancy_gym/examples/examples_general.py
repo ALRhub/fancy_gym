@@ -85,10 +85,7 @@ def example_async(env_id="fancy/HoleReacher-v0", n_cpu=4, seed=int('533D', 16), 
     # do not return values above threshold
     return *map(lambda v: np.stack(v)[:n_samples], buffer.values()),
 
-
-if __name__ == '__main__':
-    render = True
-
+def main(render = True):
     # Basic gym task
     example_general("Pendulum-v1", seed=10, iterations=200, render=render)
 
@@ -100,3 +97,6 @@ if __name__ == '__main__':
 
     # Vectorized multiprocessing environments
     # example_async(env_id="HoleReacher-v0", n_cpu=2, seed=int('533D', 16), n_samples=2 * 200)
+
+if __name__ == '__main__':
+    main()
