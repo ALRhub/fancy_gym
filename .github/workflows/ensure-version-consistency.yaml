@@ -8,6 +8,8 @@ on:
 jobs:
   check_version_and_tag:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true  # Terminate the job immediately if any step fails
     steps:
       - name: Check out code
         uses: actions/checkout@v4

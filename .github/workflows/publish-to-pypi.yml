@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     name: Publish to PyPI
+    strategy:
+      fail-fast: true  # Terminate the job immediately if any step fails
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
