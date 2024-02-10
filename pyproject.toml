@@ -50,6 +50,7 @@ dmc = ["shimmy[dm-control]", "Shimmy==1.0.0"]
 box2d = ["gymnasium[box2d]>=0.26.0"]
 mujoco-legacy = ["mujoco-py>=2.1,<2.2", "cython<3"]
 jax = ["jax>=0.4.0", "jaxlib>=0.4.0"]
+mushroom-rl = ["mushroom-rl"]
 
 all = [
     # include all the optional dependencies
@@ -61,7 +62,8 @@ all = [
     "mujoco-py>=2.1,<2.2",
     "cython<3",
     "jax>=0.4.0",
-    "jaxlib>=0.4.0"
+    "jaxlib>=0.4.0",
+    "mushroom-rl",
 ]
 
 testing = [
@@ -75,5 +77,6 @@ testing = [
     "mujoco-py>=2.1,<2.2",
     "cython<3",
     "jax>=0.4.0",
-    "jaxlib>=0.4.0"
+    "jaxlib>=0.4.0",
+    "mushroom-rl",
 ]
