@@ -79,6 +79,8 @@ class Walker2dEnvCustomXML(Walker2dEnv):
             **kwargs,
         )
 
+        self.render_active = False
+
 
 class Walker2dJumpEnv(Walker2dEnvCustomXML):
     """
@@ -145,7 +147,14 @@ class Walker2dJumpEnv(Walker2dEnvCustomXML):
         }
         truncated = False
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return observation, reward, terminated, truncated, info
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)

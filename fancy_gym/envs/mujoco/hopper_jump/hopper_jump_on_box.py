@@ -140,6 +140,9 @@ class HopperJumpOnBoxEnv(HopperEnvCustomXML):
 
         truncated = self.current_step >= self.max_episode_steps and not terminated
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return observation, reward, terminated, truncated, info
 
     def _get_obs(self):

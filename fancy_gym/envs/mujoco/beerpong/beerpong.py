@@ -44,6 +44,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
     }
 
     def __init__(self, **kwargs):
+        utils.EzPickle.__init__(self)
         self._steps = 0
         # Small Context -> Easier. Todo: Should we do different versions?
         # self.xml_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "beerpong_wo_cup.xml")
@@ -89,7 +90,7 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
             observation_space=self.observation_space,
             **kwargs
         )
-        utils.EzPickle.__init__(self)
+        self.render_active = False
 
     @property
     def start_pos(self):
@@ -169,7 +170,14 @@ class BeerPongEnv(MujocoEnv, utils.EzPickle):
 
         truncated = False
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return ob, reward, terminated, truncated, infos
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def _get_obs(self):
         theta = self.data.qpos.flat[:7].copy()
