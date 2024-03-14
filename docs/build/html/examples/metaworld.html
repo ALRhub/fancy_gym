@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metaworld Examples &mdash; Fancy Gym 0.2 documentation</title>
+  <title>Metaworld Examples &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -111,7 +111,7 @@
 <span class="linenos">  2</span><span class="kn">import</span> <span class="nn">fancy_gym</span>
 <span class="linenos">  3</span>
 <span class="linenos">  4</span>
-<span class="linenos">  5</span><span class="k">def</span> <span class="nf">example_meta</span><span class="p">(</span><span class="n">env_id</span><span class="o">=</span><span class="s2">&quot;fish-swim&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos">  5</span><span class="k">def</span> <span class="nf">example_meta</span><span class="p">(</span><span class="n">env_id</span><span class="o">=</span><span class="s2">&quot;metaworld/button-press-v2&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="linenos">  6</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="linenos">  7</span><span class="sd">    Example for running a MetaWorld based env in the step based setting.</span>
 <span class="linenos">  8</span><span class="sd">    The env_id has to be specified as `task_name-v2`. V1 versions are not supported and we always</span>
@@ -127,7 +127,7 @@
 <span class="linenos"> 18</span><span class="sd">    Returns:</span>
 <span class="linenos"> 19</span>
 <span class="linenos"> 20</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 21</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_id</span><span class="p">)</span>
+<span class="linenos"> 21</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_id</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 <span class="linenos"> 22</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="linenos"> 23</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 <span class="linenos"> 24</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;observation shape:&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -136,111 +136,104 @@
 <span class="linenos"> 27</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
 <span class="linenos"> 28</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
 <span class="linenos"> 29</span>        <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos"> 30</span>            <span class="c1"># THIS NEEDS TO BE SET TO FALSE FOR NOW, BECAUSE THE INTERFACE FOR RENDERING IS DIFFERENT TO BASIC GYM</span>
-<span class="linenos"> 31</span>            <span class="c1"># TODO: Remove this, when Metaworld fixes its interface.</span>
-<span class="linenos"> 32</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
-<span class="linenos"> 33</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos"> 34</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos"> 35</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos"> 36</span>            <span class="nb">print</span><span class="p">(</span><span class="n">env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
-<span class="linenos"> 37</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos"> 38</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos"> 39</span>
-<span class="linenos"> 40</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos"> 41</span>    <span class="k">del</span> <span class="n">env</span>
-<span class="linenos"> 42</span>
-<span class="linenos"> 43</span>
-<span class="linenos"> 44</span><span class="k">def</span> <span class="nf">example_custom_meta_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="linenos"> 45</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="linenos"> 46</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
-<span class="linenos"> 47</span><span class="sd">    Our already registered environments follow the same structure.</span>
-<span class="linenos"> 48</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
-<span class="linenos"> 49</span><span class="sd">    Yet, we recommend the method above if you are just interested in chaining those parameters for existing tasks.</span>
-<span class="linenos"> 50</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks)</span>
-<span class="linenos"> 51</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
-<span class="linenos"> 52</span><span class="sd">    Args:</span>
-<span class="linenos"> 53</span><span class="sd">        seed: seed for deterministic behaviour (TODO: currently not working due to an issue in MetaWorld code)</span>
-<span class="linenos"> 54</span><span class="sd">        iterations: Number of rollout steps to run</span>
-<span class="linenos"> 55</span><span class="sd">        render: Render the episode (TODO: currently not working due to an issue in MetaWorld code)</span>
+<span class="linenos"> 30</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos"> 31</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos"> 32</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos"> 33</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos"> 34</span>            <span class="nb">print</span><span class="p">(</span><span class="n">env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
+<span class="linenos"> 35</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos"> 36</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="o">+</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<span class="linenos"> 37</span>
+<span class="linenos"> 38</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos"> 39</span>    <span class="k">del</span> <span class="n">env</span>
+<span class="linenos"> 40</span>
+<span class="linenos"> 41</span>
+<span class="linenos"> 42</span><span class="k">def</span> <span class="nf">example_custom_meta_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos"> 43</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos"> 44</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
+<span class="linenos"> 45</span><span class="sd">    Our already registered environments follow the same structure.</span>
+<span class="linenos"> 46</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
+<span class="linenos"> 47</span><span class="sd">    Yet, we recommend the method above if you are just interested in chaining those parameters for existing tasks.</span>
+<span class="linenos"> 48</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks)</span>
+<span class="linenos"> 49</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
+<span class="linenos"> 50</span><span class="sd">    Args:</span>
+<span class="linenos"> 51</span><span class="sd">        seed: seed for deterministic behaviour (TODO: currently not working due to an issue in MetaWorld code)</span>
+<span class="linenos"> 52</span><span class="sd">        iterations: Number of rollout steps to run</span>
+<span class="linenos"> 53</span><span class="sd">        render: Render the episode (TODO: currently not working due to an issue in MetaWorld code)</span>
+<span class="linenos"> 54</span>
+<span class="linenos"> 55</span><span class="sd">    Returns:</span>
 <span class="linenos"> 56</span>
-<span class="linenos"> 57</span><span class="sd">    Returns:</span>
+<span class="linenos"> 57</span><span class="sd">    &quot;&quot;&quot;</span>
 <span class="linenos"> 58</span>
-<span class="linenos"> 59</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 60</span>
-<span class="linenos"> 61</span>    <span class="c1"># Base MetaWorld name, according to structure of above example</span>
-<span class="linenos"> 62</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;metaworld/button-press-v2&quot;</span>
-<span class="linenos"> 63</span>
-<span class="linenos"> 64</span>    <span class="c1"># Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.</span>
-<span class="linenos"> 65</span>    <span class="c1"># You can also add other gym.Wrappers in case they are needed.</span>
-<span class="linenos"> 66</span>    <span class="n">wrappers</span> <span class="o">=</span> <span class="p">[</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">goal_object_change_mp_wrapper</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">]</span>
-<span class="linenos"> 67</span>    <span class="c1"># # For a ProMP</span>
-<span class="linenos"> 68</span>    <span class="c1"># trajectory_generator_kwargs = {&#39;trajectory_generator_type&#39;: &#39;promp&#39;}</span>
-<span class="linenos"> 69</span>    <span class="c1"># phase_generator_kwargs = {&#39;phase_generator_type&#39;: &#39;linear&#39;}</span>
-<span class="linenos"> 70</span>    <span class="c1"># controller_kwargs = {&#39;controller_type&#39;: &#39;metaworld&#39;}</span>
-<span class="linenos"> 71</span>    <span class="c1"># basis_generator_kwargs = {&#39;basis_generator_type&#39;: &#39;zero_rbf&#39;,</span>
-<span class="linenos"> 72</span>    <span class="c1">#                           &#39;num_basis&#39;: 5,</span>
-<span class="linenos"> 73</span>    <span class="c1">#                           &#39;num_basis_zero_start&#39;: 1</span>
-<span class="linenos"> 74</span>    <span class="c1">#                           }</span>
-<span class="linenos"> 75</span>
-<span class="linenos"> 76</span>    <span class="c1"># For a DMP</span>
-<span class="linenos"> 77</span>    <span class="n">trajectory_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;dmp&#39;</span><span class="p">}</span>
-<span class="linenos"> 78</span>    <span class="n">phase_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span>
-<span class="linenos"> 79</span>                              <span class="s1">&#39;alpha_phase&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
-<span class="linenos"> 80</span>    <span class="n">controller_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;metaworld&#39;</span><span class="p">}</span>
-<span class="linenos"> 81</span>    <span class="n">basis_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span>
-<span class="linenos"> 82</span>                              <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span>
-<span class="linenos"> 83</span>                              <span class="p">}</span>
-<span class="linenos"> 84</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="p">{},</span>
-<span class="linenos"> 85</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
-<span class="linenos"> 86</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
-<span class="linenos"> 87</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-<span class="linenos"> 88</span>
-<span class="linenos"> 89</span>    <span class="c1"># This renders the full MP trajectory</span>
-<span class="linenos"> 90</span>    <span class="c1"># It is only required to call render() once in the beginning, which renders every consecutive trajectory.</span>
-<span class="linenos"> 91</span>    <span class="c1"># Resetting to no rendering, can be achieved by render(mode=None).</span>
-<span class="linenos"> 92</span>    <span class="c1"># It is also possible to change them mode multiple times when</span>
-<span class="linenos"> 93</span>    <span class="c1"># e.g. only every nth trajectory should be displayed.</span>
-<span class="linenos"> 94</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos"> 95</span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Metaworld render interface bug does not allow to render() fixes its interface. &quot;</span>
-<span class="linenos"> 96</span>                         <span class="s2">&quot;A temporary workaround is to alter their code in MujocoEnv render() from &quot;</span>
-<span class="linenos"> 97</span>                         <span class="s2">&quot;`if not offscreen` to `if not offscreen or offscreen == &#39;human&#39;`.&quot;</span><span class="p">)</span>
-<span class="linenos"> 98</span>        <span class="c1"># TODO: Remove this, when Metaworld fixes its interface.</span>
-<span class="linenos"> 99</span>        <span class="c1"># env.render(mode=&quot;human&quot;)</span>
-<span class="linenos">100</span>
-<span class="linenos">101</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">102</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">103</span>
-<span class="linenos">104</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos">105</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos">106</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">107</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">108</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos"> 59</span>    <span class="c1"># Base MetaWorld name, according to structure of above example</span>
+<span class="linenos"> 60</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;metaworld/button-press-v2&quot;</span>
+<span class="linenos"> 61</span>
+<span class="linenos"> 62</span>    <span class="c1"># Replace this wrapper with the custom wrapper for your environment by inheriting from the RawInterfaceWrapper.</span>
+<span class="linenos"> 63</span>    <span class="c1"># You can also add other gym.Wrappers in case they are needed.</span>
+<span class="linenos"> 64</span>    <span class="n">wrappers</span> <span class="o">=</span> <span class="p">[</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">goal_object_change_mp_wrapper</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">]</span>
+<span class="linenos"> 65</span>    <span class="c1"># # For a ProMP</span>
+<span class="linenos"> 66</span>    <span class="c1"># trajectory_generator_kwargs = {&#39;trajectory_generator_type&#39;: &#39;promp&#39;}</span>
+<span class="linenos"> 67</span>    <span class="c1"># phase_generator_kwargs = {&#39;phase_generator_type&#39;: &#39;linear&#39;}</span>
+<span class="linenos"> 68</span>    <span class="c1"># controller_kwargs = {&#39;controller_type&#39;: &#39;metaworld&#39;}</span>
+<span class="linenos"> 69</span>    <span class="c1"># basis_generator_kwargs = {&#39;basis_generator_type&#39;: &#39;zero_rbf&#39;,</span>
+<span class="linenos"> 70</span>    <span class="c1">#                           &#39;num_basis&#39;: 5,</span>
+<span class="linenos"> 71</span>    <span class="c1">#                           &#39;num_basis_zero_start&#39;: 1</span>
+<span class="linenos"> 72</span>    <span class="c1">#                           }</span>
+<span class="linenos"> 73</span>
+<span class="linenos"> 74</span>    <span class="c1"># For a DMP</span>
+<span class="linenos"> 75</span>    <span class="n">trajectory_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;dmp&#39;</span><span class="p">}</span>
+<span class="linenos"> 76</span>    <span class="n">phase_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span>
+<span class="linenos"> 77</span>                              <span class="s1">&#39;alpha_phase&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+<span class="linenos"> 78</span>    <span class="n">controller_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;metaworld&#39;</span><span class="p">}</span>
+<span class="linenos"> 79</span>    <span class="n">basis_generator_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span>
+<span class="linenos"> 80</span>                              <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span>
+<span class="linenos"> 81</span>                              <span class="p">}</span>
+<span class="linenos"> 82</span>    <span class="n">base_env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos"> 83</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">base_env</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos"> 84</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
+<span class="linenos"> 85</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
+<span class="linenos"> 86</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="linenos"> 87</span>
+<span class="linenos"> 88</span>    <span class="c1"># This renders the full MP trajectory</span>
+<span class="linenos"> 89</span>    <span class="c1"># It is only required to call render() once in the beginning, which renders every consecutive trajectory.</span>
+<span class="linenos"> 90</span>    <span class="c1"># Resetting to no rendering, can be achieved by render(mode=None).</span>
+<span class="linenos"> 91</span>    <span class="c1"># It is also possible to change them mode multiple times when</span>
+<span class="linenos"> 92</span>    <span class="c1"># e.g. only every nth trajectory should be displayed.</span>
+<span class="linenos"> 93</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos"> 94</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos"> 95</span>
+<span class="linenos"> 96</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos"> 97</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="linenos"> 98</span>
+<span class="linenos"> 99</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos">100</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos">101</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">102</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">103</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">104</span>
+<span class="linenos">105</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">106</span>            <span class="nb">print</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
+<span class="linenos">107</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">108</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="o">+</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
 <span class="linenos">109</span>
-<span class="linenos">110</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">111</span>            <span class="nb">print</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
-<span class="linenos">112</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">113</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">114</span>
-<span class="linenos">115</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos">116</span>    <span class="k">del</span> <span class="n">env</span>
-<span class="linenos">117</span>
-<span class="linenos">118</span>
-<span class="linenos">119</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-<span class="linenos">120</span>    <span class="c1"># Disclaimer: MetaWorld environments require the seed to be specified in the beginning.</span>
-<span class="linenos">121</span>    <span class="c1"># Adjusting it afterwards with env.seed() is not recommended as it may not affect the underlying behavior.</span>
-<span class="linenos">122</span>
-<span class="linenos">123</span>    <span class="c1"># For rendering it might be necessary to specify your OpenGL installation</span>
-<span class="linenos">124</span>    <span class="c1"># export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so</span>
-<span class="linenos">125</span>    <span class="n">render</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos">126</span>
-<span class="linenos">127</span>    <span class="c1"># # Standard Meta world tasks</span>
-<span class="linenos">128</span>    <span class="n">example_meta</span><span class="p">(</span><span class="s2">&quot;metaworld/button-press-v2&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">129</span>
-<span class="linenos">130</span>    <span class="c1"># # MP + MetaWorld hybrid task provided in the our framework</span>
-<span class="linenos">131</span>    <span class="n">example_meta</span><span class="p">(</span><span class="s2">&quot;metaworld_ProMP/ButtonPress-v2&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">132</span>    <span class="c1">#</span>
-<span class="linenos">133</span>    <span class="c1"># # Custom MetaWorld task</span>
-<span class="linenos">134</span>    <span class="n">example_custom_meta_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">110</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">111</span>    <span class="k">del</span> <span class="n">env</span>
+<span class="linenos">112</span>
+<span class="linenos">113</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">render</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="linenos">114</span>    <span class="c1"># For rendering it might be necessary to specify your OpenGL installation</span>
+<span class="linenos">115</span>    <span class="c1"># export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libGLEW.so</span>
+<span class="linenos">116</span>
+<span class="linenos">117</span>    <span class="c1"># # Standard Meta world tasks</span>
+<span class="linenos">118</span>    <span class="n">example_meta</span><span class="p">(</span><span class="s2">&quot;metaworld/button-press-v2&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">119</span>
+<span class="linenos">120</span>    <span class="c1"># # MP + MetaWorld hybrid task provided in the our framework</span>
+<span class="linenos">121</span>    <span class="n">example_meta</span><span class="p">(</span><span class="s2">&quot;metaworld_ProMP/button-press-v2&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">122</span>    <span class="c1">#</span>
+<span class="linenos">123</span>    <span class="c1"># # Custom MetaWorld task</span>
+<span class="linenos">124</span>    <span class="n">example_custom_meta_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">125</span>
+<span class="linenos">126</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="linenos">127</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
