@@ -17,7 +17,7 @@ def example_dmc(env_id="dm_control/fish-swim", seed=1, iterations=1000, render=T
     Returns:
 
     """
-    env = gym.make(env_id)
+    env = gym.make(env_id, render_mode='human' if render else None)
     rewards = 0
     obs = env.reset(seed=seed)
     print("observation shape:", env.observation_space.shape)
@@ -26,7 +26,7 @@ def example_dmc(env_id="dm_control/fish-swim", seed=1, iterations=1000, render=T
     for i in range(iterations):
         ac = env.action_space.sample()
         if render:
-            env.render(mode="human")
+            env.render()
         obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
 
@@ -84,7 +84,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # basis_generator_kwargs = {'basis_generator_type': 'rbf',
     #                           'num_basis': 5
     #                           }
-    base_env = gym.make(base_env_id)
+    base_env = gym.make(base_env_id, render_mode='human' if render else None)
     env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
@@ -96,7 +96,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # It is also possible to change them mode multiple times when
     # e.g. only every nth trajectory should be displayed.
     if render:
-        env.render(mode="human")
+        env.render()
 
     rewards = 0
     obs = env.reset()
@@ -115,7 +115,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     env.close()
     del env
 
-def main(render = True):
+def main(render = False):
     # # Standard DMC Suite tasks
     example_dmc("dm_control/fish-swim", seed=10, iterations=1000, render=render)
     #
