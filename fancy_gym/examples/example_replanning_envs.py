@@ -3,14 +3,14 @@ import fancy_gym
 
 
 def example_run_replanning_env(env_name="fancy_ProDMP/BoxPushingDenseReplan-v0", seed=1, iterations=1, render=False):
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode='human' if render else None)
     env.reset(seed=seed)
     for i in range(iterations):
         while True:
             ac = env.action_space.sample()
             obs, reward, terminated, truncated, info = env.step(ac)
             if render:
-                env.render(mode="human")
+                env.render()
             if terminated or truncated:
                 env.reset()
                 break
@@ -38,13 +38,13 @@ def example_custom_replanning_envs(seed=0, iteration=100, render=True):
                         'replanning_schedule': lambda pos, vel, obs, action, t: t % 25 == 0,
                         'condition_on_desired': True}
 
-    base_env = gym.make(base_env_id)
+    base_env = gym.make(base_env_id, render_mode='human' if render else None)
     env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs=black_box_kwargs,
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
     if render:
-        env.render(mode="human")
+        env.render()
 
     obs = env.reset()
 

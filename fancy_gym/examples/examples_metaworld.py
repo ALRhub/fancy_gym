@@ -2,7 +2,7 @@ import gymnasium as gym
 import fancy_gym
 
 
-def example_meta(env_id="fish-swim", seed=1, iterations=1000, render=True):
+def example_meta(env_id="metaworld/button-press-v2", seed=1, iterations=1000, render=True):
     """
     Example for running a MetaWorld based env in the step based setting.
     The env_id has to be specified as `task_name-v2`. V1 versions are not supported and we always
@@ -18,7 +18,7 @@ def example_meta(env_id="fish-swim", seed=1, iterations=1000, render=True):
     Returns:
 
     """
-    env = gym.make(env_id)
+    env = gym.make(env_id, render_mode='human' if render else None)
     rewards = 0
     obs = env.reset(seed=seed)
     print("observation shape:", env.observation_space.shape)
@@ -27,9 +27,7 @@ def example_meta(env_id="fish-swim", seed=1, iterations=1000, render=True):
     for i in range(iterations):
         ac = env.action_space.sample()
         if render:
-            # THIS NEEDS TO BE SET TO FALSE FOR NOW, BECAUSE THE INTERFACE FOR RENDERING IS DIFFERENT TO BASIC GYM
-            # TODO: Remove this, when Metaworld fixes its interface.
-            env.render(False)
+            env.render()
         obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
         if terminated or truncated:
@@ -81,7 +79,7 @@ def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
     basis_generator_kwargs = {'basis_generator_type': 'rbf',
                               'num_basis': 5
                               }
-    base_env = gym.make(base_env_id)
+    base_env = gym.make(base_env_id, render_mode='human' if render else None)
     env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
@@ -93,7 +91,7 @@ def example_custom_meta_and_mp(seed=1, iterations=1, render=True):
     # It is also possible to change them mode multiple times when
     # e.g. only every nth trajectory should be displayed.
     if render:
-        env.render(mode="human")
+        env.render()
 
     rewards = 0
     obs = env.reset(seed=seed)
