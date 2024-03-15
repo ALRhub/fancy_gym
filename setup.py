@@ -1,5 +1,6 @@
 # We still provide a setup.py for backwards compatability.
 # But the pyproject.toml should be prefered.
+import toml
 import itertools
 from pathlib import Path
 from typing import List
@@ -7,6 +8,9 @@ from typing import List
 from setuptools import setup, find_packages
 
 print('[!] You are currently installing/building fancy_gym via setup.py. This is only provided for backwards-compatability. Please use the pyproject.toml instead.')
+
+pyproject_content = toml.load("pyproject.toml")
+project_version = pyproject_content["project"]["version"]
 
 # Environment-specific dependencies for dmc and metaworld
 extras = {
@@ -38,7 +42,7 @@ def find_package_data(extensions_to_include: List[str]) -> List[str]:
 setup(
     author='Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou',
     name='fancy_gym',
-    version='0.1.0',
+    version=project_version,
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
@@ -55,6 +59,7 @@ setup(
     ],
     extras_require=extras,
     install_requires=[
+        'toml',
         'mp_pytorch<=0.1.3',
         'mujoco==2.3.3',
         'gymnasium[mujoco]>=0.26.0'

@@ -8,6 +8,8 @@ on:
 jobs:
   publish:
     name: Publish to PyPI
+    strategy:
+      fail-fast: true  # Terminate the job immediately if any step fails
     runs-on: ubuntu-latest
     steps:
     - name: Check out code
@@ -15,19 +17,24 @@ jobs:
       with:
         fetch-depth: 0  # This fetches all history for all branches and tags
 
-    - name: Check if commit is tagged
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: Validate version against tag
       run: |
+        VERSION=$(python -c 'import toml; print(toml.load("pyproject.toml")["project"]["version"])')
         TAG=$(git tag --contains HEAD)
         if [ -z "$TAG" ]; then
           echo "Commit is not tagged. Failing the workflow."
           exit 1
         fi
-        echo "Commit is tagged. Proceeding with the workflow."
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.x"
+        if [ "$VERSION" != "$TAG" ]; then
+          echo "Version in pyproject.toml ($VERSION) does not match the git tag ($TAG). Failing the workflow."
+          exit 1
+        fi
+        echo "Version and commit tag match. Proceeding with the workflow."
 
     - name: Install pypa/build/setuptools/twine
       run: >-
@@ -35,9 +42,6 @@ jobs:
         pip install
         build setuptools twine
         --user
-
-    - name: Prevent fallback onto setup.py
-      run: rm setup.py
 
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
