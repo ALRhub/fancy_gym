@@ -115,6 +115,7 @@ class AntJumpEnv(AntEnvCustomXML):
                          contact_force_range=contact_force_range,
                          reset_noise_scale=reset_noise_scale,
                          exclude_current_positions_from_observation=exclude_current_positions_from_observation, **kwargs)
+        self.render_active = False
 
     def step(self, action):
         self.current_step += 1
@@ -153,7 +154,14 @@ class AntJumpEnv(AntEnvCustomXML):
         }
         truncated = False
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return obs, reward, terminated, truncated, info
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.goal)

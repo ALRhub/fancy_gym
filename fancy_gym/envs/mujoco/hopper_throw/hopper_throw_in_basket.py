@@ -68,6 +68,7 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
                          reset_noise_scale=reset_noise_scale,
                          exclude_current_positions_from_observation=exclude_current_positions_from_observation,
                          **kwargs)
+        self.render_active = False
 
     def step(self, action):
 
@@ -118,7 +119,14 @@ class HopperThrowInBasketEnv(HopperEnvCustomXML):
         }
         truncated = False
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return observation, reward, terminated, truncated, info
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def _get_obs(self):
         return np.append(super()._get_obs(), self.basket_x)

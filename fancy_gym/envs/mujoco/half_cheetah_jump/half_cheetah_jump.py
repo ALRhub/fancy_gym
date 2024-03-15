@@ -60,7 +60,11 @@ class HalfCheetahEnvCustomXML(HalfCheetahEnv):
             default_camera_config=DEFAULT_CAMERA_CONFIG,
             **kwargs,
         )
+        self.render_active = False
 
+    def render(self):
+        self.render_active = True
+        return super().render()
 
 class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
     """
@@ -119,6 +123,9 @@ class HalfCheetahJumpEnv(HalfCheetahEnvCustomXML):
             'height': height_after,
             'max_height': self.max_height
         }
+
+        if self.render_active and self.render_mode=='human':
+            self.render()
 
         return observation, reward, terminated, truncated, info
 
