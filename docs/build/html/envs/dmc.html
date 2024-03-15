@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeepMind Control (DMC) &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Metaworld" href="meta.html" />
+    <link rel="prev" title="Classic Control" href="fancy/classic_control.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fancy/index.html">Fancy</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DeepMind Control (DMC)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">DeepMind Control (DMC)</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/envs/dmc.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="deepmind-control-dmc">
+<h1>DeepMind Control (DMC)<a class="headerlink" href="#deepmind-control-dmc" title="Permalink to this heading"></a></h1>
+<!-- TODO: Add Vid -->
+<p>These are the Environment Wrappers for selected
+<a class="reference external" href="https://github.com/google-deepmind/dm_control">DeepMind Control</a>
+environments in order to use our Motion Primitive gym interface with them.</p>
+<section id="step-based-environments">
+<h2>Step-Based Environments<a class="headerlink" href="#step-based-environments" title="Permalink to this heading"></a></h2>
+<p>When installing fancy_gym with the optional dmc extra (e.g. <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">fancy_gym[dmc]</span></code>), all regular dmc tasks are avaible via <a class="reference external" href="https://github.com/Farama-Foundation/Shimmy">Shimmy</a>.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Action Dim</p></th>
+<th class="head"><p>Observation Dim</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/acrobot-swingup-v0</span></code></p></td>
+<td><p>Underactuated double pendulum (Acrobot) with torque applied to the second joint to swing up and balance.</p></td>
+<td><p>1</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/acrobot-swingup_sparse-v0</span></code></p></td>
+<td><p>Similar to <code class="docutils literal notranslate"><span class="pre">acrobot-swingup-v0</span></code>, but with sparse rewards for achieving the swingup task.</p></td>
+<td><p>1</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/ball_in_cup-catch-v0</span></code></p></td>
+<td><p>Planar ball-in-cup task where a receptacle must swing to catch a ball. Sparse reward for catching.</p></td>
+<td><p>2</p></td>
+<td><p>8</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-balance-v0</span></code></p></td>
+<td><p>Cart-pole task where the goal is to balance an unactuated pole by moving a cart, starting near upright.</p></td>
+<td><p>1</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-balance_sparse-v0</span></code></p></td>
+<td><p>Similar to <code class="docutils literal notranslate"><span class="pre">cartpole-balance-v0</span></code>, but with sparse rewards.</p></td>
+<td><p>1</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-swingup-v0</span></code></p></td>
+<td><p>Cart-pole task with the pole starting downward, requiring swinging up and balancing.</p></td>
+<td><p>1</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-swingup_sparse-v0</span></code></p></td>
+<td><p>Similar to <code class="docutils literal notranslate"><span class="pre">cartpole-swingup-v0</span></code>, but with sparse rewards for the swingup task.</p></td>
+<td><p>1</p></td>
+<td><p>5</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-two_poles-v0</span></code></p></td>
+<td><p>Extension of the Cart-pole domain with two serially connected poles, increasing the balancing challenge.</p></td>
+<td><p>1</p></td>
+<td><p>8</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cartpole-three_poles-v0</span></code></p></td>
+<td><p>Extension of the Cart-pole domain with three serially connected poles, further increasing the challenge.</p></td>
+<td><p>1</p></td>
+<td><p>11</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/cheetah-run-v0</span></code></p></td>
+<td><p>Planar bipedal cheetah robot tasked with running. The reward is proportional to forward velocity up to a maximum speed.</p></td>
+<td><p>6</p></td>
+<td><p>17</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/dog-stand-v0</span></code></p></td>
+<td><p>Dog robot task focusing on achieving a standing posture.</p></td>
+<td><p>38</p></td>
+<td><p>223</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/dog-walk-v0</span></code></p></td>
+<td><p>Dog robot tasked with walking, requiring coordination of movements.</p></td>
+<td><p>38</p></td>
+<td><p>223</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/dog-trot-v0</span></code></p></td>
+<td><p>Dog robot performing a trotting gait.</p></td>
+<td><p>38</p></td>
+<td><p>223</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/dog-run-v0</span></code></p></td>
+<td><p>Dog robot tasked with running, combining speed with stability.</p></td>
+<td><p>38</p></td>
+<td><p>223</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/dog-fetch-v0</span></code></p></td>
+<td><p>Dog robot playing fetch, involving locomotion and object interaction.</p></td>
+<td><p>38</p></td>
+<td><p>232</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/finger-spin-v0</span></code></p></td>
+<td><p>Finger robot required to rotate an unactuated body on a hinge.</p></td>
+<td><p>2</p></td>
+<td><p>9</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/finger-turn_easy-v0</span></code></p></td>
+<td><p>Finger robot task to align the tip of a free body with a target, easier version with a larger target.</p></td>
+<td><p>2</p></td>
+<td><p>12</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/finger-turn_hard-v0</span></code></p></td>
+<td><p>Similar to <code class="docutils literal notranslate"><span class="pre">finger-turn_easy-v0</span></code>, but with a smaller target for increased difficulty.</p></td>
+<td><p>2</p></td>
+<td><p>12</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/fish-upright-v0</span></code></p></td>
+<td><p>Fish robot task focused on righting itself in a fluid environment.</p></td>
+<td><p>5</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/fish-swim-v0</span></code></p></td>
+<td><p>Fish robot swimming to a target, incorporating fluid dynamics.</p></td>
+<td><p>5</p></td>
+<td><p>24</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/hopper-stand-v0</span></code></p></td>
+<td><p>One-legged hopper robot tasked with achieving a minimal torso height.</p></td>
+<td><p>4</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/hopper-hop-v0</span></code></p></td>
+<td><p>One-legged hopper robot required to hop, combining height and forward velocity.</p></td>
+<td><p>4</p></td>
+<td><p>15</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid-stand-v0</span></code></p></td>
+<td><p>Simplified humanoid robot maintaining a standing posture.</p></td>
+<td><p>21</p></td>
+<td><p>67</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid-walk-v0</span></code></p></td>
+<td><p>Simplified humanoid robot walking at a specified speed.</p></td>
+<td><p>21</p></td>
+<td><p>67</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid-run-v0</span></code></p></td>
+<td><p>Simplified humanoid robot running, aiming for a high horizontal speed.</p></td>
+<td><p>21</p></td>
+<td><p>67</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid-run_pure_state-v0</span></code></p></td>
+<td><p>Simplified humanoid robot running with a focus on pure state control.</p></td>
+<td><p>21</p></td>
+<td><p>55</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid_CMU-stand-v0</span></code></p></td>
+<td><p>Advanced humanoid robot (CMU model) maintaining a standing posture.</p></td>
+<td><p>56</p></td>
+<td><p>137</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid_CMU-walk-v0</span></code></p></td>
+<td><p>Advanced humanoid robot (CMU model) walking.</p></td>
+<td><p>56</p></td>
+<td><p>137</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/humanoid_CMU-run-v0</span></code></p></td>
+<td><p>Advanced humanoid robot (CMU model) running.</p></td>
+<td><p>56</p></td>
+<td><p>137</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/lqr-lqr_2_1-v0</span></code></p></td>
+<td><p>Linear quadratic regulator (LQR) task with 2 masses and 1 actuator, focusing on position and control optimization.</p></td>
+<td><p>1</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/lqr-lqr_6_2-v0</span></code></p></td>
+<td><p>Linear quadratic regulator (LQR) task with 6 masses and 2 actuators, more complex control optimization challenge.</p></td>
+<td><p>2</p></td>
+<td><p>12</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/manipulator-bring_ball-v0</span></code></p></td>
+<td><p>Planar manipulator robot bringing a ball to a target location, with object initialization variations.</p></td>
+<td><p>5</p></td>
+<td><p>44</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/manipulator-bring_peg-v0</span></code></p></td>
+<td><p>Planar manipulator task of bringing a peg to a target peg.</p></td>
+<td><p>5</p></td>
+<td><p>44</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/manipulator-insert_ball-v0</span></code></p></td>
+<td><p>Planar manipulator task requiring inserting a ball into a basket.</p></td>
+<td><p>5</p></td>
+<td><p>44</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/manipulator-insert_peg-v0</span></code></p></td>
+<td><p>Planar manipulator challenge of inserting a peg into a slot.</p></td>
+<td><p>5</p></td>
+<td><p>44</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/pendulum-swingup-v0</span></code></p></td>
+<td><p>Classic inverted pendulum task with a torque-limited actuator, requiring multiple swings to swing up and balance.</p></td>
+<td><p>1</p></td>
+<td><p>3</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/point_mass-easy-v0</span></code></p></td>
+<td><p>Planar point mass in an easy task, with actuators corresponding to global x and y axes</p></td>
+<td><p>2</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/point_mass-hard-v0</span></code></p></td>
+<td><p>Planar point mass in a hard task, with randomized control gains per episode, challenging memoryless agents.</p></td>
+<td><p>2</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/quadruped-walk-v0</span></code></p></td>
+<td><p>Four-legged robot (Quadruped) tasked with walking.</p></td>
+<td><p>12</p></td>
+<td><p>78</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/quadruped-run-v0</span></code></p></td>
+<td><p>Quadruped robot required to run, balancing speed and stability.</p></td>
+<td><p>12</p></td>
+<td><p>78</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/quadruped-escape-v0</span></code></p></td>
+<td><p>Quadruped robot in an escape task, combining locomotion with environmental interaction.</p></td>
+<td><p>12</p></td>
+<td><p>101</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/quadruped-fetch-v0</span></code></p></td>
+<td><p>Quadruped robot playing fetch, involving complex movements and object interaction.</p></td>
+<td><p>12</p></td>
+<td><p>90</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/reacher-easy-v0</span></code></p></td>
+<td><p>Two-link planar reacher with a randomized target, easier version with a larger target sphere.</p></td>
+<td><p>2</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/reacher-hard-v0</span></code></p></td>
+<td><p>Similar to <code class="docutils literal notranslate"><span class="pre">reacher-easy-v0</span></code>, but with a smaller target sphere for increased difficulty.</p></td>
+<td><p>2</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/stacker-stack_2-v0</span></code></p></td>
+<td><p>Stacker task requiring stacking of 2 boxes, with rewards for correct placement and gripper positioning.</p></td>
+<td><p>5</p></td>
+<td><p>49</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/stacker-stack_4-v0</span></code></p></td>
+<td><p>More complex stacker task with 4 boxes, increasing the stacking challenge.</p></td>
+<td><p>5</p></td>
+<td><p>63</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/swimmer-swimmer6-v0</span></code></p></td>
+<td><p>Six-link planar swimmer in fluid dynamics, rewarded for positioning the nose inside a target.</p></td>
+<td><p>5</p></td>
+<td><p>25</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/swimmer-swimmer15-v0</span></code></p></td>
+<td><p>Fifteen-link planar swimmer, a more complex version of the swimmer task with extended dynamics.</p></td>
+<td><p>14</p></td>
+<td><p>61</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/walker-stand-v0</span></code></p></td>
+<td><p>Planar walker robot tasked with maintaining an upright torso and minimal height.</p></td>
+<td><p>6</p></td>
+<td><p>24</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/walker-walk-v0</span></code></p></td>
+<td><p>Planar walker robot walking task, focusing on forward velocity and stability.</p></td>
+<td><p>6</p></td>
+<td><p>24</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control/walker-run-v0</span></code></p></td>
+<td><p>Planar walker robot running task, aiming for high speed and balance.</p></td>
+<td><p>6</p></td>
+<td><p>24</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mp-environments">
+<h2>MP Environments<a class="headerlink" href="#mp-environments" title="Permalink to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Trajectory Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Context Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_ProDMP/ball_in_cup-catch-v0</span></code></p></td>
+<td><p>A ProMP wrapped version of the “catch” task for the “ball_in_cup” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_DMP/ball_in_cup-catch-v0</span></code></p></td>
+<td><p>A DMP wrapped version of the “catch” task for the “ball_in_cup” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>2</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_ProDMP/reacher-easy-v0</span></code></p></td>
+<td><p>A ProMP wrapped version of the “easy” task for the “reacher” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_DMP/reacher-easy-v0</span></code></p></td>
+<td><p>A DMP wrapped version of the “easy” task for the “reacher” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_ProDMP/reacher-hard-v0</span></code></p></td>
+<td><p>A ProMP wrapped version of the “hard” task for the “reacher” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">dm_control_DMP/reacher-hard-v0</span></code></p></td>
+<td><p>A DMP wrapped version of the “hard” task for the “reacher” environment.</p></td>
+<td><p>1000</p></td>
+<td><p>10</p></td>
+<td><p>4</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fancy/classic_control.html" class="btn btn-neutral float-left" title="Classic Control" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="meta.html" class="btn btn-neutral float-right" title="Metaworld" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

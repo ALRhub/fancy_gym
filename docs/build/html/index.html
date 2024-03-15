@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fancy Gym &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="guide/installation.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Fancy Gym
+              <img src="_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="envs/fancy/index.html">Fancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="envs/dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="envs/meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="envs/open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Fancy Gym</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/index.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fancy-gym">
+<h1>Fancy Gym<a class="headerlink" href="#fancy-gym" title="Permalink to this heading"></a></h1>
+<div style="text-align: center;">
+   <img src="_static/imgs/fancy_namelogo.svg" style="margin: 5%; width: 80%;"></a>
+</div>
+ <style>
+    /* Little Hack: We don't want to show the title (ugly), but need to define it since it also sets the pages metadata (for titlebar and stuff) */
+     h1 {
+         display: none;
+     }
+ </style><p>Built upon the foundation of
+<a class="reference external" href="https://gymnasium.farama.org/">Gymnasium</a> (a maintained fork of
+OpenAI’s renowned Gym library) <code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code> offers a comprehensive
+collection of reinforcement learning environments.</p>
+<section id="key-features">
+<h2>Key Features<a class="headerlink" href="#key-features" title="Permalink to this heading"></a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>New Challenging Environments</strong>: <code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code> includes several new
+environments (<a class="reference external" href="envs/fancy/mujoco.html#box-pushing">Panda Box Pushing</a>,
+<a class="reference external" href="envs/fancy/mujoco.html#table-tennis">Table Tennis</a>,
+<a class="reference external" href="envs/fancy/index.html">etc.</a>) that present a higher degree of
+difficulty, pushing the boundaries of reinforcement learning research.</p></li>
+<li><p><strong>Support for Movement Primitives</strong>: <code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code> supports a range
+of movement primitives (MPs), including Dynamic Movement Primitives
+(DMPs), Probabilistic Movement Primitives (ProMP), and Probabilistic
+Dynamic Movement Primitives (ProDMP).</p></li>
+<li><p><strong>Upgrade to Movement Primitives</strong>: With our framework, it’s
+straightforward to transform standard Gymnasium environments into
+environments that support movement primitives.</p></li>
+<li><p><strong>Benchmark Suite Compatibility</strong>: <code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code> makes it easy to
+access renowned benchmark suites such as <a class="reference external" href="envs/dmc.html">DeepMind
+Control</a>
+and <a class="reference external" href="envs/meta.html">Metaworld</a>, whether you want
+to use them in the regular step-based setting or using MPs.</p></li>
+<li><p><strong>Contribute Your Own Environments</strong>: If you’re inspired to create
+custom gym environments, both step-based and with movement
+primitives, this
+<a class="reference external" href="guide/upgrading_envs.html">guide</a>
+will assist you. We encourage and highly appreciate submissions via
+PRs to integrate these environments into <code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code>.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="quickstart-guide">
+<h2>Quickstart Guide<a class="headerlink" href="#quickstart-guide" title="Permalink to this heading"></a></h2>
+<p>Install via pip (<a class="reference external" href="guide/installation.html">or use an alternative installation method</a>)</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">&#39;fancy_gym[all]&#39;</span>
+</pre></div>
+</div>
+<p>Try out one of our step-based environments (<a class="reference external" href="envs/fancy/index.html">or explore our other envs</a>)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">fancy_gym</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;fancy/BoxPushingDense-v0&#39;</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">)</span>
+<span class="n">observation</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+   <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="c1"># Randomly sample an action</span>
+   <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+   <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">env</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;render_fps&#39;</span><span class="p">])</span>
+
+   <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+         <span class="n">observation</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Explore the MP-based variant (<a class="reference external" href="guide/episodic_rl.html">or learn more about Movement Primitives (MPs)</a>)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">fancy_gym</span>
+
+<span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;fancy_ProMP/BoxPushingDense-v0&#39;</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span><span class="p">)</span>
+<span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+   <span class="n">action</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span> <span class="c1"># Randomly sample MP parameters</span>
+   <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="c1"># Will execute full trajectory, based on MP</span>
+   <span class="n">observation</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/installation.html#installation-from-pypi-recommended">Installation from PyPI (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/installation.html#installation-from-master">Installation from master</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/basic_usage.html">Basic Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/basic_usage.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/basic_usage.html#black-box-environments">Black-Box Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="envs/fancy/index.html">Fancy</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="envs/fancy/mujoco.html">Mujoco</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="envs/fancy/mujoco.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs/fancy/mujoco.html#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="envs/fancy/airhockey.html">AirHockey</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs/fancy/classic_control.html">Classic Control</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="envs/fancy/classic_control.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs/fancy/classic_control.html#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="envs/dmc.html">DeepMind Control (DMC)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="envs/dmc.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs/dmc.html#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="envs/meta.html">Metaworld</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="envs/meta.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs/meta.html#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="envs/open_ai.html">Gymnasium</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="envs/open_ai.html#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs/open_ai.html#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/fancy_gym.register.html">fancy_gym.register</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/fancy_gym.register.html#fancy_gym.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="generated/fancy_gym.upgrade.html">fancy_gym.upgrade</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/fancy_gym.upgrade.html#fancy_gym.upgrade"><code class="docutils literal notranslate"><span class="pre">upgrade()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="citing-the-project">
+<h2>Citing the Project<a class="headerlink" href="#citing-the-project" title="Permalink to this heading"></a></h2>
+<p>To cite <cite>fancy_gym</cite> in publications:</p>
+<div class="highlight-bibtex notranslate"><div class="highlight"><pre><span></span><span class="nc">@software</span><span class="p">{</span><span class="nl">fancy_gym</span><span class="p">,</span>
+<span class="w">    </span><span class="na">title</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Fancy Gym}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">author</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Otto, Fabian and Celik, Onur and Roth, Dominik and Zhou, Hongyi}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">abstract</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Fancy Gym: Unifying interface for various RL benchmarks with support for Black Box approaches.}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">url</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{https://github.com/ALRhub/fancy_gym}</span><span class="p">,</span>
+<span class="w">    </span><span class="na">organization</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s">{Autonomous Learning Robots Lab (ALR) at KIT}</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="icon-attribution">
+<h2>Icon Attribution<a class="headerlink" href="#icon-attribution" title="Permalink to this heading"></a></h2>
+<p>The icon is based on the
+<a class="reference external" href="https://github.com/Farama-Foundation/Gymnasium">Gymnasium</a> icon as
+can be found
+<a class="reference external" href="https://gymnasium.farama.org/_static/img/gymnasium_black.svg">here</a>.</p>
+<hr class="docutils" />
+<div style="text-align: center; background: #f8f8f8; border-radius: 10px;">
+   <a href="https://alr.iar.kit.edu/"><img src="_static/imgs/alr.svg" style="margin: 5%; width: 20%;"></a>
+   <a href="https://www.kit.edu/"><img src="_static/imgs/kit.svg" style="margin: 5%; width: 20%;"></a>
+   <a href="https://uni-tuebingen.de/"><img src="_static/imgs/uni_tuebingen.svg" style="margin: 5%; width: 20%;"></a>
+</div>
+<br></section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="guide/installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

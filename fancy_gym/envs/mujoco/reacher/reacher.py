@@ -47,6 +47,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
                            **kwargs
                            )
 
+        self.render_active = False
+
     def step(self, action):
         self._steps += 1
 
@@ -77,7 +79,14 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
             goal=self.goal if hasattr(self, "goal") else None
         )
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return ob, reward, terminated, truncated, info
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def distance_reward(self):
         vec = self.get_body_com("fingertip") - self.get_body_com("target")

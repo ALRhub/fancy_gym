@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Metaworld &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Gymnasium" href="open_ai.html" />
+    <link rel="prev" title="DeepMind Control (DMC)" href="dmc.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="fancy/index.html">Fancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Metaworld</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#step-based-environments">Step-Based Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Metaworld</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/envs/meta.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="metaworld">
+<h1>Metaworld<a class="headerlink" href="#metaworld" title="Permalink to this heading"></a></h1>
+<div class='center'>
+    <img src="../_static/imgs/env_gifs/Metaworld.gif" style="margin: 5%; width: 45%;">
+    <p>Metaworld Dial Turn Task (metaworld/dial-turn-v2)</p>
+</div>
+<br>
+<p><a class="reference external" href="https://meta-world.github.io/">Metaworld</a> is an open-source simulated benchmark designed to advance meta-reinforcement learning and multi-task learning, comprising 50 diverse robotic manipulation tasks. The benchmark features a universal tabletop environment equipped with a simulated Sawyer arm and a variety of everyday objects. This shared environment is pivotal for reusing structured learning and efficiently acquiring related tasks.</p>
+<section id="step-based-environments">
+<h2>Step-Based Environments<a class="headerlink" href="#step-based-environments" title="Permalink to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">fancy_gym</span></code> makes all metaworld ML1 tasks avaible via the standard gym interface.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Observation Dimension</p></th>
+<th class="head"><p>Context Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/assembly-v2</span></code></p></td>
+<td><p>A task where the robot must assemble components.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/basketball-v2</span></code></p></td>
+<td><p>A task where the robot must play a game of basketball.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/bin-picking-v2</span></code></p></td>
+<td><p>A task involving the robot picking objects from a bin.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/box-close-v2</span></code></p></td>
+<td><p>A task requiring the robot to close a box.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/button-press-topdown-v2</span></code></p></td>
+<td><p>A task where the robot must press a button from a top-down perspective.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/button-press-topdown-wall-v2</span></code></p></td>
+<td><p>A task involving the robot pressing a button with a wall from a top-down perspective.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/button-press-v2</span></code></p></td>
+<td><p>A task where the robot must press a button.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/button-press-wall-v2</span></code></p></td>
+<td><p>A task involving the robot pressing a button with a wall.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/coffee-button-v2</span></code></p></td>
+<td><p>A task where the robot must press a button on a coffee machine.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/coffee-pull-v2</span></code></p></td>
+<td><p>A task involving the robot pulling a lever on a coffee machine.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/coffee-push-v2</span></code></p></td>
+<td><p>A task involving the robot pushing a component on a coffee machine.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/dial-turn-v2</span></code></p></td>
+<td><p>A task where the robot must turn a dial.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/disassemble-v2</span></code></p></td>
+<td><p>A task requiring the robot to disassemble an object.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/door-close-v2</span></code></p></td>
+<td><p>A task where the robot must close a door.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/door-lock-v2</span></code></p></td>
+<td><p>A task involving the robot locking a door.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/door-open-v2</span></code></p></td>
+<td><p>A task where the robot must open a door.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/door-unlock-v2</span></code></p></td>
+<td><p>A task involving the robot unlocking a door.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/hand-insert-v2</span></code></p></td>
+<td><p>A task requiring the robot to insert a hand into an object.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/drawer-close-v2</span></code></p></td>
+<td><p>A task where the robot must close a drawer.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/drawer-open-v2</span></code></p></td>
+<td><p>A task involving the robot opening a drawer.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/faucet-open-v2</span></code></p></td>
+<td><p>A task requiring the robot to open a faucet.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/faucet-close-v2</span></code></p></td>
+<td><p>A task where the robot must close a faucet.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/hammer-v2</span></code></p></td>
+<td><p>A task where the robot must use a hammer.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/handle-press-side-v2</span></code></p></td>
+<td><p>A task involving the robot pressing a handle from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/handle-press-v2</span></code></p></td>
+<td><p>A task where the robot must press a handle.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/handle-pull-side-v2</span></code></p></td>
+<td><p>A task requiring the robot to pull a handle from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/handle-pull-v2</span></code></p></td>
+<td><p>A task where the robot must pull a handle.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/lever-pull-v2</span></code></p></td>
+<td><p>A task involving the robot pulling a lever.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/peg-insert-side-v2</span></code></p></td>
+<td><p>A task requiring the robot to insert a peg from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/pick-place-wall-v2</span></code></p></td>
+<td><p>A task involving the robot picking and placing an object with a wall.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/pick-out-of-hole-v2</span></code></p></td>
+<td><p>A task where the robot must pick an object out of a hole.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/reach-v2</span></code></p></td>
+<td><p>A task where the robot must reach an object.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/push-back-v2</span></code></p></td>
+<td><p>A task involving the robot pushing an object backward.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/push-v2</span></code></p></td>
+<td><p>A task where the robot must push an object.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/pick-place-v2</span></code></p></td>
+<td><p>A task involving the robot picking up and placing an object.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/plate-slide-v2</span></code></p></td>
+<td><p>A task requiring the robot to slide a plate.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/plate-slide-side-v2</span></code></p></td>
+<td><p>A task involving the robot sliding a plate from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/plate-slide-back-v2</span></code></p></td>
+<td><p>A task where the robot must slide a plate backward.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/plate-slide-back-side-v2</span></code></p></td>
+<td><p>A task involving the robot sliding a plate backward from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/peg-unplug-side-v2</span></code></p></td>
+<td><p>A task where the robot must unplug a peg from the side.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/soccer-v2</span></code></p></td>
+<td><p>A task where the robot must play soccer.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/stick-push-v2</span></code></p></td>
+<td><p>A task involving the robot pushing a stick.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/stick-pull-v2</span></code></p></td>
+<td><p>A task where the robot must pull a stick.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/push-wall-v2</span></code></p></td>
+<td><p>A task involving the robot pushing against a wall.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/reach-wall-v2</span></code></p></td>
+<td><p>A task where the robot must reach an object with a wall.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/shelf-place-v2</span></code></p></td>
+<td><p>A task involving the robot placing an object on a shelf.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/sweep-into-v2</span></code></p></td>
+<td><p>A task where the robot must sweep objects into a container.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/sweep-v2</span></code></p></td>
+<td><p>A task requiring the robot to sweep.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/window-open-v2</span></code></p></td>
+<td><p>A task where the robot must open a window.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">metaworld/window-close-v2</span></code></p></td>
+<td><p>A task involving the robot closing a window.</p></td>
+<td><p>150</p></td>
+<td><p>4</p></td>
+<td><p>39</p></td>
+<td><p>6</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="mp-environments">
+<h2>MP Environments<a class="headerlink" href="#mp-environments" title="Permalink to this heading"></a></h2>
+<p>All envs also exist in MP-variants. Refer to them using <code class="docutils literal notranslate"><span class="pre">metaworld_ProMP/&lt;name-v2&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">metaworld_ProDMP/&lt;name-v2&gt;</span></code> (DMP is currently not supported as of now).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dmc.html" class="btn btn-neutral float-left" title="DeepMind Control (DMC)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="open_ai.html" class="btn btn-neutral float-right" title="Gymnasium" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

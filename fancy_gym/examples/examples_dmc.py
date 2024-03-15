@@ -17,7 +17,7 @@ def example_dmc(env_id="dm_control/fish-swim", seed=1, iterations=1000, render=T
     Returns:
 
     """
-    env = gym.make(env_id)
+    env = gym.make(env_id, render_mode='human' if render else None)
     rewards = 0
     obs = env.reset(seed=seed)
     print("observation shape:", env.observation_space.shape)
@@ -26,7 +26,7 @@ def example_dmc(env_id="dm_control/fish-swim", seed=1, iterations=1000, render=T
     for i in range(iterations):
         ac = env.action_space.sample()
         if render:
-            env.render(mode="human")
+            env.render()
         obs, reward, terminated, truncated, info = env.step(ac)
         rewards += reward
 
@@ -84,7 +84,8 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # basis_generator_kwargs = {'basis_generator_type': 'rbf',
     #                           'num_basis': 5
     #                           }
-    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs={},
+    base_env = gym.make(base_env_id, render_mode='human' if render else None)
+    env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs={},
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
@@ -95,7 +96,7 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     # It is also possible to change them mode multiple times when
     # e.g. only every nth trajectory should be displayed.
     if render:
-        env.render(mode="human")
+        env.render()
 
     rewards = 0
     obs = env.reset()
@@ -114,21 +115,13 @@ def example_custom_dmc_and_mp(seed=1, iterations=1, render=True):
     env.close()
     del env
 
-
-if __name__ == '__main__':
-    # Disclaimer: DMC environments require the seed to be specified in the beginning.
-    # Adjusting it afterwards with env.seed() is not recommended as it does not affect the underlying physics.
-
-    # For rendering DMC
-    # export MUJOCO_GL="osmesa"
-    render = True
-
+def main(render = False):
     # # Standard DMC Suite tasks
     example_dmc("dm_control/fish-swim", seed=10, iterations=1000, render=render)
     #
     # # Manipulation tasks
     # # Disclaimer: The vision versions are currently not integrated and yield an error
-    example_dmc("dm_control/manipulation-reach_site_features", seed=10, iterations=250, render=render)
+    example_dmc("dm_control/reach_site_features", seed=10, iterations=250, render=render)
     #
     # # Gym + DMC hybrid task provided in the MP framework
     example_dmc("dm_control_ProMP/ball_in_cup-catch-v0", seed=10, iterations=1, render=render)
@@ -136,3 +129,20 @@ if __name__ == '__main__':
     # Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is
     # already registered above
     example_custom_dmc_and_mp(seed=11, iterations=1, render=render)
+
+    # # Standard DMC Suite tasks
+    example_dmc("dm_control/fish-swim", seed=10, iterations=1000, render=render)
+    #
+    # # Manipulation tasks
+    # # Disclaimer: The vision versions are currently not integrated and yield an error
+    example_dmc("dm_control/reach_site_features", seed=10, iterations=250, render=render)
+    #
+    # # Gym + DMC hybrid task provided in the MP framework
+    example_dmc("dm_control_ProMP/ball_in_cup-catch-v0", seed=10, iterations=1, render=render)
+
+    # Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is
+    # already registered above
+    example_custom_dmc_and_mp(seed=11, iterations=1, render=render)
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mujoco &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="AirHockey" href="airhockey.html" />
+    <link rel="prev" title="Fancy" href="index.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Fancy</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Mujoco</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#step-based-environments">Step-Based Environments</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#box-pushing">Box Pushing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#table-tennis">Table Tennis</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#beer-pong">Beer Pong</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variations-of-existing-environments">Variations of existing environments</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mp-environments">MP Environments</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="airhockey.html">AirHockey</a></li>
+<li class="toctree-l2"><a class="reference internal" href="classic_control.html">Classic Control</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Fancy</a></li>
+      <li class="breadcrumb-item active">Mujoco</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/envs/fancy/mujoco.md" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="mujoco">
+<h1>Mujoco<a class="headerlink" href="#mujoco" title="Permalink to this heading"></a></h1>
+<section id="step-based-environments">
+<h2>Step-Based Environments<a class="headerlink" href="#step-based-environments" title="Permalink to this heading"></a></h2>
+<section id="box-pushing">
+<h3>Box Pushing<a class="headerlink" href="#box-pushing" title="Permalink to this heading"></a></h3>
+<div class='center'>
+   <img src="../../_static/imgs/env_gifs/Box_Pushing.gif" style="margin: 5%; width: 45%;">
+</div>
+<p>The box-pushing task presents an advanced environment for reinforcement learning (RL) systems, utilizing the versatile Franka Emika Panda robotic arm, which boasts seven degrees of freedom (DoFs). The objective of this task is to precisely manipulate a box to a specified goal location and orientation.</p>
+<p>This environment defines its context space with a goal position constrained within a certain range along the x and y axes and a goal orientation that encompasses the full 360-degree range on the z-axis. The robot’s mission is to achieve positional accuracy within 5 centimeters and an orientation accuracy within 0.5 radians of the specified goal.</p>
+<p>The observation space includes the sine and cosine values of the robotic joint angles, their velocities, and quaternion orientations for the end-effector and the box. The action space describes the applied torques for each joint.</p>
+<p>A composite reward function serves as the performance metric for the RL system. It accounts for the distance to the goal, the box’s orientation, maintaining a rod within the box, achieving the rod’s desired orientation, and includes penalties for joint position and velocity limit violations, as well as an action cost for energy expenditure.</p>
+<p>Variations of this environment are available, differing in reward structures and the optionality of randomizing the box’s initial position. These variations are purposefully designed to challenge RL algorithms, enhancing their generalization and adaptation capabilities. Temporally sparse environments only provide a reward at the last timestep. Spatially sparse environments only provide a reward, if the goal is almost reached, the box is close enought to the goal and somewhat correctly aligned.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Observation Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BoxPushingDense-v0</span></code></p></td>
+<td><p>Custom Box-pushing task with dense rewards</p></td>
+<td><p>100</p></td>
+<td><p>3</p></td>
+<td><p>13</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BoxPushingTemporalSparse-v0</span></code></p></td>
+<td><p>Custom Box-pushing task with temporally sparse rewards</p></td>
+<td><p>100</p></td>
+<td><p>3</p></td>
+<td><p>13</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BoxPushingTemporalSpatialSparse-v0</span></code></p></td>
+<td><p>Custom Box-pushing task with temporally and spatially sparse rewards</p></td>
+<td><p>100</p></td>
+<td><p>3</p></td>
+<td><p>13</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="table-tennis">
+<h3>Table Tennis<a class="headerlink" href="#table-tennis" title="Permalink to this heading"></a></h3>
+<div class='center'>
+   <img src="../../_static/imgs/env_gifs/Table_Tennis.gif" style="margin: 5%; width: 45%;">
+</div>
+<p>The table tennis task offers a robotic arm equipped with seven degrees of freedom (DoFs). The task is to respond to incoming balls and return them accurately to a specified goal location on the opponent’s side of the table.</p>
+<p>The context space for this environment includes the initial ball position, with x-coordinates ranging from -1 to -0.2 meters and y-coordinates from -0.65 to 0.65 meters, and the goal position with x-coordinates between -1.2 to -0.2 meters and y-coordinates from -0.6 to 0.6 meters. The full observation space comprises the sine and cosine values of the joint angles, the joint velocities, and the ball’s velocity, providing comprehensive information for the RL system to base its decisions on.</p>
+<p>A task is considered successfully completed when the returned ball not only lands on the opponent’s side of the table but also within a tight margin of 20 centimeters from the goal location. The reward function is designed to reflect various conditions of play, including whether the ball was hit, if it landed on the table, and the proximity of the ball’s landing position to the goal location.</p>
+<p>Variations of the table tennis environment are available to cater to different research needs. These variations maintain the foundational challenge of precise ball return while providing additional complexity for RL algorithms to overcome.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Observation Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennis2D-v0</span></code></p></td>
+<td><p>Table Tennis task with 2D context, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennis2DReplan-v0</span></code></p></td>
+<td><p>Table Tennis task with 2D context and replanning, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennis4D-v0</span></code></p></td>
+<td><p>Table Tennis task with 4D context, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>22</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennis4DReplan-v0</span></code></p></td>
+<td><p>Table Tennis task with 4D context and replanning, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>22</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennisWind-v0</span></code></p></td>
+<td><p>Table Tennis task with wind effects, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennisGoalSwitching-v0</span></code></p></td>
+<td><p>Table Tennis task with goal switching, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennisWindReplan-v0</span></code></p></td>
+<td><p>Table Tennis task with wind effects and replanning, based on a custom environment for table tennis</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="beer-pong">
+<h3>Beer Pong<a class="headerlink" href="#beer-pong" title="Permalink to this heading"></a></h3>
+<div class='center'>
+   <img src="../../_static/imgs/env_gifs/Beer_Pong.gif" style="margin: 5%; width: 45%;">
+</div>
+<!-- TODO: Vid is ugly and unsuccessful. Replace. -->
+<p>The Beer Pong task is based upon a robotic system with seven Degrees of Freedom (DoF), challenging the robot to throw a ball into a cup placed on a large table. The environment’s context is established by the cup’s location, defined within a range of x-coordinates from -1.42 to 1.42 meters and y-coordinates from -4.05 to -1.25 meters.</p>
+<p>The observation space includes the cosine and sine of the robot’s joint angles, the angular velocities, and distances of the ball relative to the top and bottom of the cup, along with the cup’s position and the current timestep. The action space for the robot is defined by the torques applied to each joint. For episode-based methods, the parameter space is expanded to 15 dimensions, which includes two weights for the basis functions per joint and the duration of the throw, namely the ball release time.</p>
+<p>Action penalties are implemented in the form of squared torque sums applied across all joints, penalizing excessive force and encouraging efficient motion. The reward function at each timestep t before the final timestep T penalizes the action penalty, while at t=T, a non-Markovian reward based on the ball’s position relative to the cup and the action penalty is considered.</p>
+<p>An additional reward component at the final timestep T assesses the chosen ball release time to ensure it falls within a reasonable range. The overall return for an episode is the sum of the rewards at each timestep, the task-specific reward, and the release time reward.</p>
+<p>A successful throw in this task is determined by the ball landing in the cup at the episode’s conclusion, showcasing the robot’s ability to accurately predict and execute the complex motion required for this popular party game.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Observation Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BeerPong-v0</span></code></p></td>
+<td><p>Beer Pong task, based on a custom environment with multiple task variations</p></td>
+<td><p>300</p></td>
+<td><p>3</p></td>
+<td><p>29</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BeerPongStepBased-v0</span></code></p></td>
+<td><p>Step-based rewards for the Beer Pong task, based on a custom environment with episodic rewards</p></td>
+<td><p>300</p></td>
+<td><p>3</p></td>
+<td><p>29</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/BeerPongFixedRelease-v0</span></code></p></td>
+<td><p>Beer Pong with fixed release, based on a custom environment with episodic rewards</p></td>
+<td><p>300</p></td>
+<td><p>3</p></td>
+<td><p>29</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="variations-of-existing-environments">
+<h3>Variations of existing environments<a class="headerlink" href="#variations-of-existing-environments" title="Permalink to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Horizon</p></th>
+<th class="head"><p>Action Dimension</p></th>
+<th class="head"><p>Observation Dimension</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Reacher-v0</span></code></p></td>
+<td><p>Modified (5 links) gymnasiums’s mujoco <code class="docutils literal notranslate"><span class="pre">Reacher-v2</span></code> (2 links)</p></td>
+<td><p>200</p></td>
+<td><p>5</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/ReacherSparse-v0</span></code></p></td>
+<td><p>Same as <code class="docutils literal notranslate"><span class="pre">fancy/Reacher-v0</span></code>, but the distance penalty is only provided in the last time step.</p></td>
+<td><p>200</p></td>
+<td><p>5</p></td>
+<td><p>21</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/LongReacher-v0</span></code></p></td>
+<td><p>Modified (7 links) gymnasiums’s mujoco <code class="docutils literal notranslate"><span class="pre">Reacher-v2</span></code> (2 links)</p></td>
+<td><p>200</p></td>
+<td><p>7</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/LongReacherSparse-v0</span></code></p></td>
+<td><p>Same as <code class="docutils literal notranslate"><span class="pre">fancy/LongReacher-v0</span></code>, but the distance penalty is only provided in the last time step.</p></td>
+<td><p>200</p></td>
+<td><p>7</p></td>
+<td><p>27</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Reacher5d-v0</span></code></p></td>
+<td><p>Reacher task with 5 links, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.ReacherEnv</span></code></p></td>
+<td><p>200</p></td>
+<td><p>5</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Reacher5dSparse-v0</span></code></p></td>
+<td><p>Sparse Reacher task with 5 links, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.ReacherEnv</span></code></p></td>
+<td><p>200</p></td>
+<td><p>5</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Reacher7d-v0</span></code></p></td>
+<td><p>Reacher task with 7 links, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.ReacherEnv</span></code></p></td>
+<td><p>200</p></td>
+<td><p>7</p></td>
+<td><p>22</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Reacher7dSparse-v0</span></code></p></td>
+<td><p>Sparse Reacher task with 7 links, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.ReacherEnv</span></code></p></td>
+<td><p>200</p></td>
+<td><p>7</p></td>
+<td><p>22</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpSparse-v0</span></code></p></td>
+<td><p>Hopper Jump task with sparse rewards, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>15 / 16*</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJump-v0</span></code></p></td>
+<td><p>Hopper Jump task with continuous rewards, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>15 / 16*</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/AntJump-v0</span></code></p></td>
+<td><p>Ant Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Ant</span></code></p></td>
+<td><p>200</p></td>
+<td><p>8</p></td>
+<td><p>119</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HalfCheetahJump-v0</span></code></p></td>
+<td><p>HalfCheetah Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.HalfCheetah</span></code></p></td>
+<td><p>100</p></td>
+<td><p>6</p></td>
+<td><p>112</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpOnBox-v0</span></code></p></td>
+<td><p>Hopper Jump on Box task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>4</p></td>
+<td><p>16 / 100*</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrow-v0</span></code></p></td>
+<td><p>Hopper Throw task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>18 / 100*</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrowInBasket-v0</span></code></p></td>
+<td><p>Hopper Throw in Basket task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>18 / 100*</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Walker2DJump-v0</span></code></p></td>
+<td><p>Walker 2D Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Walker2d</span></code></p></td>
+<td><p>300</p></td>
+<td><p>6</p></td>
+<td><p>18 / 19*</p></td>
+</tr>
+</tbody>
+</table>
+<p>*Observation dimensions depend on configuration.</p>
+<!--
+No longer used?
+| Name                        | Description                                                                                         | Horizon | Action Dimension | Observation Dimension |
+| --------------------------- | --------------------------------------------------------------------------------------------------- | ------- | ---------------- | --------------------- |
+| `fancy/BallInACupSimple-v0` | Ball-in-a-cup task where a robot needs to catch a ball attached to a cup at its end-effector.       | 4000    | 3                | wip                   |
+| `fancy/BallInACup-v0`       | Ball-in-a-cup task where a robot needs to catch a ball attached to a cup at its end-effector        | 4000    | 7                | wip                   |
+| `fancy/BallInACupGoal-v0`   | Similar to `fancy/BallInACupSimple-v0` but the ball needs to be caught at a specified goal position | 4000    | 7                | wip                   |
+-->
+</section>
+</section>
+<section id="mp-environments">
+<h2>MP Environments<a class="headerlink" href="#mp-environments" title="Permalink to this heading"></a></h2>
+<p>Most of these envs also exist as MP-variants. Refer to them using <code class="docutils literal notranslate"><span class="pre">fancy_DMP/&lt;name&gt;</span></code> <code class="docutils literal notranslate"><span class="pre">fancy_ProMP/&lt;name&gt;</span></code> or <code class="docutils literal notranslate"><span class="pre">fancy_ProDMP/&lt;name&gt;</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Fancy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="airhockey.html" class="btn btn-neutral float-right" title="AirHockey" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

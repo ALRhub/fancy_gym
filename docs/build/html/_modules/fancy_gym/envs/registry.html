@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fancy_gym.envs.registry &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../../../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../../../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/fancy/index.html">Fancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../envs/open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">fancy_gym.envs.registry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for fancy_gym.envs.registry</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+
+<span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">MutableMapping</span>
+
+<span class="kn">from</span> <span class="nn">fancy_gym.utils.make_env_helpers</span> <span class="kn">import</span> <span class="n">make_bb</span>
+<span class="kn">from</span> <span class="nn">fancy_gym.black_box.raw_interface_wrapper</span> <span class="kn">import</span> <span class="n">RawInterfaceWrapper</span>
+
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">register</span> <span class="k">as</span> <span class="n">gym_register</span>
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">make</span> <span class="k">as</span> <span class="n">gym_make</span>
+<span class="kn">from</span> <span class="nn">gymnasium.envs.registration</span> <span class="kn">import</span> <span class="n">registry</span> <span class="k">as</span> <span class="n">gym_registry</span>
+
+
+<span class="k">class</span> <span class="nc">DefaultMPWrapper</span><span class="p">(</span><span class="n">RawInterfaceWrapper</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns boolean mask of the same shape as the observation space.</span>
+<span class="sd">            It determines whether the observation is returned for the contextual case or not.</span>
+<span class="sd">            This effectively allows to filter unwanted or unnecessary observations from the full step-based case.</span>
+<span class="sd">            E.g. Velocities starting at 0 are only changing after the first action. Given we only receive the</span>
+<span class="sd">            context/part of the first observation, the velocities are not necessary in the observation for the task.</span>
+<span class="sd">            Returns:</span>
+<span class="sd">                bool array representing the indices of the observations</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If the env already defines a context_mask, we will use that</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="s1">&#39;context_mask&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">context_mask</span>
+
+        <span class="c1"># Otherwise we will use the whole observation as the context. (Write a custom MPWrapper to change this behavior)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the current position of the action/control dimension.</span>
+<span class="sd">            The dimensionality has to match the action/control dimension.</span>
+<span class="sd">            This is not required when exclusively using velocity control,</span>
+<span class="sd">            it should, however, be implemented regardless.</span>
+<span class="sd">            E.g. The joint positions that are directly or indirectly controlled by the action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="s1">&#39;current_pos&#39;</span><span class="p">),</span> <span class="s1">&#39;DefaultMPWrapper was unable to access env.current_pos. Please write a custom MPWrapper (recommended) or expose this attribute directly.&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">current_pos</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_vel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Returns the current velocity of the action/control dimension.</span>
+<span class="sd">            The dimensionality has to match the action/control dimension.</span>
+<span class="sd">            This is not required when exclusively using position control,</span>
+<span class="sd">            it should, however, be implemented regardless.</span>
+<span class="sd">            E.g. The joint velocities that are directly or indirectly controlled by the action.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="s1">&#39;current_vel&#39;</span><span class="p">),</span> <span class="s1">&#39;DefaultMPWrapper was unable to access env.current_vel. Please write a custom MPWrapper (recommended) or expose this attribute directly.&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">current_vel</span>
+
+
+<span class="n">_BB_DEFAULTS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;ProMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;wrappers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;promp&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;motor&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;p_gains&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;d_gains&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;zero_rbf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="s1">&#39;num_basis_zero_start&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;basis_bandwidth_factor&#39;</span><span class="p">:</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;black_box_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;DMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;wrappers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;dmp&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;motor&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;p_gains&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;d_gains&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;black_box_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s1">&#39;ProDMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s1">&#39;wrappers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;prodmp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;duration&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+            <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;tau&#39;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;motor&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;p_gains&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;d_gains&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;prodmp&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;alpha&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+            <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s1">&#39;black_box_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">KNOWN_MPS</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">_BB_DEFAULTS</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="n">_KNOWN_MPS_PLUS_ALL</span> <span class="o">=</span> <span class="n">KNOWN_MPS</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
+<span class="n">ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS</span> <span class="o">=</span> <span class="p">{</span><span class="n">mp_type</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">mp_type</span> <span class="ow">in</span> <span class="n">_KNOWN_MPS_PLUS_ALL</span><span class="p">}</span>
+<span class="n">MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="register"><a class="viewcode-back" href="../../../generated/fancy_gym.register.html#fancy_gym.register">[docs]</a><span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">entry_point</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mp_wrapper</span><span class="p">:</span> <span class="n">RawInterfaceWrapper</span> <span class="o">=</span> <span class="n">DefaultMPWrapper</span><span class="p">,</span>
+        <span class="n">register_step_based</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>  <span class="c1"># TODO: Detect</span>
+        <span class="n">add_mp_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">KNOWN_MPS</span><span class="p">,</span>
+        <span class="n">mp_config_override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Registers a Gymnasium environment, including Movement Primitives (MP) versions.</span>
+<span class="sd">    If you only want to register MP versions for an already registered environment, use fancy_gym.upgrade instead.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id (str): The unique identifier for the environment.</span>
+<span class="sd">        entry_point (Optional[Union[Callable, str]]): The entry point for creating the environment.</span>
+<span class="sd">        mp_wrapper (RawInterfaceWrapper): The MP wrapper for the environment.</span>
+<span class="sd">        register_step_based (bool): Whether to also register the raw srtep-based version of the environment (default True).</span>
+<span class="sd">        add_mp_types (List[str]): List of additional MP types to register.</span>
+<span class="sd">        mp_config_override (Dict[str, Any]): Dictionary for overriding MP configuration.</span>
+<span class="sd">        **kwargs: Additional keyword arguments which are passed to the environment constructor.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        - When `register_step_based` is True, the raw environment will also be registered to gymnasium otherwise only mp-versions will be registered.</span>
+<span class="sd">        - `entry_point` can be given as a string, allowing the same notation as gymnasium.</span>
+<span class="sd">        - If `id` already exists in the Gymnasium registry and `register_step_based` is True,</span>
+<span class="sd">          a warning message will be printed, suggesting to set `register_step_based=False` or use `fancy_gym.upgrade`.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        To register a step-based environment with Movement Primitive versions (will use default mp_wrapper):</span>
+<span class="sd">        &gt;&gt;&gt; register(&quot;MyEnv-v0&quot;, MyEnvClass&quot;my_module:MyEnvClass&quot;)</span>
+
+<span class="sd">        The entry point can also be provided as a string:</span>
+<span class="sd">        &gt;&gt;&gt; register(&quot;MyEnv-v0&quot;, &quot;my_module:MyEnvClass&quot;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">register_step_based</span> <span class="ow">and</span> <span class="nb">id</span> <span class="ow">in</span> <span class="n">gym_registry</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;[Info] Gymnasium env with id &quot;</span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s1">&quot; already exists. You should supply register_step_based=False or use fancy_gym.upgrade if you only want to register mp versions of an existing env.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">register_step_based</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">entry_point</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;You need to provide an entry-point, when registering step-based.&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">callable</span><span class="p">(</span><span class="n">mp_wrapper</span><span class="p">):</span>  <span class="c1"># mp_wrapper can be given as a String (same notation as for entry_point)</span>
+        <span class="n">mod_name</span><span class="p">,</span> <span class="n">attr_name</span> <span class="o">=</span> <span class="n">mp_wrapper</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+        <span class="n">mp_wrapper</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">register_step_based</span><span class="p">:</span>
+        <span class="n">gym_register</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span> <span class="n">entry_point</span><span class="o">=</span><span class="n">entry_point</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">upgrade</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="upgrade"><a class="viewcode-back" href="../../../generated/fancy_gym.upgrade.html#fancy_gym.upgrade">[docs]</a><span class="k">def</span> <span class="nf">upgrade</span><span class="p">(</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mp_wrapper</span><span class="p">:</span> <span class="n">RawInterfaceWrapper</span> <span class="o">=</span> <span class="n">DefaultMPWrapper</span><span class="p">,</span>
+        <span class="n">add_mp_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">KNOWN_MPS</span><span class="p">,</span>
+        <span class="n">base_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mp_config_override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{},</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Upgrades an existing Gymnasium environment to include Movement Primitives (MP) versions.</span>
+<span class="sd">    We expect the raw step-based env to be already registered with gymnasium. Otherwise please use fancy_gym.register instead.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id (str): The unique identifier for the environment.</span>
+<span class="sd">        mp_wrapper (RawInterfaceWrapper): The MP wrapper for the environment (default is DefaultMPWrapper).</span>
+<span class="sd">        add_mp_types (List[str]): List of additional MP types to register (default is KNOWN_MPS).</span>
+<span class="sd">        base_id (Optional[str]): The unique identifier for the environment to upgrade. Will use id if non is provided. Can be defined to allow multiple registrations of different versions for the same step-based environment.</span>
+<span class="sd">        mp_config_override (Dict[str, Any]): Dictionary for overriding MP configuration.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        - The `id` parameter should match the ID of the existing Gymnasium environment you wish to upgrade. You can also pick a new one, but then `base_id` needs to be provided.</span>
+<span class="sd">        - The `mp_wrapper` parameter specifies the MP wrapper to use, allowing for customization.</span>
+<span class="sd">        - `add_mp_types` can be used to specify additional MP types to register alongside the base environment.</span>
+<span class="sd">        - The `base_id` parameter should match the ID of the existing Gymnasium environment you wish to upgrade.</span>
+<span class="sd">        - `mp_config_override` allows for customizing MP configuration if needed.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">        To upgrade an existing environment with MP versions:</span>
+<span class="sd">        &gt;&gt;&gt; upgrade(&quot;MyEnv-v0&quot;, mp_wrapper=CustomMPWrapper)</span>
+
+<span class="sd">        To upgrade an existing environment with custom MP types and configuration:</span>
+<span class="sd">        &gt;&gt;&gt; upgrade(&quot;MyEnv-v0&quot;, mp_wrapper=CustomMPWrapper, add_mp_types=[&quot;ProDMP&quot;, &quot;DMP&quot;], mp_config_override={&quot;param&quot;: 42})</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">base_id</span><span class="p">:</span>
+        <span class="n">base_id</span> <span class="o">=</span> <span class="nb">id</span>
+    <span class="n">register_mps</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">register_mps</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">:</span> <span class="n">RawInterfaceWrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">KNOWN_MPS</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="k">for</span> <span class="n">mp_type</span> <span class="ow">in</span> <span class="n">add_mp_types</span><span class="p">:</span>
+        <span class="n">register_mp</span><span class="p">(</span><span class="nb">id</span><span class="p">,</span> <span class="n">base_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">,</span> <span class="n">mp_type</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mp_type</span><span class="p">,</span> <span class="p">{}))</span>
+
+
+<span class="k">def</span> <span class="nf">register_mp</span><span class="p">(</span><span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">base_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">:</span> <span class="n">RawInterfaceWrapper</span><span class="p">,</span> <span class="n">mp_type</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">mp_config_override</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="k">assert</span> <span class="n">mp_type</span> <span class="ow">in</span> <span class="n">KNOWN_MPS</span><span class="p">,</span> <span class="s1">&#39;Unknown mp_type&#39;</span>
+    <span class="k">assert</span> <span class="nb">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS</span><span class="p">[</span><span class="n">mp_type</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;The environment </span><span class="si">{</span><span class="nb">id</span><span class="si">}</span><span class="s1"> is already registered for </span><span class="si">{</span><span class="n">mp_type</span><span class="si">}</span><span class="s1">.&#39;</span>
+
+    <span class="n">parts</span> <span class="o">=</span> <span class="nb">id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">ns</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;gym&#39;</span><span class="p">,</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">ns</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;env id can not contain multiple &quot;/&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">),</span> <span class="s1">&#39;Malformed env id, must end in -v</span><span class="si">{int}</span><span class="s1">.&#39;</span>
+
+    <span class="n">fancy_id</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">ns</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">mp_type</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span>
+
+    <span class="n">gym_register</span><span class="p">(</span>
+        <span class="nb">id</span><span class="o">=</span><span class="n">fancy_id</span><span class="p">,</span>
+        <span class="n">entry_point</span><span class="o">=</span><span class="n">bb_env_constructor</span><span class="p">,</span>
+        <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;underlying_id&#39;</span><span class="p">:</span> <span class="n">base_id</span><span class="p">,</span>
+            <span class="s1">&#39;mp_wrapper&#39;</span><span class="p">:</span> <span class="n">mp_wrapper</span><span class="p">,</span>
+            <span class="s1">&#39;mp_type&#39;</span><span class="p">:</span> <span class="n">mp_type</span><span class="p">,</span>
+            <span class="s1">&#39;_mp_config_override_register&#39;</span><span class="p">:</span> <span class="n">mp_config_override</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS</span><span class="p">[</span><span class="n">mp_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fancy_id</span><span class="p">)</span>
+    <span class="n">ALL_MOVEMENT_PRIMITIVE_ENVIRONMENTS</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fancy_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ns</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS</span><span class="p">:</span>
+        <span class="n">MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS</span><span class="p">[</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">mp_type</span><span class="p">:</span> <span class="p">[]</span> <span class="k">for</span> <span class="n">mp_type</span> <span class="ow">in</span> <span class="n">_KNOWN_MPS_PLUS_ALL</span><span class="p">}</span>
+    <span class="n">MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS</span><span class="p">[</span><span class="n">ns</span><span class="p">][</span><span class="n">mp_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fancy_id</span><span class="p">)</span>
+    <span class="n">MOVEMENT_PRIMITIVE_ENVIRONMENTS_FOR_NS</span><span class="p">[</span><span class="n">ns</span><span class="p">][</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fancy_id</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">nested_update</span><span class="p">(</span><span class="n">base</span><span class="p">:</span> <span class="n">MutableMapping</span><span class="p">,</span> <span class="n">update</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Updated method for nested Mappings</span>
+<span class="sd">    Args:</span>
+<span class="sd">        base: main Mapping to be updated</span>
+<span class="sd">        update: updated values for base Mapping</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">item</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_type&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">update</span><span class="p">]):</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">update</span>
+        <span class="k">return</span> <span class="n">base</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">update</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">base</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">nested_update</span><span class="p">(</span><span class="n">base</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">)</span> <span class="k">else</span> <span class="n">v</span>
+    <span class="k">return</span> <span class="n">base</span>
+
+
+<span class="k">def</span> <span class="nf">bb_env_constructor</span><span class="p">(</span><span class="n">underlying_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="p">,</span> <span class="n">mp_type</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span><span class="p">{},</span> <span class="n">_mp_config_override_register</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">raw_underlying_env</span> <span class="o">=</span> <span class="n">gym_make</span><span class="p">(</span><span class="n">underlying_id</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">underlying_env</span> <span class="o">=</span> <span class="n">mp_wrapper</span><span class="p">(</span><span class="n">raw_underlying_env</span><span class="p">)</span>
+
+    <span class="n">mp_config</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">underlying_env</span><span class="p">,</span> <span class="s1">&#39;mp_config&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">underlying_env</span><span class="p">,</span> <span class="s1">&#39;mp_config&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">active_mp_config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">mp_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mp_type</span><span class="p">,</span> <span class="p">{}))</span>
+    <span class="n">global_inherit_defaults</span> <span class="o">=</span> <span class="n">mp_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;inherit_defaults&#39;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">inherit_defaults</span> <span class="o">=</span> <span class="n">active_mp_config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;inherit_defaults&#39;</span><span class="p">,</span> <span class="n">global_inherit_defaults</span><span class="p">)</span>
+
+    <span class="n">config</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">_BB_DEFAULTS</span><span class="p">[</span><span class="n">mp_type</span><span class="p">])</span> <span class="k">if</span> <span class="n">inherit_defaults</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">nested_update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">active_mp_config</span><span class="p">)</span>
+    <span class="n">nested_update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">_mp_config_override_register</span><span class="p">)</span>
+    <span class="n">nested_update</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="p">)</span>
+
+    <span class="n">wrappers</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;wrappers&#39;</span><span class="p">)</span>
+
+    <span class="n">traj_gen_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">black_box_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;black_box_kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">contr_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;controller_kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">phase_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">basis_kwargs</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">return</span> <span class="n">make_bb</span><span class="p">(</span><span class="n">underlying_env</span><span class="p">,</span>
+                   <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span>
+                   <span class="n">black_box_kwargs</span><span class="o">=</span><span class="n">black_box_kwargs</span><span class="p">,</span>
+                   <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">traj_gen_kwargs</span><span class="p">,</span>
+                   <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">contr_kwargs</span><span class="p">,</span>
+                   <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_kwargs</span><span class="p">,</span>
+                   <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_kwargs</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -3,24 +3,24 @@ import fancy_gym
 
 
 def example_run_replanning_env(env_name="fancy_ProDMP/BoxPushingDenseReplan-v0", seed=1, iterations=1, render=False):
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode='human' if render else None)
     env.reset(seed=seed)
     for i in range(iterations):
-        done = False
-        while done is False:
+        while True:
             ac = env.action_space.sample()
             obs, reward, terminated, truncated, info = env.step(ac)
             if render:
-                env.render(mode="human")
+                env.render()
             if terminated or truncated:
                 env.reset()
+                break
     env.close()
     del env
 
 
 def example_custom_replanning_envs(seed=0, iteration=100, render=True):
     # id for a step-based environment
-    base_env_id = "BoxPushingDense-v0"
+    base_env_id = "fancy/BoxPushingDense-v0"
 
     wrappers = [fancy_gym.envs.mujoco.box_pushing.mp_wrapper.MPWrapper]
 
@@ -38,12 +38,13 @@ def example_custom_replanning_envs(seed=0, iteration=100, render=True):
                         'replanning_schedule': lambda pos, vel, obs, action, t: t % 25 == 0,
                         'condition_on_desired': True}
 
-    env = fancy_gym.make_bb(env_id=base_env_id, wrappers=wrappers, black_box_kwargs=black_box_kwargs,
+    base_env = gym.make(base_env_id, render_mode='human' if render else None)
+    env = fancy_gym.make_bb(env=base_env, wrappers=wrappers, black_box_kwargs=black_box_kwargs,
                             traj_gen_kwargs=trajectory_generator_kwargs, controller_kwargs=controller_kwargs,
                             phase_kwargs=phase_generator_kwargs, basis_kwargs=basis_generator_kwargs,
                             seed=seed)
     if render:
-        env.render(mode="human")
+        env.render()
 
     obs = env.reset()
 
@@ -56,10 +57,12 @@ def example_custom_replanning_envs(seed=0, iteration=100, render=True):
     env.close()
     del env
 
-
-if __name__ == "__main__":
+def main(render=False):
     # run a registered replanning environment
-    example_run_replanning_env(env_name="fancy_ProDMP/BoxPushingDenseReplan-v0", seed=1, iterations=1, render=False)
+    example_run_replanning_env(env_name="fancy_ProDMP/BoxPushingDenseReplan-v0", seed=1, iterations=1, render=render)
 
     # run a custom replanning environment
-    example_custom_replanning_envs(seed=0, iteration=8, render=True)
+    example_custom_replanning_envs(seed=0, iteration=8, render=render)
+
+if __name__ == "__main__":
+    main()

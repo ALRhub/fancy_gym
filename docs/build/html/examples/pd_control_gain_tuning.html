@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PD Control Gain Tuning Example &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Replanning Example" href="replanning_envs.html" />
+    <link rel="prev" title="MP Params Tuning Example" href="mp_params_tuning.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../envs/fancy/index.html">Fancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PD Control Gain Tuning Example</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/examples/pd_control_gain_tuning.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pd-control-gain-tuning-example">
+<h1>PD Control Gain Tuning Example<a class="headerlink" href="#pd-control-gain-tuning-example" title="Permalink to this heading"></a></h1>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="linenos"> 4</span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="linenos"> 7</span><span class="kn">import</span> <span class="nn">fancy_gym</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># This might work for some environments, however, please verify either way the correct trajectory information</span>
+<span class="linenos">10</span><span class="c1"># for your environment are extracted below</span>
+<span class="linenos">11</span><span class="n">SEED</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="linenos">12</span>
+<span class="linenos">13</span><span class="n">env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy_ProMP/Reacher5d-v0&quot;</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_id</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;p_gains&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span> <span class="s1">&#39;d_gains&#39;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">}})</span><span class="o">.</span><span class="n">env</span>
+<span class="linenos">16</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="c1"># Plot difference between real trajectory and target MP trajectory</span>
+<span class="linenos">19</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">SEED</span><span class="p">)</span>
+<span class="linenos">20</span><span class="n">w</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">21</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_trajectory</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+<span class="linenos">22</span>
+<span class="linenos">23</span><span class="n">base_shape</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span>
+<span class="linenos">24</span><span class="n">actual_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">),</span> <span class="o">*</span><span class="n">base_shape</span><span class="p">))</span>
+<span class="linenos">25</span><span class="n">actual_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">),</span> <span class="o">*</span><span class="n">base_shape</span><span class="p">))</span>
+<span class="linenos">26</span><span class="n">act</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">pos</span><span class="p">),</span> <span class="o">*</span><span class="n">base_shape</span><span class="p">))</span>
+<span class="linenos">27</span>
+<span class="linenos">28</span><span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+<span class="linenos">29</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="linenos">30</span><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span><span class="n">img</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rgb_array&quot;</span><span class="p">))</span>
+<span class="linenos">33</span><span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="linenos">34</span>
+<span class="linenos">35</span><span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="p">(</span><span class="n">des_pos</span><span class="p">,</span> <span class="n">des_vel</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">)):</span>
+<span class="linenos">36</span>    <span class="n">actions</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">tracking_controller</span><span class="o">.</span><span class="n">get_action</span><span class="p">(</span><span class="n">des_pos</span><span class="p">,</span> <span class="n">des_vel</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">current_pos</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">current_vel</span><span class="p">)</span>
+<span class="linenos">37</span>    <span class="n">actions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">)</span>
+<span class="linenos">38</span>    <span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+<span class="linenos">39</span>    <span class="k">if</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">15</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<span class="linenos">40</span>        <span class="n">img</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;rgb_array&quot;</span><span class="p">))</span>
+<span class="linenos">41</span>        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="linenos">42</span>        <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">flush_events</span><span class="p">()</span>
+<span class="linenos">43</span>    <span class="n">act</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">actions</span>
+<span class="linenos">44</span>    <span class="c1"># TODO verify for your environment</span>
+<span class="linenos">45</span>    <span class="n">actual_pos</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">current_pos</span>
+<span class="linenos">46</span>    <span class="n">actual_vel</span><span class="p">[</span><span class="n">t</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">current_vel</span>
+<span class="linenos">47</span>
+<span class="linenos">48</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="linenos">49</span>
+<span class="linenos">50</span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">131</span><span class="p">)</span>
+<span class="linenos">51</span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Position&quot;</span><span class="p">)</span>
+<span class="linenos">52</span><span class="n">p1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">actual_pos</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;true&quot;</span><span class="p">)</span>
+<span class="linenos">53</span><span class="n">p2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;MP&quot;</span><span class="p">)</span>
+<span class="linenos">54</span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Episode steps&quot;</span><span class="p">)</span>
+<span class="linenos">55</span><span class="n">handles</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">get_legend_handles_labels</span><span class="p">()</span>
+<span class="linenos">56</span>
+<span class="linenos">57</span><span class="n">by_label</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">handles</span><span class="p">))</span>
+<span class="linenos">58</span><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">by_label</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">by_label</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<span class="linenos">59</span>
+<span class="linenos">60</span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">132</span><span class="p">)</span>
+<span class="linenos">61</span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Velocity&quot;</span><span class="p">)</span>
+<span class="linenos">62</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">actual_vel</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;true&quot;</span><span class="p">)</span>
+<span class="linenos">63</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">vel</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;MP&quot;</span><span class="p">)</span>
+<span class="linenos">64</span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Episode steps&quot;</span><span class="p">)</span>
+<span class="linenos">65</span>
+<span class="linenos">66</span><span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">133</span><span class="p">)</span>
+<span class="linenos">67</span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Actions </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">act</span><span class="p">,</span><span class="w"> </span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="linenos">68</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">act</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C0&quot;</span><span class="p">),</span>
+<span class="linenos">69</span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Episode steps&quot;</span><span class="p">)</span>
+<span class="linenos">70</span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="mp_params_tuning.html" class="btn btn-neutral float-left" title="MP Params Tuning Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="replanning_envs.html" class="btn btn-neutral float-right" title="Replanning Example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

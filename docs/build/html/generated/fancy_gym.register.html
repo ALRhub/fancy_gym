@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>fancy_gym.register &mdash; Fancy Gym 0.3.0 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/style.css" type="text/css" />
+    <link rel="shortcut icon" href="../_static/icon.svg"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="fancy_gym.upgrade" href="fancy_gym.upgrade.html" />
+    <link rel="prev" title="API" href="../api.html" />
+   
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Fancy Gym
+              <img src="../_static/icon.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.3.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guide/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/episodic_rl.html">What is Episodic RL?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/basic_usage.html">Basic Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide/upgrading_envs.html">Creating new MP Environments</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Environments</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../envs/fancy/index.html">Fancy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/dmc.html">DeepMind Control (DMC)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/meta.html">Metaworld</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../envs/open_ai.html">Gymnasium</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/general.html">General Usage Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/dmc.html">DeepMind Control Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/metaworld.html">Metaworld Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/open_ai.html">OpenAI Envs Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/movement_primitives.html">Movement Primitives Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/mp_params_tuning.html">MP Params Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/pd_control_gain_tuning.html">PD Control Gain Tuning Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/replanning_envs.html">Replanning Example</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">fancy_gym.register</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#fancy_gym.register"><code class="docutils literal notranslate"><span class="pre">register()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fancy_gym.upgrade.html">fancy_gym.upgrade</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Fancy Gym</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">API</a></li>
+      <li class="breadcrumb-item active">fancy_gym.register</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/ALRhub/fancy_gym/blob/release/docs/source/generated/fancy_gym.register.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="fancy-gym-register">
+<h1>fancy_gym.register<a class="headerlink" href="#fancy-gym-register" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="fancy_gym.register">
+<span class="sig-prename descclassname"><span class="pre">fancy_gym.</span></span><span class="sig-name descname"><span class="pre">register</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">id:</span> <span class="pre">str,</span> <span class="pre">entry_point:</span> <span class="pre">~typing.Optional[~typing.Union[~typing.Callable,</span> <span class="pre">str]]</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">mp_wrapper:</span> <span class="pre">~fancy_gym.black_box.raw_interface_wrapper.RawInterfaceWrapper</span> <span class="pre">=</span> <span class="pre">&lt;class</span> <span class="pre">'fancy_gym.envs.registry.DefaultMPWrapper'&gt;,</span> <span class="pre">register_step_based:</span> <span class="pre">bool</span> <span class="pre">=</span> <span class="pre">True,</span> <span class="pre">add_mp_types:</span> <span class="pre">~typing.List[str]</span> <span class="pre">=</span> <span class="pre">['ProMP',</span> <span class="pre">'DMP',</span> <span class="pre">'ProDMP'],</span> <span class="pre">mp_config_override:</span> <span class="pre">~typing.Dict[str,</span> <span class="pre">~typing.Any]</span> <span class="pre">=</span> <span class="pre">{},</span> <span class="pre">**kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/fancy_gym/envs/registry.html#register"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#fancy_gym.register" title="Permalink to this definition"></a></dt>
+<dd><p>Registers a Gymnasium environment, including Movement Primitives (MP) versions.
+If you only want to register MP versions for an already registered environment, use fancy_gym.upgrade instead.</p>
+<dl>
+<dt>Args:</dt><dd><p>id (str): The unique identifier for the environment.
+entry_point (Optional[Union[Callable, str]]): The entry point for creating the environment.
+mp_wrapper (RawInterfaceWrapper): The MP wrapper for the environment.
+register_step_based (bool): Whether to also register the raw srtep-based version of the environment (default True).
+add_mp_types (List[str]): List of additional MP types to register.
+mp_config_override (Dict[str, Any]): Dictionary for overriding MP configuration.
+<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs: Additional keyword arguments which are passed to the environment constructor.</p>
+</dd>
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>When <cite>register_step_based</cite> is True, the raw environment will also be registered to gymnasium otherwise only mp-versions will be registered.</p></li>
+<li><p><cite>entry_point</cite> can be given as a string, allowing the same notation as gymnasium.</p></li>
+<li><p>If <cite>id</cite> already exists in the Gymnasium registry and <cite>register_step_based</cite> is True,
+a warning message will be printed, suggesting to set <cite>register_step_based=False</cite> or use <cite>fancy_gym.upgrade</cite>.</p></li>
+</ul>
+</dd>
+<dt>Example:</dt><dd><p>To register a step-based environment with Movement Primitive versions (will use default mp_wrapper):
+&gt;&gt;&gt; register(“MyEnv-v0”, MyEnvClass”my_module:MyEnvClass”)</p>
+<p>The entry point can also be provided as a string:
+&gt;&gt;&gt; register(“MyEnv-v0”, “my_module:MyEnvClass”)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api.html" class="btn btn-neutral float-left" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="fancy_gym.upgrade.html" class="btn btn-neutral float-right" title="fancy_gym.upgrade" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020-2024, Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -71,6 +71,8 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
                            observation_space=self.observation_space,
                            **kwargs)
 
+        self.render_active = False
+
         if ctxt_dim == 2:
             self.context_bounds = CONTEXT_BOUNDS_2DIMS
         elif ctxt_dim == 4:
@@ -158,7 +160,14 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
 
         terminated, truncated = self._terminated, False
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return self._get_obs(), reward, terminated, truncated, info
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def _contact_checker(self, id_1, id_2):
         for coni in range(0, self.data.ncon):
