@@ -151,3 +151,15 @@ class TTVelObs_MPWrapper_Replan(TT_MPWrapper_Replan):
             [True] * 2,  # target landing position
             # [True] * 1,  # time
         ])
+
+class TTRndRobot_MPWrapper(TT_MPWrapper):
+    @property
+    def context_mask(self):
+        return np.hstack([
+            [True] * 7,  # joints position
+            [False] * 7,  # joints velocity
+            [True] * 2,  # position ball x, y
+            [False] * 1,  # position ball z
+            [True] * 2,  # target landing position
+            # [True] * 1,  # time
+        ])

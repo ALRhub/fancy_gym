@@ -52,7 +52,7 @@ class FixMetaworldIgnoresSeedOnResetWrapper(gym.Wrapper, gym.utils.RecordConstru
 
     def reset(self, **kwargs):
         if 'seed' in kwargs:
-            print('[!] You just called .reset on a Metaworld env and supplied a seed. Metaworld curretly does not correctly implement seeding. Do not rely on deterministic behavior.')
+            print('[Fancy Gym] You just called .reset on a Metaworld env and supplied a seed. Metaworld curretly does not correctly implement seeding. Do not rely on deterministic behavior.')
             self.env.seed(kwargs['seed'])
         return self.env.reset(**kwargs)
 
