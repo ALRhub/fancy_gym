@@ -13,15 +13,13 @@ def example_mp(env_name, seed=1, render=True):
     Returns:
 
     """
-    env = gym.make(env_name)
+    env = gym.make(env_name, render_mode='human' if render else None)
 
     returns = 0
     obs = env.reset(seed=seed)
     # number of samples/full trajectories (multiple environment steps)
     for i in range(10):
         if render and i % 2 == 0:
-            env.render(mode="human")
-        else:
             env.render()
         ac = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(ac)

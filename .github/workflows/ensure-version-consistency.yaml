@@ -1,0 +1,52 @@
+name: Ensure Version Consistency on PR to Release
+
+on:
+  pull_request:
+    branches:
+      - release
+
+jobs:
+  check_version_and_tag:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true  # Terminate the job immediately if any step fails
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necessary to fetch all tags for comparison
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install toml
+
+      - name: Extract version from pyproject.toml
+        run: |
+          echo "Extracting version from pyproject.toml"
+          VERSION=$(python -c 'import toml; print(toml.load("pyproject.toml")["project"]["version"])')
+          echo "Version in pyproject.toml is $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Get tag for the PR's head commit
+        run: |
+          PR_HEAD_SHA=$(jq -r .pull_request.head.sha < "$GITHUB_EVENT_PATH")
+          TAG=$(git tag --contains $PR_HEAD_SHA)
+          echo "Tag on PR's head commit is $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Compare version and tag
+        run: |
+          if [ -z "$TAG" ]; then
+            echo "Head commit of PR is not tagged. Ensure the head commit of PRs onto release is tagged with the version number."
+            exit 1
+          elif [ "$VERSION" != "$TAG" ]; then
+            echo "Version in pyproject.toml ($VERSION) does not match the git tag ($TAG)."
+            exit 1
+          else
+            echo "Version and git tag match. Check passed."
+          fi

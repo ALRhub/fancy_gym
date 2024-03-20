@@ -1,13 +1,17 @@
 # This conf.py is in large parts inspired by the oen used by stable-baselines 3
 
+import toml
 import datetime
 
 project = 'Fancy Gym'
 author = 'Fabian Otto, Onur Celik, Dominik Roth, Hongyi Zhou'
 copyright = f'2020-{datetime.date.today().year}, {author}'
 
-release = '0.2'  # The full version, including alpha/beta/rc tags
-version = '0.2'  # The short X.Y version
+pyproject_content = toml.load("../../pyproject.toml")
+proj_version = pyproject_content["project"]["version"]
+
+release = proj_version  # The full version, including alpha/beta/rc tags
+version = proj_version  # The short X.Y version
 
 extensions = [
     'myst_parser',

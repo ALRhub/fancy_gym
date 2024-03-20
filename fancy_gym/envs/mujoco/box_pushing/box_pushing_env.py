@@ -4,6 +4,7 @@ import numpy as np
 from gymnasium import utils, spaces
 from gymnasium.envs.mujoco import MujocoEnv
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import calculate_jerk_profile, calculate_mean_squared_jerk, calculate_dimensionless_jerk, calculate_maximum_jerk
@@ -62,6 +63,7 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
                            frame_skip=self.frame_skip,
                            observation_space=self.observation_space, **kwargs)
         self.action_space = spaces.Box(low=-1, high=1, shape=(7,))
+        self.render_active = False
 
     def step(self, action):
         action = 10 * np.clip(action, self.action_space.low, self.action_space.high)
@@ -116,7 +118,14 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         terminated = episode_end and infos['is_success']
         truncated = episode_end and not infos['is_success']
 
+        if self.render_active and self.render_mode=='human':
+            self.render()
+
         return obs, reward, terminated, truncated, infos
+
+    def render(self):
+        self.render_active = True
+        return super().render()
 
     def calculate_smoothness_metrics(self, velocity_profile, dt):
         """
