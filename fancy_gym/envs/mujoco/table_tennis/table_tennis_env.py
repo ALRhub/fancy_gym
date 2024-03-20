@@ -299,7 +299,7 @@ class TableTennisEnv(MujocoEnv, utils.EzPickle):
             return False, pos_traj, vel_traj
         return True, pos_traj, vel_traj
 
-class TableTennisMarkovian(TableTennisEnv):
+class TableTennisMarkov(TableTennisEnv):
     def _get_reward2(self, hit_now, land_now):
 
         # Phase 1 not hit ball

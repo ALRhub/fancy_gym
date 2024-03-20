@@ -316,18 +316,18 @@ register(
 )
 
 register(
-    id='fancy/TableTennisMarkovian-v0',
+    id='fancy/TableTennisMarkov-v0',
     mp_wrapper=MPWrapper_TableTennis,
-    entry_point='fancy_gym.envs.mujoco:TableTennisMarkovian',
+    entry_point='fancy_gym.envs.mujoco:TableTennisMarkov',
     max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS_MARKOV_VER,
     kwargs={
     }
 )
 
 register(
-    id='fancy/TableTennisRndRobotMarkovian-v0',
+    id='fancy/TableTennisRndRobotMarkov-v0',
     mp_wrapper=MPWrapper_TableTennis_Rnd,
-    entry_point='fancy_gym.envs.mujoco:TableTennisMarkovian',
+    entry_point='fancy_gym.envs.mujoco:TableTennisMarkov',
     max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS_MARKOV_VER,
     kwargs={
         'random_pos_scale': 0.1,
