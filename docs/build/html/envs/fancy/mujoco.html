@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mujoco &mdash; Fancy Gym 0.2 documentation</title>
+  <title>Mujoco &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -135,6 +135,12 @@
 <p>The observation space includes the sine and cosine values of the robotic joint angles, their velocities, and quaternion orientations for the end-effector and the box. The action space describes the applied torques for each joint.</p>
 <p>A composite reward function serves as the performance metric for the RL system. It accounts for the distance to the goal, the box’s orientation, maintaining a rod within the box, achieving the rod’s desired orientation, and includes penalties for joint position and velocity limit violations, as well as an action cost for energy expenditure.</p>
 <p>Variations of this environment are available, differing in reward structures and the optionality of randomizing the box’s initial position. These variations are purposefully designed to challenge RL algorithms, enhancing their generalization and adaptation capabilities. Temporally sparse environments only provide a reward at the last timestep. Spatially sparse environments only provide a reward, if the goal is almost reached, the box is close enought to the goal and somewhat correctly aligned.</p>
+<p>These environments all provide smoothness metrics as part of the return infos:</p>
+<ul class="simple">
+<li><p>mean_squared_jerk: Averages the square of jerk (rate of acceleration change) across the motion. Lower values indicate smoother movement.</p></li>
+<li><p>maximum_jerk: Identifies the highest jerk value encountered.</p></li>
+<li><p>dimensionless_jerk: Normalizes the summed squared jerk over the motion’s duration and peak velocity, offering a scale-independent metric of smoothness</p></li>
+</ul>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
@@ -228,8 +234,15 @@
 <td><p>7</p></td>
 <td><p>19</p></td>
 </tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/TableTennisRndRobot-v0</span></code></p></td>
+<td><p>Table Tennis task with random initial robot joint positions *</p></td>
+<td><p>350</p></td>
+<td><p>7</p></td>
+<td><p>19</p></td>
+</tr>
 </tbody>
 </table>
+<p>* Random initialization of robot joint position and speed can be enabled by providing <code class="docutils literal notranslate"><span class="pre">random_pos_scale</span></code> / <code class="docutils literal notranslate"><span class="pre">random_vel_scale</span></code> to make. <code class="docutils literal notranslate"><span class="pre">TableTennisRndRobot</span></code> is equivalent to <code class="docutils literal notranslate"><span class="pre">TableTennis4D</span></code> except, that <code class="docutils literal notranslate"><span class="pre">random_pos_scale</span></code> is set to 0.1 instead of 0 per default.</p>
 </section>
 <hr class="docutils" />
 <section id="beer-pong">
@@ -335,49 +348,55 @@
 <td><p>7</p></td>
 <td><p>22</p></td>
 </tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJump-v0</span></code></p></td>
+<td><p>Hopper Jump task with continuous rewards, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>15 / 16*</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpMarkov-v0</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJump-v0</span></code>, but with an alternative reward that is markovian.</p></td>
+<td><p>250</p></td>
+<td><p>3</p></td>
+<td><p>15 / 16*</p></td>
+</tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpSparse-v0</span></code></p></td>
 <td><p>Hopper Jump task with sparse rewards, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
 <td><p>250</p></td>
 <td><p>3</p></td>
 <td><p>15 / 16*</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJump-v0</span></code></p></td>
-<td><p>Hopper Jump task with continuous rewards, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
-<td><p>250</p></td>
-<td><p>3</p></td>
-<td><p>15 / 16*</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/AntJump-v0</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/AntJump-v0</span></code></p></td>
 <td><p>Ant Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Ant</span></code></p></td>
 <td><p>200</p></td>
 <td><p>8</p></td>
 <td><p>119</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HalfCheetahJump-v0</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HalfCheetahJump-v0</span></code></p></td>
 <td><p>HalfCheetah Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.HalfCheetah</span></code></p></td>
 <td><p>100</p></td>
 <td><p>6</p></td>
 <td><p>112</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpOnBox-v0</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperJumpOnBox-v0</span></code></p></td>
 <td><p>Hopper Jump on Box task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
 <td><p>250</p></td>
 <td><p>4</p></td>
 <td><p>16 / 100*</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrow-v0</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrow-v0</span></code></p></td>
 <td><p>Hopper Throw task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
 <td><p>250</p></td>
 <td><p>3</p></td>
 <td><p>18 / 100*</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrowInBasket-v0</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/HopperThrowInBasket-v0</span></code></p></td>
 <td><p>Hopper Throw in Basket task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Hopper</span></code></p></td>
 <td><p>250</p></td>
 <td><p>3</p></td>
 <td><p>18 / 100*</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Walker2DJump-v0</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">fancy/Walker2DJump-v0</span></code></p></td>
 <td><p>Walker 2D Jump task, based on Gymnasium’s <code class="docutils literal notranslate"><span class="pre">gym.envs.mujoco.Walker2d</span></code></p></td>
 <td><p>300</p></td>
 <td><p>6</p></td>

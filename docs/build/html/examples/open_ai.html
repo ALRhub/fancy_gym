@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OpenAI Envs Examples &mdash; Fancy Gym 0.2 documentation</title>
+  <title>OpenAI Envs Examples &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -122,27 +122,27 @@
 <span class="linenos">13</span><span class="sd">    Returns:</span>
 <span class="linenos">14</span>
 <span class="linenos">15</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos">16</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">)</span>
+<span class="linenos">16</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 <span class="linenos">17</span>
 <span class="linenos">18</span>    <span class="n">returns</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="linenos">19</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 <span class="linenos">20</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
 <span class="linenos">21</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
 <span class="linenos">22</span>        <span class="k">if</span> <span class="n">render</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="linenos">23</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
-<span class="linenos">24</span>        <span class="k">else</span><span class="p">:</span>
-<span class="linenos">25</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos">26</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">27</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">28</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos">29</span>
-<span class="linenos">30</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">31</span>            <span class="nb">print</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
-<span class="linenos">32</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">33</span>
+<span class="linenos">23</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">24</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">25</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">26</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">27</span>
+<span class="linenos">28</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">29</span>            <span class="nb">print</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+<span class="linenos">30</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">31</span>
+<span class="linenos">32</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos">33</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;gym_ProMP/Reacher-v2&quot;</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
 <span class="linenos">34</span>
 <span class="linenos">35</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-<span class="linenos">36</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;gym_ProMP/Reacher-v2&quot;</span><span class="p">)</span>
+<span class="linenos">36</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

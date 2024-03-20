@@ -25,10 +25,11 @@ from .mujoco.hopper_throw.hopper_throw_in_basket import MAX_EPISODE_STEPS_HOPPER
 from .mujoco.walker_2d_jump.walker_2d_jump import MAX_EPISODE_STEPS_WALKERJUMP
 from .mujoco.box_pushing.box_pushing_env import BoxPushingDense, BoxPushingTemporalSparse, \
     BoxPushingTemporalSpatialSparse, MAX_EPISODE_STEPS_BOX_PUSHING
-from .mujoco.table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching, \
-    MAX_EPISODE_STEPS_TABLE_TENNIS
+from .mujoco.table_tennis.table_tennis_env import TableTennisEnv, TableTennisWind, TableTennisGoalSwitching, TableTennisMarkov, \
+    MAX_EPISODE_STEPS_TABLE_TENNIS, MAX_EPISODE_STEPS_TABLE_TENNIS_MARKOV_VER
 from .mujoco.table_tennis.mp_wrapper import TT_MPWrapper as MPWrapper_TableTennis
 from .mujoco.table_tennis.mp_wrapper import TT_MPWrapper_Replan as MPWrapper_TableTennis_Replan
+from .mujoco.table_tennis.mp_wrapper import TTRndRobot_MPWrapper as MPWrapper_TableTennis_Rnd
 from .mujoco.table_tennis.mp_wrapper import TTVelObs_MPWrapper as MPWrapper_TableTennis_VelObs
 from .mujoco.table_tennis.mp_wrapper import TTVelObs_MPWrapper_Replan as MPWrapper_TableTennis_VelObs_Replan
 
@@ -125,6 +126,19 @@ register(
 register(
     id='fancy/HopperJump-v0',
     entry_point='fancy_gym.envs.mujoco:HopperJumpEnv',
+    mp_wrapper=mujoco.hopper_jump.MPWrapper,
+    max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
+    kwargs={
+        "sparse": False,
+        "healthy_reward": 1.0,
+        "contact_weight": 0.0,
+        "height_weight": 3.0,
+    }
+)
+
+register(
+    id='fancy/HopperJumpMarkov-v0',
+    entry_point='fancy_gym.envs.mujoco:HopperJumpMarkovRew',
     mp_wrapper=mujoco.hopper_jump.MPWrapper,
     max_episode_steps=MAX_EPISODE_STEPS_HOPPERJUMP,
     kwargs={
@@ -287,6 +301,37 @@ register(
     max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
     kwargs={
         'goal_switching_step': 99
+    }
+)
+
+register(
+    id='fancy/TableTennisRndRobot-v0',
+    entry_point='fancy_gym.envs.mujoco:TableTennisRandomInit',
+    mp_wrapper=MPWrapper_TableTennis_Rnd,
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS,
+    kwargs={
+        'random_pos_scale': 0.1,
+        'random_vel_scale': 0.0,
+    }
+)
+
+register(
+    id='fancy/TableTennisMarkov-v0',
+    mp_wrapper=MPWrapper_TableTennis,
+    entry_point='fancy_gym.envs.mujoco:TableTennisMarkov',
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS_MARKOV_VER,
+    kwargs={
+    }
+)
+
+register(
+    id='fancy/TableTennisRndRobotMarkov-v0',
+    mp_wrapper=MPWrapper_TableTennis_Rnd,
+    entry_point='fancy_gym.envs.mujoco:TableTennisMarkov',
+    max_episode_steps=MAX_EPISODE_STEPS_TABLE_TENNIS_MARKOV_VER,
+    kwargs={
+        'random_pos_scale': 0.1,
+        'random_vel_scale': 0.0,
     }
 )
 

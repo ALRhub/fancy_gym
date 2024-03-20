@@ -18,6 +18,12 @@ A composite reward function serves as the performance metric for the RL system. 
 
 Variations of this environment are available, differing in reward structures and the optionality of randomizing the box's initial position. These variations are purposefully designed to challenge RL algorithms, enhancing their generalization and adaptation capabilities. Temporally sparse environments only provide a reward at the last timestep. Spatially sparse environments only provide a reward, if the goal is almost reached, the box is close enought to the goal and somewhat correctly aligned.
 
+These environments all provide smoothness metrics as part of the return infos:
+
+- mean_squared_jerk: Averages the square of jerk (rate of acceleration change) across the motion. Lower values indicate smoother movement.
+- maximum_jerk: Identifies the highest jerk value encountered.
+- dimensionless_jerk: Normalizes the summed squared jerk over the motion's duration and peak velocity, offering a scale-independent metric of smoothness
+
 | Name                                       | Description                                                          | Horizon | Action Dimension | Observation Dimension |
 | ------------------------------------------ | -------------------------------------------------------------------- | ------- | ---------------- | --------------------- |
 | `fancy/BoxPushingDense-v0`                 | Custom Box-pushing task with dense rewards                           | 100     | 3                | 13                    |
@@ -49,6 +55,9 @@ Variations of the table tennis environment are available to cater to different r
 | `fancy/TableTennisWind-v0`          | Table Tennis task with wind effects, based on a custom environment for table tennis                | 350     | 7                | 19                    |
 | `fancy/TableTennisGoalSwitching-v0` | Table Tennis task with goal switching, based on a custom environment for table tennis              | 350     | 7                | 19                    |
 | `fancy/TableTennisWindReplan-v0`    | Table Tennis task with wind effects and replanning, based on a custom environment for table tennis | 350     | 7                | 19                    |
+| `fancy/TableTennisRndRobot-v0`      | Table Tennis task with random initial robot joint positions \*                                     | 350     | 7                | 19                    |
+
+\* Random initialization of robot joint position and speed can be enabled by providing `random_pos_scale` / `random_vel_scale` to make. `TableTennisRndRobot` is equivalent to `TableTennis4D` except, that `random_pos_scale` is set to 0.1 instead of 0 per default.
 
 ---
 
@@ -89,8 +98,9 @@ A successful throw in this task is determined by the ball landing in the cup at 
 | `fancy/Reacher5dSparse-v0`     | Sparse Reacher task with 5 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 5                | 20                    |
 | `fancy/Reacher7d-v0`           | Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 7                | 22                    |
 | `fancy/Reacher7dSparse-v0`     | Sparse Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 7                | 22                    |
-| `fancy/HopperJumpSparse-v0`    | Hopper Jump task with sparse rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`              | 250     | 3                | 15 / 16\*             |
 | `fancy/HopperJump-v0`          | Hopper Jump task with continuous rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`          | 250     | 3                | 15 / 16\*             |
+| `fancy/HopperJumpMarkov-v0`    | `fancy/HopperJump-v0`, but with an alternative reward that is markovian.                         | 250     | 3                | 15 / 16\*             |
+| `fancy/HopperJumpSparse-v0`    | Hopper Jump task with sparse rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`              | 250     | 3                | 15 / 16\*             |
 | `fancy/AntJump-v0`             | Ant Jump task, based on Gymnasium's `gym.envs.mujoco.Ant`                                        | 200     | 8                | 119                   |
 | `fancy/HalfCheetahJump-v0`     | HalfCheetah Jump task, based on Gymnasium's `gym.envs.mujoco.HalfCheetah`                        | 100     | 6                | 112                   |
 | `fancy/HopperJumpOnBox-v0`     | Hopper Jump on Box task, based on Gymnasium's `gym.envs.mujoco.Hopper`                           | 250     | 4                | 16 / 100\*            |

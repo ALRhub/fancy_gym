@@ -272,76 +272,100 @@ class HopperJumpEnv(HopperEnvCustomXML):
                 return True
         return False
 
-# # TODO is that needed? if so test it
-# class HopperJumpStepEnv(HopperJumpEnv):
-#
-#     def __init__(self,
-#                  xml_file='hopper_jump.xml',
-#                  forward_reward_weight=1.0,
-#                  ctrl_cost_weight=1e-3,
-#                  healthy_reward=1.0,
-#                  height_weight=3,
-#                  dist_weight=3,
-#                  terminate_when_unhealthy=False,
-#                  healthy_state_range=(-100.0, 100.0),
-#                  healthy_z_range=(0.5, float('inf')),
-#                  healthy_angle_range=(-float('inf'), float('inf')),
-#                  reset_noise_scale=5e-3,
-#                  exclude_current_positions_from_observation=False
-#                  ):
-#
-#         self._height_weight = height_weight
-#         self._dist_weight = dist_weight
-#         super().__init__(xml_file, forward_reward_weight, ctrl_cost_weight, healthy_reward, terminate_when_unhealthy,
-#                          healthy_state_range, healthy_z_range, healthy_angle_range, reset_noise_scale,
-#                          exclude_current_positions_from_observation)
-#
-#     def step(self, action):
-#         self._steps += 1
-#
-#         self.do_simulation(action, self.frame_skip)
-#
-#         height_after = self.get_body_com("torso")[2]
-#         site_pos_after = self.data.site('foot_site').xpos.copy()
-#         self.max_height = max(height_after, self.max_height)
-#
-#         ctrl_cost = self.control_cost(action)
-#         healthy_reward = self.healthy_reward
-#         height_reward = self._height_weight * height_after
-#         goal_dist = np.linalg.norm(site_pos_after - np.array([self.goal, 0, 0]))
-#         goal_dist_reward = -self._dist_weight * goal_dist
-#         dist_reward = self._forward_reward_weight * (goal_dist_reward + height_reward)
-#
-#         rewards = dist_reward + healthy_reward
-#         costs = ctrl_cost
-#         done = False
-#
-#         # This is only for logging the distance to goal when first having the contact
-#         has_floor_contact = self._is_floor_foot_contact() if not self.contact_with_floor else False
-#
-#         if not self.init_floor_contact:
-#             self.init_floor_contact = has_floor_contact
-#         if self.init_floor_contact and not self.has_left_floor:
-#             self.has_left_floor = not has_floor_contact
-#         if not self.contact_with_floor and self.has_left_floor:
-#             self.contact_with_floor = has_floor_contact
-#
-#         if self.contact_dist is None and self.contact_with_floor:
-#             self.contact_dist = goal_dist
-#
-#         ##############################################################
-#
-#         observation = self._get_obs()
-#         reward = rewards - costs
-#         info = {
-#             'height': height_after,
-#             'x_pos': site_pos_after,
-#             'max_height': copy.copy(self.max_height),
-#             'goal': copy.copy(self.goal),
-#             'goal_dist': goal_dist,
-#             'height_rew': height_reward,
-#             'healthy_reward': healthy_reward,
-#             'healthy': copy.copy(self.is_healthy),
-#             'contact_dist': copy.copy(self.contact_dist) or 0
-#         }
-#         return observation, reward, done, info
+class HopperJumpMarkovRew(HopperJumpEnv):
+    def step(self, action):
+        self._steps += 1
+
+        self.do_simulation(action, self.frame_skip)
+
+        height_after = self.get_body_com("torso")[2]
+        # site_pos_after = self.data.get_site_xpos('foot_site')
+        site_pos_after = self.data.site('foot_site').xpos
+        self.max_height = max(height_after, self.max_height)
+
+        has_floor_contact = self._is_floor_foot_contact() if not self.contact_with_floor else False
+
+        if not self.init_floor_contact:
+            self.init_floor_contact = has_floor_contact
+        if self.init_floor_contact and not self.has_left_floor:
+            self.has_left_floor = not has_floor_contact
+        if not self.contact_with_floor and self.has_left_floor:
+            self.contact_with_floor = has_floor_contact
+
+        ctrl_cost = self.control_cost(action)
+        costs = ctrl_cost
+        terminated = False
+        truncated = False
+
+        goal_dist = np.linalg.norm(site_pos_after - self.goal)
+        if self.contact_dist is None and self.contact_with_floor:
+            self.contact_dist = goal_dist
+
+        rewards = 0
+        if not self.sparse or (self.sparse and self._steps >= MAX_EPISODE_STEPS_HOPPERJUMP):
+            healthy_reward = self.healthy_reward
+            distance_reward = -goal_dist * self._dist_weight
+            height_reward = (self.max_height if self.sparse else height_after) * self._height_weight
+            contact_reward = -(self.contact_dist or 5) * self._contact_weight
+            rewards = self._forward_reward_weight * (distance_reward + height_reward + contact_reward + healthy_reward)
+
+        observation = self._get_obs()
+
+        # While loop to simulate the process after jump to make the task Markovian
+        if self.sparse and self.has_left_floor:
+            while self._steps < MAX_EPISODE_STEPS_HOPPERJUMP:
+                # Simulate to the end of the episode
+                self._steps += 1
+
+                try:
+                    self.do_simulation(np.zeros_like(action), self.frame_skip)
+                except Exception as e:
+                    print(e)
+
+                height_after = self.get_body_com("torso")[2]
+                #site_pos_after = self.data.get_site_xpos('foot_site')
+                site_pos_after = self.data.site('foot_site').xpos
+                self.max_height = max(height_after, self.max_height)
+
+                has_floor_contact = self._is_floor_foot_contact() if not self.contact_with_floor else False
+
+                if not self.init_floor_contact:
+                    self.init_floor_contact = has_floor_contact
+                if self.init_floor_contact and not self.has_left_floor:
+                    self.has_left_floor = not has_floor_contact
+                if not self.contact_with_floor and self.has_left_floor:
+                    self.contact_with_floor = has_floor_contact
+
+                ctrl_cost = self.control_cost(action)
+                costs = ctrl_cost
+                done = False
+
+                goal_dist = np.linalg.norm(site_pos_after - self.goal)
+                if self.contact_dist is None and self.contact_with_floor:
+                    self.contact_dist = goal_dist
+
+                rewards = 0
+
+            # Task has reached the end, compute the sparse reward
+            done = True
+            healthy_reward = self.healthy_reward
+            distance_reward = -goal_dist * self._dist_weight
+            height_reward = (self.max_height if self.sparse else height_after) * self._height_weight
+            contact_reward = -(self.contact_dist or 5) * self._contact_weight
+            rewards = self._forward_reward_weight * (distance_reward + height_reward + contact_reward + healthy_reward)
+
+        reward = rewards - costs
+        info = dict(
+            height=height_after,
+            x_pos=site_pos_after,
+            max_height=self.max_height,
+            goal=self.goal[:1],
+            goal_dist=goal_dist,
+            height_rew=self.max_height,
+            healthy_reward=self.healthy_reward,
+            healthy=self.is_healthy,
+            contact_dist=self.contact_dist or 0,
+            num_steps=self._steps,
+            has_left_floor=self.has_left_floor
+       )
+        return observation, reward, terminated, truncated, info

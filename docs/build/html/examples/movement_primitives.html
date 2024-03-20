@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movement Primitives Examples &mdash; Fancy Gym 0.2 documentation</title>
+  <title>Movement Primitives Examples &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -135,252 +135,253 @@
 <span class="linenos"> 26</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
 <span class="linenos"> 27</span>
 <span class="linenos"> 28</span>        <span class="k">if</span> <span class="n">render</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">1</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-<span class="linenos"> 29</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos"> 30</span>
-<span class="linenos"> 31</span>        <span class="c1"># Now the action space is not the raw action but the parametrization of the trajectory generator,</span>
-<span class="linenos"> 32</span>        <span class="c1"># such as a ProMP</span>
-<span class="linenos"> 33</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos"> 34</span>        <span class="c1"># This executes a full trajectory and gives back the context (obs) of the last step in the trajectory, or the</span>
-<span class="linenos"> 35</span>        <span class="c1"># full observation space of the last step, if replanning/sub-trajectory learning is used. The &#39;reward&#39; is equal</span>
-<span class="linenos"> 36</span>        <span class="c1"># to the return of a trajectory. Default is the sum over the step-wise rewards.</span>
-<span class="linenos"> 37</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos"> 38</span>        <span class="c1"># Aggregated returns</span>
-<span class="linenos"> 39</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos"> 40</span>
-<span class="linenos"> 41</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos"> 42</span>            <span class="nb">print</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
-<span class="linenos"> 43</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos"> 44</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos"> 45</span>
-<span class="linenos"> 46</span>
-<span class="linenos"> 47</span><span class="k">def</span> <span class="nf">example_custom_mp</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="s2">&quot;fancy_ProMP/Reacher5d-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="linenos"> 48</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="linenos"> 49</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
-<span class="linenos"> 50</span><span class="sd">    Our already registered environments follow the same structure.</span>
-<span class="linenos"> 51</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
-<span class="linenos"> 52</span><span class="sd">    Yet, we recommend the method above if you are just interested in changing those parameters for existing tasks.</span>
-<span class="linenos"> 53</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks) </span>
-<span class="linenos"> 54</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
-<span class="linenos"> 55</span><span class="sd">    Args:</span>
-<span class="linenos"> 56</span><span class="sd">        seed: seed</span>
-<span class="linenos"> 57</span><span class="sd">        iterations: Number of rollout steps to run</span>
-<span class="linenos"> 58</span><span class="sd">        render: Render the episode</span>
-<span class="linenos"> 59</span>
-<span class="linenos"> 60</span><span class="sd">    Returns:</span>
+<span class="linenos"> 29</span>            <span class="c1"># This renders the full MP trajectory</span>
+<span class="linenos"> 30</span>            <span class="c1"># It is only required to call render() once in the beginning, which renders every consecutive trajectory.</span>
+<span class="linenos"> 31</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos"> 32</span>
+<span class="linenos"> 33</span>        <span class="c1"># Now the action space is not the raw action but the parametrization of the trajectory generator,</span>
+<span class="linenos"> 34</span>        <span class="c1"># such as a ProMP</span>
+<span class="linenos"> 35</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos"> 36</span>        <span class="c1"># This executes a full trajectory and gives back the context (obs) of the last step in the trajectory, or the</span>
+<span class="linenos"> 37</span>        <span class="c1"># full observation space of the last step, if replanning/sub-trajectory learning is used. The &#39;reward&#39; is equal</span>
+<span class="linenos"> 38</span>        <span class="c1"># to the return of a trajectory. Default is the sum over the step-wise rewards.</span>
+<span class="linenos"> 39</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos"> 40</span>        <span class="c1"># Aggregated returns</span>
+<span class="linenos"> 41</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos"> 42</span>
+<span class="linenos"> 43</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos"> 44</span>            <span class="nb">print</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+<span class="linenos"> 45</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 46</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos"> 47</span>
+<span class="linenos"> 48</span>
+<span class="linenos"> 49</span><span class="k">def</span> <span class="nf">example_custom_mp</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="s2">&quot;fancy_ProMP/Reacher5d-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos"> 50</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos"> 51</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
+<span class="linenos"> 52</span><span class="sd">    Our already registered environments follow the same structure.</span>
+<span class="linenos"> 53</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
+<span class="linenos"> 54</span><span class="sd">    Yet, we recommend the method above if you are just interested in changing those parameters for existing tasks.</span>
+<span class="linenos"> 55</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks) </span>
+<span class="linenos"> 56</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
+<span class="linenos"> 57</span><span class="sd">    Args:</span>
+<span class="linenos"> 58</span><span class="sd">        seed: seed</span>
+<span class="linenos"> 59</span><span class="sd">        iterations: Number of rollout steps to run</span>
+<span class="linenos"> 60</span><span class="sd">        render: Render the episode</span>
 <span class="linenos"> 61</span>
-<span class="linenos"> 62</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 63</span>    <span class="c1"># Changing the arguments of the black box env is possible by providing them to gym through mp_config_override.</span>
-<span class="linenos"> 64</span>    <span class="c1"># E.g. here for way to many basis functions</span>
-<span class="linenos"> 65</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}},</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-<span class="linenos"> 66</span>
-<span class="linenos"> 67</span>    <span class="n">returns</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos"> 68</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos"> 69</span>
-<span class="linenos"> 70</span>    <span class="c1"># This time rendering every trajectory</span>
-<span class="linenos"> 71</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos"> 72</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos"> 73</span>
-<span class="linenos"> 74</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos"> 75</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos"> 76</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos"> 77</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos"> 78</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos"> 79</span>
-<span class="linenos"> 80</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos"> 81</span>            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
-<span class="linenos"> 82</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos"> 83</span>
-<span class="linenos"> 84</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos"> 85</span>    <span class="k">return</span> <span class="n">obs</span>
-<span class="linenos"> 86</span>
-<span class="linenos"> 87</span><span class="k">class</span> <span class="nc">Custom_MPWrapper</span><span class="p">(</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">mujoco</span><span class="o">.</span><span class="n">reacher</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">):</span>
-<span class="linenos"> 88</span>    <span class="n">mp_config</span> <span class="o">=</span> <span class="p">{</span>
-<span class="linenos"> 89</span>        <span class="s1">&#39;ProMP&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos"> 90</span>                <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span>  <span class="p">{</span>
-<span class="linenos"> 91</span>                    <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;promp&#39;</span><span class="p">,</span>
-<span class="linenos"> 92</span>                    <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">2</span>
-<span class="linenos"> 93</span>                <span class="p">},</span>
-<span class="linenos"> 94</span>                <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos"> 95</span>                    <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span>
-<span class="linenos"> 96</span>                <span class="p">},</span>
-<span class="linenos"> 97</span>                <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos"> 98</span>                    <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
-<span class="linenos"> 99</span>                <span class="p">},</span>
-<span class="linenos">100</span>                <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">101</span>                    <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;zero_rbf&#39;</span><span class="p">,</span>
-<span class="linenos">102</span>                    <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-<span class="linenos">103</span>                    <span class="s1">&#39;num_basis_zero_start&#39;</span><span class="p">:</span> <span class="mi">1</span>
-<span class="linenos">104</span>                <span class="p">}</span>
-<span class="linenos">105</span>        <span class="p">},</span>
-<span class="linenos">106</span>        <span class="s1">&#39;DMP&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">107</span>            <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">108</span>                <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;dmp&#39;</span><span class="p">,</span>
-<span class="linenos">109</span>                <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">500</span>
-<span class="linenos">110</span>            <span class="p">},</span>
-<span class="linenos">111</span>            <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">112</span>                <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span>
-<span class="linenos">113</span>                <span class="s1">&#39;alpha_phase&#39;</span><span class="p">:</span> <span class="mf">2.5</span>
-<span class="linenos">114</span>            <span class="p">},</span>
-<span class="linenos">115</span>            <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">116</span>                <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
-<span class="linenos">117</span>            <span class="p">},</span>
-<span class="linenos">118</span>            <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">119</span>                <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span>
-<span class="linenos">120</span>                <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span>
-<span class="linenos">121</span>            <span class="p">}</span>
-<span class="linenos">122</span>        <span class="p">}</span>
-<span class="linenos">123</span>    <span class="p">}</span>
-<span class="linenos">124</span>
-<span class="linenos">125</span>
-<span class="linenos">126</span><span class="k">def</span> <span class="nf">example_fully_custom_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="linenos">127</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="linenos">128</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
-<span class="linenos">129</span><span class="sd">    Our already registered environments follow the same structure.</span>
-<span class="linenos">130</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
-<span class="linenos">131</span><span class="sd">    Yet, we recommend the method above if you are just interested in changing those parameters for existing tasks.</span>
-<span class="linenos">132</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks) </span>
-<span class="linenos">133</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
-<span class="linenos">134</span><span class="sd">    Args:</span>
-<span class="linenos">135</span><span class="sd">        seed: seed</span>
-<span class="linenos">136</span><span class="sd">        iterations: Number of rollout steps to run</span>
-<span class="linenos">137</span><span class="sd">        render: Render the episode</span>
-<span class="linenos">138</span>
-<span class="linenos">139</span><span class="sd">    Returns:</span>
+<span class="linenos"> 62</span><span class="sd">    Returns:</span>
+<span class="linenos"> 63</span>
+<span class="linenos"> 64</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos"> 65</span>    <span class="c1"># Changing the arguments of the black box env is possible by providing them to gym through mp_config_override.</span>
+<span class="linenos"> 66</span>    <span class="c1"># E.g. here for way to many basis functions</span>
+<span class="linenos"> 67</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">}},</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos"> 68</span>
+<span class="linenos"> 69</span>    <span class="n">returns</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos"> 70</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 71</span>
+<span class="linenos"> 72</span>    <span class="c1"># This time rendering every trajectory</span>
+<span class="linenos"> 73</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos"> 74</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos"> 75</span>
+<span class="linenos"> 76</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos"> 77</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos"> 78</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos"> 79</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos"> 80</span>        <span class="n">returns</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos"> 81</span>
+<span class="linenos"> 82</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos"> 83</span>            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">reward</span><span class="p">)</span>
+<span class="linenos"> 84</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 85</span>
+<span class="linenos"> 86</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos"> 87</span>    <span class="k">return</span> <span class="n">obs</span>
+<span class="linenos"> 88</span>
+<span class="linenos"> 89</span><span class="k">class</span> <span class="nc">Custom_MPWrapper</span><span class="p">(</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">mujoco</span><span class="o">.</span><span class="n">reacher</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">):</span>
+<span class="linenos"> 90</span>    <span class="n">mp_config</span> <span class="o">=</span> <span class="p">{</span>
+<span class="linenos"> 91</span>        <span class="s1">&#39;ProMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 92</span>                <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span>  <span class="p">{</span>
+<span class="linenos"> 93</span>                    <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;promp&#39;</span><span class="p">,</span>
+<span class="linenos"> 94</span>                    <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="linenos"> 95</span>                <span class="p">},</span>
+<span class="linenos"> 96</span>                <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos"> 97</span>                    <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span>
+<span class="linenos"> 98</span>                <span class="p">},</span>
+<span class="linenos"> 99</span>                <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">100</span>                    <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
+<span class="linenos">101</span>                <span class="p">},</span>
+<span class="linenos">102</span>                <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">103</span>                    <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;zero_rbf&#39;</span><span class="p">,</span>
+<span class="linenos">104</span>                    <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="linenos">105</span>                    <span class="s1">&#39;num_basis_zero_start&#39;</span><span class="p">:</span> <span class="mi">1</span>
+<span class="linenos">106</span>                <span class="p">}</span>
+<span class="linenos">107</span>        <span class="p">},</span>
+<span class="linenos">108</span>        <span class="s1">&#39;DMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">109</span>            <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">110</span>                <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;dmp&#39;</span><span class="p">,</span>
+<span class="linenos">111</span>                <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">500</span>
+<span class="linenos">112</span>            <span class="p">},</span>
+<span class="linenos">113</span>            <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">114</span>                <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;exp&#39;</span><span class="p">,</span>
+<span class="linenos">115</span>                <span class="s1">&#39;alpha_phase&#39;</span><span class="p">:</span> <span class="mf">2.5</span>
+<span class="linenos">116</span>            <span class="p">},</span>
+<span class="linenos">117</span>            <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">118</span>                <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
+<span class="linenos">119</span>            <span class="p">},</span>
+<span class="linenos">120</span>            <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">121</span>                <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;rbf&#39;</span><span class="p">,</span>
+<span class="linenos">122</span>                <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span>
+<span class="linenos">123</span>            <span class="p">}</span>
+<span class="linenos">124</span>        <span class="p">}</span>
+<span class="linenos">125</span>    <span class="p">}</span>
+<span class="linenos">126</span>
+<span class="linenos">127</span>
+<span class="linenos">128</span><span class="k">def</span> <span class="nf">example_fully_custom_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos">129</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">130</span><span class="sd">    Example for running a custom movement primitive based environments.</span>
+<span class="linenos">131</span><span class="sd">    Our already registered environments follow the same structure.</span>
+<span class="linenos">132</span><span class="sd">    Hence, this also allows to adjust hyperparameters of the movement primitives.</span>
+<span class="linenos">133</span><span class="sd">    Yet, we recommend the method above if you are just interested in changing those parameters for existing tasks.</span>
+<span class="linenos">134</span><span class="sd">    We appreciate PRs for custom environments (especially MP wrappers of existing tasks) </span>
+<span class="linenos">135</span><span class="sd">    for our repo: https://github.com/ALRhub/fancy_gym/</span>
+<span class="linenos">136</span><span class="sd">    Args:</span>
+<span class="linenos">137</span><span class="sd">        seed: seed</span>
+<span class="linenos">138</span><span class="sd">        iterations: Number of rollout steps to run</span>
+<span class="linenos">139</span><span class="sd">        render: Render the episode</span>
 <span class="linenos">140</span>
-<span class="linenos">141</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos">141</span><span class="sd">    Returns:</span>
 <span class="linenos">142</span>
-<span class="linenos">143</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-v0&quot;</span>
-<span class="linenos">144</span>    <span class="n">custom_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-Custom-v0&quot;</span>
-<span class="linenos">145</span>    <span class="n">custom_env_id_DMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_DMP/Reacher5d-Custom-v0&quot;</span>
-<span class="linenos">146</span>    <span class="n">custom_env_id_ProMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_ProMP/Reacher5d-Custom-v0&quot;</span>
-<span class="linenos">147</span>
-<span class="linenos">148</span>    <span class="n">fancy_gym</span><span class="o">.</span><span class="n">upgrade</span><span class="p">(</span><span class="n">custom_env_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="o">=</span><span class="n">Custom_MPWrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ProMP&#39;</span><span class="p">,</span> <span class="s1">&#39;DMP&#39;</span><span class="p">],</span> <span class="n">base_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">)</span>
+<span class="linenos">143</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos">144</span>
+<span class="linenos">145</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-v0&quot;</span>
+<span class="linenos">146</span>    <span class="n">custom_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-Custom-v0&quot;</span>
+<span class="linenos">147</span>    <span class="n">custom_env_id_DMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_DMP/Reacher5d-Custom-v0&quot;</span>
+<span class="linenos">148</span>    <span class="n">custom_env_id_ProMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_ProMP/Reacher5d-Custom-v0&quot;</span>
 <span class="linenos">149</span>
-<span class="linenos">150</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">custom_env_id_ProMP</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">150</span>    <span class="n">fancy_gym</span><span class="o">.</span><span class="n">upgrade</span><span class="p">(</span><span class="n">custom_env_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="o">=</span><span class="n">Custom_MPWrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ProMP&#39;</span><span class="p">,</span> <span class="s1">&#39;DMP&#39;</span><span class="p">],</span> <span class="n">base_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">)</span>
 <span class="linenos">151</span>
-<span class="linenos">152</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">153</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">154</span>
-<span class="linenos">155</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos">156</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos">157</span>
-<span class="linenos">158</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos">159</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos">160</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">161</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">162</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos">163</span>
-<span class="linenos">164</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">165</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
-<span class="linenos">166</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">167</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">168</span>
-<span class="linenos">169</span>    <span class="k">try</span><span class="p">:</span> <span class="c1"># Some mujoco-based envs don&#39;t correlcty implement .close</span>
-<span class="linenos">170</span>        <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos">171</span>    <span class="k">except</span><span class="p">:</span>
-<span class="linenos">172</span>        <span class="k">pass</span>
-<span class="linenos">173</span>
-<span class="linenos">174</span>
-<span class="linenos">175</span><span class="k">def</span> <span class="nf">example_fully_custom_mp_alternative</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="linenos">176</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="linenos">177</span><span class="sd">    Instead of defining the mp_args in a new custom MP_Wrapper, they can also be provided during registration.</span>
-<span class="linenos">178</span><span class="sd">    Args:</span>
-<span class="linenos">179</span><span class="sd">        seed: seed</span>
-<span class="linenos">180</span><span class="sd">        iterations: Number of rollout steps to run</span>
-<span class="linenos">181</span><span class="sd">        render: Render the episode</span>
-<span class="linenos">182</span>
-<span class="linenos">183</span><span class="sd">    Returns:</span>
+<span class="linenos">152</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">custom_env_id_ProMP</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">153</span>
+<span class="linenos">154</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">155</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">156</span>
+<span class="linenos">157</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos">158</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">159</span>
+<span class="linenos">160</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos">161</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos">162</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">163</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">164</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">165</span>
+<span class="linenos">166</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">167</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+<span class="linenos">168</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">169</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">170</span>
+<span class="linenos">171</span>    <span class="k">try</span><span class="p">:</span> <span class="c1"># Some mujoco-based envs don&#39;t correlcty implement .close</span>
+<span class="linenos">172</span>        <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">173</span>    <span class="k">except</span><span class="p">:</span>
+<span class="linenos">174</span>        <span class="k">pass</span>
+<span class="linenos">175</span>
+<span class="linenos">176</span>
+<span class="linenos">177</span><span class="k">def</span> <span class="nf">example_fully_custom_mp_alternative</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="linenos">178</span><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="linenos">179</span><span class="sd">    Instead of defining the mp_args in a new custom MP_Wrapper, they can also be provided during registration.</span>
+<span class="linenos">180</span><span class="sd">    Args:</span>
+<span class="linenos">181</span><span class="sd">        seed: seed</span>
+<span class="linenos">182</span><span class="sd">        iterations: Number of rollout steps to run</span>
+<span class="linenos">183</span><span class="sd">        render: Render the episode</span>
 <span class="linenos">184</span>
-<span class="linenos">185</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos">185</span><span class="sd">    Returns:</span>
 <span class="linenos">186</span>
-<span class="linenos">187</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-v0&quot;</span>
-<span class="linenos">188</span>    <span class="n">custom_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-Custom-v0&quot;</span>
-<span class="linenos">189</span>    <span class="n">custom_env_id_ProMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_ProMP/Reacher5d-Custom-v0&quot;</span>
-<span class="linenos">190</span>
-<span class="linenos">191</span>    <span class="n">fancy_gym</span><span class="o">.</span><span class="n">upgrade</span><span class="p">(</span><span class="n">custom_env_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="o">=</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">mujoco</span><span class="o">.</span><span class="n">reacher</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ProMP&#39;</span><span class="p">],</span> <span class="n">base_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span>     <span class="p">{</span><span class="s1">&#39;ProMP&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">192</span>                <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span>  <span class="p">{</span>
-<span class="linenos">193</span>                    <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;promp&#39;</span><span class="p">,</span>
-<span class="linenos">194</span>                    <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">2</span>
-<span class="linenos">195</span>                <span class="p">},</span>
-<span class="linenos">196</span>                <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">197</span>                    <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span>
-<span class="linenos">198</span>                <span class="p">},</span>
-<span class="linenos">199</span>                <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">200</span>                    <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
-<span class="linenos">201</span>                <span class="p">},</span>
-<span class="linenos">202</span>                <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
-<span class="linenos">203</span>                    <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;zero_rbf&#39;</span><span class="p">,</span>
-<span class="linenos">204</span>                    <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
-<span class="linenos">205</span>                    <span class="s1">&#39;num_basis_zero_start&#39;</span><span class="p">:</span> <span class="mi">1</span>
-<span class="linenos">206</span>                <span class="p">}</span>
-<span class="linenos">207</span>        <span class="p">}})</span>
-<span class="linenos">208</span>
-<span class="linenos">209</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">custom_env_id_ProMP</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">187</span><span class="sd">    &quot;&quot;&quot;</span>
+<span class="linenos">188</span>
+<span class="linenos">189</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-v0&quot;</span>
+<span class="linenos">190</span>    <span class="n">custom_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/Reacher5d-Custom-v0&quot;</span>
+<span class="linenos">191</span>    <span class="n">custom_env_id_ProMP</span> <span class="o">=</span> <span class="s2">&quot;fancy_ProMP/Reacher5d-Custom-v0&quot;</span>
+<span class="linenos">192</span>
+<span class="linenos">193</span>    <span class="n">fancy_gym</span><span class="o">.</span><span class="n">upgrade</span><span class="p">(</span><span class="n">custom_env_id</span><span class="p">,</span> <span class="n">mp_wrapper</span><span class="o">=</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">mujoco</span><span class="o">.</span><span class="n">reacher</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">,</span> <span class="n">add_mp_types</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ProMP&#39;</span><span class="p">],</span> <span class="n">base_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">mp_config_override</span><span class="o">=</span>     <span class="p">{</span><span class="s1">&#39;ProMP&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">194</span>                <span class="s1">&#39;trajectory_generator_kwargs&#39;</span><span class="p">:</span>  <span class="p">{</span>
+<span class="linenos">195</span>                    <span class="s1">&#39;trajectory_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;promp&#39;</span><span class="p">,</span>
+<span class="linenos">196</span>                    <span class="s1">&#39;weights_scale&#39;</span><span class="p">:</span> <span class="mi">2</span>
+<span class="linenos">197</span>                <span class="p">},</span>
+<span class="linenos">198</span>                <span class="s1">&#39;phase_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">199</span>                    <span class="s1">&#39;phase_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;linear&#39;</span>
+<span class="linenos">200</span>                <span class="p">},</span>
+<span class="linenos">201</span>                <span class="s1">&#39;controller_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">202</span>                    <span class="s1">&#39;controller_type&#39;</span><span class="p">:</span> <span class="s1">&#39;velocity&#39;</span>
+<span class="linenos">203</span>                <span class="p">},</span>
+<span class="linenos">204</span>                <span class="s1">&#39;basis_generator_kwargs&#39;</span><span class="p">:</span> <span class="p">{</span>
+<span class="linenos">205</span>                    <span class="s1">&#39;basis_generator_type&#39;</span><span class="p">:</span> <span class="s1">&#39;zero_rbf&#39;</span><span class="p">,</span>
+<span class="linenos">206</span>                    <span class="s1">&#39;num_basis&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+<span class="linenos">207</span>                    <span class="s1">&#39;num_basis_zero_start&#39;</span><span class="p">:</span> <span class="mi">1</span>
+<span class="linenos">208</span>                <span class="p">}</span>
+<span class="linenos">209</span>        <span class="p">}})</span>
 <span class="linenos">210</span>
-<span class="linenos">211</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">212</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">213</span>
-<span class="linenos">214</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos">215</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos">216</span>
-<span class="linenos">217</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos">218</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos">219</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">220</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">221</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos">222</span>
-<span class="linenos">223</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">224</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
-<span class="linenos">225</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">226</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">227</span>
-<span class="linenos">228</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos">229</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
-<span class="linenos">230</span>
-<span class="linenos">231</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">232</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">233</span>
-<span class="linenos">234</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos">235</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos">236</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">237</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">238</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos">239</span>
-<span class="linenos">240</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">241</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
-<span class="linenos">242</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">243</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">244</span>
-<span class="linenos">245</span>    <span class="k">try</span><span class="p">:</span> <span class="c1"># Some mujoco-based envs don&#39;t correlcty implement .close</span>
-<span class="linenos">246</span>        <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos">247</span>    <span class="k">except</span><span class="p">:</span>
-<span class="linenos">248</span>        <span class="k">pass</span>
-<span class="linenos">249</span>
-<span class="linenos">250</span>
-<span class="linenos">251</span><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-<span class="linenos">252</span>    <span class="n">render</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos">253</span>    <span class="c1"># DMP</span>
-<span class="linenos">254</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_DMP/HoleReacher-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">255</span>
-<span class="linenos">256</span>    <span class="c1"># ProMP</span>
-<span class="linenos">257</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/HoleReacher-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">258</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/BoxPushingTemporalSparse-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">259</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/TableTennis4D-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">260</span>
-<span class="linenos">261</span>    <span class="c1"># ProDMP with Replanning</span>
-<span class="linenos">262</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/BoxPushingDenseReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">263</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/TableTennis4DReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">264</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/TableTennisWindReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">265</span>
-<span class="linenos">266</span>    <span class="c1"># Altered basis functions</span>
-<span class="linenos">267</span>    <span class="n">obs1</span> <span class="o">=</span> <span class="n">example_custom_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/Reacher5d-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">268</span>
-<span class="linenos">269</span>    <span class="c1"># Custom MP</span>
-<span class="linenos">270</span>    <span class="n">example_fully_custom_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">271</span>    <span class="n">example_fully_custom_mp_alternative</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">272</span>
-<span class="linenos">273</span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-<span class="linenos">274</span>    <span class="n">main</span><span class="p">()</span>
+<span class="linenos">211</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">custom_env_id_ProMP</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">212</span>
+<span class="linenos">213</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">214</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">215</span>
+<span class="linenos">216</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos">217</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">218</span>
+<span class="linenos">219</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos">220</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos">221</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">222</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">223</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">224</span>
+<span class="linenos">225</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">226</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+<span class="linenos">227</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">228</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">229</span>
+<span class="linenos">230</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos">231</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">232</span>
+<span class="linenos">233</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">234</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">235</span>
+<span class="linenos">236</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos">237</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos">238</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">239</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">240</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">241</span>
+<span class="linenos">242</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">243</span>            <span class="nb">print</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+<span class="linenos">244</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">245</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">246</span>
+<span class="linenos">247</span>    <span class="k">try</span><span class="p">:</span> <span class="c1"># Some mujoco-based envs don&#39;t correlcty implement .close</span>
+<span class="linenos">248</span>        <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">249</span>    <span class="k">except</span><span class="p">:</span>
+<span class="linenos">250</span>        <span class="k">pass</span>
+<span class="linenos">251</span>
+<span class="linenos">252</span>
+<span class="linenos">253</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">render</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="linenos">254</span>    <span class="c1"># DMP</span>
+<span class="linenos">255</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_DMP/HoleReacher-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">256</span>
+<span class="linenos">257</span>    <span class="c1"># ProMP</span>
+<span class="linenos">258</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/HoleReacher-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">259</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/BoxPushingTemporalSparse-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">260</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/TableTennis4D-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">261</span>
+<span class="linenos">262</span>    <span class="c1"># ProDMP with Replanning</span>
+<span class="linenos">263</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/BoxPushingDenseReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">264</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/TableTennis4DReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">265</span>    <span class="n">example_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProDMP/TableTennisWindReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">266</span>
+<span class="linenos">267</span>    <span class="c1"># Altered basis functions</span>
+<span class="linenos">268</span>    <span class="n">obs1</span> <span class="o">=</span> <span class="n">example_custom_mp</span><span class="p">(</span><span class="s2">&quot;fancy_ProMP/Reacher5d-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">269</span>
+<span class="linenos">270</span>    <span class="c1"># Custom MP</span>
+<span class="linenos">271</span>    <span class="n">example_fully_custom_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">272</span>    <span class="n">example_fully_custom_mp_alternative</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">273</span>
+<span class="linenos">274</span><span class="k">if</span> <span class="vm">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="linenos">275</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>

@@ -32,7 +32,7 @@ since they are not avaible on PyPI yet. Install metaworld via
 
 .. code:: bash
 
-   pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld
+   pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@c822f28f582ba1ad49eb5dcf61016566f28003ba#egg=metaworld
 
 Installation from master
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -70,4 +70,4 @@ Metaworld has to be installed manually with
 
 .. code:: bash
 
-   pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@d155d0051630bb365ea6a824e02c66c068947439#egg=metaworld
+   pip install metaworld@git+https://github.com/Farama-Foundation/Metaworld.git@c822f28f582ba1ad49eb5dcf61016566f28003ba#egg=metaworld

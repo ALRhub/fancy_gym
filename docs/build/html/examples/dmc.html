@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeepMind Control Examples &mdash; Fancy Gym 0.2 documentation</title>
+  <title>DeepMind Control Examples &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -126,7 +126,7 @@
 <span class="linenos"> 17</span><span class="sd">    Returns:</span>
 <span class="linenos"> 18</span>
 <span class="linenos"> 19</span><span class="sd">    &quot;&quot;&quot;</span>
-<span class="linenos"> 20</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_id</span><span class="p">)</span>
+<span class="linenos"> 20</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_id</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 <span class="linenos"> 21</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="linenos"> 22</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 <span class="linenos"> 23</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;observation shape:&quot;</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -135,7 +135,7 @@
 <span class="linenos"> 26</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
 <span class="linenos"> 27</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
 <span class="linenos"> 28</span>        <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos"> 29</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
+<span class="linenos"> 29</span>            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
 <span class="linenos"> 30</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
 <span class="linenos"> 31</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
 <span class="linenos"> 32</span>
@@ -193,58 +193,68 @@
 <span class="linenos"> 84</span>    <span class="c1"># basis_generator_kwargs = {&#39;basis_generator_type&#39;: &#39;rbf&#39;,</span>
 <span class="linenos"> 85</span>    <span class="c1">#                           &#39;num_basis&#39;: 5</span>
 <span class="linenos"> 86</span>    <span class="c1">#                           }</span>
-<span class="linenos"> 87</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="p">{},</span>
-<span class="linenos"> 88</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
-<span class="linenos"> 89</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
-<span class="linenos"> 90</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-<span class="linenos"> 91</span>
-<span class="linenos"> 92</span>    <span class="c1"># This renders the full MP trajectory</span>
-<span class="linenos"> 93</span>    <span class="c1"># It is only required to call render() once in the beginning, which renders every consecutive trajectory.</span>
-<span class="linenos"> 94</span>    <span class="c1"># Resetting to no rendering, can be achieved by render(mode=None).</span>
-<span class="linenos"> 95</span>    <span class="c1"># It is also possible to change them mode multiple times when</span>
-<span class="linenos"> 96</span>    <span class="c1"># e.g. only every nth trajectory should be displayed.</span>
-<span class="linenos"> 97</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos"> 98</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
-<span class="linenos"> 99</span>
-<span class="linenos">100</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">101</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">102</span>
-<span class="linenos">103</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
-<span class="linenos">104</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos">105</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">106</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">107</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
-<span class="linenos">108</span>
-<span class="linenos">109</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">110</span>            <span class="nb">print</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
-<span class="linenos">111</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
-<span class="linenos">112</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">113</span>
-<span class="linenos">114</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos">115</span>    <span class="k">del</span> <span class="n">env</span>
-<span class="linenos">116</span>
+<span class="linenos"> 87</span>    <span class="n">base_env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos"> 88</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">base_env</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="p">{},</span>
+<span class="linenos"> 89</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
+<span class="linenos"> 90</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
+<span class="linenos"> 91</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="linenos"> 92</span>
+<span class="linenos"> 93</span>    <span class="c1"># This renders the full MP trajectory</span>
+<span class="linenos"> 94</span>    <span class="c1"># It is only required to call render() once in the beginning, which renders every consecutive trajectory.</span>
+<span class="linenos"> 95</span>    <span class="c1"># Resetting to no rendering, can be achieved by render(mode=None).</span>
+<span class="linenos"> 96</span>    <span class="c1"># It is also possible to change them mode multiple times when</span>
+<span class="linenos"> 97</span>    <span class="c1"># e.g. only every nth trajectory should be displayed.</span>
+<span class="linenos"> 98</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos"> 99</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">100</span>
+<span class="linenos">101</span>    <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">102</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">103</span>
+<span class="linenos">104</span>    <span class="c1"># number of samples/full trajectories (multiple environment steps)</span>
+<span class="linenos">105</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
+<span class="linenos">106</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">107</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">108</span>        <span class="n">rewards</span> <span class="o">+=</span> <span class="n">reward</span>
+<span class="linenos">109</span>
+<span class="linenos">110</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">111</span>            <span class="nb">print</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">rewards</span><span class="p">)</span>
+<span class="linenos">112</span>            <span class="n">rewards</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="linenos">113</span>            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">114</span>
+<span class="linenos">115</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">116</span>    <span class="k">del</span> <span class="n">env</span>
 <span class="linenos">117</span>
-<span class="linenos">118</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-<span class="linenos">119</span>    <span class="c1"># Disclaimer: DMC environments require the seed to be specified in the beginning.</span>
-<span class="linenos">120</span>    <span class="c1"># Adjusting it afterwards with env.seed() is not recommended as it does not affect the underlying physics.</span>
-<span class="linenos">121</span>
-<span class="linenos">122</span>    <span class="c1"># For rendering DMC</span>
-<span class="linenos">123</span>    <span class="c1"># export MUJOCO_GL=&quot;osmesa&quot;</span>
-<span class="linenos">124</span>    <span class="n">render</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="linenos">125</span>
-<span class="linenos">126</span>    <span class="c1"># # Standard DMC Suite tasks</span>
-<span class="linenos">127</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/fish-swim&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">128</span>    <span class="c1">#</span>
-<span class="linenos">129</span>    <span class="c1"># # Manipulation tasks</span>
-<span class="linenos">130</span>    <span class="c1"># # Disclaimer: The vision versions are currently not integrated and yield an error</span>
-<span class="linenos">131</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/manipulation-reach_site_features&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">132</span>    <span class="c1">#</span>
-<span class="linenos">133</span>    <span class="c1"># # Gym + DMC hybrid task provided in the MP framework</span>
-<span class="linenos">134</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control_ProMP/ball_in_cup-catch-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
-<span class="linenos">135</span>
-<span class="linenos">136</span>    <span class="c1"># Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is</span>
-<span class="linenos">137</span>    <span class="c1"># already registered above</span>
-<span class="linenos">138</span>    <span class="n">example_custom_dmc_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">118</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">render</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="linenos">119</span>    <span class="c1"># # Standard DMC Suite tasks</span>
+<span class="linenos">120</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/fish-swim&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">121</span>    <span class="c1">#</span>
+<span class="linenos">122</span>    <span class="c1"># # Manipulation tasks</span>
+<span class="linenos">123</span>    <span class="c1"># # Disclaimer: The vision versions are currently not integrated and yield an error</span>
+<span class="linenos">124</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/reach_site_features&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">125</span>    <span class="c1">#</span>
+<span class="linenos">126</span>    <span class="c1"># # Gym + DMC hybrid task provided in the MP framework</span>
+<span class="linenos">127</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control_ProMP/ball_in_cup-catch-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">128</span>
+<span class="linenos">129</span>    <span class="c1"># Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is</span>
+<span class="linenos">130</span>    <span class="c1"># already registered above</span>
+<span class="linenos">131</span>    <span class="n">example_custom_dmc_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">132</span>
+<span class="linenos">133</span>    <span class="c1"># # Standard DMC Suite tasks</span>
+<span class="linenos">134</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/fish-swim&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">135</span>    <span class="c1">#</span>
+<span class="linenos">136</span>    <span class="c1"># # Manipulation tasks</span>
+<span class="linenos">137</span>    <span class="c1"># # Disclaimer: The vision versions are currently not integrated and yield an error</span>
+<span class="linenos">138</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control/reach_site_features&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">139</span>    <span class="c1">#</span>
+<span class="linenos">140</span>    <span class="c1"># # Gym + DMC hybrid task provided in the MP framework</span>
+<span class="linenos">141</span>    <span class="n">example_dmc</span><span class="p">(</span><span class="s2">&quot;dm_control_ProMP/ball_in_cup-catch-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">142</span>
+<span class="linenos">143</span>    <span class="c1"># Custom DMC task # Different seed, because the episode is longer for this example and the name+seed combo is</span>
+<span class="linenos">144</span>    <span class="c1"># already registered above</span>
+<span class="linenos">145</span>    <span class="n">example_custom_dmc_and_mp</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">146</span>
+<span class="linenos">147</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="linenos">148</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
