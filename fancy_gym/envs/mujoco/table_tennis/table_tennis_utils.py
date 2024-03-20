@@ -2,6 +2,10 @@ import numpy as np
 
 jnt_pos_low = np.array([-2.6, -2.0, -2.8, -0.9, -4.8, -1.6, -2.2])
 jnt_pos_high = np.array([2.6, 2.0, 2.8, 3.1, 1.3, 1.6, 2.2])
+
+jnt_vel_low = np.ones(7) * -7
+jnt_vel_high = np.ones(7) * 7
+
 delay_bound = [0.05, 0.15]
 tau_bound = [0.5, 1.5]
 

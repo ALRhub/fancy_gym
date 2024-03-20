@@ -51,3 +51,19 @@ def rot_to_quat(theta, axis):
     quant[0] = np.sin(theta / 2.)
     quant[1:] = np.cos(theta / 2.) * axis
     return quant
+
+def calculate_jerk_profile(velocity_profile, dt):
+    jerk = np.diff(velocity_profile, 2, 0) / pow(dt, 2)
+    return jerk
+
+def calculate_mean_squared_jerk(jerk_profile):
+    return np.mean(pow(jerk_profile, 2))
+
+def calculate_maximum_jerk(jerk_profile):
+    return np.max(abs(jerk_profile))
+
+def calculate_dimensionless_jerk(jerk_profile, velocity_profile, dt):
+    sum_squared_jerk = np.sum(pow(jerk_profile, 2), 0)
+    duration = len(velocity_profile) * dt
+    peak_velocity = np.max(abs(velocity_profile), 0)
+    return np.mean(sum_squared_jerk * pow(duration, 3) / pow(peak_velocity, 2))
