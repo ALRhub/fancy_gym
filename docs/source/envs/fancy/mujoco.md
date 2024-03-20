@@ -99,7 +99,7 @@ A successful throw in this task is determined by the ball landing in the cup at 
 | `fancy/Reacher7d-v0`           | Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`                     | 200     | 7                | 22                    |
 | `fancy/Reacher7dSparse-v0`     | Sparse Reacher task with 7 links, based on Gymnasium's `gym.envs.mujoco.ReacherEnv`              | 200     | 7                | 22                    |
 | `fancy/HopperJump-v0`          | Hopper Jump task with continuous rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`          | 250     | 3                | 15 / 16\*             |
-| `fancy/HopperJumpMarkov-v0`    | `fancy/HopperJump-v0`, but with an alternative reward that is markvoian.                         | 250     | 3                | 15 / 16\*             |
+| `fancy/HopperJumpMarkov-v0`    | `fancy/HopperJump-v0`, but with an alternative reward that is markovian.                         | 250     | 3                | 15 / 16\*             |
 | `fancy/HopperJumpSparse-v0`    | Hopper Jump task with sparse rewards, based on Gymnasium's `gym.envs.mujoco.Hopper`              | 250     | 3                | 15 / 16\*             |
 | `fancy/AntJump-v0`             | Ant Jump task, based on Gymnasium's `gym.envs.mujoco.Ant`                                        | 200     | 8                | 119                   |
 | `fancy/HalfCheetahJump-v0`     | HalfCheetah Jump task, based on Gymnasium's `gym.envs.mujoco.HalfCheetah`                        | 100     | 6                | 112                   |
