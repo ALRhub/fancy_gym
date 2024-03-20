@@ -43,6 +43,9 @@ jobs:
         build setuptools twine
         --user
 
+    - name: Ensure pyproject.toml is used
+      run: rm -f setup.py
+
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
 
