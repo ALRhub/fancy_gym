@@ -122,6 +122,12 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     return _env
 
 
+def make_goal_env_helper(**kwargs):
+    seed = kwargs.pop("seed", None)
+    wrappers = kwargs.pop("wrappers")
+    return make_goal(env_id=kwargs.pop("name"), wrappers=wrappers, seed=seed, **kwargs)
+
+
 def make_goal(env_id: str, wrappers: Iterable, seed: int, **kwargs):
     # TODO: Check if the time limit verification is properly done during env creation
     if any(issubclass(w, TimeAwareObservation) for w in wrappers):
