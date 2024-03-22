@@ -122,6 +122,17 @@ def _make_wrapped_env(env_id: str, wrappers: Iterable[Type[gym.Wrapper]], seed=1
     return _env
 
 
+def make_goal(env_id: str, wrappers: Iterable, seed: int, **kwargs):
+    # TODO: Check if the time limit verification is properly done during env creation
+    if any(issubclass(w, TimeAwareObservation) for w in wrappers):
+        wrappers.insert(0, TimeAwareObservation)
+
+    _env = make(env_id, seed, **kwargs)
+    for w in wrappers:
+        _env = w(_env, **kwargs)
+    return _env
+
+
 def make_bb(
         env_id: str, wrappers: Iterable, black_box_kwargs: MutableMapping, traj_gen_kwargs: MutableMapping,
         controller_kwargs: MutableMapping, phase_kwargs: MutableMapping, basis_kwargs: MutableMapping, seed: int = 1,
