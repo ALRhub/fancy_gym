@@ -1,15 +1,15 @@
 import os
 from typing import Optional
 
+import mujoco
 import numpy as np
 from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
+
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance, \
     quat2euler
-from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
-from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
-
-import mujoco
 
 MAX_EPISODE_STEPS_BOX_PUSHING = 100
 
@@ -32,6 +32,8 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
 
     def __init__(self, frame_skip: int = 10, xml_name="box_pushing.xml", **kwargs):
         utils.EzPickle.__init__(**locals())
+        # if context is None means set_context was not called and the environment has a random context.
+        self._context = None
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
         self.desired_qpos_robot = np.array([[0.38706806, 0.17620842, 0.24989142, -2.39914377, -0.07986905, 2.56857367,
@@ -215,7 +217,15 @@ class BoxPushingEnvBase(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
+
+        self._context = context
+
         return self._get_obs()
+
+    def get_context(self):
+        if self._context is None:
+            raise ValueError("Context is not set")
+        return self._context
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
@@ -593,7 +603,7 @@ class BoxPushingTemporalSparseNotInclinedInit(BoxPushingEnvBase):
     def __init__(self, frame_skip: int = 10, **kwargs):
         super(BoxPushingTemporalSparseNotInclinedInit, self).__init__(frame_skip=frame_skip,
                                                                       xml_name="box_pushing.xml")
-        self.desired_qpos_robot = np.array([[0.60687726,  0.32237968,  0.32399582, - 1.75031467, - 0.11418225,
+        self.desired_qpos_robot = np.array([[0.60687726, 0.32237968, 0.32399582, - 1.75031467, - 0.11418225,
                                              2.0543276, 1.74779176]])
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
