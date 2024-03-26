@@ -1,15 +1,15 @@
 import os
 from typing import Optional
 
+import mujoco
 import numpy as np
 from gym import utils, spaces
 from gym.envs.mujoco import MujocoEnv
+
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
+from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
 from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import rot_to_quat, get_quaternion_error, rotation_distance, \
     quat2euler
-from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import q_max, q_min, q_dot_max, q_torque_max
-from fancy_gym.envs.mujoco.box_pushing.box_pushing_utils import desired_rod_quat
-
-import mujoco
 
 MAX_EPISODE_STEPS_BOX_PUSHING = 100
 
@@ -33,6 +33,8 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
 
     def __init__(self, frame_skip: int = 10, xml_name="box_pushing_obstacle.xml", **kwargs):
         utils.EzPickle.__init__(**locals())
+        # if context is None means set_context was not called and the environment has a random context.
+        self._context = None
         self._steps = 0
         self.init_qpos_box_pushing = np.array([0., 0., 0., -1.5, 0., 1.5, 0., 0., 0., 0.6, 0.45, 0.0, 1., 0., 0., 0.])
         self.desired_qpos_robot = np.array([[0.38706806, 0.17620842, 0.24989142, -2.39914377, -0.07986905, 2.56857367,
@@ -84,8 +86,9 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
 
         box_vertices = np.array([self.data.site("manboxVert1").xpos.copy(), self.data.site("manboxVert2").xpos.copy(),
                                  self.data.site("manboxVert3").xpos.copy(), self.data.site("manboxVert4").xpos.copy()])
-        target_box_vertices = np.array([self.data.site("tarboxVert1").xpos.copy(), self.data.site("tarboxVert2").xpos.copy(),
-                                 self.data.site("tarboxVert3").xpos.copy(), self.data.site("tarboxVert4").xpos.copy()])
+        target_box_vertices = np.array(
+            [self.data.site("tarboxVert1").xpos.copy(), self.data.site("tarboxVert2").xpos.copy(),
+             self.data.site("tarboxVert3").xpos.copy(), self.data.site("tarboxVert4").xpos.copy()])
 
         if not unstable_simulation:
             reward = self._get_reward(episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2,
@@ -213,7 +216,6 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
         self.model.body_pos[7][:2] = obs_xy_pos
         self.model.body_pos[7][-1] = -0.01
 
-
     def set_context(self, context):
         angle = context[2]
         angle2, angle3, angle4 = self._get_pi_half_variants(angle)
@@ -234,7 +236,15 @@ class BoxPushingObstacleEnvBase(MujocoEnv, utils.EzPickle):
         mujoco.mj_forward(self.model, self.data)
         self._steps = 0
         self._episode_energy = 0.
+
+        self._context = context
+
         return self._get_obs()
+
+    def get_context(self):
+        if self._context is None:
+            raise ValueError("Context is not set")
+        return self._context
 
     def _get_reward(self, episode_end, box_pos, box_quat, target_pos, target_quat, target_quat2, target_quat3,
                     target_quat4, rod_tip_pos, rod_quat, qpos, qvel, action):
