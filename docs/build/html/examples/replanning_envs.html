@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Replanning Example &mdash; Fancy Gym 0.2 documentation</title>
+  <title>Replanning Example &mdash; Fancy Gym 0.3.0 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/style.css" type="text/css" />
@@ -41,7 +41,7 @@
               <img src="../_static/icon.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2
+                0.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -112,24 +112,24 @@
 <span class="linenos"> 3</span>
 <span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="k">def</span> <span class="nf">example_run_replanning_env</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="s2">&quot;fancy_ProDMP/BoxPushingDenseReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="linenos"> 6</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">)</span>
+<span class="linenos"> 6</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 <span class="linenos"> 7</span>    <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 <span class="linenos"> 8</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iterations</span><span class="p">):</span>
-<span class="linenos"> 9</span>        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="linenos">10</span>        <span class="k">while</span> <span class="n">done</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-<span class="linenos">11</span>            <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">12</span>            <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">13</span>            <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos">14</span>                <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
-<span class="linenos">15</span>            <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">16</span>                <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos"> 9</span>        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<span class="linenos">10</span>            <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">11</span>            <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">12</span>            <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos">13</span>                <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">14</span>            <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">15</span>                <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">16</span>                <span class="k">break</span>
 <span class="linenos">17</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 <span class="linenos">18</span>    <span class="k">del</span> <span class="n">env</span>
 <span class="linenos">19</span>
 <span class="linenos">20</span>
 <span class="linenos">21</span><span class="k">def</span> <span class="nf">example_custom_replanning_envs</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="linenos">22</span>    <span class="c1"># id for a step-based environment</span>
-<span class="linenos">23</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;BoxPushingDense-v0&quot;</span>
+<span class="linenos">23</span>    <span class="n">base_env_id</span> <span class="o">=</span> <span class="s2">&quot;fancy/BoxPushingDense-v0&quot;</span>
 <span class="linenos">24</span>
 <span class="linenos">25</span>    <span class="n">wrappers</span> <span class="o">=</span> <span class="p">[</span><span class="n">fancy_gym</span><span class="o">.</span><span class="n">envs</span><span class="o">.</span><span class="n">mujoco</span><span class="o">.</span><span class="n">box_pushing</span><span class="o">.</span><span class="n">mp_wrapper</span><span class="o">.</span><span class="n">MPWrapper</span><span class="p">]</span>
 <span class="linenos">26</span>
@@ -147,31 +147,34 @@
 <span class="linenos">38</span>                        <span class="s1">&#39;replanning_schedule&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="n">t</span> <span class="o">%</span> <span class="mi">25</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span>
 <span class="linenos">39</span>                        <span class="s1">&#39;condition_on_desired&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
 <span class="linenos">40</span>
-<span class="linenos">41</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env_id</span><span class="o">=</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="n">black_box_kwargs</span><span class="p">,</span>
-<span class="linenos">42</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
-<span class="linenos">43</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
-<span class="linenos">44</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
-<span class="linenos">45</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
-<span class="linenos">46</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
-<span class="linenos">47</span>
-<span class="linenos">48</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">49</span>
-<span class="linenos">50</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iteration</span><span class="p">):</span>
-<span class="linenos">51</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
-<span class="linenos">52</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
-<span class="linenos">53</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
-<span class="linenos">54</span>            <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-<span class="linenos">55</span>
-<span class="linenos">56</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-<span class="linenos">57</span>    <span class="k">del</span> <span class="n">env</span>
-<span class="linenos">58</span>
+<span class="linenos">41</span>    <span class="n">base_env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="n">base_env_id</span><span class="p">,</span> <span class="n">render_mode</span><span class="o">=</span><span class="s1">&#39;human&#39;</span> <span class="k">if</span> <span class="n">render</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+<span class="linenos">42</span>    <span class="n">env</span> <span class="o">=</span> <span class="n">fancy_gym</span><span class="o">.</span><span class="n">make_bb</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">base_env</span><span class="p">,</span> <span class="n">wrappers</span><span class="o">=</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">black_box_kwargs</span><span class="o">=</span><span class="n">black_box_kwargs</span><span class="p">,</span>
+<span class="linenos">43</span>                            <span class="n">traj_gen_kwargs</span><span class="o">=</span><span class="n">trajectory_generator_kwargs</span><span class="p">,</span> <span class="n">controller_kwargs</span><span class="o">=</span><span class="n">controller_kwargs</span><span class="p">,</span>
+<span class="linenos">44</span>                            <span class="n">phase_kwargs</span><span class="o">=</span><span class="n">phase_generator_kwargs</span><span class="p">,</span> <span class="n">basis_kwargs</span><span class="o">=</span><span class="n">basis_generator_kwargs</span><span class="p">,</span>
+<span class="linenos">45</span>                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<span class="linenos">46</span>    <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+<span class="linenos">47</span>        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+<span class="linenos">48</span>
+<span class="linenos">49</span>    <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">50</span>
+<span class="linenos">51</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iteration</span><span class="p">):</span>
+<span class="linenos">52</span>        <span class="n">ac</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+<span class="linenos">53</span>        <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">ac</span><span class="p">)</span>
+<span class="linenos">54</span>        <span class="k">if</span> <span class="n">terminated</span> <span class="ow">or</span> <span class="n">truncated</span><span class="p">:</span>
+<span class="linenos">55</span>            <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<span class="linenos">56</span>
+<span class="linenos">57</span>    <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="linenos">58</span>    <span class="k">del</span> <span class="n">env</span>
 <span class="linenos">59</span>
-<span class="linenos">60</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">60</span><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">render</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="linenos">61</span>    <span class="c1"># run a registered replanning environment</span>
-<span class="linenos">62</span>    <span class="n">example_run_replanning_env</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="s2">&quot;fancy_ProDMP/BoxPushingDenseReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="linenos">62</span>    <span class="n">example_run_replanning_env</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="s2">&quot;fancy_ProDMP/BoxPushingDenseReplan-v0&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">iterations</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
 <span class="linenos">63</span>
 <span class="linenos">64</span>    <span class="c1"># run a custom replanning environment</span>
-<span class="linenos">65</span>    <span class="n">example_custom_replanning_envs</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="linenos">65</span>    <span class="n">example_custom_replanning_envs</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">iteration</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">render</span><span class="o">=</span><span class="n">render</span><span class="p">)</span>
+<span class="linenos">66</span>
+<span class="linenos">67</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos">68</span>    <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
