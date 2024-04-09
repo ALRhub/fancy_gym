@@ -96,8 +96,6 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         qvel = self.data.qvel
         qvel[-2:] = 0
         self.set_state(qpos, qvel)
-        self.tip_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, 0))
-        self.joint_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, self.n_links))
         self.tip_traj[0, :] = self.get_body_com("fingertip")[:2]
         self.joint_traj[0, :] = self.data.qpos.flat[:self.n_links]
         return self._get_obs()
