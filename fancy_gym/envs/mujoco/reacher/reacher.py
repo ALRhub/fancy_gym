@@ -50,7 +50,7 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         reward = reward_dist + reward_ctrl + angular_vel
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        done = False
+        done = True if self._steps >= MAX_EPISODE_STEPS_REACHER else False
         self.tip_traj[self._steps, :] = self.get_body_com("fingertip")[:2].copy()
         self.joint_traj[self._steps, :] = self.data.qpos.flat[:self.n_links].copy()
         infos = dict(
