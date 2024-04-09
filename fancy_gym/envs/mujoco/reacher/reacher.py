@@ -17,6 +17,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
                  **kwargs):
         utils.EzPickle.__init__(**locals())
 
+        self._context = None
+
         self._steps = 0
         self.n_links = n_links
 
@@ -98,7 +100,14 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         self.set_state(qpos, qvel)
         self.tip_traj[0, :] = self.get_body_com("fingertip")[:2]
         self.joint_traj[0, :] = self.data.qpos.flat[:self.n_links]
+
+        self._context  = context
         return self._get_obs()
+
+    def get_context(self):
+        if self._context is None:
+            raise ValueError("Context is not set")
+        return self._context
 
     def reset_model(self):
         qpos = (
