@@ -17,6 +17,8 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
                  **kwargs):
         utils.EzPickle.__init__(**locals())
 
+        self._context = None
+
         self._steps = 0
         self.n_links = n_links
 
@@ -50,7 +52,7 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         reward = reward_dist + reward_ctrl + angular_vel
         self.do_simulation(action, self.frame_skip)
         ob = self._get_obs()
-        done = False
+        done = True if self._steps >= MAX_EPISODE_STEPS_REACHER else False
         self.tip_traj[self._steps, :] = self.get_body_com("fingertip")[:2].copy()
         self.joint_traj[self._steps, :] = self.data.qpos.flat[:self.n_links].copy()
         infos = dict(
@@ -96,11 +98,16 @@ class ReacherEnv(MujocoEnv, utils.EzPickle):
         qvel = self.data.qvel
         qvel[-2:] = 0
         self.set_state(qpos, qvel)
-        self.tip_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, 0))
-        self.joint_traj = np.zeros((MAX_EPISODE_STEPS_REACHER, self.n_links))
         self.tip_traj[0, :] = self.get_body_com("fingertip")[:2]
         self.joint_traj[0, :] = self.data.qpos.flat[:self.n_links]
+
+        self._context  = context
         return self._get_obs()
+
+    def get_context(self):
+        if self._context is None:
+            raise ValueError("Context is not set")
+        return self._context
 
     def reset_model(self):
         qpos = (
