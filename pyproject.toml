@@ -41,7 +41,7 @@ requires-python = ">=3.7"
 #"Repository" = "https://github.com/ALRhub/fancy_gym/"
 
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=61.0.0", "wheel", "toml"]
 build-backend = "setuptools.build_meta"
 
 [project.optional-dependencies]
